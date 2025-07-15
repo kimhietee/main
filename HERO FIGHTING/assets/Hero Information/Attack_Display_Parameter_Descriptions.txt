@@ -1,0 +1,73 @@
+Attack_Display Class Parameter Descriptions:
+
+1. x (int): 
+   - The initial horizontal position (x-coordinate) of the attack on the screen.
+
+2. y (int): 
+   - The initial vertical position (y-coordinate) of the attack on the screen.
+
+3. frames (list of Surface): 
+   - A list of images (frames) that represent the attack's animation.
+
+4. frame_duration (int): 
+   - Duration in milliseconds each frame is displayed before switching to the next one.
+
+5. repeat_animation (int): 
+   - Number of times the animation should loop. After the final loop, the attack ends.
+
+6. speed (int): 
+   - Horizontal movement speed of the attack. If zero, the attack is stationary.
+
+7. dmg (int): 
+   - The amount of damage dealt per hit or frame, depending on other flags.
+
+8. final_dmg (int): 
+   - Damage that is applied at the end of the animation (used for finishers or strong final hits).
+
+9. who_attacks (object): 
+   - The entity (e.g. player or enemy) initiating the attack.
+
+10. who_attacked (object): 
+    - The target of the attack, to receive damage or effects.
+
+11. moving (bool): 
+    - If True, the attack moves horizontally according to 'speed'. If False, it's static.
+
+12. heal (bool): 
+    - If True, instead of dealing damage, the attack heals the one who cast it.
+
+13. continuous_dmg (bool): 
+    - If True, the attack deals damage continuously every frame while colliding with the target.
+
+14. per_end_dmg (tuple(bool, bool)): 
+    - Two boolean flags:
+        * [0] – Enables damage to occur at the end of each animation cycle.
+        * [1] – Applies damage when animation ends, regardless of collision.
+
+15. disable_collide (bool): 
+    - If True, the attack does not deal damage upon direct collision.
+
+16. stun (tuple(bool, int)): 
+    - A tuple that enables stun and defines its duration:
+        * [0] – Enables/disables stun logic.
+        * [1] – Stun duration or intensity (custom logic may vary).
+
+17. sound (tuple(bool, Sound, Sound, Sound)): 
+    - A tuple that defines if sound plays and includes up to 3 sound objects:
+        * [0] – Enables/disables sound playback.
+        * [1-3] – Sound effects to play when animation ends.
+
+18. kill_collide (bool): 
+    - If True, the attack sprite disappears instantly upon colliding with the target.
+
+NEW PARAMETERS (to be added to class):
+
+19. follow (tuple(bool, bool)):
+    - Controls if the attack should follow another sprite:
+        * [0] – If True, the attack will stick to the enemy upon collision and follow them.
+        * [1] – If True, the attack always follows the enemy, even without collision.
+
+20. delay (tuple(bool, int)):
+    - Delays the attack’s animation and effect:
+        * [0] – If True, delay is enabled.
+        * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).

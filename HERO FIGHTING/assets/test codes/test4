@@ -1,0 +1,20 @@
+# print('Hello WOrld!')
+mana_multiplier = 1.5
+
+skill_mana_cost = 180
+
+max_mana = int(180 * mana_multiplier)
+
+mana = (max_mana / skill_mana_cost) - 1
+mana_left = max_mana - skill_mana_cost
+
+if mana >= 1:
+    print(f'has excess mana, mana left: {mana_left}')
+    print(f'{mana:.2f}')
+else:
+    print(f'not enough mana, mana left: {mana_left}')
+    print(f'{mana:.2f}')
+
+
+print(150 / 180)
+

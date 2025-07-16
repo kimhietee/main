@@ -3638,7 +3638,7 @@ class Wind_Hashashin(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10, 0) #smoke dmg
+        self.atk1_damage = (10, 2) #smoke dmg
         self.atk2_damage = (35/45, 0) #tornado
         self.atk2_damage_2nd = (15/15, 5) # x slash
         self.atk3_damage = (0, 0) #not used

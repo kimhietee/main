@@ -2450,11 +2450,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.inputs()
         self.move_to_screen()
 
-        
-        if self.attacking2:
-            self.detect_and_display_damage(color=(0, 255, 0))
-        else:
-            self.detect_and_display_damage()
+        self.detect_and_display_damage()
         self.update_damage_numbers(screen)
         
         if not self.is_dead():

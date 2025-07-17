@@ -338,13 +338,13 @@ class Player(pygame.sprite.Sprite):
         x = self.rect.centerx + offset_x
         y = self.rect.top + 15 + offset_y
 
-        # Make font size scale with damage, but cap it
+        # Scale font size with damage (cap at 40 extra)
         size = size or (20 + min(40, int(abs(damage))))
         font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', size)
 
-        # Round to 2 or 3 decimal places for display
+        # Clean decimal places
         if isinstance(damage, float):
-            display_text = f"{damage:.1f}".rstrip('0').rstrip('.')  # Clean trailing zeroes
+            display_text = f"{damage:.2f}".rstrip('0').rstrip('.')  # Shows e.g., 0.33 or 12.1
         elif abs(damage) < 0.001:
             display_text = "0"
         else:
@@ -374,11 +374,13 @@ class Player(pygame.sprite.Sprite):
             surf.set_alpha(dmg['alpha'])
             screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
 
-    def detect_and_display_damage(self, interval=30, color=(255, 0, 0)):
-        if self.health < self.last_health:
-            damage = self.last_health - self.health
-            self.display_damage(damage, interval=interval, color=color)
-        self.last_health = self.health  # Always update this
+    def detect_and_display_damage(self, interval=30):
+        delta = self.health - self.last_health
+        if delta < 0:
+            self.display_damage(-delta, interval=interval)  # Normal damage (red)
+        elif delta > 0.1:  # Only show healing if it's significant (not just natural regen)
+            self.display_damage(delta, interval=interval, color=(0, 255, 0))  # Green heal
+        self.last_health = self.health
 
 
             

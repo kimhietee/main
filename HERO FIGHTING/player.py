@@ -333,18 +333,18 @@ class Player(pygame.sprite.Sprite):
 
         # Randomize slight position (±10 px)
         offset_x = random.randint(-10, 10)
-        offset_y = random.randint(-10, 10)
+        offset_y = random.randint(-35, -25) if damage > 5 else random.randint(-45, -35) if damage > 10 else random.randint(-10, 10) 
 
-        x = self.rect.centerx + offset_x
-        y = self.rect.top + 15 + offset_y
+        x = self.hitbox_rect.centerx + offset_x
+        y = self.hitbox_rect.top - 30 + offset_y
 
         # Scale font size with damage (cap at 40 extra)
-        size = size or (20 + min(40, int(abs(damage))))
+        size = size or (20 + min(75, int(abs(damage)*(2 if damage < 1 else 3 if damage < 3 else 4 if damage < 5 else 1.5 if damage < 20 else 1.25))))
         font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', size)
 
         # Clean decimal places
         if isinstance(damage, float):
-            display_text = f"{damage:.2f}".rstrip('0').rstrip('.')  # Shows e.g., 0.33 or 12.1
+            display_text = f"{damage:.1f}".rstrip('0').rstrip('.')  # Shows e.g., 0.33 or 12.1
         elif abs(damage) < 0.001:
             display_text = "0"
         else:
@@ -372,7 +372,10 @@ class Player(pygame.sprite.Sprite):
 
             surf = dmg['font'].render(str(dmg['text']), True, dmg['color'])
             surf.set_alpha(dmg['alpha'])
-            screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
+            if self.health > self.max_health: # don't show hp dmg when game starts
+                return
+            else:
+                screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
 
     def detect_and_display_damage(self, interval=30):
         delta = self.health - self.last_health

@@ -1,0 +1,97 @@
+
+🌱 INIT AND CONFIG
+git init
+    → Initializes a new Git repository in your current folder.
+
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+    → Sets your Git identity for all repos on your computer.
+
+💾 STAGING AND COMMITTING
+git add .
+    → Adds all changes (new, modified, deleted files) to staging.
+
+git add <filename>
+    → Adds only that file to staging.
+
+git commit -m "Your commit message"
+    → Commits staged changes with a short message.
+    -m = "message" flag
+
+git commit
+    → Opens an editor to write a multi-line commit message.
+
+🧹 UNSTAGING AND REMOVING
+git restore --staged <file>
+    → Removes file from staging but keeps changes in working directory.
+
+git rm <file>
+    → Removes file from both staging and working directory.
+
+git rm --cached <file>
+    → Untracks the file (removes from index) but keeps it locally.
+
+git rm -r <folder>
+    → Recursively removes the folder and its contents.
+    -r = "recursive"
+
+git rm --cached -r <folder>
+    → Recursively removes folder from Git tracking only.
+
+📡 PUSH & PULL
+git push
+    → Uploads local commits to the remote repository (e.g. GitHub).
+
+git pull
+    → Fetches and merges changes from the remote repository.
+
+👀 STATUS AND LOGS
+git status
+    → Shows current repo state: staged, modified, untracked files.
+
+git log
+    → Displays commit history.
+
+git log --oneline --graph --decorate
+    → Short and visual view of commit history:
+        --oneline = One commit per line
+        --graph = ASCII diagram of branches
+        --decorate = Show branch names and tags
+
+🔍 DIFF AND BRANCHES
+git diff
+    → Shows changes in files not yet staged.
+
+git branch
+    → Lists local branches.
+
+git checkout -b <branch-name>
+    → Creates and switches to a new branch.
+
+git checkout <branch-name>
+    → Switches to an existing branch.
+
+🧳 STASHING CHANGES
+git stash
+    → Temporarily saves uncommitted changes.
+
+git stash pop
+    → Applies the stashed changes and removes them from the stash list.
+
+💡 GLOBAL CONFIG TO CLEAN UP DISPLAY
+git config --global status.showUntrackedFiles no
+    → Hides untracked files from `git status` output.
+
+🔍 VIEW FILES IN INDEX
+git ls-files
+    → Shows all files Git is currently tracking.
+
+git ls-files --cached | findstr __pycache__
+    → Lists tracked files containing "__pycache__" in their path (Windows PowerShell).
+
+🛠️ CLEAN PYTHON PROJECT REPO
+Add this to your .gitignore file:
+    __pycache__/
+    *.pyc
+    *.pyo
+    *.pyd

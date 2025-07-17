@@ -12,7 +12,7 @@ from global_vars import (
 )
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped
 # from attack import Attacks, Attack_Display
-
+import random
 #AS OF 4/23/25 (12:15 AM)
 '''SPECIAL LASTS 16-17 SECONDS
  if you don't do anything :))'''
@@ -322,45 +322,63 @@ class Player(pygame.sprite.Sprite):
         self.special_sound.set_volume(1 * MAIN_VOLUME)
 
         #Attack-------------------------------------------------------------
-        # Damage display tracking
         self.last_health = self.health
-        self.damage_numbers = []  # List of dicts: damage info
-        
-    def display_damage(self, damage, interval=30, **kwargs):
-        """
-        Display damage number above the player. Fades out over time.
-        Args:
-            damage (float/int): Amount of damage to display
-            interval (int): Fade speed (frames)
-            kwargs: size, color, font, etc.
-        """
-        x = self.rect.centerx
-        y = self.rect.top - 20
-        size = kwargs.get('size', 30 + min(40, int(abs(damage)*2)))
-        color = kwargs.get('color', (255, 0, 0))
-        font = kwargs.get('font', pygame.font.Font(r'HERO FIGHTING\assets\font\slkscr.ttf', size))
-        alpha = 255
-        self.damage_numbers.append({'damage': damage, 'x': x, 'y': y, 'alpha': alpha, 'size': size, 'font': font, 'interval': interval, 'color': color})
+        self.damage_numbers = []
 
-    def update_damage_numbers(self):
-        # Update and draw damage numbers
-        for dmg_info in self.damage_numbers[:]:
-            dmg_info['y'] -= 1  # Move up
-            dmg_info['alpha'] -= int(255 / dmg_info['interval'])
-            if dmg_info['alpha'] <= 0:
-                self.damage_numbers.remove(dmg_info)
+        self.damage_font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', 30)  # preload font
+
+    def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
+        if not hasattr(self, 'rect'):
+            return  # Safety check
+
+        # Randomize slight position (±10 px)
+        offset_x = random.randint(-10, 10)
+        offset_y = random.randint(-10, 10)
+
+        x = self.rect.centerx + offset_x
+        y = self.rect.top + 15 + offset_y
+
+        # Make font size scale with damage, but cap it
+        size = size or (20 + min(40, int(abs(damage))))
+        font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', size)
+
+        # Round to 2 or 3 decimal places for display
+        if isinstance(damage, float):
+            display_text = f"{damage:.1f}".rstrip('0').rstrip('.')  # Clean trailing zeroes
+        elif abs(damage) < 0.001:
+            display_text = "0"
+        else:
+            display_text = str(damage)
+
+        self.damage_numbers.append({
+            'text': display_text,
+            'x': x,
+            'y': y,
+            'alpha': 255,
+            'interval': interval,
+            'color': color,
+            'font': font
+        })
+
+    def update_damage_numbers(self, screen):
+        for dmg in self.damage_numbers[:]:
+            dmg['y'] -= 1
+            fade_amount = int(255 / dmg['interval'])
+            dmg['alpha'] = max(0, dmg['alpha'] - fade_amount)
+
+            if dmg['alpha'] <= 0:
+                self.damage_numbers.remove(dmg)
                 continue
-            dmg_surf = dmg_info['font'].render(str(int(dmg_info['damage'])), True, dmg_info['color'])
-            dmg_surf.set_alpha(max(0, dmg_info['alpha']))
-            screen.blit(dmg_surf, (dmg_info['x'] - dmg_surf.get_width() // 2, dmg_info['y']))
 
-    def detect_and_display_damage(self, interval=30, **kwargs):
-        # Call this at the end of each frame to detect health loss and display damage
-        if self.last_health > self.health:
+            surf = dmg['font'].render(str(dmg['text']), True, dmg['color'])
+            surf.set_alpha(dmg['alpha'])
+            screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
+
+    def detect_and_display_damage(self, interval=30, color=(255, 0, 0)):
+        if self.health < self.last_health:
             damage = self.last_health - self.health
-            self.display_damage(damage, interval=interval, **kwargs)
-
-
+            self.display_damage(damage, interval=interval, color=color)
+        self.last_health = self.health  # Always update this
 
 
             

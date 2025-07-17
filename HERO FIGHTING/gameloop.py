@@ -320,8 +320,6 @@ def game(bg=None):
         main.draw_hp_mana_icons()
 
         #drawing the damage display
-        # main.hero1.update_damage_numbers()
-        # main.hero2.update_damage_numbers()
 
         # Update anddddddddddddd draw attacks
         attack_display.update()

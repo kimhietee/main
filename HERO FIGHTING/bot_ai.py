@@ -722,6 +722,7 @@ def create_bot(selected_hero):
                         'min_cast_range': 40,
                     }
                 },
+                
 
                 'Wind_Hashashin': {
                     'default_timer': 1.2,
@@ -783,70 +784,9 @@ def create_bot(selected_hero):
                         'face_away': True, # Will face away from the enemy before using skill
                         'force_escape': True,
                         'disable_random_escape_direction': True, # Disable random escape direction (the bot will always face away from the enemy),  # Let the skill handle the escape logic — don't add random left/right movement
+                        # works for every skill (might put it in main bot logic)
                         'conditions': [
-                            lambda bot: (
-                                (bot.state == 'retreat_for_attack' and
-                                self.mana >= self.attacks[0].mana_cost * 3 and
-                                botchance.update(20))
-                            ),
-
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 70 and
-                                bot.bot_hp_percent() >= 50 and
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 20 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.4 and
-                                bot.enemy_distance >= (random.randint(400, 600) and
-                                botchance.update(20))
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 50 and
-                                bot.bot_hp_percent() >= 50 and
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 15 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.3 and
-                                bot.enemy_distance >= (random.randint(400, 600) and
-                                botchance.update(30))
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 30 and
-                                bot.bot_hp_percent() >= 50 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.5 and
-                                bot.enemy_distance >= (random.randint(400, 800) and
-                                botchance.update(40))
-                            ),
-
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 70 and
-                                bot.bot_hp_percent() < 50 and
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 30 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.4 and
-                                bot.enemy_distance >= (random.randint(400, 600) and
-                                botchance.update(10))
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 50 and
-                                bot.bot_hp_percent() < 50 and
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 20 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.3 and
-                                bot.enemy_distance >= (random.randint(400, 600) and
-                                botchance.update(20))
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 30 and
-                                bot.bot_hp_percent() < 50 and 
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 12 and
-                                self.mana >= self.attacks[0].mana_cost * 2.8 and
-                                bot.enemy_distance >= (random.randint(400, 500) and
-                                botchance.update(30))
-                            ),
-
-
-
+                            #for safety measures when the game is starting
                             lambda bot: (not bot.special_active and
                                 bot.state == 'escape' and 
                                         bot.bot_hp_percent() >= 85 and
@@ -856,267 +796,156 @@ def create_bot(selected_hero):
                                         bot.player.attacking3 or
                                         bot.player.sp_attacking
                                 ) and
-                                botchance.update(80)
+                                botchance.update(90)
                             ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'escape' and 
-                                        bot.bot_hp_percent() < 85 and
-                                        bot.bot_hp_percent() >= 60 and
-                                        bot.enemy_distance >= 50 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.3 and
-                                        (bot.enemy_distance <= 400 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                ) and
-                                botchance.update(75)
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_away_from_enemy() and
-                                        bot.bot_hp_percent() < 60 and
-                                        bot.enemy_distance >= 50 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.4 and
-                                        (bot.enemy_distance <= 400 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                ) and
-                                botchance.update(50)
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_from_enemy() and
-                                        bot.bot_hp_percent() >= 30 and
-                                        bot.enemy_distance >= 250 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.5 and
-                                        (bot.enemy_distance <= 500 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                ) and
-                                botchance.update(50)
-                            ),
-                            lambda bot: (not bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_away_from_enemy() and
-                                        bot.bot_hp_percent() < 30 and
-                                        bot.enemy_distance >= 10 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.2 and
-                                        (bot.enemy_distance <= 500 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                ) and
-                                botchance.update(80)
-                            ),
-
-                            #sp logic
-                            lambda bot: (bot.special_active and
-                                bot.state == 'chase' and
-                                bot.enemy_hp_percent() <= 70 and
-                                bot.bot_hp_percent() - bot.enemy_hp_percent() >= 5 and 
-                                self.mana >= self.attacks[0].mana_cost * 3.5 and
-                                bot.enemy_distance >= (random.randint(200, 500))
-                            ),
-                            lambda bot: (bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_away_from_enemy() and
-                                        bot.bot_hp_percent() >= 30 and
-                                        bot.enemy_distance >= 10 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.3 and
-                                        (bot.enemy_distance < 250 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                )
-                            ),
-                            lambda bot: (bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_from_enemy() and
-                                        bot.bot_hp_percent() >= 30 and
-                                        bot.enemy_distance >= 250 and
-                                        self.mana >= self.attacks[0].mana_cost * 3.3 and
-                                        (bot.enemy_distance <= 500 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                )
-                            ),
-                            lambda bot: (bot.special_active and
-                                bot.state == 'escape' and 
-                                    bot.is_facing_away_from_enemy() and
-                                        bot.bot_hp_percent() < 30 and
-                                        bot.enemy_distance >= 10 and
-                                        self.mana >= self.attacks[0].mana_cost * 3 and
-                                        (bot.enemy_distance <= 500 or
-                                        bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
-                                )
-                            )
+                            # Aggressive chase if enemy is low HP and bot is healthy
+                            lambda bot: (
+                                    not bot.special_active and
+                                    bot.state == 'chase' and
+                                    bot.enemy_hp_percent() < 40 and
+                                    bot.bot_hp_percent() > 60 and
+                                    bot.enemy_distance > 300 and
+                                    self.mana >= self.attacks[0].mana_cost * 2.5 and
+                                    botchance.update(70)
+                                ),
+                                # Opportunistic attack if enemy is jumping or vulnerable
+                                lambda bot: (
+                                    not bot.special_active and
+                                    bot.state == 'chase' and
+                                    bot.player.jumping and
+                                    bot.enemy_distance > 300 and
+                                    self.mana >= self.attacks[0].mana_cost * 2 and
+                                    botchance.update(60)
+                                ),
+                                # Escape if bot is low HP
+                                lambda bot: (
+                                    not bot.special_active and
+                                    bot.state == 'escape' and
+                                    bot.bot_hp_percent() < 30 and
+                                    bot.enemy_distance > 100 and
+                                    self.mana >= self.attacks[0].mana_cost * 1.5 and
+                                    botchance.update(80)
+                                ),
+                                # Use skill while jumping for mobility
+                                # random cast
+                                lambda bot: (
+                                    not bot.special_active and
+                                    bot.player.jumping and
+                                    bot.enemy_distance > 150 and
+                                    self.mana >= self.attacks[0].mana_cost * 1.2 and
+                                    botchance.update(50)
+                                ),
+                                # Special active: aggressive chase
+                                lambda bot: (
+                                    bot.special_active and
+                                    bot.state == 'chase' and
+                                    bot.enemy_hp_percent() < 60 and
+                                    bot.bot_hp_percent() > 40 and
+                                    bot.enemy_distance > 200 and
+                                    self.mana >= self.attacks[0].mana_cost * 2.2 and
+                                    botchance.update(80)
+                                ),
+                                # Special active: escape if low HP
+                                lambda bot: (
+                                    bot.special_active and
+                                    bot.state == 'escape' and
+                                    bot.bot_hp_percent() < 30 and
+                                    bot.enemy_distance > 100 and
+                                    self.mana >= self.attacks[0].mana_cost * 1.5 and
+                                    botchance.update(90)
+                                ),
                         ],
                     },
                         'skill_2': {
-                            'cast_range': 100,
+                            'cast_range': 130,
                             'min_cast_range': 15,
                             'require_all': False,
                             'conditions': [
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_distance <= 80 and
-                                    self.mana >= self.attacks[1].mana_cost * 1.3 and
-                                    botchance.update(20))
-                                ),
-
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() >= 70 and
-                                    bot.bot_hp_percent() >= 50 and
+                                # Use skill 2 for close combat when both are healthy
+                                lambda bot: (
+                                    not bot.special_active and
                                     bot.enemy_distance <= 80 and
-                                    botchance.update(60))
-                                ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 70 and
-                                    bot.enemy_hp_percent() >= 50 and
-                                    bot.bot_hp_percent() >= 50 and
-                                    bot.enemy_distance <= 80 and
+                                    bot.bot_hp_percent() > 50 and
+                                    bot.enemy_hp_percent() > 50 and
                                     self.mana >= self.attacks[1].mana_cost * 1.2 and
-                                    botchance.update(60))
+                                    botchance.update(60)
                                 ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 50 and
-                                    bot.enemy_hp_percent() >= 30 and
-                                    bot.bot_hp_percent() < 50 and
+                                # Use skill 2 to finish off low HP enemy
+                                lambda bot: (
+                                    not bot.special_active and
                                     bot.enemy_distance <= 80 and
+                                    bot.enemy_hp_percent() < 30 and
                                     self.mana >= self.attacks[1].mana_cost * 1.1 and
-                                    botchance.update(40))
+                                    botchance.update(80)
                                 ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 30 and
-                                    bot.bot_hp_percent() < 50 and
-                                    bot.enemy_distance <= 80 and
-                                    self.mana >= self.attacks[1].mana_cost * 1.1 and
-                                    botchance.update(30))
-                                ),
-
-
-                                #sp logic 
-                                #same logic for skill 3 
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() >= 80 and
-                                    bot.bot_hp_percent() >= 50 and
+                                # Special active: use skill 2 more aggressively
+                                lambda bot: (
+                                    bot.special_active and
                                     bot.enemy_distance <= 130 and
-                                    bot.player.jumping == True and
-                                    botchance.update(50))
-                                ),
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() < 80 and
-                                    bot.enemy_hp_percent() >= 50 and
-                                    bot.bot_hp_percent() >= 50 and
-                                    bot.enemy_distance <= 135 and
-                                    botchance.update(40))
-                                ),
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() < 50 and
-                                    bot.enemy_hp_percent() >= 30 and
-                                    bot.bot_hp_percent() >= 50 and
-                                    bot.enemy_distance <= 145 and
-                                    botchance.update(60))
-                                ),
-
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() >= 60 and
-                                    bot.bot_hp_percent() < 50 and
-                                    bot.enemy_distance <= 145 and
-                                    bot.player.jumping == True and
-                                    botchance.update(60))
-                                ),
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() < 60 and
-                                    bot.enemy_hp_percent() >= 40 and
-                                    bot.bot_hp_percent() < 50 and
-                                    botchance.update(50))
-                                ),
-                                lambda bot: (bot.special_active and
-                                    (bot.enemy_hp_percent() < 40 and
-                                    bot.bot_hp_percent() < 50 and
-                                    botchance.update(80))
+                                    self.mana >= self.attacks[1].mana_cost * 1.1 and
+                                    botchance.update(90)
                                 )
-                                
                             ]
                         },
                         'skill_3': {
-                            'cast_range': 130, #125
+                            'cast_range': 175, #125
                             'min_cast_range': 30,#75
                             'require_all': False,
                             'conditions': [
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() >= 80 and
-                                    bot.bot_hp_percent() >= 50 and
+                                # Use skill 3 for mid-range attacks when bot is healthy
+                                lambda bot: (
+                                    not bot.special_active and
                                     bot.enemy_distance <= 125 and
+                                    bot.bot_hp_percent() > 60 and
                                     self.mana >= self.attacks[2].mana_cost * 1.1 and
-                                    botchance.update(50)) or (bot.player.jumping == True and bot.enemy_distance <= 130)
+                                    botchance.update(60)
                                 ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 80 and
-                                    bot.enemy_hp_percent() >= 50 and
-                                    bot.bot_hp_percent() >= 50 and
-                                    self.mana >= self.attacks[2].mana_cost * 1.15 and
-                                    botchance.update(50))
+                                # death chase
+                                lambda bot: (
+                                    not bot.special_active and
+                                    bot.enemy_distance <= 130 and
+                                    bot.bot_hp_percent() <= 60 and
+                                    botchance.update(70)
                                 ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 50 and
-                                    bot.enemy_hp_percent() >= 30 and
-                                    bot.bot_hp_percent() >= 50 and
-                                    self.mana >= self.attacks[2].mana_cost * 1.1 and
-                                    botchance.update(70))
+                                # Special active: use skill 3 for aggressive attacks
+                                lambda bot: (
+                                    bot.special_active and
+                                    bot.enemy_distance <= 175 and
+                                    bot.bot_hp_percent() >= 30 and
+                                    botchance.update(80)
                                 ),
-
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() >= 60 and
-                                    bot.bot_hp_percent() < 50 and
-                                    self.mana >= self.attacks[2].mana_cost * 1.1 and
-                                    botchance.update(70))
-                                ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 60 and
-                                    bot.enemy_hp_percent() >= 40 and
-                                    bot.bot_hp_percent() < 50 and
-                                    botchance.update(60))
-                                ),
-                                lambda bot: (not bot.special_active and
-                                    (bot.enemy_hp_percent() < 40 and
-                                    bot.bot_hp_percent() < 50 and
-                                    botchance.update(80))
-                                ),
-
-                                #sp logic
-                                lambda bot: (bot.special_active and
-                                    (bot.bot_hp_percent() >= 40 and
-                                    bot.enemy_distance <= 180 and
-                                    botchance.update(60))
-                                ),
-
-                                lambda bot: (bot.special_active and
-                                    (bot.bot_hp_percent() < 40 and
-                                    botchance.update(50)) or (bot.player.jumping == True and bot.enemy_distance <= 130)
-                                ),
-
+                                #try to kill
+                                lambda bot: (
+                                    bot.special_active and
+                                    bot.enemy_distance <= 175 and
+                                    bot.enemy_hp_percent() < 30 and
+                                    botchance.update(80)
+                                )
                             ]
                         },
                         'skill_4': {
                             'cast_range': 1050,
                             'min_cast_range': 100,
-                            'require_all': True,
+                            'require_all': False,
                             'conditions': [
-                                lambda bot: True,  # always cast when in range
-                                lambda bot: bot.enemy_distance <= 1000
+                                # Use skill 4 as a finisher or when enemy is far away
+                                lambda bot: (
+                                    bot.enemy_distance > 1000 and
+                                    bot.enemy_hp_percent() < 30 and
+                                    botchance.update(90)
+                                ),
+                                # Use skill 4 to pressure enemy at long range
+                                lambda bot: (
+                                    bot.enemy_distance > 800 and
+                                    bot.enemy_hp_percent() < 60 and
+                                    self.mana >= self.attacks[3].mana_cost * 1.1 and
+                                    botchance.update(70)
+                                ),
+                                # Always consider skill 4 if enemy is within range
+                                lambda bot: (
+                                    bot.enemy_distance <= 1000 and
+                                    botchance.update(50)
+                                )
                             ]
                         },
                     },

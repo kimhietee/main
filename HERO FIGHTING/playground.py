@@ -1,8 +1,8 @@
 
 width = 1280
 height = 720
-a = 210
-b = height
+a = 170
+b = 0.1
 
 def solve(print_res=False, sub=False, left=False, add=False):
     if print_res:
@@ -22,6 +22,6 @@ def solve(print_res=False, sub=False, left=False, add=False):
         x = a+(a*b)
         return x
     
-solve(True)
+print(solve(add=True))
 # print(solve(left=True))
-print(width-int(width*0.039)-1)
+# print(width-int(width*0.039)-1)

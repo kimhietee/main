@@ -106,6 +106,9 @@ class Player(pygame.sprite.Sprite):
         self.basic_attack_cooldown = BASIC_ATK_COOLDOWN
 
         self.default_animation_speed = DEFAULT_ANIMATION_SPEED
+
+        
+        self.last_health = self.health
         
         # self.bonus_type = "strength"
         # self.bonus_value = self.strength
@@ -319,6 +322,48 @@ class Player(pygame.sprite.Sprite):
         self.special_sound.set_volume(1 * MAIN_VOLUME)
 
         #Attack-------------------------------------------------------------
+        # Damage display tracking
+        self.last_health = self.health
+        self.damage_numbers = []  # List of dicts: damage info
+        
+    def display_damage(self, damage, interval=30, **kwargs):
+        """
+        Display damage number above the player. Fades out over time.
+        Args:
+            damage (float/int): Amount of damage to display
+            interval (int): Fade speed (frames)
+            kwargs: size, color, font, etc.
+        """
+        x = self.rect.centerx
+        y = self.rect.top - 20
+        size = kwargs.get('size', 30 + min(40, int(abs(damage)*2)))
+        color = kwargs.get('color', (255, 0, 0))
+        font = kwargs.get('font', pygame.font.Font(r'HERO FIGHTING\assets\font\slkscr.ttf', size))
+        alpha = 255
+        self.damage_numbers.append({'damage': damage, 'x': x, 'y': y, 'alpha': alpha, 'size': size, 'font': font, 'interval': interval, 'color': color})
+
+    def update_damage_numbers(self):
+        # Update and draw damage numbers
+        for dmg_info in self.damage_numbers[:]:
+            dmg_info['y'] -= 1  # Move up
+            dmg_info['alpha'] -= int(255 / dmg_info['interval'])
+            if dmg_info['alpha'] <= 0:
+                self.damage_numbers.remove(dmg_info)
+                continue
+            dmg_surf = dmg_info['font'].render(str(int(dmg_info['damage'])), True, dmg_info['color'])
+            dmg_surf.set_alpha(max(0, dmg_info['alpha']))
+            screen.blit(dmg_surf, (dmg_info['x'] - dmg_surf.get_width() // 2, dmg_info['y']))
+
+    def detect_and_display_damage(self, interval=30, **kwargs):
+        # Call this at the end of each frame to detect health loss and display damage
+        if self.last_health > self.health:
+            damage = self.last_health - self.health
+            self.display_damage(damage, interval=interval, **kwargs)
+
+
+
+
+            
     def update_hitbox(self):
         # Center the hitbox inside the player's main rect
         self.hitbox_rect.center = (self.rect.midbottom[0], self.rect.midbottom[1] - 30)

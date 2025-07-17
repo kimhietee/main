@@ -1606,6 +1606,8 @@ class Fire_Wizard(Player):
 
         self.inputs()
         self.move_to_screen()
+        self.detect_and_display_damage(screen)
+        self.update_damage_numbers()
         
         if not self.is_dead():
             self.player_death_index = 0

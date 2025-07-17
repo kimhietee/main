@@ -17,10 +17,10 @@ black = 'Black'
 green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0
 
 
-SINGLE_MODE_ACTIVE = False
+SINGLE_MODE_ACTIVE = False # constant
 SHOW_HITBOX = False
 DRAW_DISTANCE = False
 

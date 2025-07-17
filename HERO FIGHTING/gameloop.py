@@ -319,6 +319,10 @@ def game(bg=None):
         #drawing the hp and mana icon
         main.draw_hp_mana_icons()
 
+        #drawing the damage display
+        # main.hero1.update_damage_numbers()
+        # main.hero2.update_damage_numbers()
+
         # Update anddddddddddddd draw attacks
         attack_display.update()
         attack_display.draw(main.screen)
@@ -367,7 +371,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
         cube = pygame.Rect(cube_x, cube_fall, 25, 25)
         cube_hitbox = pygame.rect.Rect(cube.x, cube.y, cube.width * (cube.width * .07), cube.height * (cube.height * .07))
 
-        # Scale the image to match the cube's size
+        # Scale the im        git pull origin masterage to match the cube's size
         scaled_image = pygame.transform.scale(cube_image, (cube.width * (cube.width * .07), cube.height * (cube.height * .07)))
         main.screen.blit(scaled_image, cube)
         if SHOW_HITBOX:

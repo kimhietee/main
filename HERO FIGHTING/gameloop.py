@@ -322,8 +322,8 @@ def game(bg=None):
         draw_grid(screen) if SHOW_GRID else None
 
         # draws animated cloud background (lag)
-        # animated_bg.update()
-        # animated_bg.draw(screen)
+        animated_bg.update()
+        animated_bg.draw(screen)
         
         # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
         pygame.draw.rect(main.screen, main.black, ground)

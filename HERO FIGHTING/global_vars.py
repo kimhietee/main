@@ -17,12 +17,12 @@ black = 'Black'
 green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
-MAIN_VOLUME = 0
+MAIN_VOLUME = 1
 
 
 SINGLE_MODE_ACTIVE = False # constant
-SHOW_HITBOX = True
-DRAW_DISTANCE = True
+SHOW_HITBOX = False
+DRAW_DISTANCE = False
 SHOW_GRID = False
 
 # Default Dimensions

@@ -1,4 +1,4 @@
-﻿# my-game-kimhietee
- #scude e open ang gameloop.py.
- uuhh e open nalang ang read me inside the folder thx
- 
+# Hello!
+
+This is my main repository!
+This repo contains the source code of my game made in Python using PyGame.

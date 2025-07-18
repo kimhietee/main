@@ -2628,12 +2628,14 @@ class Fire_Knight(Player):
         self.atk1_cooldown = 5000
         self.atk2_cooldown = 16000
         self.atk3_cooldown = 26000
-        self.sp_cooldown = 60000
+        self.sp_cooldown = 60
 
         self.atk1_damage = (10/49, 2)
         self.atk2_damage = (25/20, 5)
         self.atk3_damage = (35/60, 10)
         self.sp_damage = (65/65, 15) 
+        self.special_sp_damage1 = (10/10, 50) # 60
+        self.special_sp_damage2 = (25/10, 5) # 30, total 90 damage
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -2764,7 +2766,7 @@ class Fire_Knight(Player):
 
 
 
-        
+        # 10 FRAMES INITIAL EXPLOSION
         self.sp_special1 = load_attack(
         filepath=r"HERO FIGHTING\assets\attacks\fire knight\021.PNG",
         frame_width=100, 
@@ -2775,6 +2777,7 @@ class Fire_Knight(Player):
         rotation=0,
         frame_duration=100
     )
+        # 10 FRAMES EXPLOSION
         self.sp_special2 = load_attack(
         filepath=r"HERO FIGHTING\assets\attacks\fire knight\038.PNG",
         frame_width=100, 
@@ -3183,9 +3186,9 @@ class Fire_Knight(Player):
                             y=self.rect.centery + 30,
                             frames=self.atk1 if self.facing_right else self.atk1_flipped,
                             frame_duration=5,
-                            repeat_animation=2,
+                            repeat_animation=1,
                             speed=3.5 if self.facing_right else -3.5,
-                            dmg=self.atk1_damage[0]* 0.3,
+                            dmg=self.atk1_damage[0]* 0.6,
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
@@ -3341,8 +3344,8 @@ class Fire_Knight(Player):
                         # print("Z key pressed")
                         
                         for i in [
-                            (self.sp_special1, False, 90, 230, self.sp_damage[0] * 3, self.sp_damage[0]/2),
-                            (self.sp_special2, True, 80, 200, self.sp_damage[0] * 6, self.sp_damage[0] * 1.5)]: # special 1 = gold explode
+                            (self.sp_special1, False, 90, 230, self.special_sp_damage1[0], self.special_sp_damage1[1]),
+                            (self.sp_special2, True, 80, 200, self.special_sp_damage2[0], self.special_sp_damage2[1])]: # special 1 = gold explode
                             attack = Attack_Display(
                                 x=self.rect.centerx + 250 if self.facing_right else self.rect.centerx - 250, # in front of him
                                 y=self.rect.centery + i[2],
@@ -3361,8 +3364,8 @@ class Fire_Knight(Player):
                             attack_display.add(attack)
 
                             burn_attack = Attack_Display(
-                                x=self.rect.centerx + 250 if self.facing_right else self.rect.centerx - 250, # in front of him
-                                y=self.rect.centery + i[2] + 70,
+                                x=self.rect.centerx + 200 if self.facing_right else self.rect.centerx - 200, # in front of him
+                                y=self.rect.centery + i[2],
                                 frames=self.burn,
                                 frame_duration=200,
                                 repeat_animation=2,

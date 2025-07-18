@@ -3,7 +3,7 @@ import random
 from global_vars import (
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
-    DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, MAIN_VOLUME,
+    DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, MAIN_VOLUME, SHOW_GRID,
     DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
     LOW_HP, LITERAL_HEALTH_DEAD,
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
@@ -122,6 +122,33 @@ def item_list(itemlist): # at least it works, not reusable tho
     return value_list
 
 
+def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100)):
+    cell_width = width // grid_size
+    cell_height = height // grid_size
+
+    font = pygame.font.Font(None, 20)
+
+    for i in range(grid_size + 1):
+        # Vertical lines
+        x = i * cell_width
+        # pygame.draw.line(screen, color, (x, 0), (x, height), 1)
+
+        # Horizontal lines
+        y = i * cell_height
+        pygame.draw.line(screen, color, (0, y), (width, y), 1)
+
+    for row in range(grid_size):
+        for col in range(grid_size):
+            x = (col + 1) * cell_width
+            y = row * cell_height
+
+            # Reverse Y: higher numbers at the top
+            reversed_y = height - y
+            # pos_text = f"{x}, {reversed_y}"
+            pos_text = f"{reversed_y}"
+
+            text_surface = font.render(pos_text, True, (150, 150, 255))
+            screen.blit(text_surface, (x - 5, y + 2))
 
 def game(bg=None):
     game_music_started = False
@@ -279,6 +306,8 @@ def game(bg=None):
 # -------------------------------------------------------------------------------------
 
         main.screen.blit(background, (0, -(720*1.05 - 720)))
+
+        draw_grid(screen) if SHOW_GRID else None
         
         # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
         pygame.draw.rect(main.screen, main.black, ground)

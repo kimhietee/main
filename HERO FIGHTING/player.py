@@ -331,20 +331,35 @@ class Player(pygame.sprite.Sprite):
         if not hasattr(self, 'rect'):
             return  # Safety check
 
-        # Randomize slight position (±10 px)
-        offset_x = random.randint(-10, 10)
-        offset_y = random.randint(-35, -25) if damage > 5 else random.randint(-45, -35) if damage > 10 else random.randint(-10, 10) 
+        # Random offset so numbers don’t overlap each other
+        offset_x = random.randint(-20, 20)
+        
+        # Offset Y based on damage (higher damage = higher text)
+        if damage > 20:
+            offset_y = random.randint(90,100)
+        elif damage > 10:
+            offset_y = random.randint(70, 80)
+        elif damage > 5:
+            offset_y = random.randint(50, 60)
+        else:
+            offset_y = random.randint(10, 20)
 
         x = self.hitbox_rect.centerx + offset_x
-        y = self.hitbox_rect.top - 30 + offset_y
+        y = self.hitbox_rect.top - offset_y
 
-        # Scale font size with damage (cap at 40 extra)
-        size = size or (20 + min(75, int(abs(damage)*(2 if damage < 1 else 3 if damage < 3 else 4 if damage < 5 else 1.5 if damage < 20 else 1.25))))
+        # Font size scaling
+        if damage > 20:
+            size = size or (30 + int(damage))  # Big damage just adds to base size
+        elif damage > 5:
+            size = size or int(20 + damage * 2)  # Medium scaling
+        else:
+            size = size or int(20 + damage * 3)  # Small damage gets boosted size
+
         font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', size)
 
-        # Clean decimal places
+        # Format floating numbers cleanly
         if isinstance(damage, float):
-            display_text = f"{damage:.1f}".rstrip('0').rstrip('.')  # Shows e.g., 0.33 or 12.1
+            display_text = f"{damage:.1f}".rstrip('0').rstrip('.')  # E.g., 0.33 or 1.2
         elif abs(damage) < 0.001:
             display_text = "0"
         else:

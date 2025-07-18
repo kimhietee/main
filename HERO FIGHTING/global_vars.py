@@ -21,8 +21,8 @@ MAIN_VOLUME = 0
 
 
 SINGLE_MODE_ACTIVE = False # constant
-SHOW_HITBOX = False
-DRAW_DISTANCE = False
+SHOW_HITBOX = True
+DRAW_DISTANCE = True
 SHOW_GRID = False
 
 # Default Dimensions

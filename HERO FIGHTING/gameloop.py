@@ -16,12 +16,23 @@ from global_vars import (
     attack_display, MULT, dmg_mult
 )
 from global_vars import SHOW_HITBOX
+
+from button import ImageButton, ImageInfo
+import heroes as main
+
+
+
+from Animate_BG import BackgroundHandler, bg_paths
+
+animated_bg = BackgroundHandler(bg_paths)
+
+
+
+
 # from heroes import player_selection, p1_select, p2_select, hero1_group, hero2_group
 # from heroes import Fire_Wizard, Wanderer_Magician, Fire_Knight, Wind_Hashashin
 # from player_selector import PlayerSelector
-from button import ImageButton, ImageInfo
-import heroes as main
-# from global_vars import (
+# # from global_vars import (
 #     width, height, icon, FPS, clock, screen, hero1, hero2,
 #     white, red, black, green, cyan2, gold,
 #     DEFAULT_WIDTH, DEFAULT_HEIGHT,
@@ -40,10 +51,6 @@ import heroes as main
 
 
 # from heroes import Fire_Wizard, Wanderer_Magicianoo
-
-
-
-
 
 # The hero selection logic need to be at the main file :))d
 
@@ -150,24 +157,29 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
             text_surface = font.render(pos_text, True, (150, 150, 255))
             screen.blit(text_surface, (x - 5, y + 2))
 
+
+
+        
+        
+
 def game(bg=None):
     game_music_started = False
     second_track_played = False
     print('stopping music')
-    bg_list = [
-        r'HERO FIGHTING\assets\backgrounds\1.png',
-        r'HERO FIGHTING\assets\backgrounds\2.png',
-        r'HERO FIGHTING\assets\backgrounds\3.png',
-        r'HERO FIGHTING\assets\backgrounds\4.jpg',
-        r'HERO FIGHTING\assets\backgrounds\13.jpg',
-        r'HERO FIGHTING\assets\backgrounds\14.png',
-        r'HERO FIGHTING\assets\backgrounds\15.png',
-        r'HERO FIGHTING\assets\backgrounds\16.png',
-        r'HERO FIGHTING\assets\backgrounds\17.png'
-    ]
-    print(f'hahahahaa [{random.randint(0, len(bg_list)-1)}')
-    background = main.pygame.transform.scale(
-        pygame.image.load(bg_list[random.randint(0, len(bg_list)-1)]).convert(), (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))
+    # bg_list = [
+    #     r'HERO FIGHTING\assets\backgrounds\1.png',
+    #     r'HERO FIGHTING\assets\backgrounds\2.png',
+    #     r'HERO FIGHTING\assets\backgrounds\3.png',
+    #     r'HERO FIGHTING\assets\backgrounds\4.jpg',
+    #     r'HERO FIGHTING\assets\backgrounds\13.jpg',
+    #     r'HERO FIGHTING\assets\backgrounds\14.png',
+    #     r'HERO FIGHTING\assets\backgrounds\15.png',
+    #     r'HERO FIGHTING\assets\backgrounds\16.png',
+    #     r'HERO FIGHTING\assets\backgrounds\17.png'
+    # ]
+    # print(f'hahahahaa [{random.randint(0, len(bg_list)-1)}')
+    # background = main.pygame.transform.scale(
+    #     pygame.image.load(bg_list[random.randint(0, len(bg_list)-1)]).convert(), (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))
     # ground = main.pygame.transform.scale(
     #     main.pygame.image.load(r'HERO FIGHTING\assets\backgrounds\10.jpg').convert(), (main.width, main.height))
     ground = pygame.Rect(0, main.DEFAULT_Y_POS, 2121, 1111)
@@ -305,9 +317,13 @@ def game(bg=None):
                 
 # -------------------------------------------------------------------------------------
 
-        main.screen.blit(background, (0, -(720*1.05 - 720)))
+        # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
         draw_grid(screen) if SHOW_GRID else None
+
+        # draws animated cloud background (lag)
+        # animated_bg.update()
+        # animated_bg.draw(screen)
         
         # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
         pygame.draw.rect(main.screen, main.black, ground)
@@ -394,7 +410,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
         Updated cube_fall and cube_x values.
     """
     if cube_fall < main.DEFAULT_Y_POS - 20:
-        cube_fall += 0.5
+        cube_fall += 1
         cube = pygame.Rect(cube_x, cube_fall, 25, 25)
         cube_hitbox = pygame.rect.Rect(cube.x, cube.y, cube.width * (cube.width * .07), cube.height * (cube.height * .07))
 
@@ -415,7 +431,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             elif bonus_type == 'special':
                 hero1.special += bonus_amount
             cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = -150
+            cube_fall = random.randint(-1000, -300)
             print(f"Cube collected by Player 1: {bonus_type} +{bonus_amount}")
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
@@ -426,7 +442,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             elif bonus_type == 'special':
                 hero2.special += bonus_amount
             cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = -150
+            cube_fall = cube_fall = random.randint(-1000, -300)
             print(f"Cube collected by Player 2: {bonus_type} +{bonus_amount}")
     else:
         cube_x = random.randint(20, int(main.width - 20))

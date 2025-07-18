@@ -2628,7 +2628,7 @@ class Fire_Knight(Player):
         self.atk1_cooldown = 5000
         self.atk2_cooldown = 16000
         self.atk3_cooldown = 26000
-        self.sp_cooldown = 60
+        self.sp_cooldown = 60000
 
         self.atk1_damage = (10/49, 2)
         self.atk2_damage = (25/20, 5)
@@ -2903,10 +2903,10 @@ class Fire_Knight(Player):
 
         self.attacks_special = [
             Attacks(
-                mana_cost=int(self.mana_cost_list[0] - (self.mana_cost_list[0] * 0.4)),
+                mana_cost=int(self.mana_cost_list[0] - (self.mana_cost_list[0] * 0.3)),
                 skill_rect=self.special_skill_1_rect,
                 skill_img=special_skill_1,
-                cooldown=self.atk1_cooldown,
+                cooldown=int(self.atk1_cooldown/2),
                 mana=self.mana
             ),
             Attacks(

@@ -4004,7 +4004,7 @@ class Wind_Hashashin(Player):
                             frames=self.atk1,
                             frame_duration=20,
                             repeat_animation=1,
-                            speed=-1 if self.facing_right else 1,
+                            speed=-1.5 if self.facing_right else 1.5,
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,

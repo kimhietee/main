@@ -560,7 +560,7 @@ def create_bot(selected_hero):
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
-                                    all(not bot.attacks_special[i].is_ready() for i in range(1, 3)) and
+                                    all(not bot.attacks_special[i].is_ready() for i in range(2, 3)) and
                                     botchance.update(40)
                                 )
                             ]
@@ -716,8 +716,8 @@ def create_bot(selected_hero):
                     },
 
                     'edge_escape_logic': {
-                        'duration': 4.0,
-                        'distance': 600
+                        'duration': 3.0,
+                        'distance': 450
                     },
 
                     'took_alot_dmg': {
@@ -774,7 +774,7 @@ def create_bot(selected_hero):
                                     bot.state == 'chase' and
                                     bot.enemy_hp_percent() < 40 and
                                     bot.bot_hp_percent() > 60 and
-                                    bot.enemy_distance > 300 and
+                                    bot.enemy_distance > 500 and
                                     self.mana >= self.attacks[0].mana_cost * 2.5 and
                                     botchance.update(70)
                                 ),
@@ -783,7 +783,7 @@ def create_bot(selected_hero):
                                     not bot.special_active and
                                     bot.state == 'chase' and
                                     bot.player.jumping and
-                                    bot.enemy_distance > 300 and
+                                    bot.enemy_distance > 500 and
                                     self.mana >= self.attacks[0].mana_cost * 2 and
                                     botchance.update(60)
                                 ),
@@ -792,17 +792,16 @@ def create_bot(selected_hero):
                                     not bot.special_active and
                                     bot.state == 'escape' and
                                     bot.bot_hp_percent() < 30 and
-                                    bot.enemy_distance > 100 and
-                                    self.mana >= self.attacks[0].mana_cost * 1.5 and
-                                    botchance.update(80)
+                                    self.mana >= self.attacks[0].mana_cost * 1.8 and
+                                    botchance.update(45)
                                 ),
                                 # Use skill while jumping for mobility
                                 # random cast
                                 lambda bot: (
                                     not bot.special_active and
                                     bot.player.jumping and
-                                    bot.enemy_distance > 150 and
-                                    self.mana >= self.attacks[0].mana_cost * 1.2 and
+                                    bot.enemy_distance > 100 and
+                                    self.mana >= self.attacks[0].mana_cost * 2 and
                                     botchance.update(50)
                                 ),
                                 # Special active: aggressive chase

@@ -61,7 +61,20 @@ RUNNING_SPEED = 2.2
 # Spacing and Positioning
 X_POS_SPACING = 100
 DEFAULT_X_POS = (int(width)) - 100
-DEFAULT_Y_POS = ((int(height)) * 0.76) * 1.05 #145 left if height == 720
+
+# This is the ground position
+DEFAULT_Y_POS = ((int(height)) * 0.76) * 1.05 #145 left if height == 720 
+'''
+DEFAULT_Y_POS = (720 * 0.76) * 1.05
+              = 547.2 * 1.05
+              = 574.56
+
+DEFAULT_Y_POS = 574
+
+The screen size (gameplay screeen):
+background_size = (width, int(height * 0.798))  # 0.798 = 574 / 720
+'''
+
 SPACING_X = int(width * 0.078)
 START_OFFSET_X = int(width * 0.039)
 SKILL_Y_OFFSET = int(height * 0.896)

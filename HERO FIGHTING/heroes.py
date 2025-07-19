@@ -714,7 +714,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
 
                         if self.who_attacks.lifesteal > 0:
-                            lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                            lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
                             self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
 
@@ -751,6 +751,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.who_attacks.lifesteal > 0:
                             lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                             self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                        
 
                         # #combine for moving dmg [1]:
                         # if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
@@ -781,6 +782,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             
                             if self.who_attacks.lifesteal > 0:
                                 lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            
+                            if self.who_attacks.lifesteal > 0:
+                                lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
                         if self.damaged_detect:

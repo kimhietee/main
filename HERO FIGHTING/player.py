@@ -437,7 +437,7 @@ class Player(pygame.sprite.Sprite):
                 if bonus_type == 'mana reduce':
                     for i in range(0, 4):
                         self.attacks[i].mana_cost -= int(self.attacks[i].mana_cost * bonus_value)
-                    self.attacks_special[i].mana_cost -= int(self.attacks_special[i].mana_cost * bonus_value)
+                        self.attacks_special[i].mana_cost -= int(self.attacks_special[i].mana_cost * bonus_value)
                 
                 if bonus_type == 'cd reduce':
                     for i in range(0, 5):

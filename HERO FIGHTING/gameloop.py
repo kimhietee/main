@@ -24,6 +24,8 @@ import heroes as main
 
 from Animate_BG import BackgroundHandler, bg_paths
 
+import Animate_BG
+
 animated_bg = BackgroundHandler(bg_paths)
 
 
@@ -79,6 +81,9 @@ GAME_MUSIC_2 = r'HERO FIGHTING\assets\audios\z-battle-227609.mp3'
 
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
+
+
+
 
 def fade(background, action):
     # background = pygame.transform.scale(
@@ -317,15 +322,22 @@ def game(bg=None):
                 
 # -------------------------------------------------------------------------------------
 
+        # Background
+        Animate_BG.waterfall_bg.display(screen)
+        # Animate_BG.lava_bg.display(screen)
+        # Animate_BG.dark_forest_bg.display(screen)
+
         # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
         draw_grid(screen) if SHOW_GRID else None
 
         # draws animated cloud background (lag)
-        animated_bg.update()
-        animated_bg.draw(screen)
+        # animated_bg.update()
+        # animated_bg.draw(screen)
         
         # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
+
+        # Ground
         pygame.draw.rect(main.screen, main.black, ground)
 
 
@@ -431,7 +443,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             elif bonus_type == 'special':
                 hero1.special += bonus_amount
             cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = random.randint(-1000, -300)
+            cube_fall = random.randint(-2000, -500)
             print(f"Cube collected by Player 1: {bonus_type} +{bonus_amount}")
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
@@ -442,7 +454,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             elif bonus_type == 'special':
                 hero2.special += bonus_amount
             cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = cube_fall = random.randint(-1000, -300)
+            cube_fall = cube_fall = random.randint(-2000, -500)
             print(f"Cube collected by Player 2: {bonus_type} +{bonus_amount}")
     else:
         cube_x = random.randint(20, int(main.width - 20))

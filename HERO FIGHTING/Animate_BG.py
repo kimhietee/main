@@ -64,10 +64,11 @@ class AnimatedBackground:
     '''
     Make sure the name of frames starts at 1
     '''
-    def __init__(self, path, count, size=(main.width, int(main.height * 0.798))):  # 0.798 = 574 / 720):
+    def __init__(self, path, count, size=(main.width, int(main.height * 0.798)), pos=(0,0)):  # 0.798 = 574 / 720):
         self.path = path if path.endswith(("\\", "/")) else path + "/"
         self.count = count
         self.size = size
+        self.pos = pos
         self.frames = []
         self.current_frame = 0
         self.last_update_time = pygame.time.get_ticks()
@@ -92,7 +93,7 @@ class AnimatedBackground:
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.last_update_time = now
 
-        surface.blit(self.frames[self.current_frame], (0, 0))
+        surface.blit(self.frames[self.current_frame], (self.pos[0], self.pos[1]))
 
 
 # background = main.pygame.transform.scale(
@@ -102,18 +103,30 @@ class AnimatedBackground:
 waterfall_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall\\",
     8,
+    # size=(main.width, main.height)
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 lava_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Magma Chamber\\",
     8,
+    size=(main.width, main.height)
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 dark_forest_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dark Forest\\",
     8,
+    size=(main.width, main.height)
+    # (main.width, int(main.height * 0.825)) # 594
+)
+
+
+dragon_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Dragon\\",
+    35,
+    size=(main.width, main.height-100),
+    pos=(0,50)
     # (main.width, int(main.height * 0.825)) # 594
 )
 
@@ -121,7 +134,9 @@ dark_forest_bg = AnimatedBackground(
 
 
 
-# waterfall_bg.load_frames()
-# lava_bg.load_frames()
+waterfall_bg.load_frames()
+lava_bg.load_frames()
 dark_forest_bg.load_frames()
+
+dragon_bg.load_frames()
 

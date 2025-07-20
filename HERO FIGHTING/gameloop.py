@@ -492,20 +492,24 @@ def menu():
                 pygame.quit()
                 exit()   
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if to_battle.is_clicked(event.pos):
-                    # Reset cooldowns before starting the game
-                    main.SINGLE_MODE_ACTIVE = False
-                    main.player_selection()
-                    return
+
             
+                pass
+                # main.player_selection()
+                # return
+                
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
-                    # Reset cooldowns before starting the game
                     main.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
                     return
                 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if multiplayer_button.is_clicked(event.pos):
+                    main.SINGLE_MODE_ACTIVE = False
+                    main.player_selection()
+                    return
+             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if info_button.is_clicked(event.pos):
                     info()
@@ -531,9 +535,21 @@ def menu():
         main.screen.blit(background, (0, 0))
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
-        to_battle.draw(main.screen, mouse_pos)
+        multiplayer_button.draw(main.screen, mouse_pos)
+
         info_button.draw(main.screen,mouse_pos)
         control_button.draw(main.screen,mouse_pos)
+
+        settings_button.draw(main.screen,mouse_pos)
+
+
+
+
+        if campaign_button.is_hovered(mouse_pos):
+            coming_soon_button.draw(main.screen, mouse_pos)
+        else:
+            campaign_button.draw(main.screen, mouse_pos)
+
  
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -650,8 +666,8 @@ def info():
 def main_menu():
     
 
-    background = main.pygame.transform.scale(
-        pygame.image.load(r'assets\backgrounds\8.png').convert(), (main.width, main.height))
+    # background = main.pygame.transform.scale(
+        # pygame.image.load(r'assets\backgrounds\8.png').convert(), (main.width, main.height))
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
@@ -662,7 +678,7 @@ def main_menu():
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
 
-        main.screen.fill((100, 100, 100))
+        main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -677,8 +693,9 @@ def main_menu():
                 menu()
                 return
 
-        main.screen.blit(background, (0, 0))
-        create_title('Fighting Kimhie', font, default_size, main.height * 0.2)
+        # main.screen.blit(background, (0, 0))
+        Animate_BG.dragon_bg.display(screen, speed=50)
+        create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
 
         pygame.display.update()
@@ -716,6 +733,8 @@ def reset_all():
 
 
 # Image Paths
+
+# fade()
 loading = ImageButton(
     image_path=loading_button_img,
     pos=center_pos,
@@ -726,6 +745,7 @@ loading = ImageButton(
     text_color='white'
 )
 
+# Menu button to return to menu()
 menu_button = ImageButton(
     image_path=menu_button_img,
     pos=(40, 10),
@@ -736,6 +756,7 @@ menu_button = ImageButton(
     text_color='white'
 )
 
+# main_menu()
 play_button = ImageButton(
     image_path=play_button_img,
     pos=center_pos,
@@ -746,20 +767,34 @@ play_button = ImageButton(
     text_color='white'
 )
 
-to_battle = ImageButton(
+# menu()
+campaign_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-50),
+    pos=(center_pos[0], center_pos[1]-100),
     scale=scale,
-    text='Multiplayer',
+    text='Campaign',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    hover_move=0
+)
+#_____ for campaign
+coming_soon_button = ImageButton(
+    image_path=text_box_img,
+    pos=(center_pos[0], center_pos[1]-100),
+    scale=scale*0.95,
+    text='Coming Soon',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    hover_move=0,
+    alpha=(0.75, 1)
 )
 
 
 single_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-100),
+    pos=(center_pos[0], center_pos[1]-50),
     scale=scale,
     text='Single Player',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -767,24 +802,43 @@ single_button = ImageButton(
     text_color='white'
 )
 
-
-info_button = ImageButton(
+multiplayer_button = ImageButton(
     image_path=text_box_img,
     pos=(center_pos[0], center_pos[1]),
     scale=scale,
-    text='Game Info',
+    text='Multiplayer',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
 
+info_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width - 100, height - 100),
+    scale=scale*0.8,
+    text='Game Info',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white'
+)
+
 control_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]+50),
-    scale=scale,
+    pos=(width - 100, height - 50),
+    scale=scale*0.8,
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white'
+)
+
+settings_button = ImageButton(
+    image_path=text_box_img,
+    pos=(100, height - 50),
+    scale=scale*0.8,
+    text='Settings',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
     text_color='white'
 )
 

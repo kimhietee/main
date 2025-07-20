@@ -1,12 +1,13 @@
 import pygame
 
 class ImageButton:
-    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0)):
+    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1)):
         # Load and scale the image
         self.hover_pos = pos
         self.hover_move = hover_move
         self.fku = fku
         self.scale_val = scale_val
+        self.alpha = alpha
         if self.fku:
             self.original_image = pygame.transform.scale(
         pygame.image.load(self.original_image).convert_alpha(), (self.scale_val[0], self.scale_val[1]))
@@ -14,6 +15,7 @@ class ImageButton:
             self.original_image = pygame.image.load(image_path).convert_alpha()
 
         self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
+        self.image.set_alpha(int(self.alpha[0] * 255))
         self.rect = self.image.get_rect(center=pos)
     
         
@@ -24,8 +26,11 @@ class ImageButton:
         self.text = text
         self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
-        self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, False, self.text_color), 0, 0.2)
-            
+
+        text_surf = self.font.render(self.text, False, self.text_color)
+        text_surf.set_alpha(int(self.alpha[1] * 255))
+
+        self.text_surf = pygame.transform.rotozoom(text_surf, 0, 0.2)
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
     def draw(self, screen, mouse_pos):
@@ -45,6 +50,14 @@ class ImageButton:
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
+    
+    def is_hovered(self, mouse_pos):
+        # Check if button is hovered
+        if self.rect.collidepoint(mouse_pos):
+            return True
+        return False
+    
+
     
 class ImageInfo:
     def __init__(self, image_path, pos, scale, text, text1, text2, font_path, font_size, text_color, move_y=0, hover_move=2):
@@ -93,7 +106,7 @@ class ImageInfo:
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
-    
+
 
 
 

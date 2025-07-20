@@ -325,7 +325,7 @@ class Player(pygame.sprite.Sprite):
         self.last_health = self.health
         self.damage_numbers = []
 
-        self.damage_font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', 30)  # preload font
+        self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
         if not hasattr(self, 'rect'):
@@ -355,7 +355,7 @@ class Player(pygame.sprite.Sprite):
         else:
             size = size or int(20 + damage * 3)  # Small damage gets boosted size
 
-        font = pygame.font.Font('HERO FIGHTING/assets/font/slkscr.ttf', size)
+        font = pygame.font.Font('assets/font/slkscr.ttf', size)
 
         # Format floating numbers cleanly
         if isinstance(damage, float):

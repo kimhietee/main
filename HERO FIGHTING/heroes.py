@@ -426,89 +426,89 @@ class Attacks:
                 self.skill_rect.top - self.mana_y_offset
             ))
 
-"""
-    This class represents the attack display and its properties.
-    It contains the attack's animation frames, duration, and other attributes.
-    It also handles the attack's position and movement.
-
-    Attack_Display Class Parameter Descriptions:
-
-    1. x (int): 
-    - The initial horizontal position (x-coordinate) of the attack on the screen.
-
-    2. y (int): 
-    - The initial vertical position (y-coordinate) of the attack on the screen.
-
-    3. frames (list of Surface): 
-    - A list of images (frames) that represent the attack's animation.
-
-    4. frame_duration (int): 
-    - Duration in milliseconds each frame is displayed before switching to the next one.
-
-    5. repeat_animation (int): 
-    - Number of times the animation should loop. After the final loop, the attack ends.
-
-    6. speed (int): 
-    - Horizontal movement speed of the attack. If zero, the attack is stationary.
-
-    7. dmg (int): 
-    - The amount of damage dealt per hit or frame, depending on other flags.
-
-    8. final_dmg (int): 
-    - Damage that is applied at the end of the animation (used for finishers or strong final hits).
-
-    9. who_attacks (object): 
-    - The entity (e.g. player or enemy) initiating the attack.
-
-    10. who_attacked (object): 
-        - The target of the attack, to receive damage or effects.
-
-    11. moving (bool): 
-        - If True, the attack moves horizontally according to 'speed'. If False, it's static.
-
-    12. heal (bool): 
-        - If True, instead of dealing damage, the attack heals the one who cast it.
-
-    13. continuous_dmg (bool): 
-        - If True, the attack deals damage continuously every frame while colliding with the target.
-
-    14. per_end_dmg (tuple(bool, bool)): 
-        - Two boolean flags:
-            * [0] – Enables damage to occur at the end of each animation cycle.
-            * [1] – Applies damage when animation ends, regardless of collision.
-
-    15. disable_collide (bool): 
-        - If True, the attack does not deal damage upon direct collision.
-
-    16. stun (tuple(bool, int)): 
-        - A tuple that enables stun and defines its duration:
-            * [0] – Enables/disables stun logic.
-            * [1] – Stun duration or intensity (custom logic may vary).
-
-    17. sound (tuple(bool, Sound, Sound, Sound)): 
-        - A tuple that defines if sound plays and includes up to 3 sound objects:
-            * [0] – Enables/disables sound playback.
-            * [1-3] – Sound effects to play when animation ends.
-
-    18. kill_collide (bool): 
-        - If True, the attack sprite disappears instantly upon colliding with the target.
-
-    NEW PARAMETERS (to be added to class):
-
-    19. follow (tuple(bool, bool)):
-        - Controls if the attack should follow another sprite:
-            * [0] – If True, the attack will stick to the enemy upon collision and follow them.
-            * [1] – If True, the attack always follows the enemy, even without collision.
-
-    20. delay (tuple(bool, int)):
-        - Delays the attack’s animation and effect:
-            * [0] – If True, delay is enabled.
-            * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
-    """
-
 
 class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should handle the visual representation and animation of an attack. Here's the corrected version:
    
+    """
+        This class represents the attack display and its properties.
+        It contains the attack's animation frames, duration, and other attributes.
+        It also handles the attack's position and movement.
+
+        Attack_Display Class Parameter Descriptions:
+
+        1. x (int): 
+        - The initial horizontal position (x-coordinate) of the attack on the screen.
+
+        2. y (int): 
+        - The initial vertical position (y-coordinate) of the attack on the screen.
+
+        3. frames (list of Surface): 
+        - A list of images (frames) that represent the attack's animation.
+
+        4. frame_duration (int): 
+        - Duration in milliseconds each frame is displayed before switching to the next one.
+
+        5. repeat_animation (int): 
+        - Number of times the animation should loop. After the final loop, the attack ends.
+
+        6. speed (int): 
+        - Horizontal movement speed of the attack. If zero, the attack is stationary.
+
+        7. dmg (int): 
+        - The amount of damage dealt per hit or frame, depending on other flags.
+
+        8. final_dmg (int): 
+        - Damage that is applied at the end of the animation (used for finishers or strong final hits).
+
+        9. who_attacks (object): 
+        - The entity (e.g. player or enemy) initiating the attack.
+
+        10. who_attacked (object): 
+            - The target of the attack, to receive damage or effects.
+
+        11. moving (bool): 
+            - If True, the attack moves horizontally according to 'speed'. If False, it's static.
+
+        12. heal (bool): 
+            - If True, instead of dealing damage, the attack heals the one who cast it.
+
+        13. continuous_dmg (bool): 
+            - If True, the attack deals damage continuously every frame while colliding with the target.
+
+        14. per_end_dmg (tuple(bool, bool)): 
+            - Two boolean flags:
+                * [0] – Enables damage to occur at the end of each animation cycle.
+                * [1] – Applies damage when animation ends, regardless of collision. (1 set of damage)
+
+        15. disable_collide (bool): 
+            - If True, the attack does not deal damage upon direct collision.
+
+        16. stun (tuple(bool, int)): 
+            - A tuple that enables stun and defines its duration:
+                * [0] – Enables/disables stun logic.
+                * [1] – Stun duration or intensity (custom logic may vary).
+
+        17. sound (tuple(bool, Sound, Sound, Sound)): 
+            - A tuple that defines if sound plays and includes up to 3 sound objects:
+                * [0] – Enables/disables sound playback.
+                * [1-3] – Sound effects to play when animation ends.
+
+        18. kill_collide (bool): 
+            - If True, the attack sprite disappears instantly upon colliding with the target.
+
+        NEW PARAMETERS (to be added to class):
+
+        19. follow (tuple(bool, bool)):
+            - Controls if the attack should follow another sprite:
+                * [0] – If True, the attack will stick to the enemy upon collision and follow them.
+                * [1] – If True, the attack always follows the enemy, even without collision.
+
+        20. delay (tuple(bool, int)):
+            - Delays the attack’s animation and effect:
+                * [0] – If True, delay is enabled.
+                * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
+        """
+
     def __init__(self, x, y, frames, frame_duration, repeat_animation, speed, 
                 dmg, final_dmg, who_attacks, who_attacked, moving=False, heal=False,
                 continuous_dmg=False, per_end_dmg=(False, False),
@@ -713,9 +713,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.final_dmg)
                             self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
 
-                        if self.who_attacks.lifesteal > 0:
-                            lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
-                            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            if self.who_attacks.lifesteal > 0:
+                                lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
 
                     
@@ -748,9 +748,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.dmg)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
-                        if self.who_attacks.lifesteal > 0:
-                            lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            if self.who_attacks.lifesteal > 0:
+                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
                         
 
                         # #combine for moving dmg [1]:
@@ -784,9 +784,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                                 lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
                             
-                            if self.who_attacks.lifesteal > 0:
-                                lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
-                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            # if self.who_attacks.lifesteal > 0:
+                            #     lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
+                            #     self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
                         if self.damaged_detect:
                             self.damaged = True
@@ -3349,8 +3349,8 @@ class Fire_Knight(Player):
                         # print("Z key pressed")
                         
                         for i in [
-                            (self.sp_special1, False, 90, 230, self.special_sp_damage1[0], self.special_sp_damage1[1]),
-                            (self.sp_special2, True, 80, 200, self.special_sp_damage2[0], self.special_sp_damage2[1])]: # special 1 = gold explode
+                            (self.sp_special1, False, 100, 230, self.special_sp_damage1[0], self.special_sp_damage1[1]),
+                            (self.sp_special2, True, 90, 200, self.special_sp_damage2[0], self.special_sp_damage2[1])]: # special 1 = gold explode
                             attack = Attack_Display(
                                 x=self.rect.centerx + 250 if self.facing_right else self.rect.centerx - 250, # in front of him
                                 y=self.rect.centery + i[2],
@@ -3369,7 +3369,7 @@ class Fire_Knight(Player):
                             attack_display.add(attack)
 
                             burn_attack = Attack_Display(
-                                x=self.rect.centerx + 200 if self.facing_right else self.rect.centerx - 200, # in front of him
+                                x=self.rect.centerx + i[3] if self.facing_right else self.rect.centerx - i[3], # in front of him
                                 y=self.rect.centery + i[2],
                                 frames=self.burn,
                                 frame_duration=200,

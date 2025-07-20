@@ -4,11 +4,11 @@ import heroes as main
 from pprint import pprint
 
 bg_paths = [
-    (r'HERO FIGHTING\assets\backgrounds\animated_bg\Ocean_2\2.png', 'static', 0, 'left'),
-    (r'HERO FIGHTING\assets\backgrounds\animated_bg\Ocean_2\3.png', 'dynamic', 30, 'right'),
-    (r'HERO FIGHTING\assets\backgrounds\animated_bg\Ocean_2\4.png', 'dynamic', 30, 'right')
+    (r'assets\backgrounds\animated_bg\Ocean_2\2.png', 'static', 0, 'left'),
+    (r'assets\backgrounds\animated_bg\Ocean_2\3.png', 'dynamic', 30, 'right'),
+    (r'assets\backgrounds\animated_bg\Ocean_2\4.png', 'dynamic', 30, 'right')
 ]
-# (r'HERO FIGHTING\assets\backgrounds\animated_bg\Ocean_2\compiled img.png', 'dynamic', 500, 'right')
+# (r'assets\backgrounds\animated_bg\Ocean_2\compiled img.png', 'dynamic', 500, 'right')
 class BackgroundHandler:
     def __init__(self, img_paths: list):
         self.layers = []
@@ -100,19 +100,19 @@ class AnimatedBackground:
 #     (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))
 
 waterfall_bg = AnimatedBackground(
-    r"HERO FIGHTING\assets\backgrounds\animated_bg\Waterfall\\",
+    r"assets\backgrounds\animated_bg\Waterfall\\",
     8,
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 lava_bg = AnimatedBackground(
-    r"HERO FIGHTING\assets\backgrounds\animated_bg\Magma Chamber\\",
+    r"assets\backgrounds\animated_bg\Magma Chamber\\",
     8,
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 dark_forest_bg = AnimatedBackground(
-    r"HERO FIGHTING\assets\backgrounds\animated_bg\Dark Forest\\",
+    r"assets\backgrounds\animated_bg\Dark Forest\\",
     8,
     # (main.width, int(main.height * 0.825)) # 594
 )
@@ -121,7 +121,7 @@ dark_forest_bg = AnimatedBackground(
 
 
 
-waterfall_bg.load_frames()
+# waterfall_bg.load_frames()
 # lava_bg.load_frames()
-# dark_forest_bg.load_frames()
+dark_forest_bg.load_frames()
 

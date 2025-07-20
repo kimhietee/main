@@ -76,7 +76,7 @@ class Player(pygame.sprite.Sprite):
         self.name = "Unknown"
         self.enemy = None
         self.items = [] # contains 3 or less than 3 item classes. ex. 
-                            # self.items = [Item("War Helmet", r"HERO FIGHTING\assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
+                            # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
 
         self.lifesteal = 0
         self.stunned = False
@@ -290,7 +290,7 @@ class Player(pygame.sprite.Sprite):
 
         #Attack-------------------------------------------------------------
 
-        basic_slash = [r'HERO FIGHTING\assets\attacks\Basic Attack\1', BASIC_SLASH_ANIMATION, 1]
+        basic_slash = [r'assets\attacks\Basic Attack\1', BASIC_SLASH_ANIMATION, 1]
         self.basic_slash = self.load_img_frames_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE)
         self.basic_slash_flipped = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE)
 
@@ -298,17 +298,17 @@ class Player(pygame.sprite.Sprite):
         self.basic_slash_flipped_big = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE_BIG)
 
 
-        basic_slash2 = [r'HERO FIGHTING\assets\attacks\Basic Attack\2', BASIC_SLASH_ANIMATION, 1]
+        basic_slash2 = [r'assets\attacks\Basic Attack\2', BASIC_SLASH_ANIMATION, 1]
         self.basic_slash2 = self.load_img_frames_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
         self.basic_slash2_flipped = self.load_img_frames_flipped_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
 
         # melee
-        self.basic_icon = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\icons\Blade_Dance_icon.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))
+        self.basic_icon = pygame.transform.scale(pygame.image.load(r'assets\icons\Blade_Dance_icon.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))
 
         # ranged
-        self.basic_icon2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\icons\aghanims-scepter-from-dota-2-made-in-blender-v0-ew9qzvl10s2d1.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
+        self.basic_icon2 = pygame.transform.scale(pygame.image.load(r'assets\icons\aghanims-scepter-from-dota-2-made-in-blender-v0-ew9qzvl10s2d1.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
 
-        self.basic_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\jump.swing-whoosh-110410.mp3')
+        self.basic_sound = pygame.mixer.Sound(r'assets\sound effects\jump.swing-whoosh-110410.mp3')
         self.basic_sound.set_volume(0.5 * MAIN_VOLUME)
         
         # modify in hero
@@ -318,7 +318,7 @@ class Player(pygame.sprite.Sprite):
             self.basic_icon_rect = self.basic_icon.get_rect(center=(BASIC_ATK_POSX_END, BASIC_ATK_POSY))
 
         
-        self.special_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\heart-beat-137135.mp3')
+        self.special_sound = pygame.mixer.Sound(r'assets\sound effects\heart-beat-137135.mp3')
         self.special_sound.set_volume(1 * MAIN_VOLUME)
 
         #Attack-------------------------------------------------------------
@@ -649,7 +649,7 @@ class Player(pygame.sprite.Sprite):
     python
     Copy
     Edit
-    folder = r"HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_"
+    folder = r"assets\characters\Fire wizard\slash pngs\Attack_1_"
     frames = load_img_frames(folder, 9)
     🔢 2. Padded Numbering (01.png, 02.png, 03.png, etc.)
     load_img_frames_numbering_method_simple(folder, count, starts_at_zero=False, size=1)
@@ -669,7 +669,7 @@ class Player(pygame.sprite.Sprite):
     python
     Copy
     Edit
-    folder = r"HERO FIGHTING\assets\attacks\fire wizard\atk2\"
+    folder = r"assets\attacks\fire wizard\atk2\"
     frames = load_img_frames_numbering_method_simple(folder, 5)
     🧱 3. Tile Format (tile000.png, tile001.png, ...)
     load_img_frames_tile_method(folder, count, starts_at_zero=False, size=1)
@@ -687,7 +687,7 @@ class Player(pygame.sprite.Sprite):
     python
     Copy
     Edit
-    folder = r"HERO FIGHTING\assets\attacks\fire wizard\atk1\"
+    folder = r"assets\attacks\fire wizard\atk1\"
     frames = load_img_frames_tile_method(folder, 10)
     📝 Notes
     count is the number of frames you want to load.
@@ -706,8 +706,8 @@ class Player(pygame.sprite.Sprite):
 
     def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_1.png
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_2.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
         '''
         images = []
         for i in range(count):
@@ -719,8 +719,8 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_rotate(self, folder, count, starts_at_zero=False, size=1, rotate=0):
         '''
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_1.png
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_2.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
         ''' # same, add rotate
         images = []
         for i in range(count):
@@ -732,8 +732,8 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_numbering_method_simple(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\attacks\fire wizard\atk2\01.png
-        HERO FIGHTING\assets\attacks\fire wizard\atk2\02.png
+        assets\attacks\fire wizard\atk2\01.png
+        assets\attacks\fire wizard\atk2\02.png
         '''
         images = []
         for i in range(count):
@@ -747,7 +747,7 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_numbering_method(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\attacks\fire wizard\atk2\01.png
+        assets\attacks\fire wizard\atk2\01.png
         ''' #same but force backslash
         images = []
         for i in range(count):
@@ -762,8 +762,8 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_flipped(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_1.png
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_2.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
         ''' # same but rotate flip
         images = []
         for i in range(count):
@@ -776,8 +776,8 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_flipped_rotate(self, folder, count, starts_at_zero=False, size=1, rotate=0):
         '''
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_1.png
-        HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_2.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
         ''' # same but rotate flip
         images = []
         for i in range(count):
@@ -790,8 +790,8 @@ class Player(pygame.sprite.Sprite):
 
     def load_img_frames_tile_method(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\attacks\fire wizard\atk1\tile000.png
-        HERO FIGHTING\assets\attacks\fire wizard\atk1\tile001.png
+        assets\attacks\fire wizard\atk1\tile000.png
+        assets\attacks\fire wizard\atk1\tile001.png
         '''
         images = []
         for i in range(count):
@@ -809,8 +809,8 @@ class Player(pygame.sprite.Sprite):
     
     def load_img_frames_flipped_tile_method(self, folder, count, starts_at_zero=False, size=1):
         '''
-        HERO FIGHTING\assets\attacks\fire wizard\atk1\tile000.png
-        HERO FIGHTING\assets\attacks\fire wizard\atk1\tile001.png
+        assets\attacks\fire wizard\atk1\tile000.png
+        assets\attacks\fire wizard\atk1\tile001.png
         ''' # same but flip
         images = []
         for i in range(count):
@@ -957,7 +957,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.player_death_flipped[-1]
                     
     def player_status(self, health, mana, special):
-        font = pygame.font.Font(r'HERO FIGHTING\assets\font\slkscr.ttf', 20)
+        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
 
         # Re-declaring the values
         self.health = health
@@ -1277,7 +1277,7 @@ class Player(pygame.sprite.Sprite):
         self.special = max(0, self.special + amount)
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
-        font = pygame.font.Font(r'HERO FIGHTING\assets\font\slkscr.ttf', 20)
+        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
         enemy_distance = int(abs(self.x_pos - enemy.x_pos))
         enemy_distance_surf = font.render(str(enemy_distance), 0, 'Red')
         screen.blit(enemy_distance_surf, (self.x_pos, self.y_pos - 120))

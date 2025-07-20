@@ -238,15 +238,15 @@ pygame.display.set_caption("HERO FIGHTING")
 #     botchance.update(50)
 #=-------------------
 # Font Sizes
-FONT = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', 30)
+FONT = pygame.font.Font(fr'assets\font\slkscr.ttf', 30)
 
 # Icons
 #positions, formula : spec_pos/size, eg 50/720 = 0.0695
 cstm_pos = 0.039 #width 50
 cstm_pos2 = 0.222 #160
 cstm_pos3 = 0.291 #210
-hp_icon = pygame.transform.rotozoom(pygame.image.load(r'HERO FIGHTING\assets\icons\health icon.png').convert_alpha(), 0, 0.05)
-mana_icon = pygame.transform.rotozoom(pygame.image.load(r'HERO FIGHTING\assets\icons\mana icon.png').convert_alpha(), 0, 0.065)
+hp_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\health icon.png').convert_alpha(), 0, 0.05)
+mana_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\mana icon.png').convert_alpha(), 0, 0.065)
 hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos2)+1))
 mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1))
 hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1))
@@ -305,7 +305,7 @@ class Attacks:
         
         self.special_y_offset = int(self.skill_rect.height * 0.35)
 
-        self.button_icon = pygame.image.load(r'HERO FIGHTING\assets\icons\button.png').convert_alpha()
+        self.button_icon = pygame.image.load(r'assets\icons\button.png').convert_alpha()
 
     def reduce_cd(self, val=False):
         if val:
@@ -347,7 +347,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Draw scaled cooldown text
-                font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.cooldown_font_size)
+                font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
                 cooldown_time = max(0, (self.cooldown - (pygame.time.get_ticks() - self.last_used_time)) // 1000)
                 cooldown_text = font.render(str(cooldown_time), True, 'Red')
                 screen.blit(cooldown_text, (
@@ -363,7 +363,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Mana cost when not enough mana
-                mana_font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.mana_font_size)
+                mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
                 self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', False, 'Red')
                 screen.blit(self.atk_mana_cost, (
                     self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
@@ -380,14 +380,14 @@ class Attacks:
                 screen.blit(self.skill_img, self.skill_rect)
                 screen.blit(dark_overlay, self.skill_rect)
 
-                special_font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.special_font_size)
+                special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
                 self.atk_special_cost = special_font.render(f'[{max_special}]', False, 'azure3')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
                 ))
             else:
-                special_font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.special_font_size)
+                special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
                 self.atk_special_cost = special_font.render(f'[{max_special}]', False, 'yellow')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
@@ -396,7 +396,7 @@ class Attacks:
                 screen.blit(self.skill_img, self.skill_rect)
 
         # Draw the key text below the skill icon
-        key_font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.mana_font_size)
+        key_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
         button_icon = pygame.transform.scale(self.button_icon, (90, 70))
         # button_icon_rect = button_icon.get_rect(topleft=(key_pos_x - 10, key_pos_y - 5))
 
@@ -417,7 +417,7 @@ class Attacks:
 
     def draw_mana_cost(self, screen, mana):
         if not self.special_skill:
-            mana_font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', self.mana_font_size)
+            mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
             color = 'Cyan2' if mana >= self.mana_cost else 'Red'
             self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', False, color)
 
@@ -980,44 +980,44 @@ class Fire_Wizard(Player):
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
 
         # Player Animation Source
-        basic_ani = [r'HERO FIGHTING\assets\characters\Fire wizard\slash pngs\Attack_1_', FIRE_WIZARD_BASIC_COUNT, 1]
+        basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', FIRE_WIZARD_BASIC_COUNT, 1]
         
-        jump_ani = [r'HERO FIGHTING\assets\characters\Fire wizard\jump pngs\Jump_', FIRE_WIZARD_JUMP_COUNT, 1]
-        run_ani = [r'HERO FIGHTING\assets\characters\Fire wizard\run pngs\Run_', FIRE_WIZARD_RUN_COUNT, 1]
-        idle_ani= [r'HERO FIGHTING\assets\characters\Fire wizard\idle pngs\image_0-', FIRE_WIZARD_IDLE_COUNT, 1]
-        atk1_ani= [r'HERO FIGHTING\assets\characters\Fire wizard\fireball pngs\image_0-', FIRE_WIZARD_ATK1_COUNT, 1]
-        sp_ani= [r'HERO FIGHTING\assets\characters\Fire wizard\flame jet pngs\image_0-', FIRE_WIZARD_SP_COUNT, 1]
-        death_ani= [r'HERO FIGHTING\assets\characters\Fire wizard\dead\tile00', FIRE_WIZARD_DEATH_COUNT, 1]
+        jump_ani = [r'assets\characters\Fire wizard\jump pngs\Jump_', FIRE_WIZARD_JUMP_COUNT, 1]
+        run_ani = [r'assets\characters\Fire wizard\run pngs\Run_', FIRE_WIZARD_RUN_COUNT, 1]
+        idle_ani= [r'assets\characters\Fire wizard\idle pngs\image_0-', FIRE_WIZARD_IDLE_COUNT, 1]
+        atk1_ani= [r'assets\characters\Fire wizard\fireball pngs\image_0-', FIRE_WIZARD_ATK1_COUNT, 1]
+        sp_ani= [r'assets\characters\Fire wizard\flame jet pngs\image_0-', FIRE_WIZARD_SP_COUNT, 1]
+        death_ani= [r'assets\characters\Fire wizard\dead\tile00', FIRE_WIZARD_DEATH_COUNT, 1]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
-        self.sp_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3')
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3')
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3')
         self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
         self.atk2_sound.set_volume(0.1 * MAIN_VOLUME)
         self.atk3_sound.set_volume(0.5 * MAIN_VOLUME)
         self.sp_sound.set_volume(0.5 * MAIN_VOLUME)
 
         # Player Skill Animations Source
-        atk1 = [r'HERO FIGHTING\assets\attacks\fire wizard\atk1', FIRE_WIZARD_ATK1, 1]
-        atk2 = [r'HERO FIGHTING\assets\attacks\fire wizard\atk2', FIRE_WIZARD_ATK2, 1]
-        atk3 = [r'HERO FIGHTING\assets\attacks\fire wizard\atk3\png_', FIRE_WIZARD_ATK3, 1]
-        sp = [r'HERO FIGHTING\assets\attacks\fire wizard\sp atk', FIRE_WIZARD_SP, 1]
+        atk1 = [r'assets\attacks\fire wizard\atk1', FIRE_WIZARD_ATK1, 1]
+        atk2 = [r'assets\attacks\fire wizard\atk2', FIRE_WIZARD_ATK2, 1]
+        atk3 = [r'assets\attacks\fire wizard\atk3\png_', FIRE_WIZARD_ATK3, 1]
+        sp = [r'assets\attacks\fire wizard\sp atk', FIRE_WIZARD_SP, 1]
 
         self.bonus_type = "strength"
         self.bonus_value = self.strength
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\FireballIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\GlyphOfFireIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\RodOfPower29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\MeteorIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\kim special icon.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\FireballIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\GlyphOfFireIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\RodOfPower29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\MeteorIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\kim special icon.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\FlameReaveIcon29.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\SmiteIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\FlameReaveIcon29.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\SmiteIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # Player Icon Rects
         if self.player_type == 1:
@@ -1786,42 +1786,42 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
 
         # Player Animation Source
-        jump_ani = [r'HERO FIGHTING\assets\characters\Wanderer Magican\jump pngs\Jump_', WANDERER_MAGICIAN_JUMP_COUNT, 1]
-        run_ani = [r'HERO FIGHTING\assets\characters\Wanderer Magican\run pngs\Run_', WANDERER_MAGICIAN_RUN_COUNT, 1]
-        idle_ani= [r'HERO FIGHTING\assets\characters\Wanderer Magican\idle pngs\image_0-', WANDERER_MAGICIAN_IDLE_COUNT, 1]
-        atk1_ani= [r'HERO FIGHTING\assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
-        atk3_ani= [r'HERO FIGHTING\assets\characters\Wanderer Magican\attack 2 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
-        sp_ani= [r'HERO FIGHTING\assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 1]
-        death_ani= [r'HERO FIGHTING\assets\characters\Wanderer Magican\dead', WANDERER_MAGICIAN_DEATH_COUNT, 1]
+        jump_ani = [r'assets\characters\Wanderer Magican\jump pngs\Jump_', WANDERER_MAGICIAN_JUMP_COUNT, 1]
+        run_ani = [r'assets\characters\Wanderer Magican\run pngs\Run_', WANDERER_MAGICIAN_RUN_COUNT, 1]
+        idle_ani= [r'assets\characters\Wanderer Magican\idle pngs\image_0-', WANDERER_MAGICIAN_IDLE_COUNT, 1]
+        atk1_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
+        atk3_ani= [r'assets\characters\Wanderer Magican\attack 2 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
+        sp_ani= [r'assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 1]
+        death_ani= [r'assets\characters\Wanderer Magican\dead', WANDERER_MAGICIAN_DEATH_COUNT, 1]
 
-        self.atk1_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
         self.atk1_sound.set_volume(0.4 * MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * MAIN_VOLUME)
         self.sp_sound.set_volume(0.3 * MAIN_VOLUME)
 
         # # Player Skill Animations Source
-        basic = [r'HERO FIGHTING\assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
-        atk1 = [r'HERO FIGHTING\assets\attacks\wanderer magician\atk1\image_', WANDERER_MAGICIAN_ATK1, 1]
-        atk2 = [r'HERO FIGHTING\assets\attacks\wanderer magician\atk2', WANDERER_MAGICIAN_ATK2, 1]
-        atk3 = [r'HERO FIGHTING\assets\attacks\wanderer magician\atk3\Explosion_blue_circle', WANDERER_MAGICIAN_ATK3, 0]
-        sp = [r'HERO FIGHTING\assets\attacks\wanderer magician\sp atk\vv', WANDERER_MAGICIAN_SP, 0]
+        basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
+        atk1 = [r'assets\attacks\wanderer magician\atk1\image_', WANDERER_MAGICIAN_ATK1, 1]
+        atk2 = [r'assets\attacks\wanderer magician\atk2', WANDERER_MAGICIAN_ATK2, 1]
+        atk3 = [r'assets\attacks\wanderer magician\atk3\Explosion_blue_circle', WANDERER_MAGICIAN_ATK3, 0]
+        sp = [r'assets\attacks\wanderer magician\sp atk\vv', WANDERER_MAGICIAN_SP, 0]
 
-        special_atk3 = [r'HERO FIGHTING\assets\attacks\wanderer magician\special1\Explosion_blue_oval', WANDERER_MAGICIAN_SPECIAL_ATK3, 0]
+        special_atk3 = [r'assets\attacks\wanderer magician\special1\Explosion_blue_oval', WANDERER_MAGICIAN_SPECIAL_ATK3, 0]
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\Icon_06.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\Icon_08.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\Icon9.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\Massive_Rasen.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\special.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon_06.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon_08.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon9.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Massive_Rasen.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\special.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\ChatGPT Image Apr 18, 2025, 07_46_01 AM.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\HealingWindIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wanderer_magician\Icon4.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\ChatGPT Image Apr 18, 2025, 07_46_01 AM.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\HealingWindIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon4.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # # Player Icon Rects
         if self.player_type == 1:
@@ -1864,7 +1864,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.special_atk3 = self.load_img_frames(special_atk3[0], special_atk3[1], special_atk3[2], WANDERER_MAGICIAN_SPECIAL_ATK3_SIZE)
 
         self.special_basic = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
+        filepath=r"assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
         frame_width=10, 
         frame_height=10, 
         rows=1, 
@@ -1874,7 +1874,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         frame_duration=100
     )
         self.special_basic_flipped = load_attack_flipped(
-        filepath=r"HERO FIGHTING\assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
+        filepath=r"assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
         frame_width=10, 
         frame_height=10, 
         rows=1, 
@@ -2649,45 +2649,45 @@ class Fire_Knight(Player):
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
         
         # Player Animation Source
-        jump_ani = [r'HERO FIGHTING\assets\characters\fire knight\03_jump\jump_', FIRE_KNIGHT_JUMP_COUNT, 0]
-        run_ani = [r'HERO FIGHTING\assets\characters\fire knight\02_run\run_', FIRE_KNIGHT_RUN_COUNT, 0]
-        idle_ani = [r'HERO FIGHTING\assets\characters\fire knight\01_idle\idle_', FIRE_KNIGHT_IDLE_COUNT, 0]
-        atk1_ani = [r'HERO FIGHTING\assets\characters\fire knight\05_1_atk\1_atk_', FIRE_KNIGHT_ATK1_COUNT, 0]
-        atk2_ani = [r'HERO FIGHTING\assets\characters\fire knight\06_2_atk\2_atk_', FIRE_KNIGHT_ATK2_COUNT, 0]
-        atk3_ani = [r'HERO FIGHTING\assets\characters\fire knight\07_3_atk\3_atk_', FIRE_KNIGHT_ATK3_COUNT, 0]
-        sp_ani = [r'HERO FIGHTING\assets\characters\fire knight\08_sp_atk\sp_atk_', FIRE_KNIGHT_SP_COUNT, 0]
-        death_ani = [r'HERO FIGHTING\assets\characters\fire knight\11_death\death_', FIRE_KNIGHT_DEATH_COUNT, 0]
+        jump_ani = [r'assets\characters\fire knight\03_jump\jump_', FIRE_KNIGHT_JUMP_COUNT, 0]
+        run_ani = [r'assets\characters\fire knight\02_run\run_', FIRE_KNIGHT_RUN_COUNT, 0]
+        idle_ani = [r'assets\characters\fire knight\01_idle\idle_', FIRE_KNIGHT_IDLE_COUNT, 0]
+        atk1_ani = [r'assets\characters\fire knight\05_1_atk\1_atk_', FIRE_KNIGHT_ATK1_COUNT, 0]
+        atk2_ani = [r'assets\characters\fire knight\06_2_atk\2_atk_', FIRE_KNIGHT_ATK2_COUNT, 0]
+        atk3_ani = [r'assets\characters\fire knight\07_3_atk\3_atk_', FIRE_KNIGHT_ATK3_COUNT, 0]
+        sp_ani = [r'assets\characters\fire knight\08_sp_atk\sp_atk_', FIRE_KNIGHT_SP_COUNT, 0]
+        death_ani = [r'assets\characters\fire knight\11_death\death_', FIRE_KNIGHT_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire knight\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire knight\3rrd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire knight\ult.mp3')
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\2nd.mp3')
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\ult.mp3')
         self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * MAIN_VOLUME)
         self.atk3_sound.set_volume(0.5 * MAIN_VOLUME)
         self.sp_sound.set_volume(0.5 * MAIN_VOLUME)
 
-        self.burn_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
+        self.burn_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
         self.burn_sound.set_volume(0.5 * MAIN_VOLUME)
 
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]
         # atk2 = [r', FIRE_KNIGHT_ATK2, 1]
-        # atk3 = [r'HERO FIGHTING\assets\attacks\fire knight\atk3\png_', FIRE_KNIGHT_ATK3, 1]
-        # sp = [r'HERO FIGHTING\assets\attacks\fire knight\sp atk', FIRE_KNIGHT_SP, 1]
+        # atk3 = [r'assets\attacks\fire knight\atk3\png_', FIRE_KNIGHT_ATK3, 1]
+        # sp = [r'assets\attacks\fire knight\sp atk', FIRE_KNIGHT_SP, 1]
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\3.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\4.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\5.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\6.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\special icon.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\3.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\4.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\5.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\6.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\special icon.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\FirebrandIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\ForgeStrikeIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\InfernalLegacyIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\fire knight\FireShieldIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\FirebrandIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\ForgeStrikeIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\InfernalLegacyIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire knight\FireShieldIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # Player Icon Rects
         if self.player_type == 1:
@@ -2718,7 +2718,7 @@ class Fire_Knight(Player):
 
         # Player Attack Animations Load
         self.atk1 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\atk1\6_flamelash_spritesheet.png",
+        filepath=r"assets\attacks\fire knight\atk1\6_flamelash_spritesheet.png",
         frame_width=100, 
         frame_height=100, 
         rows=7, 
@@ -2728,7 +2728,7 @@ class Fire_Knight(Player):
         frame_duration=100
     )
         self.atk1_flipped = load_attack_flipped(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\atk1\6_flamelash_spritesheet.png",
+        filepath=r"assets\attacks\fire knight\atk1\6_flamelash_spritesheet.png",
         frame_width=100, 
         frame_height=100, 
         rows=7, 
@@ -2738,7 +2738,7 @@ class Fire_Knight(Player):
         frame_duration=100
     )
         self.atk2 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\atk2\414.PNG",
+        filepath=r"assets\attacks\fire knight\atk2\414.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=4, 
@@ -2748,7 +2748,7 @@ class Fire_Knight(Player):
         frame_duration=100
     )
         self.atk3 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\atk3\D65.PNG",
+        filepath=r"assets\attacks\fire knight\atk3\D65.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=12, 
@@ -2758,7 +2758,7 @@ class Fire_Knight(Player):
         frame_duration=100
     )
         self.sp = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\sp\D30.PNG",
+        filepath=r"assets\attacks\fire knight\sp\D30.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=13, 
@@ -2773,7 +2773,7 @@ class Fire_Knight(Player):
 
         # 10 FRAMES INITIAL EXPLOSION
         self.sp_special1 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\021.PNG",
+        filepath=r"assets\attacks\fire knight\021.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=2, 
@@ -2784,7 +2784,7 @@ class Fire_Knight(Player):
     )
         # 10 FRAMES EXPLOSION
         self.sp_special2 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\038.PNG",
+        filepath=r"assets\attacks\fire knight\038.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=2, 
@@ -2795,7 +2795,7 @@ class Fire_Knight(Player):
     )
         
         self.burn = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\D65 cropped.PNG",
+        filepath=r"assets\attacks\fire knight\D65 cropped.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=8, 
@@ -2805,7 +2805,7 @@ class Fire_Knight(Player):
         frame_duration=100 
     )
         self.atk3_special = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\083.PNG",
+        filepath=r"assets\attacks\fire knight\083.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=4, 
@@ -3664,51 +3664,51 @@ class Wind_Hashashin(Player):
         self.real_sp_damage = 18 #0.225
 
         # Player Animation Source1.png
-        basic_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\3_atk\3_atk_', WIND_HASHASHIN_BASIC_COUNT, 0]
+        basic_ani = [r'assets\characters\wind hasashin\PNG\3_atk\3_atk_', WIND_HASHASHIN_BASIC_COUNT, 0]
 
-        jump_ani = [r'HERO FIGHTING\assets\characters\Wind hasashin\PNG\j_up\j_up_', WIND_HASHASHIN_JUMP_COUNT, 0]
-        run_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\run\run_', WIND_HASHASHIN_RUN_COUNT, 0]
-        idle_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\idle\idle_', WIND_HASHASHIN_IDLE_COUNT, 0]
-        atk1_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\sp_atk\sp_atk_', WIND_HASHASHIN_ATK1_COUNT, 0]
-        atk2_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\air_atk\air_atk_', WIND_HASHASHIN_ATK2_COUNT, 0]
-        atk3_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\3_atk\3_atk_', WIND_HASHASHIN_ATK3_COUNT, 0]
-        sp_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\sp_atk\sp_atk_', WIND_HASHASHIN_SP_COUNT, 0]
-        death_ani = [r'HERO FIGHTING\assets\characters\wind hasashin\PNG\death\death_', WIND_HASHASHIN_DEATH_COUNT, 0]
+        jump_ani = [r'assets\characters\Wind hasashin\PNG\j_up\j_up_', WIND_HASHASHIN_JUMP_COUNT, 0]
+        run_ani = [r'assets\characters\wind hasashin\PNG\run\run_', WIND_HASHASHIN_RUN_COUNT, 0]
+        idle_ani = [r'assets\characters\wind hasashin\PNG\idle\idle_', WIND_HASHASHIN_IDLE_COUNT, 0]
+        atk1_ani = [r'assets\characters\wind hasashin\PNG\sp_atk\sp_atk_', WIND_HASHASHIN_ATK1_COUNT, 0]
+        atk2_ani = [r'assets\characters\wind hasashin\PNG\air_atk\air_atk_', WIND_HASHASHIN_ATK2_COUNT, 0]
+        atk3_ani = [r'assets\characters\wind hasashin\PNG\3_atk\3_atk_', WIND_HASHASHIN_ATK3_COUNT, 0]
+        sp_ani = [r'assets\characters\wind hasashin\PNG\sp_atk\sp_atk_', WIND_HASHASHIN_SP_COUNT, 0]
+        death_ani = [r'assets\characters\wind hasashin\PNG\death\death_', WIND_HASHASHIN_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\1st.mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\3rd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\4th 1, slash.mp3')
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\1st.mp3')
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\2nd.mp3')
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\3rd.mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 1, slash.mp3')
         self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
         self.atk2_sound.set_volume(0.4 * MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * MAIN_VOLUME)
         self.sp_sound.set_volume(0.3 * MAIN_VOLUME)
         
-        self.x_slash_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\x slash 2nd,3rd, 4th.mp3')
-        self.sp_sound2 = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wind hashashin\4th 2, flesh hit.mp3')
+        self.x_slash_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\x slash 2nd,3rd, 4th.mp3')
+        self.sp_sound2 = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 2, flesh hit.mp3')
         self.x_slash_sound.set_volume(0.3 * MAIN_VOLUME)
         self.sp_sound2.set_volume(0.4 * MAIN_VOLUME)
 
-        self.atk3_sound_special = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\fire knight\3rrd.mp3')
+        self.atk3_sound_special = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
         self.atk3_sound_special.set_volume(0.5 * MAIN_VOLUME)
         # (The rest of the code follows same structure and renaming logic...)
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]
         # atk2 = [r', FIRE_KNIGHT_ATK2, 1]
-        # atk3 = [r'HERO FIGHTING\assets\attacks\fire knight\atk3\png_', FIRE_KNIGHT_ATK3, 1]
-        # sp = [r'HERO FIGHTING\assets\attacks\fire knight\sp atk', FIRE_KNIGHT_SP, 1]
+        # atk3 = [r'assets\attacks\fire knight\atk3\png_', FIRE_KNIGHT_ATK3, 1]
+        # sp = [r'assets\attacks\fire knight\sp atk', FIRE_KNIGHT_SP, 1]
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\WindHashira.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\3yzqiwcug5qc1.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\What is Danmokou_.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\download.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\aleksey-bayura-sketch-ninja1.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\WindHashira.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\3yzqiwcug5qc1.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\What is Danmokou_.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\download.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\aleksey-bayura-sketch-ninja1.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\7316955-HSC00001-7.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\wmremove-transformed.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'HERO FIGHTING\assets\skill icons\wind_hasashin\MarkForDeathIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\7316955-HSC00001-7.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\wmremove-transformed.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wind_hasashin\MarkForDeathIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # Player Icon Rects
         if self.player_type == 1:
@@ -3739,7 +3739,7 @@ class Wind_Hashashin(Player):
 
         # Player Attack Animations Load (atk doesn't matter, some attack will be used on other attack)
         self.atk1 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\wind hasashin\1.PNG",
+        filepath=r"assets\attacks\wind hasashin\1.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=12, 
@@ -3749,7 +3749,7 @@ class Wind_Hashashin(Player):
         frame_duration=100
     )
         self.atk2 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\wind hasashin\2.PNG",
+        filepath=r"assets\attacks\wind hasashin\2.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=9, 
@@ -3759,7 +3759,7 @@ class Wind_Hashashin(Player):
         frame_duration=100
     )
         self.atk2 = load_attack_flipped(
-        filepath=r"HERO FIGHTING\assets\attacks\wind hasashin\2.PNG",
+        filepath=r"assets\attacks\wind hasashin\2.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=9, 
@@ -3769,7 +3769,7 @@ class Wind_Hashashin(Player):
         frame_duration=100
     )
         self.atk3 = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\wind hasashin\3.PNG",
+        filepath=r"assets\attacks\wind hasashin\3.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=4, 
@@ -3779,7 +3779,7 @@ class Wind_Hashashin(Player):
         frame_duration=100
     )
         self.sp = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\wind hasashin\4.PNG",
+        filepath=r"assets\attacks\wind hasashin\4.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=3, 
@@ -3793,7 +3793,7 @@ class Wind_Hashashin(Player):
 
 
         self.atk3_special = load_attack(
-        filepath=r"HERO FIGHTING\assets\attacks\fire knight\083.PNG",
+        filepath=r"assets\attacks\fire knight\083.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=4, 
@@ -4790,7 +4790,7 @@ class Item:
             pos=position,
             scale=2,
             text=arh,
-            font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+            font_path=r'assets\font\slkscr.ttf',  # or any other font path
             font_size=font_size*1.05,  # dynamic size ~29 at 720p
             text_color='white',
             fku=True,
@@ -4811,20 +4811,20 @@ class Item:
 
 
 items = [
-    Item("War Helmet", r"HERO FIGHTING\assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04]),  
-    Item("Emblem Necklace", r"HERO FIGHTING\assets\item icons\in use\Icons_26.png", ["int", "mana flat", "mana regen"], [0.08, 8, 0.04]), 
-    Item("Old Axe", r"HERO FIGHTING\assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
-    Item("Spirit Feather", r"HERO FIGHTING\assets\item icons\in use\Icons_11.png", ["move speed", "attack speed", "agi flat"], [0.1, 150, 3]), 
-    Item("Vitality Booster", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
-    Item("Mysterious Mushroom", r"HERO FIGHTING\assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]), 
-    Item("Elixir", r"HERO FIGHTING\assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.06, 0.06, 0.06]),
-    Item("Flower Locket", r"HERO FIGHTING\assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
-    Item("Energy Booster", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
-    Item("Undead Marrow", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal", "hp flat"], [0.3, -20]),
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04]),  
+    Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "mana flat", "mana regen"], [0.08, 8, 0.04]), 
+    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed", "agi flat"], [0.1, 150, 3]), 
+    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
+    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]), 
+    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.06, 0.06, 0.06]),
+    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
+    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
+    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal", "hp flat"], [0.2, -20]),
 
-    Item("Crimson Crystal", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
-    Item("Red Crystal", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
-    Item("Ruby", r"HERO FIGHTING\assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.05, 0.03])
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.05, 0.03])
      
 ]
 
@@ -4877,7 +4877,7 @@ class PlayerSelector:
             pos=(self.profile_rect.centerx, self.profile_rect.top - 25),
             scale=0.5,
             text='Deselect',
-            font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+            font_path=r'assets\font\slkscr.ttf',  # or any other font path
             font_size=font_size * 0.6,  # dynamic size ~29 at 720p
             text_color='white'
         )
@@ -4942,7 +4942,7 @@ class PlayerSelector:
                     pos=position,
                     scale=2,
                     text=f"{hero_name_text}, {hero_stats_text}",
-                    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',
+                    font_path=r'assets\font\slkscr.ttf',
                     font_size=font_size * 1.05,
                     text_color='white',
                     fku=True,
@@ -5016,7 +5016,7 @@ menu_button = ImageButton(
     pos=(40, 10),
     scale=0.75,
     text='',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -5026,7 +5026,7 @@ loading = ImageButton(
     pos=center_pos,
     scale=0.8,
     text='',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -5036,7 +5036,7 @@ fight = ImageButton(
     pos=(width/2, height*0.9),
     scale=0.8,
     text='FIGHT!',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -5046,7 +5046,7 @@ done = ImageButton(
     pos=(width/2, height*0.9),
     scale=0.8,
     text='select',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -5061,9 +5061,9 @@ def player_selection():
     global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group
     global p1_select, p2_select, p1_items, p2_items
     background = pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\backgrounds\12.png').convert(), (width, height))
+        pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
-    font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', 100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH))
 
     #upper position PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)

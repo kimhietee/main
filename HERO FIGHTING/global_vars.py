@@ -5,7 +5,7 @@ height = 720
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
-icon = pygame.image.load(r'HERO FIGHTING\assets\icons\miku.png')
+icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
@@ -17,7 +17,7 @@ black = 'Black'
 green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0
 
 
 SINGLE_MODE_ACTIVE = False # constant
@@ -137,16 +137,16 @@ hero1 = None
 hero2 = None
 
 #hero icons
-fire_wizard_icon = r'HERO FIGHTING\assets\hero profiles\fire wizard prof.png'
-wanderer_magician_icon = r'HERO FIGHTING\assets\hero profiles\wanderer magician prof.png'
-fire_knight_icon = r'HERO FIGHTING\assets\hero profiles\fire knight prof.png'
-wind_hashashin_icon = r'HERO FIGHTING\assets\hero profiles\wind hasashin prof.jpg'
+fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
+wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
+fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
+wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
 
 #buttons
-play_button_img = r'HERO FIGHTING\assets\UI\buttons\BTN PLAY.png'
-text_box_img = r'HERO FIGHTING\assets\UI\buttons\Button BG.png'
-loading_button_img = r'HERO FIGHTING\assets\UI\buttons\Loading icon.png'
-menu_button_img = r'HERO FIGHTING\assets\UI\more\BTN MENU.png' 
+play_button_img = r'assets\UI\buttons\BTN PLAY.png'
+text_box_img = r'assets\UI\buttons\Button BG.png'
+loading_button_img = r'assets\UI\buttons\Loading icon.png'
+menu_button_img = r'assets\UI\more\BTN MENU.png' 
 
 # button modifers
 

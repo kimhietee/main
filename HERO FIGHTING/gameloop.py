@@ -75,9 +75,9 @@ animated_bg = BackgroundHandler(bg_paths)
 
 pygame.font.init()
 
-MENU_MUSIC = r'HERO FIGHTING\assets\audios\price-of-freedom-33106.mp3'
-GAME_MUSIC_1 = r'HERO FIGHTING\assets\audios\intense-battle-scene-115478.mp3'
-GAME_MUSIC_2 = r'HERO FIGHTING\assets\audios\z-battle-227609.mp3'
+MENU_MUSIC = r'assets\audios\price-of-freedom-33106.mp3'
+GAME_MUSIC_1 = r'assets\audios\intense-battle-scene-115478.mp3'
+GAME_MUSIC_2 = r'assets\audios\z-battle-227609.mp3'
 
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
@@ -87,7 +87,7 @@ GAME_FADE_IN = 1500
 
 def fade(background, action):
     # background = pygame.transform.scale(
-    #     pygame.image.load(r'HERO FIGHTING\assets\backgrounds\12.png').convert(), (width, height))
+    #     pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
     fade_overlay = pygame.Surface((width, height))
     fade_overlay.fill((0, 0, 0))
@@ -172,33 +172,33 @@ def game(bg=None):
     second_track_played = False
     print('stopping music')
     # bg_list = [
-    #     r'HERO FIGHTING\assets\backgrounds\1.png',
-    #     r'HERO FIGHTING\assets\backgrounds\2.png',
-    #     r'HERO FIGHTING\assets\backgrounds\3.png',
-    #     r'HERO FIGHTING\assets\backgrounds\4.jpg',
-    #     r'HERO FIGHTING\assets\backgrounds\13.jpg',
-    #     r'HERO FIGHTING\assets\backgrounds\14.png',
-    #     r'HERO FIGHTING\assets\backgrounds\15.png',
-    #     r'HERO FIGHTING\assets\backgrounds\16.png',
-    #     r'HERO FIGHTING\assets\backgrounds\17.png'
+    #     r'assets\backgrounds\1.png',
+    #     r'assets\backgrounds\2.png',
+    #     r'assets\backgrounds\3.png',
+    #     r'assets\backgrounds\4.jpg',
+    #     r'assets\backgrounds\13.jpg',
+    #     r'assets\backgrounds\14.png',
+    #     r'assets\backgrounds\15.png',
+    #     r'assets\backgrounds\16.png',
+    #     r'assets\backgrounds\17.png'
     # ]
     # print(f'hahahahaa [{random.randint(0, len(bg_list)-1)}')
     # background = main.pygame.transform.scale(
     #     pygame.image.load(bg_list[random.randint(0, len(bg_list)-1)]).convert(), (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))
     # ground = main.pygame.transform.scale(
-    #     main.pygame.image.load(r'HERO FIGHTING\assets\backgrounds\10.jpg').convert(), (main.width, main.height))
+    #     main.pygame.image.load(r'assets\backgrounds\10.jpg').convert(), (main.width, main.height))
     ground = pygame.Rect(0, main.DEFAULT_Y_POS, 2121, 1111)
     
     start_time = pygame.time.get_ticks()
-    timer_font = pygame.font.Font(r'HERO FIGHTING\assets\font\slkscr.ttf', 50)  # Timer font
+    timer_font = pygame.font.Font(r'assets\font\slkscr.ttf', 50)  # Timer font
 
-    cube_sound = pygame.mixer.Sound(r'HERO FIGHTING\assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
+    cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
     cube_sound.set_volume(0.8 * MAIN_VOLUME) 
 
     cubes = [
-        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(r'HERO FIGHTING\assets\icons\hp bonus.png').convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
-        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(r'HERO FIGHTING\assets\icons\mana bonus.png').convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
-        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(r'HERO FIGHTING\assets\icons\special bonus.png').convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
+        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(r'assets\icons\hp bonus.png').convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
+        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(r'assets\icons\mana bonus.png').convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
+        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(r'assets\icons\special bonus.png').convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
     ]
     
     
@@ -323,9 +323,9 @@ def game(bg=None):
 # -------------------------------------------------------------------------------------
 
         # Background
-        Animate_BG.waterfall_bg.display(screen)
+        # Animate_BG.waterfall_bg.display(screen)
         # Animate_BG.lava_bg.display(screen)
-        # Animate_BG.dark_forest_bg.display(screen)
+        Animate_BG.dark_forest_bg.display(screen)
 
         # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
@@ -475,9 +475,9 @@ def menu():
     print('playing music')
 
     background = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\backgrounds\9.png').convert(), (main.width, main.height))
+        pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
 
-    font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', 100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -540,9 +540,9 @@ def menu():
 
 def controls():
     command_img = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\command image.png').convert(), (main.width/2, main.height))
+        pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
     control_img = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\control image.png').convert(), (main.width/2, main.height))
+        pygame.image.load(r'assets\control image.png').convert(), (main.width/2, main.height))
     while True:
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
@@ -572,16 +572,16 @@ def controls():
 
 def info():
     hero_detail = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\hero info detail.png').convert(), (main.width, main.height))
+        pygame.image.load(r'assets\hero info detail.png').convert(), (main.width, main.height))
     hero_info = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\hero info dmg.png').convert(), (main.width, main.height))
+        pygame.image.load(r'assets\hero info dmg.png').convert(), (main.width, main.height))
 
     next = ImageButton(
     image_path=text_box_img,
     pos=(main.width-80, 20),
     scale=0.75,
     text='Next',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -590,7 +590,7 @@ def info():
     pos=(main.width-80, 60),
     scale=0.75,
     text='previous',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -600,7 +600,7 @@ def info():
     pos=(main.width-150, main.height/1.5),
     scale=0.75,
     text='burn damage = 5 for fire knight',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.015),  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -651,9 +651,9 @@ def main_menu():
     
 
     background = main.pygame.transform.scale(
-        pygame.image.load(r'HERO FIGHTING\assets\backgrounds\8.png').convert(), (main.width, main.height))
+        pygame.image.load(r'assets\backgrounds\8.png').convert(), (main.width, main.height))
 
-    font = pygame.font.Font(fr'HERO FIGHTING\assets\font\slkscr.ttf', 100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -721,7 +721,7 @@ loading = ImageButton(
     pos=center_pos,
     scale=0.8,
     text='',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -731,7 +731,7 @@ menu_button = ImageButton(
     pos=(40, 10),
     scale=0.75,
     text='',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -741,7 +741,7 @@ play_button = ImageButton(
     pos=center_pos,
     scale=scale,
     text='',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -751,7 +751,7 @@ to_battle = ImageButton(
     pos=(center_pos[0], center_pos[1]-50),
     scale=scale,
     text='Multiplayer',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -762,7 +762,7 @@ single_button = ImageButton(
     pos=(center_pos[0], center_pos[1]-100),
     scale=scale,
     text='Single Player',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -773,7 +773,7 @@ info_button = ImageButton(
     pos=(center_pos[0], center_pos[1]),
     scale=scale,
     text='Game Info',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )
@@ -783,7 +783,7 @@ control_button = ImageButton(
     pos=(center_pos[0], center_pos[1]+50),
     scale=scale,
     text='Controls',
-    font_path=r'HERO FIGHTING\assets\font\slkscr.ttf',  # or any other font path
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white'
 )

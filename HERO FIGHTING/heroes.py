@@ -209,7 +209,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT,
+    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -957,6 +957,16 @@ class Fire_Wizard(Player):
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         
+        Skill 1: (10, 0) = 10 -> (8, 0) = 8
+        Skill 2: (35/45, 0):tornado = 5-6 + (15/15, 5):slash = 20 = 25-26 -> (35/45, 0):tornado = 5-6 + (12/15, 4):slash = 16 = 21-22
+        Skill 3: (200/20, 25):whirl = 10 + (15/15, 5):slash = 10 = 30 -> (35/45, 0):whirl = 5-6 + (12/15, 4):slash = 16 = 26
+        Skill 4: 18 * 4 = 72 -> 14.5 * 4 = 58
+
+        Skill 1: 3 * 6:per smoke = 0-18 -> 2.4 * 6:per smoke = 0-14.4
+        Skill 2: 30 -> 26
+        Skill 3: 37 = 37
+        Skill 4: 86 -> 69
+        
         #dmg
         self.atk1_cooldown = 7000 # 7000
         self.atk2_cooldown = 5000 + 13000
@@ -967,7 +977,7 @@ class Fire_Wizard(Player):
             (13, 0),
             (23/53, 0),
             (35/34, 0),
-            (1.8, 10)
+            (50/28, 10)
         ]
         self.atk1_damage = self.damage_list[0]
         self.atk2_damage = self.damage_list[1]
@@ -3655,13 +3665,25 @@ class Wind_Hashashin(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10, 2) #smoke dmg
+        self.atk1_damage = (8, 0) #smoke dmg
         self.atk2_damage = (35/45, 0) #tornado
-        self.atk2_damage_2nd = (15/15, 5) # x slash
+        self.atk2_damage_2nd = (12/15, 4) # x slash
         self.atk3_damage = (0, 0) #not used
         self.sp_damage = (200/20, 25) # circle
-        self.sp_damage_2nd = (15/15, 5) # x slash
-        self.real_sp_damage = 18 #0.225
+        self.sp_damage_2nd = (12/15, 4) # x slash
+        self.real_sp_damage = 14.5 #0.225
+
+        #SKILL DAMAGE before
+        #10
+        #26
+        #30
+        #72
+
+        #sp
+        #3 each
+        #30
+        #37
+        #86
 
         # Player Animation Source1.png
         basic_ani = [r'assets\characters\wind hasashin\PNG\3_atk\3_atk_', WIND_HASHASHIN_BASIC_COUNT, 0]
@@ -4951,7 +4973,7 @@ class PlayerSelector:
                 )
                 info_bubble.drawing_info(screen, pygame.mouse.get_pos())
 
-    def update(self, mouse_pos, mouse_press, other_selectors, max_selected=1):
+    def update(self, mouse_pos, mouse_press, other_selectors, max_selected=MAX_ITEM):
         self.draw()
 
         selected_count = sum(1 for selector in other_selectors if selector.selected)
@@ -5170,7 +5192,7 @@ def player_selection():
 
                     # Draw item selection
                     for item in p1_items:
-                        item.update(mouse_pos, mouse_press, p1_items, max_selected=3)
+                        item.update(mouse_pos, mouse_press, p1_items, max_selected=MAX_ITEM)
                     for item in p1_items:
                         item.draw()
                         
@@ -5211,7 +5233,7 @@ def player_selection():
 
                     # Draw item selection
                     for item in p2_items:
-                        item.update(mouse_pos, mouse_press, p2_items, max_selected=3)
+                        item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
                     for item in p2_items:
                         item.draw()
 

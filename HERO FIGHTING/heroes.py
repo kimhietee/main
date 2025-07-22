@@ -207,7 +207,7 @@ from global_vars import (
     DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION, BASIC_ATK_POSX, BASIC_ATK_POSX_END, BASIC_ATK_POSY, SPECIAL_MULTIPLIER, MAX_SPECIAL, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
     LOW_HP, LITERAL_HEALTH_DEAD, SINGLE_MODE_ACTIVE, SHOW_HITBOX, MAIN_VOLUME, DRAW_DISTANCE,
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
-    JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED,
+    JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
     ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
@@ -509,13 +509,14 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
         """
 
-    def __init__(self, x, y, frames, frame_duration, repeat_animation, speed, 
-                dmg, final_dmg, who_attacks, who_attacked, moving=False, heal=False,
+    def __init__(self, x, y, frames:pygame.Surface=list, frame_duration=100, repeat_animation=1, speed=0, 
+                dmg=0, final_dmg=0, who_attacks:object=None, who_attacked:object=None, moving=False, heal=False,
                 continuous_dmg=False, per_end_dmg=(False, False),
                 disable_collide=False, stun=(False, 0),
                 sound=(False, None, None, None), kill_collide=False,
                 follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=False, use_live_position_on_delay=False,
-                hitbox_scale_x=0.6, hitbox_scale_y=0.6
+                hitbox_scale_x=0.6, hitbox_scale_y=0.6,
+                hitbox_offset_x=0, hitbox_offset_y=0
                 ):
         super().__init__()
         self.x = x
@@ -574,6 +575,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.hitbox_width = int(self.rect.width * hitbox_scale_x)
         self.hitbox_height = int(self.rect.height * hitbox_scale_y)
 
+        # self.hitbox_offset_x = hitbox_offset_x
+        # self.hitbox_offset_y = hitbox_offset_y
+
         self.hitbox_rect = pygame.Rect(self.x, self.y, self.hitbox_width, self.hitbox_height)
         
 
@@ -585,6 +589,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
     def update_hitbox(self):
         self.hitbox_rect.center = self.rect.center
+        # self.hitbox_rect.x = self.rect.x - self.hitbox_offset_x
+        # self.hitbox_rect.y = self.rect.y + self.hitbox_offset_y
+
 
     def draw_hitbox(self, screen):
         pygame.draw.rect(screen, (255, 0, 0), self.hitbox_rect, 2)  # Red outline for debugging
@@ -957,15 +964,15 @@ class Fire_Wizard(Player):
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         
-        Skill 1: (10, 0) = 10 -> (8, 0) = 8
-        Skill 2: (35/45, 0):tornado = 5-6 + (15/15, 5):slash = 20 = 25-26 -> (35/45, 0):tornado = 5-6 + (12/15, 4):slash = 16 = 21-22
-        Skill 3: (200/20, 25):whirl = 10 + (15/15, 5):slash = 10 = 30 -> (35/45, 0):whirl = 5-6 + (12/15, 4):slash = 16 = 26
-        Skill 4: 18 * 4 = 72 -> 14.5 * 4 = 58
+        # Skill 1: (10, 0) = 10 -> (8, 0) = 8
+        # Skill 2: (35/45, 0):tornado = 5-6 + (15/15, 5):slash = 20 = 25-26 -> (35/45, 0):tornado = 5-6 + (12/15, 4):slash = 16 = 21-22
+        # Skill 3: (200/20, 25):whirl = 10 + (15/15, 5):slash = 10 = 30 -> (35/45, 0):whirl = 5-6 + (12/15, 4):slash = 16 = 26
+        # Skill 4: 18 * 4 = 72 -> 14.5 * 4 = 58
 
-        Skill 1: 3 * 6:per smoke = 0-18 -> 2.4 * 6:per smoke = 0-14.4
-        Skill 2: 30 -> 26
-        Skill 3: 37 = 37
-        Skill 4: 86 -> 69
+        # Skill 1: 3 * 6:per smoke = 0-18 -> 2.4 * 6:per smoke = 0-14.4
+        # Skill 2: 30 -> 26
+        # Skill 3: 37 = 37
+        # Skill 4: 86 -> 69
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -1367,22 +1374,24 @@ class Fire_Wizard(Player):
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks[4].is_ready():
-                        attack = Attack_Display(
-                            x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
-                            y=self.rect.centery + 40,
-                            frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
-                            frame_duration=BASIC_FRAME_DURATION,
-                            repeat_animation=2,
-                            speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage,
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
+                        for i in [200, 900]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
+                                y=self.rect.centery + 40,
+                                frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
+                                frame_duration=BASIC_FRAME_DURATION,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.basic_attack_damage,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
 
-                            sound=(True, self.basic_sound, None, None),
-                            delay=(True, 200)
-                            )
-                        attack_display.add(attack)
+                                sound=(True, self.basic_sound, None, None),
+                                delay=(True, i),
+                                moving=True
+                                )
+                            attack_display.add(attack)
                         self.mana -= 0
                         self.attacks[4].last_used_time = current_time
                         self.running = False
@@ -1567,14 +1576,15 @@ class Fire_Wizard(Player):
                             frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
                             frame_duration=BASIC_FRAME_DURATION,
                             repeat_animation=2,
-                            speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage * 1.2,
+                            speed=0,
+                            dmg=self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
                             delay=(True, 200),
+                            moving=True,
 
                             hitbox_scale_x=0.4
                             ,hitbox_scale_y=0.4
@@ -3155,14 +3165,15 @@ class Fire_Knight(Player):
                             frames=self.basic_slash_big if self.facing_right else self.basic_slash_flipped_big,
                             frame_duration=BASIC_FRAME_DURATION + 50,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage,
+                            speed=0,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
                             delay=(True, 700),
+                            moving=True
 
                             )
                         attack_display.add(attack)
@@ -3418,12 +3429,13 @@ class Fire_Knight(Player):
                             frame_duration=BASIC_FRAME_DURATION + 50,
                             repeat_animation=1,
                             speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage,
+                            dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             
                             sound=(True, self.basic_sound, None, None),
+                            moving=True
 
                             
                             )
@@ -3634,7 +3646,7 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 12
+        self.agility = 11
 
         # Base Stats
         self.max_health = self.strength * self.str_mult
@@ -4171,20 +4183,29 @@ class Wind_Hashashin(Player):
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks[4].is_ready():
-                        attack = Attack_Display(
-                            x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
-                            y=self.rect.centery + 50,
-                            frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
-                            frame_duration=BASIC_FRAME_DURATION / 2,
-                            repeat_animation=2,
-                            speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage,
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.basic_sound, None, None),
-                            )
-                        attack_display.add(attack)
+                        for i in [0, 300]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
+                                y=self.rect.centery + 50,
+                                frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
+                                frame_duration=BASIC_FRAME_DURATION / 2,
+                                repeat_animation=1,
+                                speed=4 if self.facing_right else -4,
+                                dmg=self.basic_attack_damage,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                sound=(True, self.basic_sound, None, None),
+                                moving=True,
+                                delay=(True, i),
+
+                                hitbox_scale_y=0.3,
+                                hitbox_scale_x=0.3,
+                                # hitbox_offset_x=30 if self.facing_right else -30,
+                                # hitbox_offset_y=60
+                                )
+                            attack_display.add(attack)
+
                         self.mana -= 0
                         self.attacks[4].last_used_time = current_time
                         self.running = False
@@ -4404,27 +4425,34 @@ class Wind_Hashashin(Player):
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
-                        attack = Attack_Display(
-                            x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
-                            y=self.rect.centery + 50,
-                            frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
-                            frame_duration=BASIC_FRAME_DURATION / 2,
-                            repeat_animation=2,
-                            speed=5 if self.facing_right else -5,
-                            dmg=0,
-                            final_dmg=self.basic_attack_damage,
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=False,
-                            heal=False,
-                            continuous_dmg=False,
-                            per_end_dmg=(False, False),
-                            disable_collide=False,
-                            stun=(False, 0),
-                            sound=(True, self.basic_sound, None, None),
-                            kill_collide=False
-                            )
-                        attack_display.add(attack)
+                        for i in [0, 300]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
+                                y=self.rect.centery + 50,
+                                frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
+                                frame_duration=BASIC_FRAME_DURATION / 2,
+                                repeat_animation=2,
+                                speed=6 if self.facing_right else -6,
+                                dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=True,
+                                heal=False,
+                                continuous_dmg=False,
+                                per_end_dmg=(False, False),
+                                disable_collide=False,
+                                stun=(False, 0),
+                                sound=(True, self.basic_sound, None, None),
+                                kill_collide=False,
+                                delay=(True, i),
+
+                                hitbox_scale_y=0.4,
+                                hitbox_scale_x=0.4,
+                                hitbox_offset_x=170,
+                                hitbox_offset_y=60
+                                )
+                            attack_display.add(attack)
                         self.mana -= 0
                         self.attacks_special[4].last_used_time = current_time
                         self.running = False

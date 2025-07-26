@@ -475,8 +475,8 @@ def menu():
         pygame.mixer.music.play(loops=-1, fade_ms=1500)  # Loop indefinitely
     print('playing music')
 
-    background = main.pygame.transform.scale(
-        pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
+    # background = main.pygame.transform.scale(
+    #     pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
@@ -522,6 +522,11 @@ def menu():
                     return
                     # return
                 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if settings_button.is_clicked(event.pos):
+                    settings()
+                    return
+
             if keys[pygame.K_SPACE]:
                 main.player_selection()
                 return
@@ -533,7 +538,8 @@ def menu():
             if keys[pygame.K_e]:
                 controls()
                 return
-        main.screen.blit(background, (0, 0))
+        # main.screen.blit(background, (0, 0))
+        Animate_BG.lava_bg.display(screen, speed=50)
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
@@ -724,8 +730,68 @@ def reset_all():
 
 
 
+def settings():
+
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
+    default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
+
+    max_volume = 200
+    current_volume = 200
+    volume_text = max_volume/2
+    a = (center_pos[0]/3, center_pos[1], max_volume, 20)
+    volume_bar_rect = pygame.Rect(a[0],a[1],a[2],a[3])
+    volume_button_rect = pygame.Rect(volume_bar_rect.right, center_pos[1], 50, 50)
+    volume_clicked = False
+
+    while True:
+        keys = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_press = pygame.mouse.get_pressed()
+        key_press = pygame.key.get_pressed()
+
+        main.screen.fill((0, 0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()   
+
+            if keys[pygame.K_ESCAPE]:
+                menu()
+                return
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    menu() 
+                    return
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if volume_button_rect.collidepoint(event.pos):
+                    volume_clicked = True
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                volume_clicked = False
 
 
+        volume_bar_rect = pygame.Rect(a[0],a[1],max_volume ,a[3])
+
+        if volume_clicked:
+            # volume_button_rect.center = mouse_pos
+            volume_button_rect.x = mouse_pos[0]      
+            current_volume = max_volume/2
+    
+        print(current_volume)
+
+        Animate_BG.waterfall_bg.display(screen, speed=50)
+        create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
+        create_title(f'{volume_text}', font, default_size, main.height * 0.3, color='Grey3')
+
+
+        pygame.draw.rect(screen, green, volume_bar_rect)
+        pygame.draw.rect(screen, red, volume_button_rect)
+        menu_button.draw(screen, mouse_pos)
+
+        pygame.display.update()
+        main.clock.tick(main.FPS)
 
 
 

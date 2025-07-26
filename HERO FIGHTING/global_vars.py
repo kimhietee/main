@@ -17,7 +17,7 @@ black = 'Black'
 green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0.1
 MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 

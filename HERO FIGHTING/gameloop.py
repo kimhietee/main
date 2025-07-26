@@ -9,7 +9,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT,
+    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -728,20 +728,29 @@ def reset_all():
 
     attack_display.empty()
 
-
+volume_limit = {'min':100, 'max':300}
+current_volume = (MAIN_VOLUME*100) + volume_limit['min']
 
 def settings():
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
+    global MAIN_VOLUME
+    # max_volume = 200
+    # current_volume = 200
+    # volume_text = max_volume/2
+    # a = (center_pos[0]/3, center_pos[1], max_volume, 20)
+     #
+    
+    # current_volume = MAIN_VOLUME*100
 
-    max_volume = 200
-    current_volume = 200
-    volume_text = max_volume/2
-    a = (center_pos[0]/3, center_pos[1], max_volume, 20)
-    volume_bar_rect = pygame.Rect(a[0],a[1],a[2],a[3])
-    volume_button_rect = pygame.Rect(volume_bar_rect.right, center_pos[1], 50, 50)
+
+    # true
+    
+    volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
     volume_clicked = False
+
+    volume_bar_decor_rect = pygame.Rect(volume_limit['min']-5, center_pos[1]-5, (volume_limit['max']-volume_limit['min']+15), 30)
 
     while True:
         keys = pygame.key.get_pressed()
@@ -771,23 +780,32 @@ def settings():
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
 
-
-        volume_bar_rect = pygame.Rect(a[0],a[1],max_volume ,a[3])
+        # volume_bar_rect = pygame.Rect(a[0],a[1],max_volume ,a[3])
+        # volume_bar_rect = pygame.Rect(100, center_pos[1], volume_button_rect, 20)
+        volume_bar_rect = pygame.Rect(volume_limit['min'], center_pos[1], volume_button_rect.x-volume_limit['min'], 20)
 
         if volume_clicked:
             # volume_button_rect.center = mouse_pos
             volume_button_rect.x = mouse_pos[0]      
-            current_volume = max_volume/2
-    
-        print(current_volume)
+            # current_volume = max_volume/2
+        if volume_button_rect.x >= volume_limit['max']:
+            volume_button_rect.x = volume_limit['max']
+        elif volume_button_rect.x <= volume_limit['min']:
+            volume_button_rect.x = volume_limit['min']
+
+        # print(current_volume)
+        MAIN_VOLUME = (int(volume_bar_rect.width)*(0.005))
+        print(MAIN_VOLUME)
+        # print(volume_bar_rect.width*0.5)
 
         Animate_BG.waterfall_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
-        create_title(f'{volume_text}', font, default_size, main.height * 0.3, color='Grey3')
+        # create_title(f'{volume_text}', font, default_size, main.height * 0.3, color='Grey3')
 
-
-        pygame.draw.rect(screen, green, volume_bar_rect)
-        pygame.draw.rect(screen, red, volume_button_rect)
+        pygame.draw.rect(screen, black, volume_bar_decor_rect)
+        pygame.draw.rect(screen, white, volume_bar_rect)
+        
+        pygame.draw.rect(screen, 'Red', volume_button_rect)
         menu_button.draw(screen, mouse_pos)
 
         pygame.display.update()

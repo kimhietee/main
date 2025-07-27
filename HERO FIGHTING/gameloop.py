@@ -730,6 +730,7 @@ def reset_all():
 
 volume_limit = {'min':100, 'max':300}
 current_volume = (MAIN_VOLUME*100) + volume_limit['min']
+volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
 
 def settings():
 
@@ -747,10 +748,10 @@ def settings():
 
     # true
     
-    volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
+    
     volume_clicked = False
 
-    volume_bar_decor_rect = pygame.Rect(volume_limit['min']-5, center_pos[1]-5, (volume_limit['max']-volume_limit['min']+15), 30)
+    volume_bar_decor_rect = pygame.Rect(volume_limit['min']-5, center_pos[1]-5, (volume_limit['max']-volume_limit['min']+20), 30)
 
     while True:
         keys = pygame.key.get_pressed()
@@ -795,7 +796,8 @@ def settings():
 
         # print(current_volume)
         MAIN_VOLUME = (int(volume_bar_rect.width)*(0.005))
-        print(MAIN_VOLUME)
+        pygame.mixer.music.set_volume(MAIN_VOLUME)
+        # print(MAIN_VOLUME)
         # print(volume_bar_rect.width*0.5)
 
         Animate_BG.waterfall_bg.display(screen, speed=50)

@@ -17,13 +17,14 @@ black = 'Black'
 green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
-MAIN_VOLUME = 0.1
+MAIN_VOLUME = 0.5
 MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 
 
 SINGLE_MODE_ACTIVE = False # constant
-SHOW_HITBOX = True
+MUTE = False # constant
+SHOW_HITBOX = False
 DRAW_DISTANCE = False
 SHOW_GRID = False
 

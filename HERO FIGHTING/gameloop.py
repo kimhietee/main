@@ -1,4 +1,5 @@
 import pygame
+
 import random
 from global_vars import (
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
@@ -9,7 +10,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME,
+    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -463,14 +464,18 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
     return cube_fall, cube_x
 
+pygame.mixer.music.set_volume(0.8 * MAIN_VOLUME)
 def menu():
     pygame.mixer.music.fadeout(1000)
     pygame.time.set_timer(pygame.USEREVENT + 3, 1000)
 
     pygame.mixer.music.stop()
     pygame.mixer.music.load(MENU_MUSIC)
-    pygame.mixer.music.set_volume(0.8 * MAIN_VOLUME)
-
+    # Set volume based on mute state
+    if MUTE:
+        pygame.mixer.music.set_volume(0)
+    else:
+        pygame.mixer.music.set_volume(MAIN_VOLUME)
     if not pygame.mixer.music.get_busy():
         pygame.mixer.music.play(loops=-1, fade_ms=1500)  # Loop indefinitely
     print('playing music')
@@ -736,7 +741,7 @@ def settings():
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
-    global MAIN_VOLUME
+    global MAIN_VOLUME, MUTE
     # max_volume = 200
     # current_volume = 200
     # volume_text = max_volume/2
@@ -752,7 +757,6 @@ def settings():
     
     
     volume_clicked = False
-    mute_clicked = False
     mute_hovered = False
 
     # Move volume bar to the right
@@ -764,6 +768,7 @@ def settings():
 
     # Mute button decor
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
+    mute_clicked = MUTE
 
 
     while True:
@@ -790,6 +795,7 @@ def settings():
                     return
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked
+                    MUTE = mute_clicked
                     if mute_clicked:
                         pygame.mixer.music.set_volume(0)
                     else:

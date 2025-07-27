@@ -744,14 +744,27 @@ def settings():
      #
     
     # current_volume = MAIN_VOLUME*100
+    mute_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
+    mute_text = mute_font.render('Mute', True, white)
 
 
     # true
     
     
     volume_clicked = False
+    mute_clicked = False
+    mute_hovered = False
 
-    volume_bar_decor_rect = pygame.Rect(volume_limit['min']-5, center_pos[1]-5, (volume_limit['max']-volume_limit['min']+20), 30)
+    # Move volume bar to the right
+    volume_bar_x = 100
+    volume_bar_y = center_pos[1]
+    volume_bar_decor_rect = pygame.Rect(volume_bar_x-5, volume_bar_y-5, (volume_limit['max']-volume_limit['min']+20), 30)
+    volume_button_rect.x = volume_bar_x + (MAIN_VOLUME * 200)  # 200 is the range
+    volume_button_rect.y = volume_bar_y - 2
+
+    # Mute button decor
+    mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
+
 
     while True:
         keys = pygame.key.get_pressed()
@@ -760,6 +773,8 @@ def settings():
         key_press = pygame.key.get_pressed()
 
         main.screen.fill((0, 0, 0))
+        mute_hovered = mute_rect.collidepoint(mouse_pos)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -773,41 +788,62 @@ def settings():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
-                
-            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mute_rect.collidepoint(event.pos):
+                    mute_clicked = not mute_clicked
+                    if mute_clicked:
+                        pygame.mixer.music.set_volume(0)
+                    else:
+                        pygame.mixer.music.set_volume(MAIN_VOLUME)
                 if volume_button_rect.collidepoint(event.pos):
                     volume_clicked = True
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
 
-        # volume_bar_rect = pygame.Rect(a[0],a[1],max_volume ,a[3])
-        # volume_bar_rect = pygame.Rect(100, center_pos[1], volume_button_rect, 20)
-        volume_bar_rect = pygame.Rect(volume_limit['min'], center_pos[1], volume_button_rect.x-volume_limit['min'], 20)
+        # Volume bar logic
+        volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x-volume_bar_x, 20)
 
-        if volume_clicked:
-            # volume_button_rect.center = mouse_pos
-            volume_button_rect.x = mouse_pos[0]      
-            # current_volume = max_volume/2
-        if volume_button_rect.x >= volume_limit['max']:
-            volume_button_rect.x = volume_limit['max']
-        elif volume_button_rect.x <= volume_limit['min']:
-            volume_button_rect.x = volume_limit['min']
+        if volume_clicked and not mute_clicked:
+            volume_button_rect.x = mouse_pos[0]
+        if volume_button_rect.x >= volume_bar_x + (volume_limit['max']-volume_limit['min']):
+            volume_button_rect.x = volume_bar_x + (volume_limit['max']-volume_limit['min'])
+        elif volume_button_rect.x <= volume_bar_x:
+            volume_button_rect.x = volume_bar_x
 
-        # print(current_volume)
-        MAIN_VOLUME = (int(volume_bar_rect.width)*(0.005))
-        pygame.mixer.music.set_volume(MAIN_VOLUME)
-        # print(MAIN_VOLUME)
-        # print(volume_bar_rect.width*0.5)
+        # Calculate volume
+        MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max']-volume_limit['min']))
+        if not mute_clicked:
+            pygame.mixer.music.set_volume(MAIN_VOLUME)
 
         Animate_BG.waterfall_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
-        # create_title(f'{volume_text}', font, default_size, main.height * 0.3, color='Grey3')
 
-        pygame.draw.rect(screen, black, volume_bar_decor_rect)
-        pygame.draw.rect(screen, white, volume_bar_rect)
+        # Draw mute button decor
+        mute_color = (0, 75, 0) if mute_hovered else (30, 30, 30)
+        if mute_clicked:
+            mute_color = (0, 150, 0)
+        if mute_clicked and mute_hovered:
+            mute_color = (0, 200, 0)
+        pygame.draw.rect(screen, mute_color, mute_rect)
+        # Draw mute text
         
-        pygame.draw.rect(screen, 'Red', volume_button_rect)
+        mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery-mute_rect.height))
+        screen.blit(mute_text, mute_text_rect)
+
+        # Draw volume bar decor
+        pygame.draw.rect(screen, black, volume_bar_decor_rect)
+        pygame.draw.rect(screen, white if not mute_clicked else black, volume_bar_rect)
+        pygame.draw.rect(screen, 'Red' if not mute_clicked else black, volume_button_rect)
+
+        # Draw volume number background and text
+        vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max']-volume_limit['min']) + 30, volume_bar_y-5, 60, 30)
+        pygame.draw.rect(screen, black, vol_num_rect)
+        vol_num = int(MAIN_VOLUME * 100) if not mute_clicked else 0
+        vol_num_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
+        vol_num_text = vol_num_font.render(f'{vol_num}%', True, white)
+        vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
+        screen.blit(vol_num_text, vol_num_text_rect)
+
         menu_button.draw(screen, mouse_pos)
 
         pygame.display.update()

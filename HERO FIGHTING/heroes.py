@@ -5184,7 +5184,7 @@ def player_selection():
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
 
-        screen.fill((100, 100, 100))
+        screen.fill((0, 0, 0))
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

@@ -29,7 +29,7 @@ class ImageButton:
         self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
 
-        text_surf = self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color)
+        text_surf = self.font.render(self.text, self.text_anti_alias, self.text_color)
         text_surf.set_alpha(int(self.alpha[1] * 255))
 
         self.text_surf = pygame.transform.rotozoom(text_surf, 0, 0.2)
@@ -79,13 +79,13 @@ class ImageInfo:
         self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
 
-        self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
+        self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, self.text_anti_alias, self.text_color), 0, 0.2)
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
         
-        self.text_surf1 = pygame.transform.rotozoom(self.font.render(self.text1, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
+        self.text_surf1 = pygame.transform.rotozoom(self.font.render(self.text1, self.text_anti_alias, self.text_color), 0, 0.2)
         self.text_rect1 = self.text_surf.get_rect(center=(self.rect.centerx, self.rect.centery + 50))
 
-        self.text_surf2 = pygame.transform.rotozoom(self.font.render(self.text2, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
+        self.text_surf2 = pygame.transform.rotozoom(self.font.render(self.text2, self.text_anti_alias, self.text_color), 0, 0.2)
         self.text_rect2 = self.text_surf.get_rect(center=(self.rect.centerx, self.rect.centery + 100))
 
     def draw(self, screen, mouse_pos):

@@ -221,7 +221,7 @@ def game(bg=None):
         current_time = pygame.time.get_ticks()
         elapsed_time = (current_time - start_time) // 1000  # Convert to seconds
 
-        main.screen.fill((100, 100, 100))
+        main.screen.fill((0, 0, 0))
 
 
         for event in main.pygame.event.get():
@@ -492,7 +492,7 @@ def menu():
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
 
-        main.screen.fill((100, 100, 100))
+        main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -544,7 +544,7 @@ def menu():
                 controls()
                 return
         # main.screen.blit(background, (0, 0))
-        Animate_BG.lava_bg.display(screen, speed=50)
+        Animate_BG.waterfall_day_bg.display(screen, speed=50)
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
@@ -577,7 +577,7 @@ def controls():
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
 
-        main.screen.fill((100, 100, 100))
+        main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -644,7 +644,7 @@ def info():
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
 
-        main.screen.fill((100, 100, 100))
+        main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()

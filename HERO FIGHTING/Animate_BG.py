@@ -81,6 +81,7 @@ class AnimatedBackground:
                 pygame.image.load(img_path).convert(),
                 self.size
             )
+            image.set_alpha(50)
             self.frames.append(image)
 
     def display(self, surface, speed=150):
@@ -134,9 +135,26 @@ dragon_bg = AnimatedBackground(
 
 
 
+
+waterfall_day_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Waterfall - Day\\",
+    7,
+    size=(main.width, main.height)
+    # (main.width, int(main.height * 0.825)) # 594
+)
+
+
+
+
+#Game Background
 waterfall_bg.load_frames()
 lava_bg.load_frames()
 dark_forest_bg.load_frames()
 
+# Main
 dragon_bg.load_frames()
 
+
+
+# UI
+waterfall_day_bg.load_frames()

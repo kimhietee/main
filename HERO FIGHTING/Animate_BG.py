@@ -3,13 +3,13 @@ import random
 import heroes as main
 from pprint import pprint
 
-bg_paths = [
-    (r'assets\backgrounds\animated_bg\Ocean_2\2.png', 'static', 0, 'left'),
-    (r'assets\backgrounds\animated_bg\Ocean_2\3.png', 'dynamic', 30, 'right'),
-    (r'assets\backgrounds\animated_bg\Ocean_2\4.png', 'dynamic', 30, 'right')
-]
+# bg_paths = [ # Wrong path, recheck if using these.
+#     (r'assets\backgrounds\animated_bg\Ocean_2\2.png', 'static', 0, 'left'),
+#     (r'assets\backgrounds\animated_bg\Ocean_2\3.png', 'dynamic', 30, 'right'),
+#     (r'assets\backgrounds\animated_bg\Ocean_2\4.png', 'dynamic', 30, 'right')
+# ]
 # (r'assets\backgrounds\animated_bg\Ocean_2\compiled img.png', 'dynamic', 500, 'right')
-class BackgroundHandler:
+class BackgroundHandler: # moves images, very lag if hd image
     def __init__(self, img_paths: list):
         self.layers = []
         for image in img_paths:
@@ -60,18 +60,37 @@ class BackgroundHandler:
 # main background preferred size:
 # (main.width, main.DEFAULT_Y_POS + int(720 * 0.1))
 
-class AnimatedBackground:
+class AnimatedBackground: # simple framed background animation (smooth)
     '''
     Make sure the name of frames starts at 1
+
+
+    size may be:
+    - "full"            → full screen
+    - "game_bg"         → in-game aspect ratio
+    - ["custom", (w,h)] → arbitrary dimensions
+
     '''
-    def __init__(self, path, count, size=(main.width, int(main.height * 0.798)), pos=(0,0)):  # 0.798 = 574 / 720):
+    def __init__(self, path, count, size="full", pos=(0,0), set_alpha=(False, 255)):  # 0.798 = 574 / 720):
         self.path = path if path.endswith(("\\", "/")) else path + "/"
         self.count = count
-        self.size = size
         self.pos = pos
+        self.set_alpha = set_alpha
         self.frames = []
         self.current_frame = 0
         self.last_update_time = pygame.time.get_ticks()
+
+
+        if size == "full":
+            self.size = (main.width, main.height)
+        elif size == "game_bg":
+            self.size = (main.width, int(main.height * 0.798)) 
+        elif isinstance(size, (list, tuple)) and size[0] == "custom":
+            self.size = size[1]
+        else:
+            raise ValueError(f"Invalid size input: {size!r}")
+        
+
 
     def load_frames(self, extension=".gif") -> pygame.Surface:
         self.frames.clear()
@@ -81,7 +100,7 @@ class AnimatedBackground:
                 pygame.image.load(img_path).convert(),
                 self.size
             )
-            image.set_alpha(50)
+            image.set_alpha(self.set_alpha[1]) if self.set_alpha[0] else None
             self.frames.append(image)
 
     def display(self, surface, speed=150):
@@ -101,24 +120,31 @@ class AnimatedBackground:
 #     pygame.image.load(bg_list[random.randint(0, len(bg_list)-1)]).convert(), 
 #     (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))
 
+
+# animated_bg = BackgroundHandler(bg_paths)
+
+
+
 waterfall_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall\\",
     8,
-    # size=(main.width, main.height)
+    size="game_bg"
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 lava_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Magma Chamber\\",
     8,
-    size=(main.width, main.height)
+    size="game_bg"
+    # size=(main.width, main.height)
     # (main.width, int(main.height * 0.825)) # 594
 )
 
 dark_forest_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dark Forest\\",
     8,
-    size=(main.width, main.height)
+    size="game_bg"
+    # size=(main.width, main.height)
     # (main.width, int(main.height * 0.825)) # 594
 )
 
@@ -126,7 +152,7 @@ dark_forest_bg = AnimatedBackground(
 dragon_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dragon\\",
     35,
-    size=(main.width, main.height-100),
+    size=["custom", (main.width, main.height-100)],
     pos=(0,50)
     # (main.width, int(main.height * 0.825)) # 594
 )
@@ -139,7 +165,7 @@ dragon_bg = AnimatedBackground(
 waterfall_day_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Day\\",
     7,
-    size=(main.width, main.height)
+    size="full"
     # (main.width, int(main.height * 0.825)) # 594
 )
 

@@ -92,8 +92,7 @@ def create_bot(selected_hero):
                     'decide_logic': {
                         'chase_distance': 800,
                         'panic_chase_distance': 400,
-                        'escape_distance': 240, 
-                        'attack_distance': 100,
+                        'escape_distance': 240
                     },
                     
                     'skills': {
@@ -292,7 +291,9 @@ def create_bot(selected_hero):
                         'chase_distance': 1000, # chase enemy if below this distance
                         'panic_chase_distance': 400, # same but panik mode
                         'escape_distance': 200, # if enemy below this distance, bot try to escape... # the highest cast range of all skills except skill 4, is skill 2, minus 10
-                        'attack_distance': 800, # basic attack if below this distance
+
+                        # Removed code
+                        # 'attack_distance': 800, # basic attack if below this distance 
                     },
                     
                     'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
@@ -543,8 +544,7 @@ def create_bot(selected_hero):
                     'decide_logic': {
                         'chase_distance': 800,
                         'panic_chase_distance': 400,
-                        'escape_distance': 200,
-                        'attack_distance': 100,
+                        'escape_distance': 200
                     },
                     
                     'skills': {
@@ -739,8 +739,7 @@ def create_bot(selected_hero):
                     'decide_logic': {
                         'chase_distance': 750,
                         'panic_chase_distance': 350,
-                        'escape_distance': 270, 
-                        'attack_distance': 180,
+                        'escape_distance': 270
                     },
                     
                     'skills': {
@@ -944,7 +943,7 @@ def create_bot(selected_hero):
             self.chase_distance = self.hero_data[self.hero_bot]['decide_logic']['chase_distance']
             self.panic_chase_distance = self.hero_data[self.hero_bot]['decide_logic']['panic_chase_distance']
             self.escape_distance = self.hero_data[self.hero_bot]['decide_logic']['escape_distance']
-            self.attack_distance = self.hero_data[self.hero_bot]['decide_logic']['attack_distance']
+
             self.basic_atk_min_range = self.hero_data[self.hero_bot]['basic_attack']['min_cast_range']
 
             self.random_unstuck = self.hero_data[self.hero_bot]['random_unstuck']
@@ -1137,10 +1136,11 @@ def create_bot(selected_hero):
             self.forcemove_left = self.forcemove_right = False
 
         def decide_state(self):
-            if callable(self.attack_distance):
-                dynamic_atk_distance = self.attack_distance(self)
+            if callable(self.max_atk_range):
+                dynamic_atk_range = self.max_atk_range(self)
             else:
-                dynamic_atk_distance = self.attack_distance
+                dynamic_atk_range = self.max_atk_range
+
             # self.last_state = getattr(self, 'last_state', None)
             # if self.state != self.last_state:
             #     print(f"[STATE CHANGE] {self.last_state} → {self.state}")
@@ -1165,7 +1165,7 @@ def create_bot(selected_hero):
                             self.forcemove_right = True
                         elif self.enemy_on_right:
                             self.forcemove_left = True
-                    elif self.enemy_distance <= self.attack_distance and not self.jumping: 
+                    elif self.enemy_distance <= dynamic_atk_range and not self.jumping: 
                             self.state = 'basic attack'
                     elif self.enemy_distance <= self.panic_chase_distance: # half of the initial chase distance
                         self.state = 'chase'
@@ -1193,8 +1193,11 @@ def create_bot(selected_hero):
 
             #def face the enemy
             
-            elif self.enemy_distance <= self.attack_distance and not self.jumping: #and (self.enemy_on_left and not self.facing_right or self.enemy_on_right and self.facing_right):
-                    self.state = 'basic attack'
+            # Set state to basic attack based on dynamic attack range
+            elif self.enemy_distance <= dynamic_atk_range and not self.jumping:
+                self.state = 'basic attack'
+            
+            # chase logic
             elif self.enemy_distance <= self.chase_distance: # INITIAL CHASE DISTANCE
                 self.state = 'chase'
             elif self.health < self.max_health:
@@ -1430,7 +1433,7 @@ def create_bot(selected_hero):
             else:
                 dynamic_atk_range = self.max_atk_range
 
-            print(dynamic_atk_range)
+            # print(dynamic_atk_range)
 
             if self.state == 'retreat_for_attack':
                 if self.enemy_on_left:

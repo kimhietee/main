@@ -24,11 +24,11 @@ import heroes as main
 
 
 
-from Animate_BG import BackgroundHandler, bg_paths
+# from Animate_BG import BackgroundHandler
 
 import Animate_BG
 
-animated_bg = BackgroundHandler(bg_paths)
+
 
 
 
@@ -170,6 +170,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
         
 
 def game(bg=None):
+    global MUTE
     game_music_started = False
     second_track_played = False
     print('stopping music')
@@ -222,28 +223,26 @@ def game(bg=None):
         elapsed_time = (current_time - start_time) // 1000  # Convert to seconds
 
         main.screen.fill((0, 0, 0))
-
+        # print(MUTE)
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
                 main.pygame.quit()
                 exit()
 
-            if random.randint(1, 2) == 1:
-                if event.type == pygame.USEREVENT + 1 and not game_music_started:
-                    pygame.mixer.music.load(GAME_MUSIC_1)
-                    pygame.mixer.music.set_volume(0.5 * MAIN_VOLUME)
-                    pygame.mixer.music.play(-1, fade_ms=1500)
-                    game_music_started = True
-                    print("Started game music 1")
-            elif random.randint(1, 2) == 2:
-                if event.type == pygame.USEREVENT and game_music_started and not second_track_played:
-                    # Game music 1 finidddddddddddddshed — play second
-                    pygame.mixer.music.load(GAME_MUSIC_2)
-                    pygame.mixer.music.set_volume(0.5 * MAIN_VOLUME)
-                    pygame.mixer.music.play(loops=-1, fade_ms=1500)  # Loop the second game track if you want
-                    second_track_played = True
-                    print("Started game music 2")
+            if event.type == pygame.USEREVENT + 1 and not game_music_started:
+                pygame.mixer.music.load(GAME_MUSIC_1)
+                pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME * 0.5)  # Apply mute logic
+                pygame.mixer.music.play(-1, fade_ms=1500)
+                game_music_started = True
+                print("Started game music 1")
+
+            elif event.type == pygame.USEREVENT and game_music_started and not second_track_played:
+                pygame.mixer.music.load(GAME_MUSIC_2)
+                pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME * 0.5)  # Apply mute logic
+                pygame.mixer.music.play(loops=-1, fade_ms=1500)
+                second_track_played = True
+                print("Started game music 2")
 
             if keys[pygame.K_ESCAPE]:
                 menu()
@@ -744,7 +743,7 @@ def settings():
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
-    global MAIN_VOLUME, MUTE
+    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING
     # max_volume = 200
     # current_volume = 200
     # volume_text = max_volume/2
@@ -752,8 +751,8 @@ def settings():
      #
     
     # current_volume = MAIN_VOLUME*100
-    mute_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
-    mute_text = mute_font.render('Mute', TEXT_ANTI_ALIASING, white)
+    setting_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
+    
 
 
     # true
@@ -771,7 +770,11 @@ def settings():
 
     # Mute button decor
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
+    mute_text = setting_font.render('Mute', TEXT_ANTI_ALIASING, white)
     mute_clicked = MUTE
+
+
+    # text anti-alias
 
 
     while True:
@@ -799,10 +802,8 @@ def settings():
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked
                     MUTE = mute_clicked
-                    if mute_clicked:
-                        pygame.mixer.music.set_volume(0)
-                    else:
-                        pygame.mixer.music.set_volume(MAIN_VOLUME)
+                    pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)
+                        
                 if volume_button_rect.collidepoint(event.pos):
                     volume_clicked = True
 
@@ -820,9 +821,9 @@ def settings():
             volume_button_rect.x = volume_bar_x
 
         # Calculate volume
-        MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max']-volume_limit['min']))
-        if not mute_clicked:
-            pygame.mixer.music.set_volume(MAIN_VOLUME)
+        MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max'] - volume_limit['min']))
+        pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)  # Apply mute logic
+
 
         Animate_BG.waterfall_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
@@ -833,9 +834,11 @@ def settings():
             mute_color = (0, 150, 0)
         if mute_clicked and mute_hovered:
             mute_color = (0, 200, 0)
-        pygame.draw.rect(screen, mute_color, mute_rect)
-        # Draw mute text
         
+        # Draw mute button
+        pygame.draw.rect(screen, mute_color, mute_rect)
+
+        # Draw mute text
         mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery-mute_rect.height))
         screen.blit(mute_text, mute_text_rect)
 
@@ -854,6 +857,7 @@ def settings():
         screen.blit(vol_num_text, vol_num_text_rect)
 
         menu_button.draw(screen, mouse_pos)
+        # print(MUTE)
 
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -1004,4 +1008,6 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
 
 if __name__ == '__main__':
     main_menu()
+
+        
         

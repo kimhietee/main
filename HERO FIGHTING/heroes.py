@@ -209,7 +209,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,
+    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,  TEXT_ANTI_ALIASING,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -349,7 +349,7 @@ class Attacks:
                 # Draw scaled cooldown text
                 font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
                 cooldown_time = max(0, (self.cooldown - (pygame.time.get_ticks() - self.last_used_time)) // 1000)
-                cooldown_text = font.render(str(cooldown_time), True, 'Red')
+                cooldown_text = font.render(str(cooldown_time), TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
                     self.skill_rect.centery - cooldown_text.get_height() // 2
@@ -364,7 +364,7 @@ class Attacks:
 
                 # Mana cost when not enough mana
                 mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
-                self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', False, 'Red')
+                self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(self.atk_mana_cost, (
                     self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
                     self.skill_rect.top - self.mana_y_offset
@@ -381,14 +381,14 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
-                self.atk_special_cost = special_font.render(f'[{max_special}]', False, 'azure3')
+                self.atk_special_cost = special_font.render(f'[{max_special}]', TEXT_ANTI_ALIASING, 'azure3')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
                 ))
             else:
                 special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
-                self.atk_special_cost = special_font.render(f'[{max_special}]', False, 'yellow')
+                self.atk_special_cost = special_font.render(f'[{max_special}]', TEXT_ANTI_ALIASING, 'yellow')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
@@ -419,7 +419,7 @@ class Attacks:
         if not self.special_skill:
             mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
             color = 'Cyan2' if mana >= self.mana_cost else 'Red'
-            self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', False, color)
+            self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', TEXT_ANTI_ALIASING, color)
 
             screen.blit(self.atk_mana_cost, (
                 self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
@@ -2606,7 +2606,7 @@ class Display_Text: # display damage taken text previously (not working for now)
         self.health_detect = 0
 
         self.font = pygame.font.SysFont('Times New Roman', 25)
-        self.text = self.font.render(self.num_txt, True, 'Red')
+        self.text = self.font.render(self.num_txt, TEXT_ANTI_ALIASING, 'Red')
         
         self.health_now = self.health
         if self.health_now >= self.health_detect:
@@ -4666,7 +4666,7 @@ class Wind_Hashashin(Player):
 
 #     def draw(self, screen):
 #         pygame.draw.rect(screen, self.color, self.rect)
-#         text_surf = self.font.render(self.text, True, self.text_color)
+#         text_surf = self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color)
 #         text_rect = text_surf.get_rect(center=self.rect.center)
 #         screen.blit(text_surf, text_rect)
 
@@ -4766,47 +4766,47 @@ from gameloop import fade
 scale = 0.8
 center_pos = (width / 2, height / 2)
 
-class ImageButton:
-    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0)):
-        # Load and scale the image
-        self.hover_pos = pos
-        self.hover_move = hover_move
-        self.fku = fku
-        self.scale_val = scale_val
-        if self.fku:
-            self.original_image = pygame.transform.scale(
-        pygame.image.load(self.original_image).convert_alpha(), (self.scale_val[0], self.scale_val[1]))
-        else:
-            self.original_image = pygame.image.load(image_path).convert_alpha()
+# class ImageButton:
+#     def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0)):
+#         # Load and scale the image
+#         self.hover_pos = pos
+#         self.hover_move = hover_move
+#         self.fku = fku
+#         self.scale_val = scale_val
+#         if self.fku:
+#             self.original_image = pygame.transform.scale(
+#         pygame.image.load(self.original_image).convert_alpha(), (self.scale_val[0], self.scale_val[1]))
+#         else:
+#             self.original_image = pygame.image.load(image_path).convert_alpha()
 
-        self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
-        self.rect = self.image.get_rect(center=pos)
+#         self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
+#         self.rect = self.image.get_rect(center=pos)
 
-        # Text
-        self.text = text
-        self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
-        self.text_color = text_color
-        self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, False, self.text_color), 0, 0.2)
+#         # Text
+#         self.text = text
+#         self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
+#         self.text_color = text_color
+#         self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
             
-        self.text_rect = self.text_surf.get_rect(center=self.rect.center)
+#         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
-    def draw(self, screen, mouse_pos):
-        if self.rect.collidepoint(mouse_pos):
-            self.rect.centery = self.hover_pos[1] + self.hover_move 
-            self.text_rect.centery = self.hover_pos[1] + self.hover_move
-        else:
-            self.rect.centery = self.hover_pos[1]
-            self.text_rect.centery = self.hover_pos[1]
+#     def draw(self, screen, mouse_pos):
+#         if self.rect.collidepoint(mouse_pos):
+#             self.rect.centery = self.hover_pos[1] + self.hover_move 
+#             self.text_rect.centery = self.hover_pos[1] + self.hover_move
+#         else:
+#             self.rect.centery = self.hover_pos[1]
+#             self.text_rect.centery = self.hover_pos[1]
         
-        # Draw the image and text
-        screen.blit(self.image, self.rect)
-        screen.blit(self.text_surf, self.text_rect)
+#         # Draw the image and text
+#         screen.blit(self.image, self.rect)
+#         screen.blit(self.text_surf, self.text_rect)
 
-    def is_clicked(self, mouse_pos):
-        # Check if button is clicked
-        if self.rect.collidepoint(mouse_pos):
-            return True
-        return False
+#     def is_clicked(self, mouse_pos):
+#         # Check if button is clicked
+#         if self.rect.collidepoint(mouse_pos):
+#             return True
+#         return False
     
 
 
@@ -4929,7 +4929,8 @@ class PlayerSelector:
             text='Deselect',
             font_path=r'assets\font\slkscr.ttf',  # or any other font path
             font_size=font_size * 0.6,  # dynamic size ~29 at 720p
-            text_color='white'
+            text_color='white',
+            text_anti_alias=TEXT_ANTI_ALIASING
         )
 
 
@@ -5052,7 +5053,7 @@ class ImageBro:
         screen.blit(self.image, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.05), self.hover_pos[1] - (self.hover_pos[1] * 0.29)))
 
         for i, line in enumerate(self.text_lines):
-            self.text_surf = pygame.transform.rotozoom(self.font.render(line, False, self.text_color), 0, 0.2)
+            self.text_surf = pygame.transform.rotozoom(self.font.render(line, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
             screen.blit(self.text_surf, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.04), self.hover_pos[1] + i * 30))
 
 
@@ -5068,7 +5069,8 @@ menu_button = ImageButton(
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 loading = ImageButton(
@@ -5078,7 +5080,8 @@ loading = ImageButton(
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 fight = ImageButton(
@@ -5088,7 +5091,8 @@ fight = ImageButton(
     text='FIGHT!',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 done = ImageButton(
@@ -5098,11 +5102,12 @@ done = ImageButton(
     text='select',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
-    title = pygame.transform.rotozoom(font.render(f'{text}', False, color), angle, scale)
+    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (width / 2, y_offset))
     screen.blit(title, title_rect)
 

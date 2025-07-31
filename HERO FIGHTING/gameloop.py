@@ -10,7 +10,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,
+    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,  TEXT_ANTI_ALIASING,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -161,7 +161,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
             # pos_text = f"{x}, {reversed_y}"
             pos_text = f"{reversed_y}"
 
-            text_surface = font.render(pos_text, True, (150, 150, 255))
+            text_surface = font.render(pos_text, TEXT_ANTI_ALIASING, (150, 150, 255))
             screen.blit(text_surface, (x - 5, y + 2))
 
 
@@ -370,7 +370,7 @@ def game(bg=None):
                 cube['sound']
             )
 
-        timer_text = timer_font.render(f"[{elapsed_time}]", True, main.white)
+        timer_text = timer_font.render(f"[{elapsed_time}]", TEXT_ANTI_ALIASING, main.white)
         main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
         
         menu_button.draw(main.screen, mouse_pos)
@@ -611,7 +611,8 @@ def info():
     text='Next',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
     previous = ImageButton(
     image_path=text_box_img,
@@ -620,7 +621,8 @@ def info():
     text='previous',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
     
     inffo = ImageButton(
@@ -630,7 +632,8 @@ def info():
     text='burn damage = 5 for fire knight',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.015),  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
     
     switch = False
@@ -750,7 +753,7 @@ def settings():
     
     # current_volume = MAIN_VOLUME*100
     mute_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
-    mute_text = mute_font.render('Mute', True, white)
+    mute_text = mute_font.render('Mute', TEXT_ANTI_ALIASING, white)
 
 
     # true
@@ -846,7 +849,7 @@ def settings():
         pygame.draw.rect(screen, black, vol_num_rect)
         vol_num = int(MAIN_VOLUME * 100) if not mute_clicked else 0
         vol_num_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
-        vol_num_text = vol_num_font.render(f'{vol_num}%', True, white)
+        vol_num_text = vol_num_font.render(f'{vol_num}%', TEXT_ANTI_ALIASING, white)
         vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
         screen.blit(vol_num_text, vol_num_text_rect)
 
@@ -871,7 +874,8 @@ loading = ImageButton(
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 # Menu button to return to menu()
@@ -882,7 +886,8 @@ menu_button = ImageButton(
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 # main_menu()
@@ -893,7 +898,8 @@ play_button = ImageButton(
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 # menu()
@@ -905,6 +911,7 @@ campaign_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING,
     hover_move=0
 )
 #_____ for campaign
@@ -916,6 +923,7 @@ coming_soon_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING,
     hover_move=0,
     alpha=(0.75, 1)
 )
@@ -928,7 +936,8 @@ single_button = ImageButton(
     text='Single Player',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 multiplayer_button = ImageButton(
@@ -938,7 +947,8 @@ multiplayer_button = ImageButton(
     text='Multiplayer',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 info_button = ImageButton(
@@ -948,7 +958,8 @@ info_button = ImageButton(
     text='Game Info',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 control_button = ImageButton(
@@ -958,7 +969,8 @@ control_button = ImageButton(
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 settings_button = ImageButton(
@@ -968,7 +980,8 @@ settings_button = ImageButton(
     text='Settings',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white'
+    text_color='white',
+    text_anti_alias=TEXT_ANTI_ALIASING
 )
 
 
@@ -978,7 +991,7 @@ settings_button = ImageButton(
 
 
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
-    title = pygame.transform.rotozoom(font.render(f'{text}', False, color), angle, scale)
+    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (width / 2, y_offset))
     screen.blit(title, title_rect)
 

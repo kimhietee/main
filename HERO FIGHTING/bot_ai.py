@@ -740,7 +740,7 @@ def create_bot(selected_hero):
                         'chase_distance': 750,
                         'panic_chase_distance': 350,
                         'escape_distance': 270, 
-                        'attack_distance': 100,
+                        'attack_distance': 180,
                     },
                     
                     'skills': {
@@ -916,7 +916,7 @@ def create_bot(selected_hero):
                         },
                     },
                     'basic_attack': {
-                        'atk_range': 100,
+                        'atk_range': lambda bot: 175 if not bot.special_active else 300,
                         'min_cast_range': 30,
                     }
                 }
@@ -1137,6 +1137,10 @@ def create_bot(selected_hero):
             self.forcemove_left = self.forcemove_right = False
 
         def decide_state(self):
+            if callable(self.attack_distance):
+                dynamic_atk_distance = self.attack_distance(self)
+            else:
+                dynamic_atk_distance = self.attack_distance
             # self.last_state = getattr(self, 'last_state', None)
             # if self.state != self.last_state:
             #     print(f"[STATE CHANGE] {self.last_state} → {self.state}")
@@ -1418,8 +1422,16 @@ def create_bot(selected_hero):
                         
 
         def handle_attack(self):
+            
             # if self.state != 'basic attack':
             #     return
+            if callable(self.max_atk_range):
+                dynamic_atk_range = self.max_atk_range(self)
+            else:
+                dynamic_atk_range = self.max_atk_range
+
+            print(dynamic_atk_range)
+
             if self.state == 'retreat_for_attack':
                 if self.enemy_on_left:
                     self.forcemove_right = True
@@ -1427,7 +1439,7 @@ def create_bot(selected_hero):
                     self.forcemove_left = True
             elif self.state == 'basic attack':
                 if (self.enemy_on_left and not self.facing_right) or (self.enemy_on_right and self.facing_right):
-                    if self.enemy_distance <= self.max_atk_range:
+                    if self.enemy_distance <= dynamic_atk_range:
                         self.botkey_attack = True
 
         def handle_special(self):

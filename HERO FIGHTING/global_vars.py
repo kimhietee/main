@@ -18,14 +18,15 @@ green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
 MAIN_VOLUME = 0.5
+TEXT_ANTI_ALIASING = False
 MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant
-SHOW_HITBOX = False
-DRAW_DISTANCE = False
+SHOW_HITBOX = True
+DRAW_DISTANCE = True
 SHOW_GRID = False
 
 # Default Dimensions

@@ -4,7 +4,7 @@ from global_vars import (
     white, red, black, green, cyan2, gold, MAX_SPECIAL, BASIC_ATK_COOLDOWN, MAIN_VOLUME,
     DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
     LITERAL_HEALTH_DEAD, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING, RUNNING_ANIMATION_SPEED,
-    JUMP_DELAY, RUNNING_SPEED,
+    JUMP_DELAY, RUNNING_SPEED, TEXT_ANTI_ALIASING,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
@@ -385,7 +385,7 @@ class Player(pygame.sprite.Sprite):
                 self.damage_numbers.remove(dmg)
                 continue
 
-            surf = dmg['font'].render(str(dmg['text']), True, dmg['color'])
+            surf = dmg['font'].render(str(dmg['text']), TEXT_ANTI_ALIASING, dmg['color'])
             surf.set_alpha(dmg['alpha'])
             if self.health > self.max_health: # don't show hp dmg when game starts
                 return
@@ -1033,10 +1033,10 @@ class Player(pygame.sprite.Sprite):
                 special_color = 'yellow'
 
             # Health and Mana Text
-            self.health_display_text_p1 = font.render(f'[{int(self.health)}]', False, health_color)
-            self.mana_display_text_p1 = font.render(f'[{int(self.mana)}]', False, mana_color)
+            self.health_display_text_p1 = font.render(f'[{int(self.health)}]', TEXT_ANTI_ALIASING, health_color)
+            self.mana_display_text_p1 = font.render(f'[{int(self.mana)}]', TEXT_ANTI_ALIASING, mana_color)
 
-            self.special_display_text_p1 = font.render(f'[{int(self.special)}]', False, special_color)
+            self.special_display_text_p1 = font.render(f'[{int(self.special)}]', TEXT_ANTI_ALIASING, special_color)
 
             # Blit Texts
             screen.blit(self.health_display_text_p1, (
@@ -1167,10 +1167,10 @@ class Player(pygame.sprite.Sprite):
             else:
                 special_color_p2 = 'yellow'
 
-            self.health_display_text_p2 = font.render(f'[{int(self.health)}]', False, health_color_p2)
-            self.mana_display_text_p2 = font.render(f'[{int(self.mana)}]', False, mana_color_p2)
+            self.health_display_text_p2 = font.render(f'[{int(self.health)}]', TEXT_ANTI_ALIASING, health_color_p2)
+            self.mana_display_text_p2 = font.render(f'[{int(self.mana)}]', TEXT_ANTI_ALIASING, mana_color_p2)
 
-            self.special_display_text_p2 = font.render(f'[{int(self.special)}]', False, special_color_p2)
+            self.special_display_text_p2 = font.render(f'[{int(self.special)}]', TEXT_ANTI_ALIASING, special_color_p2)
 
             
 
@@ -1279,7 +1279,7 @@ class Player(pygame.sprite.Sprite):
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
         enemy_distance = int(abs(self.x_pos - enemy.x_pos))
-        enemy_distance_surf = font.render(str(enemy_distance), 0, 'Red')
+        enemy_distance_surf = font.render(str(enemy_distance), TEXT_ANTI_ALIASING, 'Red')
         screen.blit(enemy_distance_surf, (self.x_pos, self.y_pos - 120))
         line_rect = pygame.rect.Rect((self.x_pos if enemy.x_pos > self.x_pos else enemy.x_pos), self.y_pos - 60, enemy_distance, 2)
         pygame.draw.rect(screen, 'Red', line_rect)

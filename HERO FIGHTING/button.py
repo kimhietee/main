@@ -47,17 +47,20 @@ class ImageButton:
         screen.blit(self.image, self.rect)
         screen.blit(self.text_surf, self.text_rect)
 
+    # Input below can only be checked at pygame.event.MOUSEBUTTON... or any input involving event
     def is_clicked(self, mouse_pos):
         # Check if button is clicked
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
     
+    # self.rect.colliderect()
     def is_hovered(self, mouse_pos):
         # Check if button is hovered
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
+    
     
 
     
@@ -112,3 +115,39 @@ class ImageInfo:
 
 
 
+class RectButton:
+    def __init__(self, x:int, y:int, font:str, font_size:int, color:str, variable, width:int=40, height:int=40):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.font = pygame.font.Font(font, font_size)
+        self.color = color
+        self.variable = variable
+
+        self.button_clicked = False
+        self.button_hovered = False
+    
+    def associate_value(self):
+        return self.variable
+
+    def update(self, screen:pygame.Surface, mouse_press, mouse_pos, text_anti_alias, text, variable=None, lambda_func=None):
+        self.text = self.font.render(text, text_anti_alias, 'white')
+        button_hovered = self.rect.collidepoint(mouse_pos)
+        # for event in pygame.event.get():
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if button_hovered:
+        #             self.button_clicked = not self.button_clicked
+        if mouse_press[0] == pygame.MOUSEBUTTONUP and button_hovered:
+            self.button_clicked = not self.button_clicked
+
+        rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
+        if self.button_clicked:
+            rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
+        if self.button_clicked and self.button_hovered:
+            rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+
+        pygame.draw.rect(screen, rect_color, self.rect)
+            
+        print(self.button_clicked)
+
+
+
+    

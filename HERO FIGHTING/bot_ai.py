@@ -1440,7 +1440,7 @@ def create_bot(selected_hero):
                     self.forcemove_right = True
                 elif self.enemy_on_right:
                     self.forcemove_left = True
-            elif self.state == 'basic attack':
+            elif self.state == 'basic attack': # This code seems redundant
                 if (self.enemy_on_left and not self.facing_right) or (self.enemy_on_right and self.facing_right):
                     if self.enemy_distance <= dynamic_atk_range:
                         self.botkey_attack = True

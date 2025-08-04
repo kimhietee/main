@@ -739,6 +739,9 @@ volume_limit = {'min':100, 'max':300}
 current_volume = (MAIN_VOLUME*100) + volume_limit['min']
 volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
 
+# NOTE: The mute button does not use this function
+from button import RectButton
+
 def settings():
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
@@ -770,8 +773,9 @@ def settings():
 
     # Mute button decor
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
-    mute_text = setting_font.render('Mute', TEXT_ANTI_ALIASING, white)
     mute_clicked = MUTE
+
+    anti_alias_button = RectButton(width-width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), TEXT_ANTI_ALIASING)
 
 
     # text anti-alias
@@ -837,8 +841,11 @@ def settings():
         
         # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
+        anti_alias_button.update(screen, mouse_press, mouse_pos, TEXT_ANTI_ALIASING, "Text Anti-Aliasing")
 
         # Draw mute text
+        # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", TEXT_ANTI_ALIASING, white)
+        mute_text = setting_font.render('Mute', TEXT_ANTI_ALIASING, white)
         mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery-mute_rect.height))
         screen.blit(mute_text, mute_text_rect)
 

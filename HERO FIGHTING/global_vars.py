@@ -25,8 +25,8 @@ MAX_ITEM = 20
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant
-SHOW_HITBOX = True
-DRAW_DISTANCE = True
+SHOW_HITBOX = False
+DRAW_DISTANCE = False
 SHOW_GRID = False
 
 # Default Dimensions

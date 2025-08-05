@@ -139,13 +139,28 @@ class RectButton:
         screen.blit(self.text_surf, self.text_rect)
         # pygame.draw.rect(screen, self.rect_color, self.rect)
 
-    def is_clicked(self, mouse_pos):
+    def is_clicked(self, mouse_pos): #only detects if the mouse is in the rect
+        if self.rect.collidepoint(mouse_pos):
+            return True
+        return False
+    def is_hovered(self, mouse_pos):
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
     def toggle(self, variable):
         return not variable
     
+    def change_color(self, default=False, hovered=False, active=False, active_hovered=False):
+        if active_hovered: # 200
+            self.rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+        elif active: # 150  
+            self.rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
+        elif hovered: # 75
+            self.rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4)
+        elif default:
+            self.rect_color = (30,30,30)
+
+        print(default, hovered, active, active_hovered)
     # def associate_value(self):
     #     return self.variable
     # def mouse_pressed(self, mouse_pos, pressed):

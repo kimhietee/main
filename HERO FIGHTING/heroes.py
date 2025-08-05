@@ -3428,7 +3428,7 @@ class Fire_Knight(Player):
                             frames=self.basic_slash_big if self.facing_right else self.basic_slash_flipped_big,
                             frame_duration=BASIC_FRAME_DURATION + 50,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
+                            speed=0 if self.facing_right else 0,
                             dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
                             final_dmg=0,
                             who_attacks=self,

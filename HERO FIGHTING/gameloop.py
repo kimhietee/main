@@ -747,17 +747,11 @@ def settings():
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
     global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING
-    # max_volume = 200
-    # current_volume = 200
-    # volume_text = max_volume/2
-    # a = (center_pos[0]/3, center_pos[1], max_volume, 20)
-     #
+
     
     # current_volume = MAIN_VOLUME*100
     setting_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
     
-
-
     # true
     
     
@@ -775,8 +769,8 @@ def settings():
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
     mute_clicked = MUTE
 
-    anti_alias_button = RectButton(width-width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), TEXT_ANTI_ALIASING)
-
+    anti_alias_button = RectButton(width-width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
+    
 
     # text anti-alias
 
@@ -798,6 +792,8 @@ def settings():
             if keys[pygame.K_ESCAPE]:
                 menu()
                 return
+            
+            
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
@@ -811,9 +807,13 @@ def settings():
                 if volume_button_rect.collidepoint(event.pos):
                     volume_clicked = True
 
+                if anti_alias_button.is_clicked(event.pos):
+                    TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
+
+            
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
-
+        print(TEXT_ANTI_ALIASING)
         # Volume bar logic
         volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x-volume_bar_x, 20)
 
@@ -832,6 +832,14 @@ def settings():
         Animate_BG.waterfall_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
 
+        if anti_alias_button.is_hovered and TEXT_ANTI_ALIASING:
+            anti_alias_button.change_color(active_hovered=True)
+        elif TEXT_ANTI_ALIASING:
+            anti_alias_button.change_color(active=True)
+        elif anti_alias_button.is_hovered(mouse_pos):
+            anti_alias_button.change_color(hovered=True)
+        else:
+            anti_alias_button.change_color(default=True)
         # Draw mute button decor
         mute_color = (0, 75, 0) if mute_hovered else (30, 30, 30)
         if mute_clicked:
@@ -841,7 +849,7 @@ def settings():
         
         # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
-        anti_alias_button.update(screen, mouse_press, mouse_pos, TEXT_ANTI_ALIASING, "Text Anti-Aliasing")
+        anti_alias_button.draw(screen, TEXT_ANTI_ALIASING)
 
         # Draw mute text
         # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", TEXT_ANTI_ALIASING, white)

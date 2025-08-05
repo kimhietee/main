@@ -116,38 +116,75 @@ class ImageInfo:
 
 
 class RectButton:
-    def __init__(self, x:int, y:int, font:str, font_size:int, color:str, variable, width:int=40, height:int=40):
+    def __init__(self, x:int, y:int, font:str, font_size:int, color:str, text:str, width:int=40, height:int=40):
         self.rect = pygame.Rect(x, y, width, height)
         self.font = pygame.font.Font(font, font_size)
         self.color = color
-        self.variable = variable
+        self.text = text
+
+        self.rect_color = self.color
+        
+
 
         self.button_clicked = False
         self.button_hovered = False
-    
-    def associate_value(self):
-        return self.variable
 
-    def update(self, screen:pygame.Surface, mouse_press, mouse_pos, text_anti_alias, text, variable=None, lambda_func=None):
-        self.text = self.font.render(text, text_anti_alias, 'white')
-        button_hovered = self.rect.collidepoint(mouse_pos)
+        self.done_clicking = False
+        
+    
+    def draw(self, screen:pygame.Surface, text_anti_alias):
+        pygame.draw.rect(screen, self.rect_color, self.rect)
+        self.text_surf = self.font.render(self.text, text_anti_alias, 'white')
+        self.text_rect = self.text_surf.get_rect(center=(self.rect.centerx, self.rect.centery-self.rect.height))
+        screen.blit(self.text_surf, self.text_rect)
+        # pygame.draw.rect(screen, self.rect_color, self.rect)
+
+    def is_clicked(self, mouse_pos):
+        if self.rect.collidepoint(mouse_pos):
+            return True
+        return False
+    def toggle(self, variable):
+        return not variable
+    
+    # def associate_value(self):
+    #     return self.variable
+    # def mouse_pressed(self, mouse_pos, pressed):
+    #     return True if pressed else False
+
+    # def update(self, screen:pygame.Surface, text_anti_alias, text, activate, variable=None, lambda_func=None):
+    #     self.text = self.font.render(text, text_anti_alias, 'white')
         # for event in pygame.event.get():
         #     if event.type == pygame.MOUSEBUTTONDOWN:
         #         if button_hovered:
         #             self.button_clicked = not self.button_clicked
-        if mouse_press[0] == pygame.MOUSEBUTTONUP and button_hovered:
-            self.button_clicked = not self.button_clicked
 
-        rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
-        if self.button_clicked:
-            rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
-        if self.button_clicked and self.button_hovered:
-            rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+        # keys = pygame.key.get_pressed()
+        # mouse_pos = pygame.mouse.get_pos()
+        # mouse_press = pygame.mouse.get_pressed()
+        # key_press = pygame.key.get_pressed()
+        # button_hovered = self.rect.collidepoint(mouse_pos)
+        # for event in event_handler:
 
-        pygame.draw.rect(screen, rect_color, self.rect)
-            
-        print(self.button_clicked)
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if button_hovered:
+        #             self.button_clicked = not self.button_clicked
+                # self.done_clicking = True
 
+        # self.rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
+        # if self.button_clicked:
+        #     self.rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
+        # if self.button_clicked and self.button_hovered:
+        #     self.rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+
+        # pygame.draw.rect(screen, self.rect_color, self.rect)
+
+        # print(self.button_clicked)
+
+        # rect_color = None
+        # if button_hovered :
+        #     rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
+
+        #     pygame.draw.rect(screen, rect_color, self.rect)
 
 
     

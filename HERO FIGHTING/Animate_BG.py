@@ -173,12 +173,25 @@ waterfall_rainy_bg = AnimatedBackground(
     9,
     size="full"
 )
+smooth_waterfall_rainy_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Smooth Waterfall - Rainy\\",
+    9,
+    size="full"
+)
 
 waterfall_night_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Night\\",
     11,
     size="full"
 )
+smooth_waterfall_night_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Smooth Waterfall - Night\\",
+    11,
+    size="full"
+)
+
+
+
 
 
 #Game Background
@@ -193,4 +206,6 @@ dragon_bg.load_frames()
 # UI
 waterfall_day_bg.load_frames()
 waterfall_rainy_bg.load_frames()
+smooth_waterfall_rainy_bg.load_frames()
 waterfall_night_bg.load_frames()
+smooth_waterfall_night_bg.load_frames()

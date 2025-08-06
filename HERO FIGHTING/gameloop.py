@@ -561,7 +561,7 @@ def menu():
         else:
             campaign_button.draw(main.screen, mouse_pos)
 
- 
+        # print(SMOOTH_BG)
         pygame.display.update()
         main.clock.tick(main.FPS)
 
@@ -746,7 +746,7 @@ def settings():
 
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
-    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING
+    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING, SMOOTH_BG
 
     
     # current_volume = MAIN_VOLUME*100
@@ -770,13 +770,14 @@ def settings():
     mute_clicked = MUTE
 
     anti_alias_button = RectButton(width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
-    smooth_bg_button = RectButton(width*0.2, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
+    smooth_bg_button = RectButton(width*0.3, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
     
 
     # text anti-alias
 
 
     while True:
+        # print(SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -812,8 +813,7 @@ def settings():
                     TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
                 
                 if smooth_bg_button.is_clicked(event.pos):
-                    return
-                    TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
+                    SMOOTH_BG = smooth_bg_button.toggle(SMOOTH_BG)
 
             
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -834,7 +834,7 @@ def settings():
         pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)  # Apply mute logic
 
 
-        Animate_BG.waterfall_night_bg.display(screen, speed=50)
+        Animate_BG.waterfall_rainy_bg.display(screen, speed=50) if not SMOOTH_BG else Animate_BG.smooth_waterfall_rainy_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
 
         # Button functionality

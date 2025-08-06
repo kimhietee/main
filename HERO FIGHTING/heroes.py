@@ -209,7 +209,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,  TEXT_ANTI_ALIASING,
+    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,  TEXT_ANTI_ALIASING, SMOOTH_BG, MUTE,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -224,6 +224,8 @@ from player import Player
 from button import ImageButton
 
 from bot_ai import create_bot
+
+import Animate_BG
 
 # from chance import Chance
 
@@ -5115,6 +5117,7 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
 def player_selection():
     global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group
     global p1_select, p2_select, p1_items, p2_items
+    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING, SMOOTH_BG
     background = pygame.transform.scale(
         pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
@@ -5180,6 +5183,7 @@ def player_selection():
     
 
     while True:
+        # print(SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -5198,7 +5202,8 @@ def player_selection():
                     menu() 
                     return
 
-        screen.blit(background, (0, 0))
+        # screen.blit(background, (0, 0))
+        Animate_BG.waterfall_night_bg.display(screen, speed=50) if not SMOOTH_BG else Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
         create_title('Hero Selection', font, default_size, height * 0.1)
         menu_button.draw(screen, mouse_pos)
         
@@ -5211,11 +5216,7 @@ def player_selection():
             for selector in p1_select:
                 selector.update(mouse_pos, mouse_press, p1_select)
                 
-            
-                
-            
-            
-                
+
 
             for selector in p1_select:
                 if selector.hovered:

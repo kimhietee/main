@@ -116,6 +116,8 @@ class AnimatedBackground: # simple framed background animation (smooth)
         surface.blit(self.frames[self.current_frame], (self.pos[0], self.pos[1]))
 
 
+
+
 # background = main.pygame.transform.scale(
 #     pygame.image.load(bg_list[random.randint(0, len(bg_list)-1)]).convert(), 
 #     (main.width, main.DEFAULT_Y_POS + (720*1.1 - 720)))

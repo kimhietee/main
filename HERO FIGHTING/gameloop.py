@@ -561,7 +561,7 @@ def menu():
         else:
             campaign_button.draw(main.screen, mouse_pos)
 
-        # print(SMOOTH_BG)
+        print(SMOOTH_BG)
         pygame.display.update()
         main.clock.tick(main.FPS)
 
@@ -777,7 +777,7 @@ def settings():
 
 
     while True:
-        # print(SMOOTH_BG)
+        print(SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -852,7 +852,7 @@ def settings():
         # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
         anti_alias_button.draw(screen, TEXT_ANTI_ALIASING)
-        smooth_bg_button.draw(screen, SMOOTH_BG)
+        smooth_bg_button.draw(screen, TEXT_ANTI_ALIASING)
 
         # Draw mute text
         # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", TEXT_ANTI_ALIASING, white)

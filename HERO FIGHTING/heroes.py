@@ -5113,11 +5113,12 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
     title_rect = title.get_rect(center = (width / 2, y_offset))
     screen.blit(title, title_rect)
 
-
+print(SMOOTH_BG)
 def player_selection():
+    print(SMOOTH_BG)
     global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group
     global p1_select, p2_select, p1_items, p2_items
-    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING, SMOOTH_BG
+    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING
     background = pygame.transform.scale(
         pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
@@ -5183,7 +5184,7 @@ def player_selection():
     
 
     while True:
-        # print(SMOOTH_BG)
+        print(SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()

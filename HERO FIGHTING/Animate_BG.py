@@ -129,58 +129,66 @@ waterfall_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall\\",
     8,
     size="game_bg"
-    # (main.width, int(main.height * 0.825)) # 594
 )
 
 lava_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Magma Chamber\\",
     8,
     size="game_bg"
-    # size=(main.width, main.height)
-    # (main.width, int(main.height * 0.825)) # 594
 )
 
 dark_forest_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dark Forest\\",
     8,
     size="game_bg"
-    # size=(main.width, main.height)
-    # (main.width, int(main.height * 0.825)) # 594
 )
 
+trees_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Trees\\",
+    40,
+    size="game_bg"
+)
+
+# ------------------------------------
 
 dragon_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dragon\\",
     35,
     size=["custom", (main.width, main.height-100)],
     pos=(0,50)
-    # (main.width, int(main.height * 0.825)) # 594
 )
 
-
-
-
-
+# ------------------------------------
 
 waterfall_day_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Day\\",
     7,
     size="full"
-    # (main.width, int(main.height * 0.825)) # 594
 )
 
+waterfall_rainy_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Waterfall - Rainy\\",
+    9,
+    size="full"
+)
 
+waterfall_night_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Waterfall - Night\\",
+    11,
+    size="full"
+)
 
 
 #Game Background
 waterfall_bg.load_frames()
 lava_bg.load_frames()
 dark_forest_bg.load_frames()
+trees_bg.load_frames()
 
 # Main
 dragon_bg.load_frames()
 
-
-
 # UI
 waterfall_day_bg.load_frames()
+waterfall_rainy_bg.load_frames()
+waterfall_night_bg.load_frames()

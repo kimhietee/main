@@ -160,7 +160,7 @@ class RectButton:
         elif default:
             self.rect_color = (30,30,30)
 
-        print(default, hovered, active, active_hovered)
+        # print(default, hovered, active, active_hovered)
     # def associate_value(self):
     #     return self.variable
     # def mouse_pressed(self, mouse_pos, pressed):

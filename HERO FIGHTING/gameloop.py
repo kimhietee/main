@@ -769,7 +769,8 @@ def settings():
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
     mute_clicked = MUTE
 
-    anti_alias_button = RectButton(width-width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
+    anti_alias_button = RectButton(width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
+    smooth_bg_button = RectButton(width*0.2, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
     
 
     # text anti-alias
@@ -809,11 +810,15 @@ def settings():
 
                 if anti_alias_button.is_clicked(event.pos):
                     TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
+                
+                if smooth_bg_button.is_clicked(event.pos):
+                    return
+                    TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
 
             
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
-        print(TEXT_ANTI_ALIASING)
+        # print(TEXT_ANTI_ALIASING)
         # Volume bar logic
         volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x-volume_bar_x, 20)
 
@@ -829,10 +834,10 @@ def settings():
         pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)  # Apply mute logic
 
 
-        Animate_BG.waterfall_bg.display(screen, speed=50)
+        Animate_BG.waterfall_rainy_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
 
-        if anti_alias_button.is_hovered and TEXT_ANTI_ALIASING:
+        if anti_alias_button.is_hovered(mouse_pos) and TEXT_ANTI_ALIASING:
             anti_alias_button.change_color(active_hovered=True)
         elif TEXT_ANTI_ALIASING:
             anti_alias_button.change_color(active=True)
@@ -840,6 +845,17 @@ def settings():
             anti_alias_button.change_color(hovered=True)
         else:
             anti_alias_button.change_color(default=True)
+
+
+        if smooth_bg_button.is_hovered(mouse_pos) and True:
+            smooth_bg_button.change_color(active_hovered=True)
+        elif True:
+            smooth_bg_button.change_color(active=True)
+        elif smooth_bg_button.is_hovered(mouse_pos):
+            smooth_bg_button.change_color(hovered=True)
+        else:
+            smooth_bg_button.change_color(default=True)
+
         # Draw mute button decor
         mute_color = (0, 75, 0) if mute_hovered else (30, 30, 30)
         if mute_clicked:
@@ -1002,10 +1018,6 @@ settings_button = ImageButton(
     text_color='white',
     text_anti_alias=TEXT_ANTI_ALIASING
 )
-
-
-
-
 
 
 

@@ -19,6 +19,7 @@ cyan2 = 'Cyan2'
 gold = 'Gold'
 MAIN_VOLUME = 0.5
 TEXT_ANTI_ALIASING = False
+SMOOTH_BG = False
 MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 

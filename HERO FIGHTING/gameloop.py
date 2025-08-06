@@ -10,7 +10,7 @@ from global_vars import (
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,  TEXT_ANTI_ALIASING,
+    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,  TEXT_ANTI_ALIASING, SMOOTH_BG,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -834,27 +834,13 @@ def settings():
         pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)  # Apply mute logic
 
 
-        Animate_BG.waterfall_rainy_bg.display(screen, speed=50)
+        Animate_BG.waterfall_night_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
 
-        if anti_alias_button.is_hovered(mouse_pos) and TEXT_ANTI_ALIASING:
-            anti_alias_button.change_color(active_hovered=True)
-        elif TEXT_ANTI_ALIASING:
-            anti_alias_button.change_color(active=True)
-        elif anti_alias_button.is_hovered(mouse_pos):
-            anti_alias_button.change_color(hovered=True)
-        else:
-            anti_alias_button.change_color(default=True)
+        # Button functionality
+        anti_alias_button.update(mouse_pos, TEXT_ANTI_ALIASING)
+        smooth_bg_button.update(mouse_pos, SMOOTH_BG)
 
-
-        if smooth_bg_button.is_hovered(mouse_pos) and True:
-            smooth_bg_button.change_color(active_hovered=True)
-        elif True:
-            smooth_bg_button.change_color(active=True)
-        elif smooth_bg_button.is_hovered(mouse_pos):
-            smooth_bg_button.change_color(hovered=True)
-        else:
-            smooth_bg_button.change_color(default=True)
 
         # Draw mute button decor
         mute_color = (0, 75, 0) if mute_hovered else (30, 30, 30)
@@ -866,6 +852,7 @@ def settings():
         # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
         anti_alias_button.draw(screen, TEXT_ANTI_ALIASING)
+        smooth_bg_button.draw(screen, SMOOTH_BG)
 
         # Draw mute text
         # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", TEXT_ANTI_ALIASING, white)

@@ -27,8 +27,8 @@ MAX_ITEM = 20
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant
-SHOW_HITBOX = False
-DRAW_DISTANCE = False
+SHOW_HITBOX = True
+DRAW_DISTANCE = True
 SHOW_GRID = False
 
 # Default Dimensions
@@ -148,6 +148,7 @@ fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
 wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
 fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
 wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
+water_princess_icon = r'assets\characters\Water princess\water_priestess.png' # temp
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'

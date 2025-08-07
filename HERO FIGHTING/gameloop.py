@@ -4,19 +4,21 @@ import random
 from global_vars import (
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
-    DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, MAIN_VOLUME, SHOW_GRID,
+    DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size,
     DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
     LOW_HP, LITERAL_HEALTH_DEAD,
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAIN_VOLUME, MUTE,  TEXT_ANTI_ALIASING, SMOOTH_BG,
+    ICON_WIDTH, ICON_HEIGHT,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
     attack_display, MULT, dmg_mult
 )
 from global_vars import SHOW_HITBOX
+
+import global_vars
 
 
 from button import ImageButton, ImageInfo
@@ -161,16 +163,49 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
             # pos_text = f"{x}, {reversed_y}"
             pos_text = f"{reversed_y}"
 
-            text_surface = font.render(pos_text, TEXT_ANTI_ALIASING, (150, 150, 255))
+            text_surface = font.render(pos_text, global_vars.TEXT_ANTI_ALIASING, (150, 150, 255))
             screen.blit(text_surface, (x - 5, y + 2))
 
 
 
         
-        
+# def map_selection():
+
+#     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
+#     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
+
+#     while True:
+#         keys = pygame.key.get_pressed()
+#         mouse_pos = pygame.mouse.get_pos()
+#         mouse_press = pygame.mouse.get_pressed()
+#         key_press = pygame.key.get_pressed()
+
+#         main.screen.fill((0, 0, 0))
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 exit()   
+
+#             if event.type == pygame.MOUSEBUTTONDOWN:
+#                 if play_button.is_clicked(event.pos):
+#                     # fade(background, menu)
+#                     menu()
+#                     return
+#             if keys[pygame.K_RETURN]:
+#                 menu()
+#                 return
+
+        # main.screen.blit(background, (0, 0))
+        # Animate_BG.waterfall_night_bg.display(screen, speed=50) if not global_vars.SMOOTH_BG else Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+        # create_title('Map Selection', font, default_size, height * 0.1)
+        # menu_button.draw(screen, mouse_pos)
+
+        # pygame.display.update()
+        # main.clock.tick(main.FPS)
+def run_background(bg):
+    bg.display(screen)
 
 def game(bg=None):
-    global MUTE
     game_music_started = False
     second_track_played = False
     print('stopping music')
@@ -196,7 +231,7 @@ def game(bg=None):
     timer_font = pygame.font.Font(r'assets\font\slkscr.ttf', 50)  # Timer font
 
     cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
-    cube_sound.set_volume(0.8 * MAIN_VOLUME) 
+    cube_sound.set_volume(0.8 * global_vars.MAIN_VOLUME) 
 
     cubes = [
         {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(r'assets\icons\hp bonus.png').convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
@@ -223,7 +258,7 @@ def game(bg=None):
         elapsed_time = (current_time - start_time) // 1000  # Convert to seconds
 
         main.screen.fill((0, 0, 0))
-        # print(MUTE)
+        # print(global_vars.MAIN_VOLUME)
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
@@ -232,14 +267,14 @@ def game(bg=None):
 
             if event.type == pygame.USEREVENT + 1 and not game_music_started:
                 pygame.mixer.music.load(GAME_MUSIC_1)
-                pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME * 0.5)  # Apply mute logic
+                pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME * 0.5)  # Apply mute logic
                 pygame.mixer.music.play(-1, fade_ms=1500)
                 game_music_started = True
                 print("Started game music 1")
 
             elif event.type == pygame.USEREVENT and game_music_started and not second_track_played:
                 pygame.mixer.music.load(GAME_MUSIC_2)
-                pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME * 0.5)  # Apply mute logic
+                pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME * 0.5)  # Apply mute logic
                 pygame.mixer.music.play(loops=-1, fade_ms=1500)
                 second_track_played = True
                 print("Started game music 2")
@@ -326,11 +361,12 @@ def game(bg=None):
         # Background
         # Animate_BG.waterfall_bg.display(screen)
         # Animate_BG.lava_bg.display(screen)
-        Animate_BG.dark_forest_bg.display(screen)
+        # Animate_BG.dark_forest_bg.display(screen)
+        run_background(main.map_selected)
 
         # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
-        draw_grid(screen) if SHOW_GRID else None
+        draw_grid(screen) if global_vars.SHOW_GRID else None
 
         # draws animated cloud background (lag)
         # animated_bg.update()
@@ -369,7 +405,7 @@ def game(bg=None):
                 cube['sound']
             )
 
-        timer_text = timer_font.render(f"[{elapsed_time}]", TEXT_ANTI_ALIASING, main.white)
+        timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
         main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
         
         menu_button.draw(main.screen, mouse_pos)
@@ -463,7 +499,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
     return cube_fall, cube_x
 
-pygame.mixer.music.set_volume(0.8 * MAIN_VOLUME)
+pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
 def menu():
     pygame.mixer.music.fadeout(1000)
     pygame.time.set_timer(pygame.USEREVENT + 3, 1000)
@@ -471,10 +507,10 @@ def menu():
     pygame.mixer.music.stop()
     pygame.mixer.music.load(MENU_MUSIC)
     # Set volume based on mute state
-    if MUTE:
+    if global_vars.MUTE:
         pygame.mixer.music.set_volume(0)
     else:
-        pygame.mixer.music.set_volume(MAIN_VOLUME)
+        pygame.mixer.music.set_volume(global_vars.MAIN_VOLUME)
     if not pygame.mixer.music.get_busy():
         pygame.mixer.music.play(loops=-1, fade_ms=1500)  # Loop indefinitely
     print('playing music')
@@ -561,7 +597,7 @@ def menu():
         else:
             campaign_button.draw(main.screen, mouse_pos)
 
-        print(SMOOTH_BG)
+        # print(global_vars.MAIN_VOLUME)
         pygame.display.update()
         main.clock.tick(main.FPS)
 
@@ -611,7 +647,7 @@ def info():
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
     previous = ImageButton(
     image_path=text_box_img,
@@ -621,7 +657,7 @@ def info():
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.02),  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
     
     inffo = ImageButton(
@@ -632,7 +668,7 @@ def info():
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=int(height * 0.015),  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
     
     switch = False
@@ -709,6 +745,7 @@ def main_menu():
 
         # main.screen.blit(background, (0, 0))
         Animate_BG.dragon_bg.display(screen, speed=50)
+        # Animate_BG.trees_bg.display(screen, speed=50)
         create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
 
@@ -736,20 +773,20 @@ def reset_all():
     attack_display.empty()
 
 volume_limit = {'min':100, 'max':300}
-current_volume = (MAIN_VOLUME*100) + volume_limit['min']
+current_volume = (global_vars.MAIN_VOLUME*100) + volume_limit['min']
 volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
 
 # NOTE: The mute button does not use this function
 from button import RectButton
 
 def settings():
-
+    
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
-    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING, SMOOTH_BG
+    # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
 
     
-    # current_volume = MAIN_VOLUME*100
+    # current_volume = global_vars.MAIN_VOLUME*100
     setting_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
     
     # true
@@ -762,12 +799,12 @@ def settings():
     volume_bar_x = 100
     volume_bar_y = center_pos[1]
     volume_bar_decor_rect = pygame.Rect(volume_bar_x-5, volume_bar_y-5, (volume_limit['max']-volume_limit['min']+20), 30)
-    volume_button_rect.x = volume_bar_x + (MAIN_VOLUME * 200)  # 200 is the range
+    volume_button_rect.x = volume_bar_x + (global_vars.MAIN_VOLUME * 200)  # 200 is the range
     volume_button_rect.y = volume_bar_y - 2
 
     # Mute button decor
     mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
-    mute_clicked = MUTE
+    mute_clicked = global_vars.MUTE
 
     anti_alias_button = RectButton(width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
     smooth_bg_button = RectButton(width*0.3, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
@@ -777,7 +814,7 @@ def settings():
 
 
     while True:
-        print(SMOOTH_BG)
+        # print(global_vars.SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -803,22 +840,22 @@ def settings():
                     return
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked
-                    MUTE = mute_clicked
-                    pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)
+                    global_vars.MUTE = mute_clicked
+                    pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME)
                         
                 if volume_button_rect.collidepoint(event.pos):
                     volume_clicked = True
 
                 if anti_alias_button.is_clicked(event.pos):
-                    TEXT_ANTI_ALIASING = anti_alias_button.toggle(TEXT_ANTI_ALIASING)
+                    global_vars.TEXT_ANTI_ALIASING = anti_alias_button.toggle(global_vars.TEXT_ANTI_ALIASING)
                 
                 if smooth_bg_button.is_clicked(event.pos):
-                    SMOOTH_BG = smooth_bg_button.toggle(SMOOTH_BG)
+                    global_vars.SMOOTH_BG = smooth_bg_button.toggle(global_vars.SMOOTH_BG)
 
             
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
-        # print(TEXT_ANTI_ALIASING)
+        # print(global_vars.MAIN_VOLUME)
         # Volume bar logic
         volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x-volume_bar_x, 20)
 
@@ -830,16 +867,13 @@ def settings():
             volume_button_rect.x = volume_bar_x
 
         # Calculate volume
-        MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max'] - volume_limit['min']))
-        pygame.mixer.music.set_volume(0 if MUTE else MAIN_VOLUME)  # Apply mute logic
+        global_vars.MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max'] - volume_limit['min']))
+        pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME)  # Apply mute logic
 
 
-        Animate_BG.waterfall_rainy_bg.display(screen, speed=50) if not SMOOTH_BG else Animate_BG.smooth_waterfall_rainy_bg.display(screen, speed=50)
+        Animate_BG.waterfall_rainy_bg.display(screen, speed=50) if not global_vars.SMOOTH_BG else Animate_BG.smooth_waterfall_rainy_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
-
-        # Button functionality
-        anti_alias_button.update(mouse_pos, TEXT_ANTI_ALIASING)
-        smooth_bg_button.update(mouse_pos, SMOOTH_BG)
+        
 
 
         # Draw mute button decor
@@ -851,12 +885,17 @@ def settings():
         
         # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
-        anti_alias_button.draw(screen, TEXT_ANTI_ALIASING)
-        smooth_bg_button.draw(screen, TEXT_ANTI_ALIASING)
+
+        # Button functionality
+        anti_alias_button.update(mouse_pos, global_vars.TEXT_ANTI_ALIASING)
+        smooth_bg_button.update(mouse_pos, global_vars.SMOOTH_BG)
+        # Drawing buttons
+        anti_alias_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         # Draw mute text
-        # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", TEXT_ANTI_ALIASING, white)
-        mute_text = setting_font.render('Mute', TEXT_ANTI_ALIASING, white)
+        # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", global_vars.TEXT_ANTI_ALIASING, white)
+        mute_text = setting_font.render('Mute', global_vars.TEXT_ANTI_ALIASING, white)
         mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery-mute_rect.height))
         screen.blit(mute_text, mute_text_rect)
 
@@ -868,14 +907,14 @@ def settings():
         # Draw volume number background and text
         vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max']-volume_limit['min']) + 30, volume_bar_y-5, 60, 30)
         pygame.draw.rect(screen, black, vol_num_rect)
-        vol_num = int(MAIN_VOLUME * 100) if not mute_clicked else 0
+        vol_num = int(global_vars.MAIN_VOLUME * 100) if not mute_clicked else 0
         vol_num_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
-        vol_num_text = vol_num_font.render(f'{vol_num}%', TEXT_ANTI_ALIASING, white)
+        vol_num_text = vol_num_font.render(f'{vol_num}%', global_vars.TEXT_ANTI_ALIASING, white)
         vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
         screen.blit(vol_num_text, vol_num_text_rect)
 
         menu_button.draw(screen, mouse_pos)
-        # print(MUTE)
+        # print(global_vars.MUTE)
 
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -897,7 +936,7 @@ loading = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 # Menu button to return to menu()
@@ -909,7 +948,7 @@ menu_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 # main_menu()
@@ -921,7 +960,7 @@ play_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 # menu()
@@ -933,7 +972,7 @@ campaign_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING,
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
     hover_move=0
 )
 #_____ for campaign
@@ -945,7 +984,7 @@ coming_soon_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING,
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
     hover_move=0,
     alpha=(0.75, 1)
 )
@@ -959,7 +998,7 @@ single_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 multiplayer_button = ImageButton(
@@ -970,7 +1009,7 @@ multiplayer_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 info_button = ImageButton(
@@ -981,7 +1020,7 @@ info_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 control_button = ImageButton(
@@ -992,7 +1031,7 @@ control_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 settings_button = ImageButton(
@@ -1003,13 +1042,13 @@ settings_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 
 
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
-    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
+    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (width / 2, y_offset))
     screen.blit(title, title_rect)
 

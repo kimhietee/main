@@ -148,7 +148,8 @@ dark_forest_bg = AnimatedBackground(
 trees_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Trees\\",
     40,
-    size="game_bg"
+    size="full",
+    pos=(0, -50)
 )
 
 # ------------------------------------

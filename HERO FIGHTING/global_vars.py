@@ -155,6 +155,11 @@ text_box_img = r'assets\UI\buttons\Button BG.png'
 loading_button_img = r'assets\UI\buttons\Loading icon.png'
 menu_button_img = r'assets\UI\more\BTN MENU.png' 
 
+#background icons
+waterfall_icon = r'assets\backgrounds\map_icon\waterfall_icon.gif'
+lava_icon = r'assets\backgrounds\map_icon\magma_chamber_icon.gif'
+dark_forest_icon = r'assets\backgrounds\map_icon\dark_forest_icon.gif'
+trees_icon = r'assets\backgrounds\map_icon\trees.gif'
 # button modifers
 
 scale = 1

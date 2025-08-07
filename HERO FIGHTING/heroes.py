@@ -203,13 +203,14 @@ import pygame.sprite
 from global_vars import (
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
+    waterfall_icon, lava_icon, dark_forest_icon, trees_icon,
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, BASIC_ATK_COOLDOWN, BASIC_FRAME_DURATION, BASIC_ATK_DAMAGE, BASIC_ATK_DAMAGE2, BASIC_ATK_DAMAGE3, BASIC_ATK_DAMAGE4,
     DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION, BASIC_ATK_POSX, BASIC_ATK_POSX_END, BASIC_ATK_POSY, SPECIAL_MULTIPLIER, MAX_SPECIAL, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
-    LOW_HP, LITERAL_HEALTH_DEAD, SINGLE_MODE_ACTIVE, SHOW_HITBOX, MAIN_VOLUME, DRAW_DISTANCE,
+    LOW_HP, LITERAL_HEALTH_DEAD, SINGLE_MODE_ACTIVE, SHOW_HITBOX, DRAW_DISTANCE,
     DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
     JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,  TEXT_ANTI_ALIASING, SMOOTH_BG, MUTE,
+    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
@@ -226,6 +227,8 @@ from button import ImageButton
 from bot_ai import create_bot
 
 import Animate_BG
+
+import global_vars
 
 # from chance import Chance
 
@@ -351,7 +354,7 @@ class Attacks:
                 # Draw scaled cooldown text
                 font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
                 cooldown_time = max(0, (self.cooldown - (pygame.time.get_ticks() - self.last_used_time)) // 1000)
-                cooldown_text = font.render(str(cooldown_time), TEXT_ANTI_ALIASING, 'Red')
+                cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
                     self.skill_rect.centery - cooldown_text.get_height() // 2
@@ -366,7 +369,7 @@ class Attacks:
 
                 # Mana cost when not enough mana
                 mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
-                self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', TEXT_ANTI_ALIASING, 'Red')
+                self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(self.atk_mana_cost, (
                     self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
                     self.skill_rect.top - self.mana_y_offset
@@ -383,14 +386,14 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
-                self.atk_special_cost = special_font.render(f'[{max_special}]', TEXT_ANTI_ALIASING, 'azure3')
+                self.atk_special_cost = special_font.render(f'[{max_special}]', global_vars.TEXT_ANTI_ALIASING, 'azure3')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
                 ))
             else:
                 special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
-                self.atk_special_cost = special_font.render(f'[{max_special}]', TEXT_ANTI_ALIASING, 'yellow')
+                self.atk_special_cost = special_font.render(f'[{max_special}]', global_vars.TEXT_ANTI_ALIASING, 'yellow')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
@@ -421,7 +424,7 @@ class Attacks:
         if not self.special_skill:
             mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
             color = 'Cyan2' if mana >= self.mana_cost else 'Red'
-            self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', TEXT_ANTI_ALIASING, color)
+            self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', global_vars.TEXT_ANTI_ALIASING, color)
 
             screen.blit(self.atk_mana_cost, (
                 self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
@@ -1013,10 +1016,10 @@ class Fire_Wizard(Player):
         self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3')
         self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
         self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3')
-        self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.1 * MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.sp_sound.set_volume(0.5 * MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.1 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source
         atk1 = [r'assets\attacks\fire wizard\atk1', FIRE_WIZARD_ATK1, 1]
@@ -1820,10 +1823,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
         self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
         self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
-        self.atk1_sound.set_volume(0.4 * MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * MAIN_VOLUME)
-        self.sp_sound.set_volume(0.3 * MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
 
         # # Player Skill Animations Source
         basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
@@ -2608,7 +2611,7 @@ class Display_Text: # display damage taken text previously (not working for now)
         self.health_detect = 0
 
         self.font = pygame.font.SysFont('Times New Roman', 25)
-        self.text = self.font.render(self.num_txt, TEXT_ANTI_ALIASING, 'Red')
+        self.text = self.font.render(self.num_txt, global_vars.TEXT_ANTI_ALIASING, 'Red')
         
         self.health_now = self.health
         if self.health_now >= self.health_detect:
@@ -2685,13 +2688,13 @@ class Fire_Knight(Player):
         self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\2nd.mp3')
         self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
         self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\ult.mp3')
-        self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.sp_sound.set_volume(0.5 * MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
         self.burn_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
-        self.burn_sound.set_volume(0.5 * MAIN_VOLUME)
+        self.burn_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]
@@ -3716,18 +3719,18 @@ class Wind_Hashashin(Player):
         self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\2nd.mp3')
         self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\3rd.mp3')
         self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 1, slash.mp3')
-        self.atk1_sound.set_volume(0.5 * MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.4 * MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * MAIN_VOLUME)
-        self.sp_sound.set_volume(0.3 * MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
         
         self.x_slash_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\x slash 2nd,3rd, 4th.mp3')
         self.sp_sound2 = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 2, flesh hit.mp3')
-        self.x_slash_sound.set_volume(0.3 * MAIN_VOLUME)
-        self.sp_sound2.set_volume(0.4 * MAIN_VOLUME)
+        self.x_slash_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
+        self.sp_sound2.set_volume(0.4 * global_vars.MAIN_VOLUME)
 
         self.atk3_sound_special = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
-        self.atk3_sound_special.set_volume(0.5 * MAIN_VOLUME)
+        self.atk3_sound_special.set_volume(0.5 * global_vars.MAIN_VOLUME)
         # (The rest of the code follows same structure and renaming logic...)
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]
@@ -4668,7 +4671,7 @@ class Wind_Hashashin(Player):
 
 #     def draw(self, screen):
 #         pygame.draw.rect(screen, self.color, self.rect)
-#         text_surf = self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color)
+#         text_surf = self.font.render(self.text, global_vars.TEXT_ANTI_ALIASING, self.text_color)
 #         text_rect = text_surf.get_rect(center=self.rect.center)
 #         screen.blit(text_surf, text_rect)
 
@@ -4788,7 +4791,7 @@ center_pos = (width / 2, height / 2)
 #         self.text = text
 #         self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
 #         self.text_color = text_color
-#         self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
+#         self.text_surf = pygame.transform.rotozoom(self.font.render(self.text, global_vars.TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
             
 #         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
@@ -4932,7 +4935,7 @@ class PlayerSelector:
             font_path=r'assets\font\slkscr.ttf',  # or any other font path
             font_size=font_size * 0.6,  # dynamic size ~29 at 720p
             text_color='white',
-            text_anti_alias=TEXT_ANTI_ALIASING
+            text_anti_alias=global_vars.TEXT_ANTI_ALIASING
         )
 
 
@@ -5055,7 +5058,7 @@ class ImageBro:
         screen.blit(self.image, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.05), self.hover_pos[1] - (self.hover_pos[1] * 0.29)))
 
         for i, line in enumerate(self.text_lines):
-            self.text_surf = pygame.transform.rotozoom(self.font.render(line, TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
+            self.text_surf = pygame.transform.rotozoom(self.font.render(line, global_vars.TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
             screen.blit(self.text_surf, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.04), self.hover_pos[1] + i * 30))
 
 
@@ -5072,7 +5075,7 @@ menu_button = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 loading = ImageButton(
@@ -5083,7 +5086,7 @@ loading = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 fight = ImageButton(
@@ -5094,7 +5097,7 @@ fight = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 done = ImageButton(
@@ -5105,20 +5108,23 @@ done = ImageButton(
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
-    text_anti_alias=TEXT_ANTI_ALIASING
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
-    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
+    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (width / 2, y_offset))
     screen.blit(title, title_rect)
 
-print(SMOOTH_BG)
+# print('opening player selection')
+# print(global_vars.SMOOTH_BG)
 def player_selection():
-    print(SMOOTH_BG)
+    global map_selected
+    # print('player selection opened')
+    # print(global_vars.SMOOTH_BG)
     global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group
     global p1_select, p2_select, p1_items, p2_items
-    global MAIN_VOLUME, MUTE, TEXT_ANTI_ALIASING
+    # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
     background = pygame.transform.scale(
         pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
@@ -5176,15 +5182,26 @@ def player_selection():
         PlayerSelector(items[12].image, (width - (75 * 8), height - 300), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
     ]
         
+    map_select = [
+        PlayerSelector(waterfall_icon, (75*2, height - (75*5)), Animate_BG.waterfall_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*5)), Animate_BG.lava_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*5)), Animate_BG.dark_forest_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*5)), Animate_BG.trees_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72))
+    ]
     
     player_1_choose = True
     player_2_choose = False
+    map_choose = False
+
+    map_selected = Animate_BG.waterfall_bg # Default
 
     go = False
     
 
     while True:
-        print(SMOOTH_BG)
+        # print('running')
+        # print(global_vars.MAIN_VOLUME)
+        # return
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -5204,8 +5221,8 @@ def player_selection():
                     return
 
         # screen.blit(background, (0, 0))
-        Animate_BG.waterfall_night_bg.display(screen, speed=50) if not SMOOTH_BG else Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
-        create_title('Hero Selection', font, default_size, height * 0.1)
+        Animate_BG.waterfall_night_bg.display(screen, speed=50) if not global_vars.SMOOTH_BG else Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+        create_title('Hero Selection', font, default_size, height * 0.1) if not map_choose else None
         menu_button.draw(screen, mouse_pos)
         
 
@@ -5215,7 +5232,7 @@ def player_selection():
             # wanderer_magician_select.update(mouse_pos, mouse_press)
 
             for selector in p1_select:
-                selector.update(mouse_pos, mouse_press, p1_select)
+                selector.update(mouse_pos, mouse_press, p1_select, max_selected=1)
                 
 
 
@@ -5255,10 +5272,9 @@ def player_selection():
 
 
         if player_2_choose:
-            create_title('PLAYER 2 CHOOSE HERO', font, default_size - 0.4, height * 0.19)
+            create_title('PLAYER 2 CHOOSE HERO', font, default_size - 0.55, height * 0.19)
             for selector in p2_select:
-                selector.update(mouse_pos, mouse_press, p2_select)
-
+                selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
 
             for selector in p2_select:
                 if selector.hovered:
@@ -5275,10 +5291,7 @@ def player_selection():
                     for item in p2_items:
                         if item.hovered:
                             item.class_item.update((-(width * 0.0001), height - 500))
-
-
-                    
-                            
+  
                     # print(PLAYER_2_SELECTED_HERO)
                     go = True
                     break
@@ -5287,6 +5300,45 @@ def player_selection():
                     
                     
 
+            if go:
+                done.draw(screen, mouse_pos)
+                if pygame.mouse.get_pressed()[0] and done.is_clicked(mouse_pos) or keys[pygame.K_SPACE]:
+                    loading.draw(screen, pygame.mouse.get_pos())
+                    pygame.display.update()
+                    pygame.time.delay(500)
+
+                    player_2_choose = False
+                    map_choose = True
+                    go = False
+
+
+        if map_choose:
+            create_title('MAP SELECT', font, default_size, height * 0.1)
+            for selector in map_select:
+                selector.update(mouse_pos, mouse_press, map_select, max_selected=1)
+
+            for selector in map_select:
+                # if selector.hovered:
+                #     selector.the_info((-(width * 0.0001), height - 500))
+                if selector.is_selected():
+                    map_selected = selector.associate_value()
+
+                    # # Draw item selection
+                    # for item in p2_items:
+                    #     item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
+                    # for item in p2_items:
+                    #     item.draw()
+
+                    # for item in p2_items:
+                    #     if item.hovered:
+                    #         item.class_item.update((-(width * 0.0001), height - 500))
+  
+                    # print(PLAYER_2_SELECTED_HERO)
+                    go = True
+                    break
+                else:
+                    go = False
+                
             if go:
                 fight.draw(screen, mouse_pos)
                 if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE]:
@@ -5298,16 +5350,11 @@ def player_selection():
                     
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
-                        
-                    
-           
 
                     if SINGLE_MODE_ACTIVE:
                         # from botclass import Bot
                         bot = create_bot(hero2.__class__)
                         hero2 = bot(hero1)
-
-                    
 
                     for item in p1_items:
                         if item.is_selected():
@@ -5316,27 +5363,15 @@ def player_selection():
                     for item in p2_items:
                         if item.is_selected():
                             hero2.items.append(item.associate_value())
-                            #bot.items.append(item.associate_value())
-
 
                     hero1.apply_item_bonuses()
                     hero2.apply_item_bonuses()
-                    #bot.apply_item_bonuses()
 
                     hero1_group = pygame.sprite.Group()
                     hero1_group.add(hero1)
-                    # hero2_group = pygame.sprite.Group()
-                    # hero2_group.add(hero2)
 
                     hero2_group = pygame.sprite.Group()
                     hero2_group.add(hero2)
-
-                    # bot_group = pygame.sprite.Group()
-                    # bot_group.add(bot)
-
-                    
-                    
-                    
 
                     pygame.mixer.music.fadeout(1000)
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)

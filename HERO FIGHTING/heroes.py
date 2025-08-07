@@ -969,6 +969,9 @@ class Fire_Wizard(Player):
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         
+        # Update log for heroes
+
+        #wind hashashin
         # Skill 1: (10, 0) = 10 -> (8, 0) = 8
         # Skill 2: (35/45, 0):tornado = 5-6 + (15/15, 5):slash = 20 = 25-26 -> (35/45, 0):tornado = 5-6 + (12/15, 4):slash = 16 = 21-22
         # Skill 3: (200/20, 25):whirl = 10 + (15/15, 5):slash = 10 = 30 -> (35/45, 0):whirl = 5-6 + (12/15, 4):slash = 16 = 26
@@ -978,6 +981,17 @@ class Fire_Wizard(Player):
         # Skill 2: 30 -> 26
         # Skill 3: 37 = 37
         # Skill 4: 86 -> 69
+
+        #fire knight
+        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
+        # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
+        # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
+        # Skill 4: 80 = 80
+
+        #Skill 4: 
+            # Swapped damage explosion
+        # (10/10, 50):start + (25/10, 5):explosion = 90
+        # -> (25/10, 5):start + (10/10, 45):explosion = 85
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -2661,11 +2675,11 @@ class Fire_Knight(Player):
         self.sp_cooldown = 60000
 
         self.atk1_damage = (10/49, 2)
-        self.atk2_damage = (25/20, 5)
-        self.atk3_damage = (35/60, 10)
+        self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
+        self.atk3_damage = (35/60, 7)
         self.sp_damage = (65/65, 15) 
-        self.special_sp_damage1 = (10/10, 50) # 60
-        self.special_sp_damage2 = (25/10, 5) # 30, total 90 damage
+        self.special_sp_damage2 = (10/10, 45) # 60
+        self.special_sp_damage1 = (25/10, 5) # 30, total 85 damage
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)

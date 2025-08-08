@@ -4026,13 +4026,13 @@ class Wind_Hashashin(Player):
                 if right_hotkey:  # Move right
                     self.running = True
                     self.facing_right = True #if self.player_type == 1 else False
-                    self.x_pos += (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.3)))
+                    self.x_pos += (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.25)))
                     if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
                         self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
                 elif left_hotkey:  # Move left
                     self.running = True
                     self.facing_right = False #if self.player_type == 1 else True
-                    self.x_pos -= (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.3)))
+                    self.x_pos -= (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.25)))
                     if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
                         self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
                 else:
@@ -4703,6 +4703,8 @@ WATER_PRINCESS_ATK3_COUNT = 27
 WATER_PRINCESS_SP_COUNT = 32
 WATER_PRINCESS_DEATH_COUNT = 16
 
+WATER_PRINCESS_SURF_COUNT = 8
+
 # WATER_PRINCESS_ATK1 = 0
 # WATER_PRINCESS_ATK2 = 0
 # WATER_PRINCESS_ATK3 = 0
@@ -4710,7 +4712,7 @@ WATER_PRINCESS_DEATH_COUNT = 16
 # ---------------------
 # print((WATER_PRINCESS_ATK2 * 0.01) * 4 * 5)
 
-WATER_PRINCESS_ATK1_SIZE = 5
+WATER_PRINCESS_ATK1_SIZE = 2
 WATER_PRINCESS_ATK2_SIZE = 2
 WATER_PRINCESS_ATK3_SIZE = 2
 WATER_PRINCESS_SP_SIZE = 4  
@@ -4765,9 +4767,15 @@ class Water_Princess(Player):
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
         
+
+        self.player_surf_index = 0
+        self.player_surf_index_flipped = 0
         # Player Animation Source
         jump_ani = [r'assets\characters\Water princess\png\04_j_up\j_up_', WATER_PRINCESS_JUMP_COUNT, 0]
         run_ani = [r'assets\characters\Water princess\png\02_walk\walk_', WATER_PRINCESS_RUN_COUNT, 0]
+
+        surf_ani = [r'assets\characters\Water princess\png\03_surf\surf_', WATER_PRINCESS_SURF_COUNT, 0]
+
         idle_ani = [r'assets\characters\Water princess\png\01_idle\idle_', WATER_PRINCESS_IDLE_COUNT, 0]
         atk1_ani = [r'assets\characters\Water princess\png\07_1_atk\1_atk_', WATER_PRINCESS_ATK1_COUNT, 0]
         atk2_ani = [r'assets\characters\Water princess\png\08_2_atk\2_atk_', WATER_PRINCESS_ATK2_COUNT, 0]
@@ -4846,7 +4854,7 @@ class Water_Princess(Player):
         frame_height=100, 
         rows=8, 
         columns=5, 
-        scale=WATER_PRINCESS_ATK1_SIZE, 
+        scale=WATER_PRINCESS_ATK2_SIZE, 
         rotation=0,
     )
         self.atk3 = load_attack(
@@ -4924,7 +4932,11 @@ class Water_Princess(Player):
         self.player_idle = self.load_img_frames(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_idle_flipped = self.load_img_frames_flipped(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_run = self.load_img_frames(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE_2)
-        self.player_run_flipped = self.load_img_frames_flipped(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE_2)    
+        self.player_run_flipped = self.load_img_frames_flipped(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE_2)  
+
+        self.player_surf = self.load_img_frames(surf_ani[0], surf_ani[1], surf_ani[2], DEFAULT_CHAR_SIZE_2)
+        self.player_surf_flipped = self.load_img_frames_flipped(surf_ani[0], surf_ani[1], surf_ani[2], DEFAULT_CHAR_SIZE_2)
+
         self.player_atk1 = self.load_img_frames(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_atk1_flipped = self.load_img_frames_flipped(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE_2)  
         self.player_atk2 = self.load_img_frames(atk2_ani[0], atk2_ani[1], atk2_ani[2], DEFAULT_CHAR_SIZE_2)
@@ -5067,13 +5079,13 @@ class Water_Princess(Player):
                 if right_hotkey:  # Move right
                     self.running = True
                     self.facing_right = True #if self.player_type == 1 else False
-                    self.x_pos += (self.speed + ((self.speed * 0.1) if self.special_active else 0))
+                    self.x_pos += (self.speed - (self.speed * 0.075)) if not self.special_active else (self.speed + (self.speed * 0.2))
                     if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
                         self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
                 elif left_hotkey:  # Move left
                     self.running = True
                     self.facing_right = False #if self.player_type == 1 else True
-                    self.x_pos -= (self.speed + ((self.speed * 0.1) if self.special_active else 0))
+                    self.x_pos -= (self.speed - (self.speed * 0.075)) if not self.special_active else (self.speed + (self.speed * 0.2))
                     if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
                         self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
                 else:
@@ -5464,8 +5476,34 @@ class Water_Princess(Player):
             (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
             )
             
-        
+    def run_animation(self, animation_speed=0):
+        if not self.special_active:
+            if self.facing_right:
+                self.player_run_index, _ = self.animate(self.player_run, self.player_run_index, loop=True)
+            else:
+                self.player_run_index_flipped, _ = self.animate(self.player_run_flipped, self.player_run_index_flipped, loop=True)
+        else:
+            if self.facing_right:
+                self.player_surf_index, _ = self.animate(self.player_surf, self.player_surf_index, loop=True)
+            else:
+                self.player_surf_index_flipped, _ = self.animate(self.player_surf_flipped, self.player_surf_index_flipped, loop=True)
+
+        self.last_atk_time -= animation_speed
     
+    def simple_idle_animation(self, animation_speed=0):
+        if not self.special_active:
+            if self.facing_right:
+                self.player_idle_index, _ = self.animate(self.player_idle, self.player_idle_index, loop=True)
+            else:
+                self.player_idle_index_flipped, _ = self.animate(self.player_idle_flipped, self.player_idle_index_flipped, loop=True)
+        else:
+            if self.facing_right:
+                self.player_surf_index, _ = self.animate(self.player_surf, self.player_surf_index, loop=True)
+            else:
+                self.player_surf_index_flipped, _ = self.animate(self.player_surf_flipped, self.player_surf_index_flipped, loop=True)
+
+        self.last_atk_time -= animation_speed
+
     def update(self):
         if DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
@@ -5488,7 +5526,9 @@ class Water_Princess(Player):
         elif self.jumping:
             self.jump_animation()
         elif self.running and not self.jumping:
-            self.run_animation(self.running_animation_speed)
+            self.run_animation(animation_speed=self.running_animation_speed)
+                
+
         elif self.attacking1:
             self.atk1_animation()
         elif self.attacking2:

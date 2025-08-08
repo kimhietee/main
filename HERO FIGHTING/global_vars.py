@@ -18,6 +18,8 @@ green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
 
+IMMEDIATE_RUN = False
+
 MAIN_VOLUME = 0.5
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = True
@@ -148,7 +150,7 @@ fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
 wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
 fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
 wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
-water_princess_icon = r'assets\characters\Water princess\water_priestess.png' # temp
+water_princess_icon = r'assets\hero profiles\water character profile.png' # temp
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'

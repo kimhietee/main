@@ -1,7 +1,7 @@
 import pygame
 
 import random
-from global_vars import (
+from global_vars import (IMMEDIATE_RUN,
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size,
@@ -723,6 +723,9 @@ def main_menu():
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
+        # dev option
+        if IMMEDIATE_RUN:
+            main.player_selection()
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()

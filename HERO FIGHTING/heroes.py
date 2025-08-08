@@ -200,7 +200,7 @@ import random
 import time
 import math
 import pygame.sprite
-from global_vars import (
+from global_vars import (IMMEDIATE_RUN,
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
     waterfall_icon, lava_icon, dark_forest_icon, trees_icon,
@@ -5292,7 +5292,7 @@ class Water_Princess(Player):
                             attack2 = Attack_Display(
                                 x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,
                                 y=self.rect.centery - i,
-                                frames=self.atk1_flipped if self.facing_right else self.atk1,
+                                frames=self.atk1,
                                 frame_duration=100,
                                 repeat_animation=1,
                                 speed=-7 if self.facing_right else 7,
@@ -5790,7 +5790,8 @@ HERO_INFO = {
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2",
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 12, HP: 190, Mana: 200, Damage: 2.4"
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 12, HP: 190, Mana: 200, Damage: 2.4",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 40, HP: 200, Mana: 240, Damage: 8.0"
 }
 
 
@@ -6088,9 +6089,21 @@ def player_selection():
     map_selected = Animate_BG.waterfall_bg # Default
 
     go = False
+
+    immediate_run = IMMEDIATE_RUN # for dev option only
     
 
     while True:
+        if immediate_run: # DEV OPTION ONLY
+            PLAYER_1_SELECTED_HERO = Water_Princess
+            PLAYER_2_SELECTED_HERO = Water_Princess
+            bot = create_bot(Water_Princess) if SINGLE_MODE_ACTIVE else None
+            player_1_choose = False
+            map_choose = True
+            go = True
+        
+
+
         # print('running')
         # print(global_vars.MAIN_VOLUME)
         # return
@@ -6228,12 +6241,12 @@ def player_selection():
                     # print(PLAYER_2_SELECTED_HERO)
                     go = True
                     break
-                else:
+                elif not immediate_run:
                     go = False
                 
             if go:
                 fight.draw(screen, mouse_pos)
-                if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE]:
+                if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE] or immediate_run:
 
                     screen.blit(background, (0, 0))
                     loading.draw(screen, pygame.mouse.get_pos())

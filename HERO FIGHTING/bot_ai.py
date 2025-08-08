@@ -930,8 +930,8 @@ def create_bot(selected_hero):
             elif selected_hero.__name__ == 'Wind_Hashashin' and 'Wind_Hashashin' in self.hero_data:
                 self.hero_bot = 'Wind_Hashashin'
             else:
-                self.hero.bot = selected_hero.__name__
-                # self.hero_bot = 'Fire_Wizard' # default
+                # self.hero.bot = selected_hero.__name__
+                self.hero_bot = 'Fire_Wizard' # default
 
 
             self.default_timer = self.hero_data[self.hero_bot]['default_timer'] / FPS

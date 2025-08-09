@@ -20,7 +20,7 @@ gold = 'Gold'
 
 IMMEDIATE_RUN = False
 
-MAIN_VOLUME = 0.5
+MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = True
 MAX_ITEM = 20

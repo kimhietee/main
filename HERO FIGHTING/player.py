@@ -730,7 +730,7 @@ class Player(pygame.sprite.Sprite):
             images.append(image)
         return images
     
-    def load_img_frames_numbering_method_simple(self, folder, count, starts_at_zero=False, size=1):
+    def load_img_frames_numbering_method_simple(self, folder, count, starts_at_zero=False, size=1, rotate=0, flip=False):
         '''
         assets\attacks\fire wizard\atk2\01.png
         assets\attacks\fire wizard\atk2\02.png
@@ -740,8 +740,9 @@ class Player(pygame.sprite.Sprite):
             frame_number = i + (0 if starts_at_zero else 1)
             # 01 02
             img_path = (fr'{folder}{str(frame_number).zfill(2)}.png')
-            image = pygame.image.load(img_path).convert_alpha()
-            image = pygame.transform.rotozoom(image, 0, size)
+            # print(img_path)
+            image = pygame.transform.flip(pygame.image.load(img_path).convert_alpha(), flip, False)
+            image = pygame.transform.rotozoom(image, rotate, size)
             images.append(image)
         return images
     

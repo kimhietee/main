@@ -18,7 +18,7 @@ green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False

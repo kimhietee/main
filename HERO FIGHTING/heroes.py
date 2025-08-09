@@ -520,7 +520,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 continuous_dmg=False, per_end_dmg=(False, False),
                 disable_collide=False, stun=(False, 0),
                 sound=(False, None, None, None), kill_collide=False,
-                follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=(False, False), use_live_position_on_delay=False,
+                follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=False, use_live_position_on_delay=False,
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
                 consume_mana=[False, 0]
@@ -877,19 +877,22 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
             #follow logic
             if not self.follow_self:
-                if self.follow[1]:
+                if self.follow[1]: # FOLLOW ENEMY
                     self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
                 elif self.follow[0] and self.following_target:
                     self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
+
             else:
-                if self.follow[1]:
+                if self.follow[1]: # FOLLOW SELF
                     self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
                 elif self.follow[0] and self.following_target:
                     self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
+
+            # print(self.follow_self)
 
             
 
@@ -4808,11 +4811,9 @@ class Water_Princess(Player):
         self.atk3_mana_cost = 200
         self.sp_mana_cost = 240
 
-        mana_mult = 0.15
-        # make sure the divisor aligned with how many frames the attack is, 
-        # (you can refer to the dmg since they are the same)
-        self.atk1_mana_consume = (self.atk1_mana_cost/40) - ((self.atk1_mana_cost/40)*mana_mult)
-        self.atk2_mana_consume = (self.atk2_mana_cost/40) - ((self.atk2_mana_cost/40)*mana_mult)
+        #go to attacks section to calculate mana
+
+        
 
         self.atk1_cooldown = 8
         self.atk2_cooldown = 24
@@ -5078,6 +5079,8 @@ class Water_Princess(Player):
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        
+
         # Skills
         self.attacks = [
             Attacks(
@@ -5131,7 +5134,8 @@ class Water_Princess(Player):
             )
         )
 
-
+        
+        
 
         #special
         self.attacks_special = [
@@ -5184,6 +5188,25 @@ class Water_Princess(Player):
         self.white_mana_p1 = self.mana   
         self.white_health_p2 = self.health
         self.white_mana_p2 = self.mana  
+
+
+        self.mana_mult = 0.15
+        # make sure the divisor aligned with how many frames the attack is, 
+        # (you can refer to the dmg since they are the same)
+        # self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
+        # self.atk2_mana_consume = (self.attacks[1].mana_cost/40) - ((self.attacks[1].mana_cost/40)*self.mana_mult)
+        # self.atk3_mana_consume = (self.attacks[2].mana_cost/25) - ((self.attacks[2].mana_cost/25)*self.mana_mult)
+        # print(self.attacks[0].mana_cost)
+        '''the calculations are correct, must test with mana_reduce items'''
+        '''calculated mana is not correct, need to update correct values to apply mana_reduce items'''
+        '''refer to the new function below'''
+
+        '''good, the values are correct.'''
+
+    def update_mana_values(self):
+        self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
+        self.atk2_mana_consume = (self.attacks[1].mana_cost/40) - ((self.attacks[1].mana_cost/40)*self.mana_mult)
+        self.atk3_mana_consume = (self.attacks[2].mana_cost/25) - ((self.attacks[2].mana_cost/25)*self.mana_mult)
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
@@ -5290,7 +5313,7 @@ class Water_Princess(Player):
 
                         
                         
-                        self.mana -= self.attacks[0].mana_cost
+                        # self.mana -= self.attacks[0].mana_cost
                         self.attacks[0].last_used_time = current_time
                         self.running = False
                         self.attacking1 = True
@@ -5401,7 +5424,7 @@ class Water_Princess(Player):
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
-                                follow=(False, True),
+                                follow=(False, True), # some bug happended while i code the attack
                                 heal=True,
                                 self_moving=True,
                                 self_kill_collide=True,
@@ -5427,11 +5450,12 @@ class Water_Princess(Player):
                                 heal=True,
                                 self_moving=False,
                                 self_kill_collide=False,
-                                follow_offset=(0, 70)
+                                follow_offset=(0, 70),
+                                consume_mana=[True, self.atk3_mana_consume]
                                 )
                         attack_display.add(attack2)
                         
-                        self.mana -= self.attacks[2].mana_cost
+                        # self.mana -= self.attacks[2].mana_cost
                         self.attacks[2].last_used_time = current_time
                         self.running = False
                         self.attacking3 = True
@@ -5792,7 +5816,7 @@ class Water_Princess(Player):
         elif self.attacking1:
             self.atk1_animation()
         elif self.attacking2:
-            self.atk2_animation()
+            self.atk2_animation(-4)
         elif self.attacking3:
             self.atk3_animation()
         elif self.sp_attacking:
@@ -5850,8 +5874,16 @@ class Water_Princess(Player):
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
                     self.special_active = False
+
+
         # if self.running:
         #     print('is running')
+        self.update_mana_values()
+        '''test code are below, for checking correct mana values'''
+        # self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
+        # print(self.attacks[0].mana_cost)
+
+
 # class Button:
 #     def __init__(self, x, y, width, height, text, color, text_color):
 #         self.rect = pygame.Rect(x, y, width, height)

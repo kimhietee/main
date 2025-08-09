@@ -1030,6 +1030,8 @@ class Player(pygame.sprite.Sprite):
 
             if self.special == self.max_special:
                 special_color = 'purple'
+            elif self.special_active:
+                special_color_p2 = 'blue'
             else:
                 special_color = 'yellow'
 
@@ -1165,6 +1167,8 @@ class Player(pygame.sprite.Sprite):
 
             if self.special == self.max_special:
                 special_color_p2 = 'purple'
+            elif self.special_active:
+                special_color_p2 = 'blue'
             else:
                 special_color_p2 = 'yellow'
 

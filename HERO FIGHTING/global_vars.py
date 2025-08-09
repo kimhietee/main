@@ -18,7 +18,7 @@ green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -30,7 +30,7 @@ MAX_ITEM = 20
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant
 SHOW_HITBOX = False
-DRAW_DISTANCE = True
+DRAW_DISTANCE = False
 SHOW_GRID = False
 
 # Default Dimensions

@@ -467,7 +467,7 @@ class Player(pygame.sprite.Sprite):
                     )
 
                     if hasattr(self, 'atk2_damage_2nd'): # For wind hashahin, or any heroes that needs attribute
-                        self.atk2_damage_2nd = ( 
+                        self.atk2_damage_2nd = (  #reused by water princess
                         self.atk2_damage_2nd[0] + (self.atk2_damage_2nd[0] * bonus_value),
                         self.atk2_damage_2nd[1] + (self.atk2_damage_2nd[1] * bonus_value)
                     )
@@ -479,6 +479,17 @@ class Player(pygame.sprite.Sprite):
                     if hasattr(self, 'real_sp_damage'):
                         self.real_sp_damage = self.real_sp_damage + (self.real_sp_damage * bonus_value)
 
+
+                    #some of these from water princess, will reuse some variable
+                    if hasattr(self, 'sp_damage_3rd'): # For water princess
+                        self.sp_damage_3rd = (
+                        self.sp_damage_3rd[0] + (self.sp_damage_3rd[0] * bonus_value),
+                        self.sp_damage_3rd[1] + (self.sp_damage_3rd[1] * bonus_value)
+                    )
+                    if hasattr(self, 'atk3_damage_2nd'):
+                        self.atk3_damage_2nd = self.atk3_damage_2nd + (self.atk3_damage_2nd * bonus_value)
+                    if hasattr(self, 'atk1_damage_2nd'):
+                        self.atk1_damage_2nd = self.atk1_damage_2nd + (self.atk1_damage_2nd * bonus_value)
                     
                 
 
@@ -542,7 +553,7 @@ class Player(pygame.sprite.Sprite):
                     self.basic_attack_damage += bonus_value
                 
 
-        print(self.basic_attack_damage)
+        # print(self.basic_attack_damage)
 
         # self.max_health = self.strength * self.str_mult
         # self.health = self.max_health

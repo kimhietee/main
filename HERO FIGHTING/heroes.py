@@ -214,6 +214,7 @@ from global_vars import (IMMEDIATE_RUN,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
+    DISABLE_MANA_REGEN,
     attack_display, MULT, dmg_mult,
 
     ZERO_WIDTH, TOTAL_WIDTH
@@ -521,7 +522,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 sound=(False, None, None, None), kill_collide=False,
                 follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=(False, False), use_live_position_on_delay=False,
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
-                hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False
+                hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
+                consume_mana=[False, 0]
                 ):
         super().__init__()
         self.x = x
@@ -551,6 +553,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.heal_enemy = heal_enemy
         self.self_kill_collide = self_kill_collide
         self.self_moving = self_moving # applies some logic to moving to self
+        self.consume_mana = consume_mana # [0] = bool, [1] = how much mana (still same as how dmg is applied)
         
 
         self.frame_index = 0
@@ -746,7 +749,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             # EVERY FRAME ATTACK LOGIC --------------------------
 
                 # EVERY GAME FPS ATTACK LOGIC --------------------------
-                        
+                
                 #dmg per every frame (too fast)  <-- indent  
 
                 # stun logic
@@ -851,6 +854,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                                 self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
 
+                if self.consume_mana[0]:
+                    self.who_attacks.take_mana(self.consume_mana[1])
+
             # ALWAYS AFFECTED
             
             if self.moving: # moving logic
@@ -884,6 +890,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 elif self.follow[0] and self.following_target:
                     self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
+
+            
 
             
 
@@ -1745,7 +1753,8 @@ class Fire_Wizard(Player):
         
         # Update the health and mana bars
         if self.health != 0:
-            self.mana += self.mana_regen
+            if not DISABLE_MANA_REGEN:
+                self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
                 self.health += self.health_regen
         else:
@@ -2589,7 +2598,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         
         # Update the health and mana bars
         if self.health != 0:
-            self.mana += (self.mana_regen + (self.mana_regen * (0.20 if not self.special_active else 0.30)))
+            if not DISABLE_MANA_REGEN:
+                self.mana += (self.mana_regen + (self.mana_regen * (0.20 if not self.special_active else 0.30)))
             if not DISABLE_HEAL_REGEN:
                 self.health += self.health_regen
         else:
@@ -3620,7 +3630,8 @@ class Fire_Knight(Player):
         
         # Update the health and mana bars
         if self.health != 0:
-            self.mana += self.mana_regen
+            if not DISABLE_MANA_REGEN:
+                self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
                 self.health += (self.health_regen + (self.health_regen * 0.2))
         else:
@@ -4696,7 +4707,8 @@ class Wind_Hashashin(Player):
         
         # Update the health and mana bars
         if self.health != 0:
-            self.mana += self.mana_regen
+            if not DISABLE_MANA_REGEN:
+                self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
                 self.health += self.health_regen
         else:
@@ -4781,22 +4793,36 @@ class Water_Princess(Player):
         self.y = 50
         self.width = 200
 
+        # SPECIAL TRAIT
+            # Mana cost delayed
+            # Mana cast high, but mana cost delay reduced by 15%
+            #example:
+            # if mana cost is 160, reduce mama until end of attack frame, 
+            # but that 160 is reduced by 15%
+            # total mana depleted = (160*0.85 or 160-(160*0.15)) = 136 total mana cost
+
+
+
         self.atk1_mana_cost = 80
-        self.atk2_mana_cost = 150
+        self.atk2_mana_cost = 160
         self.atk3_mana_cost = 200
         self.sp_mana_cost = 240
 
-        self.atk1_cooldown = 8000
-        self.atk2_cooldown = 24000
-        self.atk3_cooldown = 40000
-        self.sp_cooldown = 2000
+        mana_mult = 0.15
+        # make sure the divisor aligned with how many frames the attack is, 
+        # (you can refer to the dmg since they are the same)
+        self.atk1_mana_consume = (self.atk1_mana_cost/40) - ((self.atk1_mana_cost/40)*mana_mult)
+        self.atk2_mana_consume = (self.atk2_mana_cost/40) - ((self.atk2_mana_cost/40)*mana_mult)
+
+        self.atk1_cooldown = 8
+        self.atk2_cooldown = 24
+        self.atk3_cooldown = 40
+        self.sp_cooldown = 2
 
         self.atk1_damage = (5/40, 0)
         self.atk1_damage2 = 20
-
-        self.atk2_damage_rain = (12.5/40, 5)
+        self.atk2_damage_rain = (12.5/40, 5) # total dmg 50
         self.atk2_damage_circling = (3/40, 5)
-
         self.atk3_heal_instant = 20
         self.atk3_heal = 15/25
 
@@ -5209,7 +5235,8 @@ class Water_Princess(Player):
                             hitbox_scale_x=0.4
                             ,hitbox_scale_y=0.4,
                             
-                            continuous_dmg=True
+                            continuous_dmg=True,
+                            consume_mana=[True, self.atk1_mana_consume]
                             ) # Replace with the target
                         attack_display.add(attack)
 
@@ -5280,7 +5307,7 @@ class Water_Princess(Player):
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [(300,), (1000,)]: # WATER RAIN
+                        for i in [(300,True), (1000,False)]: # WATER RAIN
                             attack = Attack_Display(
                                 x=self.rect.centerx + 350 if self.facing_right else self.rect.centerx -350,
                                 y=self.rect.centery,
@@ -5296,7 +5323,8 @@ class Water_Princess(Player):
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
                                 hitbox_scale_x=0.4
-                                ,hitbox_scale_y=0.4
+                                ,hitbox_scale_y=0.4,
+                                consume_mana=[i[1], self.atk2_mana_consume]
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -5319,7 +5347,7 @@ class Water_Princess(Player):
                                 ,hitbox_scale_y=0.4
                                 ) # Replace with the target
                             attack_display.add(attack)
-                        self.mana -= self.attacks[1].mana_cost
+                        # self.mana -= self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
@@ -5810,7 +5838,8 @@ class Water_Princess(Player):
         
         # Update the health and mana bars
         if self.health != 0:
-            self.mana += self.mana_regen
+            if not DISABLE_MANA_REGEN:
+                self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
                 self.health += self.health_regen
         else:

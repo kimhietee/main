@@ -1264,6 +1264,10 @@ class Player(pygame.sprite.Sprite):
             self.die()  # Trigger the death process
             self.play_death_animation()  # Play death animation
 
+    def take_mana(self, mana):
+        self.mana = max(0, self.mana - mana)  # Ensure health doesn't go below 0
+        # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
+
     def is_dead(self):
         return hasattr(self, "health") and self.health <= LITERAL_HEALTH_DEAD
     

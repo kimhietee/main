@@ -510,7 +510,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 * [1] – If True, the attack always follows the enemy, even without collision.
 
         20. delay (tuple(bool, int)):
-            - Delays the attack’s animation and effect:
+            - Delays the attack's animation and effect:
                 * [0] – If True, delay is enabled.
                 * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
         """
@@ -5594,7 +5594,7 @@ class Water_Princess(Player):
 
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
+                    if self.mana >= self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
                         for i in [(300,True), (1000,False)]: # WATER RAIN
@@ -6277,7 +6277,7 @@ HERO_INFO = {
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2",
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 12, HP: 190, Mana: 200, Damage: 2.4",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 40, HP: 200, Mana: 240, Damage: 8.0"
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 5"
 }
 
 
@@ -6581,8 +6581,8 @@ def player_selection():
 
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Water_Princess
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            # PLAYER_1_SELECTED_HERO = Wanderer_Magician
+            # PLAYER_2_SELECTED_HERO = Wanderer_Magician
             bot = create_bot(Water_Princess) if SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
@@ -6733,46 +6733,65 @@ def player_selection():
             if go:
                 fight.draw(screen, mouse_pos)
                 if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE] or immediate_run:
-
+                    # print(PLAYER_1_SELECTED_HERO)
+                    # print(PLAYER_2_SELECTED_HERO)
                     screen.blit(background, (0, 0))
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
                     
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
-                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
+                    if PLAYER_1_SELECTED_HERO == PLAYER_2_SELECTED_HERO:
+                        hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
+                    else:
+                        hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
 
-                    if SINGLE_MODE_ACTIVE:
-                        # from botclass import Bot
-                        bot = create_bot(hero2.__class__)
-                        hero2 = bot(hero1)
+            if SINGLE_MODE_ACTIVE:  
+                # from botclass import Bot
+                # Store original classes before creating any bots
+                hero1_class = hero1.__class__
+                hero2_class = hero2.__class__
+                
+                # Create bot for hero1 (should be at player 1 position)
+                bot1 = create_bot(hero1_class)
+                hero1 = bot1(hero2)
+                # Fix hero1 position to player 1 side
+                hero1.player_type = 1
+                hero1.x_pos = X_POS_SPACING
+                
+                # Create bot for hero2 (should be at player 2 position)  
+                bot2 = create_bot(hero2_class)
+                hero2 = bot2(hero1)
+                # Fix hero2 position to player 2 side
+                hero2.player_type = 2
+                hero2.x_pos = DEFAULT_X_POS
 
-                    for item in p1_items:
-                        if item.is_selected():
-                            hero1.items.append(item.associate_value())
+                for item in p1_items:
+                    if item.is_selected():
+                        hero1.items.append(item.associate_value())
 
-                    for item in p2_items:
-                        if item.is_selected():
-                            hero2.items.append(item.associate_value())
+                for item in p2_items:
+                    if item.is_selected():
+                        hero2.items.append(item.associate_value())
 
-                    hero1.apply_item_bonuses()
-                    hero2.apply_item_bonuses()
+                hero1.apply_item_bonuses()
+                hero2.apply_item_bonuses()
 
-                    hero1_group = pygame.sprite.Group()
-                    hero1_group.add(hero1)
+                hero1_group = pygame.sprite.Group()
+                hero1_group.add(hero1)
 
-                    hero2_group = pygame.sprite.Group()
-                    hero2_group.add(hero2)
+                hero2_group = pygame.sprite.Group()
+                hero2_group.add(hero2)
 
-                    pygame.mixer.music.fadeout(1000)
-                    pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+                pygame.mixer.music.fadeout(1000)
+                pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
 
-                    reset_all()
-                    fade(background, game) #lez go it worked
-                    # pygame.mixer.fadeout(1500)
-                    
-                    
-                    return
+                reset_all()
+                fade(background, game) #lez go it worked
+                # pygame.mixer.fadeout(1500)
+                
+                
+                return
 
         pygame.display.update()
         clock.tick(FPS)

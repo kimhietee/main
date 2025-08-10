@@ -86,7 +86,7 @@ GAME_MUSIC_2 = r'assets\audios\z-battle-227609.mp3'
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
 
-
+winner = 'hero2'
 
 
 def fade(background, action):
@@ -206,6 +206,7 @@ def run_background(bg):
     bg.display(screen)
 
 def game(bg=None):
+    global winner
     game_music_started = False
     second_track_played = False
     print('stopping music')
@@ -430,6 +431,14 @@ def game(bg=None):
         if main.SINGLE_MODE_ACTIVE:
             main.hero2.bot_logic()
 
+
+        if main.hero1.is_dead():
+            winner = 'hero2'
+        elif main.hero2.is_dead():
+            winner = 'hero1'
+        else:
+            winner = None
+
         
 
 
@@ -499,8 +508,44 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
     return cube_fall, cube_x
 
+menu_game = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2, height*0.9),
+    scale=0.8,
+    text='menu',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+rematch_game = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2, height*0.9),
+    scale=0.8,
+    text='rematch',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+def battle_end(mouse_pos, mouse_press, font, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH))):
+    if winner is not None:
+        if winner == 'hero1':
+            create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.19)
+        elif winner == 'hero2':
+            create_title('PLAYER 2 WINS!!!', font, default_size - 0.55, height * 0.19)
+    
+    menu_game.draw(screen, mouse_pos)
+    rematch_game.draw(screen, mouse_pos)
+    if mouse_press[0] and menu_game.is_clicked(mouse_pos):
+        pass
+
+    if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
+        pass
+
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
 def menu():
+    
     pygame.mixer.music.fadeout(1000)
     pygame.time.set_timer(pygame.USEREVENT + 3, 1000)
 
@@ -579,6 +624,7 @@ def menu():
                 controls()
                 return
         # main.screen.blit(background, (0, 0))
+        
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
@@ -596,6 +642,8 @@ def menu():
             coming_soon_button.draw(main.screen, mouse_pos)
         else:
             campaign_button.draw(main.screen, mouse_pos)
+
+        
 
         # print(global_vars.MAIN_VOLUME)
         pygame.display.update()
@@ -751,6 +799,8 @@ def main_menu():
         # Animate_BG.trees_bg.display(screen, speed=50)
         create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
+
+        battle_end(mouse_pos, mouse_press, font)
 
         pygame.display.update()
         main.clock.tick(main.FPS)

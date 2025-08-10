@@ -481,15 +481,34 @@ class Player(pygame.sprite.Sprite):
 
 
                     #some of these from water princess, will reuse some variable
+                    if hasattr(self, 'atk3_damage_2nd'):
+                        self.atk3_damage_2nd = self.atk3_damage_2nd + (self.atk3_damage_2nd * bonus_value)
+                    if hasattr(self, 'atk1_damage_2nd'):
+                        self.atk1_damage_2nd = self.atk1_damage_2nd + (self.atk1_damage_2nd * bonus_value)
                     if hasattr(self, 'sp_damage_3rd'): # For water princess
                         self.sp_damage_3rd = (
                         self.sp_damage_3rd[0] + (self.sp_damage_3rd[0] * bonus_value),
                         self.sp_damage_3rd[1] + (self.sp_damage_3rd[1] * bonus_value)
                     )
-                    if hasattr(self, 'atk3_damage_2nd'):
-                        self.atk3_damage_2nd = self.atk3_damage_2nd + (self.atk3_damage_2nd * bonus_value)
-                    if hasattr(self, 'atk1_damage_2nd'):
-                        self.atk1_damage_2nd = self.atk1_damage_2nd + (self.atk1_damage_2nd * bonus_value)
+                    if hasattr(self, 'sp_atk1_damage'):
+                        self.sp_atk1_damage = self.sp_atk1_damage + (self.sp_atk1_damage * bonus_value)
+                    if hasattr(self, 'sp_atk2_damage'):
+                        self.sp_atk2_damage = self.sp_atk2_damage + (self.sp_atk2_damage * bonus_value)
+                    if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
+                        self.sp_atk2_damage_2nd = (
+                        self.sp_atk2_damage_2nd[0] + (self.sp_atk2_damage_2nd[0] * bonus_value),
+                        self.sp_atk2_damage_2nd[1] + (self.sp_atk2_damage_2nd[1] * bonus_value)
+                    )
+                    if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
+                        self.sp_atk2_damage_3rd = (
+                        self.sp_atk2_damage_3rd[0] + (self.sp_atk2_damage_3rd[0] * bonus_value),
+                        self.sp_atk2_damage_3rd[1] + (self.sp_atk2_damage_3rd[1] * bonus_value)
+                    )
+                    if hasattr(self, 'sp_atk3_damage'): # For water princess
+                        self.sp_atk3_damage = (
+                        self.sp_atk3_damage[0] + (self.sp_atk3_damage[0] * bonus_value),
+                        self.sp_atk3_damage[1] + (self.sp_atk3_damage[1] * bonus_value)
+                    )
                     
                 
 

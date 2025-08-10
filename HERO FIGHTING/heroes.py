@@ -2457,7 +2457,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=False,
                             follow=(False, True),
-                            follow_offset=(0, 30),
+                            follow_offset=(0, 50),
 
                             kill_collide=False,
                             sound=(True, self.sp_sound , self.atk3_sound, None),
@@ -4819,6 +4819,8 @@ class Water_Princess(Player):
             # but that 160 is reduced by 15%
             # total mana depleted = (160*0.85 or 160-(160*0.15)) = 136 total mana cost
 
+            # mana reduce 20% if special active
+
 
 
         self.atk1_mana_cost = 100
@@ -4827,8 +4829,6 @@ class Water_Princess(Player):
         self.sp_mana_cost = 240
 
         #go to attacks section to calculate mana
-
-        
 
         self.atk1_cooldown = 15000
         self.atk2_cooldown = 26000
@@ -4846,6 +4846,12 @@ class Water_Princess(Player):
         self.sp_damage_2nd = (10/42, 20) 
         self.sp_damage_3rd = (10/15, 0) #-----
 
+        self.sp_atk1_damage = 0.2 # (5/25, 0) #-----
+        self.sp_atk2_damage = 0.3#(totaldmg 9*2=18) # =0.4166 (12.5/30, 0) # rain #-----
+        self.sp_atk2_damage_2nd = (5/30, 2) #(*5) #circling #------
+        self.sp_atk2_damage_3rd = (2/15, 5) #(*10) #watershot #-----
+        self.sp_atk3_damage = (15/20, 0) #10+(15*2)= #-----
+        # sp_atk3 heal = 20/2:instant=10, 
         # dmg_mult = 0
         # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         # self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
@@ -4854,9 +4860,13 @@ class Water_Princess(Player):
         
         self.player_surf_index = 0
         self.player_surf_index_flipped = 0
+
+        self.player_atk1_2nd_index = 0
+        self.player_atk1_2nd_index_flipped = 0
         
         # Player Animation Source
         basic_ani = [r'assets\characters\Water princess\png\08_2_atk\2_atk_', 21, 0]
+        atk1_ani_2nd = [r'assets\characters\Water princess\png\12_defend\defend_', 12, 0]
 
         jump_ani = [r'assets\characters\Water princess\png\04_j_up\j_up_', WATER_PRINCESS_JUMP_COUNT, 0]
         run_ani = [r'assets\characters\Water princess\png\02_walk\walk_', WATER_PRINCESS_RUN_COUNT, 0]
@@ -4893,10 +4903,10 @@ class Water_Princess(Player):
         skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\472234276_8613137162147060_446401069957588690_n.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\tumblr_8ca04de6143efee03f34ea8c32aca437_a117ed18_1280.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Screenshot 2025-01-26 221227.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # Player Icon Rects
         if self.player_type == 1:
@@ -4992,6 +5002,54 @@ class Water_Princess(Player):
         scale=1, 
         rotation=0,
     )
+        self.watershot_flipped = load_attack_flipped(
+        filepath=r"assets\attacks\water princess\watershot.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=3 , 
+        columns=5, 
+        scale=1, 
+        rotation=0,
+    )
+        
+
+        self.sp_atk1 = load_attack(
+        filepath=r"assets\attacks\water princess\sp_atk1.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=5, 
+        columns=5, 
+        scale=1.5, 
+        rotation=0,
+    )
+        self.sp_atk2 = load_attack(
+        filepath=r"assets\attacks\water princess\sp_atk2.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=6, 
+        columns=5, 
+        scale=2, 
+        rotation=0,
+    )
+        self.sp_atk3 = load_attack(
+        filepath=r"assets\attacks\water princess\sp_atk3.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=4, 
+        columns=5, 
+        scale=1.2, 
+        rotation=0,
+    )
+        self.sp_atk4 = load_attack(
+        filepath=r"assets\attacks\water princess\sp_atk4.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=7, 
+        columns=5, 
+        scale=4, 
+        rotation=0,
+    )
+    
         # assets\attacks\water princess\basic_atk1\water60000
         # assets\attacks\water princess\atk4\splash big\water400
         self.sp1 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\atk4\spiral\water900", 42, starts_at_zero=True,
@@ -5029,6 +5087,9 @@ class Water_Princess(Player):
 
         self.player_surf = self.load_img_frames(surf_ani[0], surf_ani[1], surf_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_surf_flipped = self.load_img_frames_flipped(surf_ani[0], surf_ani[1], surf_ani[2], DEFAULT_CHAR_SIZE_2)
+
+        self.player_atk1_2nd = self.load_img_frames(atk1_ani_2nd[0], atk1_ani_2nd[1], atk1_ani_2nd[2], DEFAULT_CHAR_SIZE_2)
+        self.player_atk1_2nd_flipped = self.load_img_frames_flipped(atk1_ani_2nd[0], atk1_ani_2nd[1], atk1_ani_2nd[2], DEFAULT_CHAR_SIZE_2)
 
         self.player_atk1 = self.load_img_frames(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_atk1_flipped = self.load_img_frames_flipped(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE_2)  
@@ -5167,7 +5228,7 @@ class Water_Princess(Player):
         self.white_mana_p2 = self.mana  
 
 
-        self.mana_mult = 0.15
+        
         # make sure the divisor aligned with how many frames the attack is, 
         # (you can refer to the dmg since they are the same)
         # print(self.attacks[0].mana_cost)
@@ -5178,10 +5239,16 @@ class Water_Princess(Player):
         '''good, the values are now correct.'''
 
     def update_mana_values(self):
+        self.mana_mult = 0.2 if not self.special_active else 0.25
         self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
         self.atk2_mana_consume = (self.attacks[1].mana_cost/40) - ((self.attacks[1].mana_cost/40)*self.mana_mult)
         self.atk3_mana_consume = (self.attacks[2].mana_cost/25) - ((self.attacks[2].mana_cost/25)*self.mana_mult)
         self.atk4_mana_consume = (self.attacks[3].mana_cost/35) - ((self.attacks[3].mana_cost/35)*self.mana_mult)
+
+        self.atk1_special_mana_consume = (self.attacks_special[0].mana_cost/25) - ((self.attacks_special[0].mana_cost/25)*self.mana_mult)
+        self.atk2_special_mana_consume = (self.attacks[1].mana_cost/40) - ((self.attacks[1].mana_cost/40)*self.mana_mult)
+        self.atk3_special_mana_consume = (self.attacks[2].mana_cost/25) - ((self.attacks[2].mana_cost/25)*self.mana_mult)
+        self.atk4_special_mana_consume = (self.attacks[3].mana_cost/35) - ((self.attacks[3].mana_cost/35)*self.mana_mult)
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
@@ -5214,13 +5281,13 @@ class Water_Princess(Player):
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[0].mana_cost and self.attacks[0].is_ready():
                         for i in [
-                            (80, 40, 100, self.atk1_damage[0], self.atk1_damage[1], self.atk1_sound, False, 0.4, 0.4, True, True, True, True),
-                            (70, 60, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 1.5, 0.6, False, False, False, False) # this is so inefficient
+                            (80, 40, 100, self.atk1_damage[0], self.atk1_damage[1], self.atk1_sound, False, 0.4, 0.4, True, True, True, True, (self.atk1, self.atk1)),
+                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 0.6, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
                         ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
                                 y=self.rect.centery + i[1],
-                                frames=self.atk1,
+                                frames=i[13][0] if self.facing_right else i[13][1],
                                 frame_duration=i[2],
                                 repeat_animation=1,
                                 speed=0,
@@ -5479,48 +5546,46 @@ class Water_Princess(Player):
         else:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        for i in [-50, 0, 50, 100]:
+                    if self.mana >= self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
+                        for i in [
+                            (80, 40, 100, self.sp_atk1_damage, 0, self.atk1_sound, False, 0.2, 0.4, False, False, True, True, (self.sp_atk1, self.sp_atk1)),
+                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 0.6, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
+                        ]:
                             attack = Attack_Display(
-                                x=self.rect.centerx - i if self.facing_right else self.rect.centerx + i,
-                                y=self.rect.centery - i,
-                                frames=self.atk1,
-                                frame_duration=100,
+                                x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
+                                y=self.rect.centery + i[1],
+                                frames=i[13][0] if self.facing_right else i[13][1],
+                                frame_duration=i[2],
                                 repeat_animation=1,
-                                speed=7 if self.facing_right else -7,
-                                dmg=self.atk1_damage[0]/3,
-                                final_dmg=self.atk1_damage[1],
+                                speed=0,
+                                dmg=i[3],
+                                final_dmg=i[4],
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
-                                moving=True,
-                            sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 800)) # Replace with the target
-                            attack_display.add(attack)
-                            
+                                delay=(True, 300),
+                                sound=(True, i[5], None, None),
 
-                            attack2 = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,
-                                y=self.rect.centery - i,
-                                frames=self.atk1,
-                                frame_duration=100,
-                                repeat_animation=1,
-                                speed=-7 if self.facing_right else 7,
-                                dmg=self.atk1_damage[0]/6,
-                                final_dmg=self.atk1_damage[1],
-                                who_attacks=self,
-                                who_attacked=hero1 if self.player_type == 2 else hero2,
-                                moving=True,
-                            delay=(True, 800)) # Replace with the target
-                            attack_display.add(attack2)
-                        self.mana -=  self.attacks_special[0].mana_cost
+                                moving=i[6],
+                                hitbox_scale_x=i[7],
+                                hitbox_scale_y=i[8],
+
+                                heal=i[9],
+                                heal_enemy=i[10],
+
+                                continuous_dmg=i[11],
+                                stun=(i[11], 40),
+
+                                consume_mana=[i[12], self.atk1_special_mana_consume]
+
+                            )
+                            attack_display.add(attack)
+
+                        # self.mana -= self.attacks[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
                         self.running = False
                         self.attacking1 = True
-                        self.player_atk1_index = 0
-                        self.player_atk1_index_flipped = 0
-
+                        self.player_atk1_2nd_index = 0
+                        self.player_atk1_2nd_index_flipped = 0
                         # print("Attack executed")
                     else:
                         pass
@@ -5529,31 +5594,97 @@ class Water_Princess(Player):
 
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
+                    if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]:
+                        for i in [(300,True), (1000,False)]: # WATER RAIN
                             attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery + 30,
-                                frames=self.atk2,
-                                frame_duration=50,
-                                repeat_animation=4,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0]/2,
-                                final_dmg=self.atk2_damage[1],
+                                x=self.rect.centerx + 350 if self.facing_right else self.rect.centerx -350,
+                                y=self.rect.centery,
+                                frames=self.atk2_rain if self.facing_right else self.atk2_rain_flipped,
+                                frame_duration=80,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.sp_atk2_damage,
+                                final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
-                            delay=(True, 800)) # Replace with the target
+                                moving=False,
+                                delay=(True, i[0]),
+                                sound=(True, self.atk1_sound, None, None),
+                                hitbox_scale_x=0.4
+                                ,hitbox_scale_y=0.4,
+                                consume_mana=[i[1], self.atk2_special_mana_consume]
+                                ) # Replace with the target
                             attack_display.add(attack)
-                        self.atk2_sound.play()
-                        self.mana -=  self.attacks_special[1].mana_cost
+
+                        for i in [(300,170), (800, 340), (1300,0), (1800, 680), (2300, 510)]:
+                            attack = Attack_Display( # CIRCLING WATERS
+                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
+                                y=self.rect.centery + 50,
+                                frames=self.sp_atk2,
+                                frame_duration=80,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.sp_atk2_damage_2nd[0],
+                                final_dmg=self.sp_atk2_damage_2nd[1],
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=False,
+                                delay=(True, i[0]),
+                                sound=(True, self.atk1_sound, None, None),
+                                hitbox_scale_x=0.4
+                                ,hitbox_scale_y=0.4
+                                ) # Replace with the target
+                            attack_display.add(attack)
+
+                        for i in [(300,510), (1300, 680), (1800,0), (2300, 340), (2800, 170)]:
+                            attack = Attack_Display( # WATER SHOT
+                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
+                                y=self.rect.centery + 50,
+                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
+                                frame_duration=50,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.sp_atk2_damage_3rd[0],
+                                final_dmg=self.sp_atk2_damage_3rd[1],
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=False,
+                                delay=(True, i[0]),
+                                sound=(True, self.atk1_sound, None, None),
+                                hitbox_scale_x=0.7
+                                ,hitbox_scale_y=0.7
+                                ) # Replace with the target
+                            attack_display.add(attack)
+
+                        for i in [(600,680), (1600, 510), (1900,0), (2200, 170), (2500, 340)]:
+                            attack = Attack_Display( # WATER SHOT
+                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
+                                y=self.rect.centery + 50,
+                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
+                                frame_duration=50,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.sp_atk2_damage_3rd[0],
+                                final_dmg=self.sp_atk2_damage_3rd[1],
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=False,
+                                delay=(True, i[0]),
+                                sound=(True, self.atk1_sound, None, None),
+                                hitbox_scale_x=0.7
+                                ,hitbox_scale_y=0.7
+                                ) # Replace with the target
+                            attack_display.add(attack)
+
+                        
+                        # self.mana -= self.attacks[1].mana_cost
                         self.attacks_special[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
                         self.player_atk2_index = 0
                         self.player_atk2_index_flipped = 0
-
                         # print("Attack executed")
                     else:
                         pass
@@ -5561,26 +5692,76 @@ class Water_Princess(Player):
                     # print('Skill 2 used')
 
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
+                    if self.mana >= self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
                         attack = Attack_Display(
-                            x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
-                            y=self.rect.centery + 30,
-                            frames=self.atk3,
-                            frame_duration=60,
-                            repeat_animation=2,
-                            speed=1 if self.facing_right else -1,
-                            dmg=self.atk3_damage[0] * 0.7,
-                            final_dmg=self.atk3_damage[1],
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=True,
-                            continuous_dmg=True,
-                            sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800)) # Replace with the target
+                                x=self.rect.centerx,
+                                y=self.rect.centery + 100,
+                                frames=self.atk3,
+                                frame_duration=100,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.atk3_damage_2nd/2,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                delay=(True, 400),
+                                sound=(True, self.atk3_sound , None, None),
+                                follow_self=True,
+                                follow=(False, True), # some bug happended while i code the attack
+                                heal=True,
+                                self_moving=True,
+                                self_kill_collide=True,
+                                follow_offset=(0, 70)
+                                )
                         attack_display.add(attack)
-                        self.mana -=  self.attacks_special[2].mana_cost
+
+                        attack2 = Attack_Display(
+                                x=self.rect.centerx,
+                                y=self.rect.centery + 100,
+                                frames=self.atk3,
+                                frame_duration=100,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=0,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                delay=(True, 400),
+                                sound=(True, self.atk3_sound , None, None),
+                                follow_self=True,
+                                follow=(False, True),
+                                heal=True,
+                                self_moving=False,
+                                self_kill_collide=False,
+                                follow_offset=(0, 70),
+                                consume_mana=[True, self.atk3_special_mana_consume]
+                                )
+                        attack_display.add(attack2)
+
+                        attack3 = Attack_Display(
+                                x=self.rect.centerx,
+                                y=self.rect.centery + 100,
+                                frames=self.sp_atk3,
+                                frame_duration=120,
+                                repeat_animation=2,
+                                speed=0,
+                                dmg=self.sp_atk3_damage[0],
+                                final_dmg=self.sp_atk3_damage[1],
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                delay=(True, 400),
+                                sound=(True, self.atk3_sound , None, None),
+                                follow_self=True,
+                                follow=(False, True),
+                                heal=True,
+                                self_moving=False,
+                                self_kill_collide=False,
+                                follow_offset=(0, 70),
+                                consume_mana=[False, self.atk3_mana_consume]
+                                )
+                        attack_display.add(attack3)
+                        
+                        # self.mana -= self.attacks[2].mana_cost
                         self.attacks_special[2].last_used_time = current_time
                         self.running = False
                         self.attacking3 = True
@@ -5597,21 +5778,58 @@ class Water_Princess(Player):
                     if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [-1000, -500, 0, 500, 1000]:
+                        for i in [
+                #    0-frame  1-dur   2-pos      3-stun     4-delay     5-hitbox scale  6-cnsm mana 7-dmg/fnldmg 8-moving
+                     (self.sp, 100, (130, -100), (False, 0), (True, 200), (0.55, 0.5), True, self.sp_damage, (False,0)),#bubble
+                     (self.sp_atk4, 50, (130, -100), (False, 0), (True, 200), (0.55, 0.5), True, self.sp_damage, (False,0)),#bubble2ndfront
+                     (self.sp_atk4,50,(550, -100),(False, 0),(True, 1600), (0.55, 0.5), False, self.sp_damage, (False,0)),#bubble2ndend
+                     (self.sp1, 40, (120, 60), (True, 60), (True, 50), (0.3, 0.5), False, self.sp_damage_2nd, (True, 4.5)),#spiral
+                     (self.sp2, 80, (550, 60), (True, 5), (True, 1500), (0.3, 0.5), False, self.sp_damage_3rd, (False,0))#splash
+                        ]:
                             attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery - 100,
-                                frames=self.sp,
-                                frame_duration=80,
+                                x=self.rect.centerx + i[2][0] if self.facing_right else self.rect.centerx - i[2][0], # in front of him
+                                y=self.rect.centery + i[2][1],
+                                frames=i[0],
+                                frame_duration=i[1],
                                 repeat_animation=1,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.sp_damage[0]/1.1,
-                                final_dmg=self.sp_damage[1]/1.1,
+                                speed=i[8][1] if self.facing_right else -i[8][1],
+                                dmg=i[7][0],
+                                final_dmg=i[7][1],
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.sp_sound , None, None)) # Replace with the target
+                                sound=(True, self.sp_sound, None, None),
+                                stun=(i[3][0], i[3][1]),
+                                delay=(i[4][0], i[4][1]),
+                                hitbox_scale_x=i[5][0],
+                                hitbox_scale_y=i[5][1],
+                                consume_mana=[i[6], self.atk4_special_mana_consume],
+                                moving=i[8][0]
+                                ) # Replace with the target
                             attack_display.add(attack)
-                        self.mana -=  self.attacks_special[3].mana_cost
+
+                        
+                        for i in [(100,130*1.23), (300, 191.1*1.23), (700,275*1.23), (1100, 369.5*1.23), (1500, 550*1.23)]:
+                            attack = Attack_Display( # WATER SHOT
+                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
+                                y=self.rect.centery + 30,
+                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
+                                frame_duration=40,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.sp_atk2_damage_3rd[1],
+                                final_dmg=self.sp_atk2_damage_3rd[1],
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=True,
+                                delay=(True, i[0]),
+                                sound=(True, self.atk1_sound, None, None),
+                                hitbox_scale_x=0.7
+                                ,hitbox_scale_y=0.7
+                                ) # Replace with the target
+                            attack_display.add(attack)
+
+
+                        # self.mana -=  self.attacks[3].mana_cost
                         self.attacks_special[3].last_used_time = current_time
                         self.running = False
                         self.sp_attacking = True
@@ -5707,6 +5925,20 @@ class Water_Princess(Player):
             else:
                 self.player_surf_index_flipped, _ = self.animate(self.player_surf_flipped, self.player_surf_index_flipped, loop=True)
 
+        self.last_atk_time -= animation_speed
+
+    def atk1_animation(self, animation_speed=0):
+        if not self.special_active:
+            if self.facing_right:
+                self.player_atk1_index, self.attacking1 = self.animate(self.player_atk1, self.player_atk1_index, loop=False)
+            else:
+                self.player_atk1_index_flipped, self.attacking1 = self.animate(self.player_atk1_flipped, self.player_atk1_index_flipped, loop=False)
+
+        else:
+            if self.facing_right:
+                self.player_atk1_2nd_index, self.attacking1 = self.animate(self.player_atk1_2nd, self.player_atk1_2nd_index, loop=False)
+            else:
+                self.player_atk1_2nd_index_flipped, self.attacking1 = self.animate(self.player_atk1_2nd_flipped, self.player_atk1_2nd_index_flipped, loop=False)
         self.last_atk_time -= animation_speed
 
     def update(self):

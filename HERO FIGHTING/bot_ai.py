@@ -23,10 +23,10 @@ botchance = Chance(0.3)
 
 # MAIN PROBLEM, INHERITANCE, BOT ENHERITS FROM THE SELECTED HERO, THEN USE IT AS A BOT, IM SLEEPING
 
-def create_bot(selected_hero):
+def create_bot(selected_hero, player_type):
     class Bot(selected_hero):
         def __init__(self, player):
-            super().__init__(2)
+            super().__init__(player_type)
             self.player = player
 
             

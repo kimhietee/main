@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Schedule</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f8f9fa;
+        margin: 0;
+        padding: 20px;
+    }
+    .schedule {
+        display: grid;
+        grid-template-columns: 100px repeat(5, 1fr);
+        border-collapse: collapse;
+        gap: 5px;
+    }
+    .day-header {
+        background: #343a40;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        border-radius: 10px;
+    }
+    .time-slot {
+        background: #dee2e6;
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+    .class {
+        padding: 10px;
+        color: white;
+        border-radius: 10px;
+        font-size: 0.9em;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .lecture { background: linear-gradient(135deg, #42a5f5, #1e88e5); }
+    .lab { background: linear-gradient(135deg, #66bb6a, #43a047); }
+    .empty { background: transparent; }
+</style>
+</head>
+<body>
+
+<h1>BSIT 2C Weekly Schedule</h1>
+
+<div class="schedule">
+    <!-- Headers -->
+    <div class="time-slot">Time</div>
+    <div class="day-header">Mon</div>
+    <div class="day-header">Tue</div>
+    <div class="day-header">Wed</div>
+    <div class="day-header">Thu</div>
+    <div class="day-header">Fri</div>
+
+    <!-- Time Slots -->
+    <!-- 7-8 AM -->
+    <div class="time-slot">7:00</div>
+    <div class="lab">ITCC47A Lab<br>CISC Lab 11</div>
+    <div class="lab">IT53A Lab<br>CISC Lab 11</div>
+    <div class="lab">ITCC45A Lab<br>CISC Lab 23</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+
+    <!-- 8-9 AM -->
+    <div class="time-slot">8:00</div>
+    <div class="lab">ITCC47A Lab</div>
+    <div class="lab">IT53A Lab</div>
+    <div class="lab">ITCC45A Lab</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+
+    <!-- 9-10 AM -->
+    <div class="time-slot">9:00</div>
+    <div class="lab">ITCC47A Lab</div>
+    <div class="lab">IT53A Lab</div>
+    <div class="lab">ITCC45A Lab</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+
+    <!-- 10-11 AM -->
+    <div class="time-slot">10:00</div>
+    <div class="lecture">IT53 Lecture<br>Training Room</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="lecture">ITCC45 Lecture<br>CISC Lab 24</div>
+    <div class="empty"></div>
+
+    <!-- 11-12 PM -->
+    <div class="time-slot">11:00</div>
+    <div class="lecture">IT53 Lecture</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="lecture">ITCC45 Lecture</div>
+    <div class="empty"></div>
+
+    <!-- 12-1 PM -->
+    <div class="time-slot">12:00</div>
+    <div class="lecture">GEE 11 Lecture</div>
+    <div class="lecture">ITCC47 Lecture</div>
+    <div class="lecture">GEE 11 Lecture</div>
+    <div class="lecture">ITCC47 Lecture</div>
+    <div class="lecture">GEE 11 Lecture</div>
+
+    <!-- 1-2 PM -->
+    <div class="time-slot">1:00</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="lecture">PE33</div>
+    <div class="empty"></div>
+    <div class="lab">IT51A Lab</div>
+
+    <!-- 2-3 PM -->
+    <div class="time-slot">2:00</div>
+    <div class="empty"></div>
+    <div class="lecture">GEC 17 Lecture</div>
+    <div class="empty"></div>
+    <div class="lecture">GEC 17 Lecture</div>
+    <div class="lab">IT51A Lab</div>
+
+    <!-- 3-4 PM -->
+    <div class="time-slot">3:00</div>
+    <div class="empty"></div>
+    <div class="lecture">GEC 17 Lecture</div>
+    <div class="empty"></div>
+    <div class="lecture">GEC 17 Lecture</div>
+    <div class="lab">IT51A Lab</div>
+
+    <!-- 4-5 PM -->
+    <div class="time-slot">4:00</div>
+    <div class="lab">IT55A Lab</div>
+    <div class="lecture">IT51 Lecture</div>
+    <div class="empty"></div>
+    <div class="lecture">IT55 Lecture</div>
+    <div class="empty"></div>
+
+    <!-- 5-6 PM -->
+    <div class="time-slot">5:00</div>
+    <div class="lab">IT55A Lab</div>
+    <div class="lecture">IT51 Lecture</div>
+    <div class="empty"></div>
+    <div class="lecture">IT55 Lecture</div>
+    <div class="empty"></div>
+
+    <!-- 6-7 PM -->
+    <div class="time-slot">6:00</div>
+    <div class="lab">IT55A Lab</div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="empty"></div>
+</div>
+
+</body>
+</html>

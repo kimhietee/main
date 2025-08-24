@@ -510,7 +510,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 * [1] – If True, the attack always follows the enemy, even without collision.
 
         20. delay (tuple(bool, int)):
-            - Delays the attack's animation and effect:
+            - Delays the attack’s animation and effect:
                 * [0] – If True, delay is enabled.
                 * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
         """
@@ -6255,7 +6255,8 @@ items = [
 
     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.05, 0.03])
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1])
      
 ]
 
@@ -6532,6 +6533,7 @@ def player_selection():
         PlayerSelector(items[2].image, (75 * 3, height - 400), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[3].image, (75 * 4, height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[4].image, (75 * 5, height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[13].image, (75 * 6, height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         
         PlayerSelector(items[5].image, (75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[6].image, (75 * 2, height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
@@ -6550,6 +6552,7 @@ def player_selection():
         PlayerSelector(items[2].image, (width - (75 * 3), height - 400), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[3].image, (width - (75 * 4), height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[4].image, (width - (75 * 5), height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[13].image, (width - (75 * 6), height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
 
         PlayerSelector(items[5].image, (width - 75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[6].image, (width - (75 * 2), height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
@@ -6741,57 +6744,44 @@ def player_selection():
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
                     
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
-                    if PLAYER_1_SELECTED_HERO == PLAYER_2_SELECTED_HERO:
-                        hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
-                    else:
-                        hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
+                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
 
-            if SINGLE_MODE_ACTIVE:  
-                # from botclass import Bot
-                # Store original classes before creating any bots
-                hero1_class = hero1.__class__
-                hero2_class = hero2.__class__
-                
-                # Create bot for hero1 (should be at player 1 position)
-                bot1 = create_bot(hero1_class)
-                hero1 = bot1(hero2)
-                # Fix hero1 position to player 1 side
-                hero1.player_type = 1
-                hero1.x_pos = X_POS_SPACING
-                
-                # Create bot for hero2 (should be at player 2 position)  
-                bot2 = create_bot(hero2_class)
-                hero2 = bot2(hero1)
-                # Fix hero2 position to player 2 side
-                hero2.player_type = 2
-                hero2.x_pos = DEFAULT_X_POS
+                    if SINGLE_MODE_ACTIVE:
+                        # bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1)
+                        # hero1 = bot1_class(hero2)  # pass live hero2 reference
 
-                for item in p1_items:
-                    if item.is_selected():
-                        hero1.items.append(item.associate_value())
+                        bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2)
+                        hero2 = bot2_class(hero1)  # pass live hero1 reference
 
-                for item in p2_items:
-                    if item.is_selected():
-                        hero2.items.append(item.associate_value())
 
-                hero1.apply_item_bonuses()
-                hero2.apply_item_bonuses()
+                    for item in p1_items:
+                        if item.is_selected():
+                            hero1.items.append(item.associate_value())
 
-                hero1_group = pygame.sprite.Group()
-                hero1_group.add(hero1)
+                    for item in p2_items:
+                        if item.is_selected():
+                            hero2.items.append(item.associate_value())
 
-                hero2_group = pygame.sprite.Group()
-                hero2_group.add(hero2)
+                    hero1.apply_item_bonuses()
+                    hero2.apply_item_bonuses()
 
-                pygame.mixer.music.fadeout(1000)
-                pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+                    hero1_group = pygame.sprite.Group()
+                    hero1_group.add(hero1)
 
-                reset_all()
-                fade(background, game) #lez go it worked
-                # pygame.mixer.fadeout(1500)
-                
-                
-                return
+                    hero2_group = pygame.sprite.Group()
+                    hero2_group.add(hero2)
+
+                    pygame.mixer.music.fadeout(1000)
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+
+                    
+
+                    reset_all()
+                    fade(background, game) #lez go it worked
+                    # pygame.mixer.fadeout(1500)
+                    
+                    
+                    return
 
         pygame.display.update()
         clock.tick(FPS)

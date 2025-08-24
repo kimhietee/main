@@ -77,7 +77,7 @@ class Player(pygame.sprite.Sprite):
         self.enemy = None
         self.items = [] # contains 3 or less than 3 item classes. ex. 
                             # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
-
+        self.damage_reduce = 0
         self.lifesteal = 0
         self.stunned = False
         self.str_mult = 5
@@ -330,6 +330,8 @@ class Player(pygame.sprite.Sprite):
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
         if not hasattr(self, 'rect'):
             return  # Safety check
+        # if self.health > self.max_health: # don't show hp dmg when  game starts
+        #     return
 
         # Random offset so numbers don’t overlap each other
         offset_x = random.randint(-20, 20)
@@ -376,6 +378,8 @@ class Player(pygame.sprite.Sprite):
         })
 
     def update_damage_numbers(self, screen):
+        # if self.health > self.max_health: # don't show hp dmg when game starts
+        #     return
         for dmg in self.damage_numbers[:]:
             dmg['y'] -= 1
             fade_amount = int(255 / dmg['interval'])
@@ -393,6 +397,8 @@ class Player(pygame.sprite.Sprite):
                 screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
 
     def detect_and_display_damage(self, interval=30):
+        # if self.health > self.max_health: # don't show hp dmg when game starts
+        #     return
         delta = self.health - self.last_health
         if delta < 0:
             self.display_damage(-delta, interval=interval)  # Normal damage (red)
@@ -446,6 +452,9 @@ class Player(pygame.sprite.Sprite):
 
                 if bonus_type == "lifesteal":
                     self.lifesteal += bonus_value
+
+                if bonus_type =='dmg reduce':
+                    self.damage_reduce += bonus_value
 
                 if bonus_type == 'spell dmg':
                     # Apply bonus spell damage to each skill
@@ -1287,10 +1296,12 @@ class Player(pygame.sprite.Sprite):
                     print("Not enough mana!")
                     return -1
         return -1
-    
+
     def take_damage(self, damage):
         if self.is_dead():
             return
+        if self.damage_reduce > 0:
+            damage -= (damage * self.damage_reduce)
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 

@@ -26,11 +26,12 @@ SMOOTH_BG = False
 MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 
+hitboxanddistance = False
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant
-SHOW_HITBOX = False
-DRAW_DISTANCE = False
+SHOW_HITBOX = hitboxanddistance
+DRAW_DISTANCE = hitboxanddistance
 SHOW_GRID = False
 
 # Default Dimensions
@@ -145,6 +146,10 @@ dmg_mult = 0.05
 
 hero1 = None
 hero2 = None
+
+#loading screen
+loading_screen_bg = pygame.transform.scale(
+        pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
 #hero icons
 fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'

@@ -14,7 +14,7 @@ from global_vars import (IMMEDIATE_RUN,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
-    attack_display, MULT, dmg_mult
+    attack_display, MULT, dmg_mult, loading_screen_bg
 )
 from global_vars import SHOW_HITBOX
 
@@ -247,6 +247,13 @@ def game(bg=None):
             
     FREEZE_SPECIAL = False
     freeze_toggled = True
+
+    final_elapsed_time = None
+
+    #testing purposes
+    #testing
+    main.hero1.x_pos += 150
+    main.hero2.x_pos -= 150
     while True:
         
         
@@ -256,8 +263,13 @@ def game(bg=None):
         key_press = pygame.key.get_pressed()
 
         current_time = pygame.time.get_ticks()
-        elapsed_time = (current_time - start_time) // 1000  # Convert to seconds
 
+        if winner is None:
+            elapsed_time = (current_time - start_time) // 1000
+        else:
+            if final_elapsed_time is None:  # store it only once
+                final_elapsed_time = (current_time - start_time) // 1000
+            elapsed_time = final_elapsed_time
         main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
 
@@ -382,7 +394,7 @@ def game(bg=None):
         for icons in main.p1_select:
             if icons.is_selected():
                 icons.draw_icon(size=(75, 75))
-        
+    
         for icons in main.p2_select:
             if icons.is_selected():
                 icons.draw_icon(size=(main.width - 75, 75))
@@ -406,7 +418,9 @@ def game(bg=None):
                 cube['sound']
             )
 
+
         timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
+
         main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
         
         menu_button.draw(main.screen, mouse_pos)
@@ -429,6 +443,7 @@ def game(bg=None):
         main.hero2_group.update()
         main.hero2_group.draw(main.screen)
         if main.SINGLE_MODE_ACTIVE:
+            # main.hero1.bot_logic()  # Add bot logic for hero1
             main.hero2.bot_logic()
 
 
@@ -438,6 +453,9 @@ def game(bg=None):
             winner = 'hero1'
         else:
             winner = None
+
+        # main.hero2.health = 1 if not main.hero2.is_dead() else 0
+        battle_end(mouse_pos, mouse_press)
 
         
 
@@ -510,7 +528,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
 menu_game = ImageButton(
     image_path=text_box_img,
-    pos=(width/2, height*0.9),
+    pos=(width/2-(width*0.075), height*0.475),
     scale=0.8,
     text='menu',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -520,7 +538,7 @@ menu_game = ImageButton(
 )
 rematch_game = ImageButton(
     image_path=text_box_img,
-    pos=(width/2, height*0.9),
+    pos=(width/2+(width*0.075), height*0.475),
     scale=0.8,
     text='rematch',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -528,20 +546,22 @@ rematch_game = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
-def battle_end(mouse_pos, mouse_press, font, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH))):
+def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     if winner is not None:
         if winner == 'hero1':
-            create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.19)
+            create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.40)
         elif winner == 'hero2':
-            create_title('PLAYER 2 WINS!!!', font, default_size - 0.55, height * 0.19)
+            create_title('PLAYER 2 WINS!!!', font, default_size - 0.55, height * 0.40)
     
-    menu_game.draw(screen, mouse_pos)
-    rematch_game.draw(screen, mouse_pos)
-    if mouse_press[0] and menu_game.is_clicked(mouse_pos):
-        pass
+        menu_game.draw(screen, mouse_pos)
+        rematch_game.draw(screen, mouse_pos)
+        if mouse_press[0] and menu_game.is_clicked(mouse_pos):
+            menu()
 
-    if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
-        pass
+        if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
+            reset_all()
+            fade(loading_screen_bg, game)
+            
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
 def menu():
@@ -800,22 +820,35 @@ def main_menu():
         create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
 
-        battle_end(mouse_pos, mouse_press, font)
+        
 
         pygame.display.update()
         main.clock.tick(main.FPS)
 
 def reset_all():
     global fade_alpha, fading, fade_start_time
+    # reset cd
     for attack in main.hero1.attacks:
         attack.reduce_cd(True)
     for attack in main.hero2.attacks:
         attack.reduce_cd(True)
 
+    #reset health
     main.hero1.health += main.hero1.max_health
     main.hero2.health += main.hero2.max_health
     main.hero1.mana += main.hero1.max_mana
     main.hero2.mana += main.hero2.max_mana
+    main.hero1.special -= main.hero1.max_special
+    main.hero2.special -= main.hero2.max_special
+
+    main.hero1.damage_numbers.clear()
+    main.hero2.damage_numbers.clear()
+
+    # reset pos
+    main.hero1.x_pos = X_POS_SPACING if main.hero1.player_type == 1 else DEFAULT_X_POS
+    main.hero1.y_pos = DEFAULT_Y_POS
+    main.hero2.x_pos = X_POS_SPACING if main.hero2.player_type == 1 else DEFAULT_X_POS
+    main.hero2.y_pos = DEFAULT_Y_POS
 
     # fade_overlay = pygame.Surface((width, height))
     # fade_overlay.fill((0, 0, 0))

@@ -442,7 +442,7 @@ def game(bg=None):
         # if not main.hero2.is_dead():
         main.hero2_group.update()
         main.hero2_group.draw(main.screen)
-        if main.SINGLE_MODE_ACTIVE:
+        if global_vars.SINGLE_MODE_ACTIVE:
             # main.hero1.bot_logic()  # Add bot logic for hero1
             main.hero2.bot_logic()
 
@@ -606,13 +606,13 @@ def menu():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
-                    main.SINGLE_MODE_ACTIVE = True
+                    global_vars.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
                     return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if multiplayer_button.is_clicked(event.pos):
-                    main.SINGLE_MODE_ACTIVE = False
+                    global_vars.SINGLE_MODE_ACTIVE = False
                     main.player_selection()
                     return
              
@@ -894,6 +894,9 @@ def settings():
 
     anti_alias_button = RectButton(width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
     smooth_bg_button = RectButton(width*0.3, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
+    show_distance_button = RectButton(width*0.5, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Distance")
+    show_hitbox_button = RectButton(width*0.7, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Hitbox")
+    show_grid_button = RectButton(width*0.9, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (X)")
     
 
     # text anti-alias
@@ -937,6 +940,15 @@ def settings():
                 
                 if smooth_bg_button.is_clicked(event.pos):
                     global_vars.SMOOTH_BG = smooth_bg_button.toggle(global_vars.SMOOTH_BG)
+                
+                if show_distance_button.is_clicked(event.pos):
+                    global_vars.DRAW_DISTANCE = show_distance_button.toggle(global_vars.DRAW_DISTANCE)
+
+                if show_hitbox_button.is_clicked(event.pos):
+                    global_vars.SHOW_HITBOX = show_hitbox_button.toggle(global_vars.SHOW_HITBOX)
+
+                if show_grid_button.is_clicked(event.pos):
+                    global_vars.SHOW_GRID = show_grid_button.toggle(global_vars.SHOW_GRID)
 
             
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -975,9 +987,15 @@ def settings():
         # Button functionality
         anti_alias_button.update(mouse_pos, global_vars.TEXT_ANTI_ALIASING)
         smooth_bg_button.update(mouse_pos, global_vars.SMOOTH_BG)
+        show_distance_button.update(mouse_pos, global_vars.DRAW_DISTANCE)
+        show_hitbox_button.update(mouse_pos, global_vars.SHOW_HITBOX)
+        show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
         # Drawing buttons
         anti_alias_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_distance_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_hitbox_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         # Draw mute text
         # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", global_vars.TEXT_ANTI_ALIASING, white)

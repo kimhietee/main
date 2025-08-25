@@ -612,7 +612,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
     
 
     def update(self):
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -1685,9 +1685,9 @@ class Fire_Wizard(Player):
         
     
     def update(self):
-        if DRAW_DISTANCE:
+        if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -2542,9 +2542,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         
     def update(self):
         # print(self.stunned)
-        if DRAW_DISTANCE:
+        if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -3571,9 +3571,9 @@ class Fire_Knight(Player):
 
     def update(self):
         self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
-        if DRAW_DISTANCE:
+        if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -4600,9 +4600,9 @@ class Wind_Hashashin(Player):
     
     
     def update(self):
-        if DRAW_DISTANCE:
+        if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -4803,8 +4803,8 @@ class Water_Princess(Player):
         self.mana = self.max_mana
         self.basic_attack_damage = self.agility * self.agi_mult
 
-        self.basic_atk1_dmg = self.basic_attack_damage*5
-        self.basic_atk2_dmg = self.basic_attack_damage*1.5
+        # self.basic_atk1_dmg = self.basic_attack_damage*5
+        # self.basic_atk2_dmg = self.basic_attack_damage*1.5
 
         # Player Position
         self.x = 50
@@ -5490,9 +5490,9 @@ class Water_Princess(Player):
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks[4].is_ready():
                         for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_atk2_dmg),
+                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_atk1_dmg)
+                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5)
                             
                             ]:
                             attack = Attack_Display(
@@ -5845,9 +5845,9 @@ class Water_Princess(Player):
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
                         for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_atk2_dmg),
+                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_atk1_dmg)
+                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5)
                             
                             ]:
                             attack = Attack_Display(
@@ -5942,9 +5942,9 @@ class Water_Princess(Player):
         self.last_atk_time -= animation_speed
 
     def update(self):
-        if DRAW_DISTANCE:
+        if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
-        if SHOW_HITBOX:
+        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
@@ -6586,7 +6586,7 @@ def player_selection():
         if immediate_run: # DEV OPTION ONLY
             # PLAYER_1_SELECTED_HERO = Wanderer_Magician
             # PLAYER_2_SELECTED_HERO = Wanderer_Magician
-            bot = create_bot(Water_Princess) if SINGLE_MODE_ACTIVE else None
+            bot = create_bot(Water_Princess) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
             go = True
@@ -6746,7 +6746,7 @@ def player_selection():
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
 
-                    if SINGLE_MODE_ACTIVE:
+                    if global_vars.SINGLE_MODE_ACTIVE:
                         # bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1)
                         # hero1 = bot1_class(hero2)  # pass live hero2 reference
 

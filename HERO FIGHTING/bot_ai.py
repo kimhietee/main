@@ -929,6 +929,8 @@ def create_bot(selected_hero, player_type):
                 self.hero_bot = 'Fire_Knight'
             elif selected_hero.__name__ == 'Wind_Hashashin' and 'Wind_Hashashin' in self.hero_data:
                 self.hero_bot = 'Wind_Hashashin'
+            elif selected_hero.__name__ == 'Water_Princess' and 'Water_Princess' in self.hero_data:
+                self.hero_bot = 'Water_Princess'
             else:
                 # self.hero.bot = selected_hero.__name__
                 self.hero_bot = 'Fire_Wizard' # default

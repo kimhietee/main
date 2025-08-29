@@ -27,6 +27,7 @@ MAX_ITEM = 20
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False
+show_bot_skills = False
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant

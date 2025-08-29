@@ -250,14 +250,14 @@ def create_bot(selected_hero, player_type):
                                                         # False = use skills whenever
                                                         # 
                                                         # [1] = condition type :
-                                                        # 0 = enemy weak (use skills),
-                                                        # 1 = enemy strong (use skills),
+                                                        # 0 = enemy weak (will use skills),
+                                                        # 1 = enemy strong (will use skills),
                                                         # 2 = don't use skills
 
                     'special_threshold': {
-                        'health_high_prio': self.max_health * 0.4, # if less than the value, then high prio
-                        'low_prio': 0.2, # bot will need 80% mana to cast special
-                        'high_prio': 0.1 # if less than the hp prio, then 50% is enough to cast special
+                        'health_high_prio': self.max_health * 0.7, # if less than the value, then high prio
+                        'low_prio': 0.2, # bot will need ??% mana to cast special
+                        'high_prio': 0.1 # if less than the hp prio, then ??% is enough to cast special
                     },
 
                     'stuck_logic': {
@@ -918,7 +918,192 @@ def create_bot(selected_hero, player_type):
                         'atk_range': lambda bot: 175 if not bot.special_active else 300,
                         'min_cast_range': 30,
                     }
-                }
+                },
+
+                'Water_Princess': {
+                    'default_timer': 1,
+                    'timer_slow_decrease': 2,
+
+                    'cast_special_threshold': self.get_special_threshold,
+                    'special_if_sp_skill_ready': True,
+                    'special_conditions': [True, 2],
+
+                    'special_threshold': {
+                        'health_high_prio': self.max_health * 0.4,
+                        'low_prio': 0.85,
+                        'high_prio': 0.66
+                    },
+
+                    'stuck_logic': {
+                        'threshold': 2.5,
+                        'detect': 0.4,
+                        'duration': 3.3
+                    },
+
+                    'edge_escape_logic': {
+                        'duration': 1.34,
+                        'distance': 201
+                    },
+
+                    'took_alot_dmg': {
+                        'damage_interval': 0.5,
+                        'damage_threshold': 6,
+                        'damage_taken_logic': 0.5,
+                    },
+                    
+                    'panic_logic': {
+                        'threshold': 0.3,
+                        'cooldown': 2.5
+                    },
+
+                    'cast_special_threshold_distance': 300,
+
+                    'random_unstuck': 0.0001,
+                    'random_edge_escape': 0.000001,
+
+                    'decide_logic': {
+                        'chase_distance': 800,
+                        'panic_chase_distance': 400,
+                        'escape_distance': 240
+                    },
+                    
+                    'skills': {
+                        'skill_1': {
+                            'cast_range': 100,
+                            'min_cast_range': 15,
+                            'require_all': False,  # Allow any of these grouped conditions to trigger
+                            'conditions': [
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_hp_percent() >= 70 and
+                                    not bot.attacks[3].is_ready() and(
+                                    bot.mana >= bot.attacks[0].mana_cost * 1.5 or
+                                    botchance.update(20)
+                                    )
+                                ),
+
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_hp_percent() <= 70 and
+                                    bot.mana >= bot.attacks[0].mana_cost * 1.30 and
+                                    bot.bot_hp_percent() > bot.enemy_hp_percent() and
+                                    not bot.attacks[3].is_ready() and
+                                    botchance.update(60)
+                                ),
+
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_hp_percent() <= 40 and
+                                    bot.bot_hp_percent() > bot.enemy_hp_percent() and
+                                    botchance.update(70)
+                                ),
+
+                                # sp logic
+                                lambda bot: (bot.special_active and
+                                    bot.enemy_distance >= 30 and
+                                    botchance.update(50)
+                                )
+                            ]
+                        },
+                        'skill_2': {
+                            'cast_range': 650, # 10-700 atk range
+                            'min_cast_range': 200,
+                            'require_all': False,
+                            'conditions': [
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_distance <= 500 and
+                                    bot.enemy_hp_percent() >= 70 and
+                                    self.mana >= self.attacks[1].mana_cost * 1.2 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.attacks[3].is_ready() and
+                                    botchance.update(40)
+                                ),
+
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_distance <= 500 and
+                                    bot.enemy_hp_percent() < 70 and
+                                    bot.is_facing_from_enemy() and
+                                    bot.bot_hp_percent() > bot.enemy_hp_percent() and
+                                    not bot.attacks[3].is_ready() and
+                                    botchance.update(70)
+                                ),
+
+                                #enemy low hp (hit max atk range)
+                                lambda bot: (not bot.special_active and
+                                    bot.enemy_hp_percent() <= 30 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                ),
+
+                                #sp logic
+                                lambda bot: (bot.special_active and
+                                    bot.enemy_hp_percent() > 30 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(60)
+                                ),
+
+                                lambda bot: (bot.special_active and
+                                    bot.enemy_hp_percent() <= 30 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                )
+                                
+                            ]# 70 90
+                        },
+                        'skill_3': {
+                            'cast_range': 140, # original cast range: 125
+                            'min_cast_range': 80,
+                            'require_all': False,
+                            'conditions': [
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 70 and
+                                    bot.bot_hp_percent() < 85 and
+                                    bot.bot_hp_percent() < bot.enemy_hp_percent() and
+                                    bot.enemy_distance >= 250 and
+                                    not bot.attacks[3].is_ready() and
+                                    botchance.update(50)
+                                ),
+
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 30 and
+                                    bot.bot_hp_percent() < 70 and
+                                    bot.bot_hp_percent() < bot.enemy_hp_percent() and
+                                    bot.enemy_distance >= 200 and
+                                    botchance.update(70)
+                                ),
+
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 30 and
+                                    bot.enemy_distance >= 150 and
+                                    botchance.update(80)
+                                ),
+
+                                # sp logic
+                                lambda bot: (bot.special_active and
+                                    botchance.update(80)
+                                )
+                            ]
+                        },
+                        'skill_4': {
+                            'cast_range': 160,
+                            'min_cast_range': 90,
+                            'require_all': False,
+                            'conditions': [
+                                lambda bot: (not bot.special_active and
+                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    bot.enemy_distance <= 150 and
+                                    bot.is_facing_from_enemy()
+                                    ),
+
+                                #sp logic
+                                lambda bot: (bot.special_active and
+                                    bot.is_facing_from_enemy()
+                                )
+                            ]
+                        },
+                    },
+                    'basic_attack': {
+                        'atk_range': 100,
+                        'min_cast_range': 50,
+                    }
+                },
             }
 
             if selected_hero.__name__ == 'Fire_Wizard' and 'Fire_Wizard' in self.hero_data:

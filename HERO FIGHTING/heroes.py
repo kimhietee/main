@@ -1736,7 +1736,7 @@ class Fire_Wizard(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
+        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and not self.player_type == 2:
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -2596,7 +2596,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
+        if not self.is_dead() and all([(not self.player_type == 2 if global_vars.SINGLE_MODE_ACTIVE else True), (global_vars.show_bot_skills)]):
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -3628,7 +3628,7 @@ class Fire_Knight(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
+        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and (not self.player_type == 2 or global_vars.show_bot_skills):
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -4705,7 +4705,7 @@ class Wind_Hashashin(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
+        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and (self.player_type == 1 or global_vars.show_bot_skills):
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -5549,7 +5549,7 @@ class Water_Princess(Player):
                     if self.mana >= self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
                         for i in [
                             (80, 40, 100, self.sp_atk1_damage, 0, self.atk1_sound, False, 0.2, 0.4, False, False, True, True, (self.sp_atk1, self.sp_atk1)),
-                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 0.6, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
+                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 1.2, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
                         ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
@@ -5995,7 +5995,7 @@ class Water_Princess(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
+        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and all([not self.player_type == 2, (not global_vars.show_bot_skills if self.player_type == 2 else True)]):
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -6584,9 +6584,9 @@ def player_selection():
 
     while True:
         if immediate_run: # DEV OPTION ONLY
-            # PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            # PLAYER_2_SELECTED_HERO = Wanderer_Magician
-            bot = create_bot(Water_Princess) if global_vars.SINGLE_MODE_ACTIVE else None
+            PLAYER_1_SELECTED_HERO = Wanderer_Magician
+            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
             go = True

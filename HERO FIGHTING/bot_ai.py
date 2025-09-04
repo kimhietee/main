@@ -1013,42 +1013,41 @@ def create_bot(selected_hero, player_type):
                                     self.mana >= self.attacks[1].mana_cost * 1.2 and
                                     bot.is_facing_from_enemy() and
                                     not bot.attacks[3].is_ready() and
-                                    botchance.update(40)
+                                    botchance.update(60)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_distance <= 500 and
                                     bot.enemy_hp_percent() < 70 and
                                     bot.is_facing_from_enemy() and
-                                    bot.bot_hp_percent() > bot.enemy_hp_percent() and
                                     not bot.attacks[3].is_ready() and
-                                    botchance.update(70)
+                                    botchance.update(80)
                                 ),
 
                                 #enemy low hp (hit max atk range)
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() <= 30 and
                                     bot.is_facing_from_enemy() and
-                                    botchance.update(80)
+                                    botchance.update(90)
                                 ),
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() > 30 and
                                     bot.is_facing_from_enemy() and
-                                    botchance.update(60)
+                                    botchance.update(70)
                                 ),
 
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() <= 30 and
                                     bot.is_facing_from_enemy() and
-                                    botchance.update(80)
+                                    botchance.update(90)
                                 )
                                 
                             ]# 70 90
                         },
                         'skill_3': {
-                            'cast_range': 140, # original cast range: 125
+                            'cast_range': 1500, # original cast range: 125
                             'min_cast_range': 80,
                             'require_all': False,
                             'conditions': [

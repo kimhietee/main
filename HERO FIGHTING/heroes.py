@@ -1036,6 +1036,14 @@ class Fire_Wizard(Player):
             # Swapped damage explosion
         # (10/10, 50):start + (25/10, 5):explosion = 90
         # -> (25/10, 5):start + (10/10, 45):explosion = 85
+
+
+
+        # Wind hashashin buff
+        # 8 -> 10 (dash speed and distance: 10 -> 12 (400 -> 500), sp: 12 -> 15 (600 -> 800))
+        # x slashes (both slashes) (12/15, 4) -> (13/15, 5) total=(23-24 dmg)
+        # 26 -> 28 (due to x slash)
+        # 58 -> 64 (16)
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -1736,20 +1744,23 @@ class Fire_Wizard(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and not self.player_type == 2:
-            if not self.special_active:
-                for attack in self.attacks:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
             else:
-                for attack in self.attacks_special:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
 
-            if not self.special_active:
-                for mana in self.attacks:
-                    mana.draw_mana_cost(screen, self.mana)
-            else:
-                for mana in self.attacks_special:
-                    mana.draw_mana_cost(screen, self.mana)
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the player status (health and mana bars)
         self.player_status(self.health, self.mana, self.special)
@@ -2597,19 +2608,22 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
         if not self.is_dead():
-            if not self.special_active:
-                for attack in self.attacks:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
             else:
-                for attack in self.attacks_special:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
 
-            if not self.special_active:
-                for mana in self.attacks:
-                    mana.draw_mana_cost(screen, self.mana)
-            else:
-                for mana in self.attacks_special:
-                    mana.draw_mana_cost(screen, self.mana)
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the player status (health and mana bars)
         self.player_status(self.health, self.mana, self.special)
@@ -3629,19 +3643,22 @@ class Fire_Knight(Player):
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
         if not self.is_dead():
-            if not self.special_active:
-                for attack in self.attacks:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
             else:
-                for attack in self.attacks_special:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
 
-            if not self.special_active:
-                for mana in self.attacks:
-                    mana.draw_mana_cost(screen, self.mana)
-            else:
-                for mana in self.attacks_special:
-                    mana.draw_mana_cost(screen, self.mana)
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the player status (health and mana bars)
         self.player_status(self.health, self.mana, self.special)
@@ -3758,13 +3775,13 @@ class Wind_Hashashin(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (8, 0) #smoke dmg
+        self.atk1_damage = (10, 0) #smoke dmg
         self.atk2_damage = (35/45, 0) #tornado
-        self.atk2_damage_2nd = (12/15, 4) # x slash
+        self.atk2_damage_2nd = (13/15, 5) # x slash
         self.atk3_damage = (0, 0) #not used
         self.sp_damage = (200/20, 25) # circle
-        self.sp_damage_2nd = (12/15, 4) # x slash
-        self.real_sp_damage = 14.5 #0.225
+        self.sp_damage_2nd = (13/15, 5) # x slash
+        self.real_sp_damage = 16 # times 4
 
         #SKILL DAMAGE before
         #10
@@ -4068,16 +4085,16 @@ class Wind_Hashashin(Player):
         self.atk3_move_speed = 4
 
         # Skill 1  configuration
-        self.default_dash_speed = 10
-        self.default_max_distance = 400
+        self.default_dash_speed = 12
+        self.default_max_distance = 500
 
-        self.special_dash_speed = 12
-        self.special_max_distance = 600
+        self.special_dash_speed = 15
+        self.special_max_distance = 800
 
         self.activate_dash = False
         self.distance_covered = 0
         self.dash_speed = 5
-        self.max_distance = 400
+        self.max_distance = 600 #(400 -> 600)
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
@@ -4706,19 +4723,22 @@ class Wind_Hashashin(Player):
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
         if not self.is_dead():
-            if not self.special_active:
-                for attack in self.attacks:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
             else:
-                for attack in self.attacks_special:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
 
-            if not self.special_active:
-                for mana in self.attacks:
-                    mana.draw_mana_cost(screen, self.mana)
-            else:
-                for mana in self.attacks_special:
-                    mana.draw_mana_cost(screen, self.mana)
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the player status (health and mana bars)
         self.player_status(self.health, self.mana, self.special)
@@ -5996,19 +6016,22 @@ class Water_Princess(Player):
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
         if not self.is_dead():
-            if not self.special_active:
-                for attack in self.attacks:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
             else:
-                for attack in self.attacks_special:
-                    attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
 
-            if not self.special_active:
-                for mana in self.attacks:
-                    mana.draw_mana_cost(screen, self.mana)
-            else:
-                for mana in self.attacks_special:
-                    mana.draw_mana_cost(screen, self.mana)
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the player status (health and mana bars)
         self.player_status(self.health, self.mana, self.special)

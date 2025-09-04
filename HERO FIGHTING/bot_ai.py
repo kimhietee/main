@@ -1100,8 +1100,8 @@ def create_bot(selected_hero, player_type):
                         },
                     },
                     'basic_attack': {
-                        'atk_range': 100,
-                        'min_cast_range': 50,
+                        'atk_range': 110,
+                        'min_cast_range': 20,
                     }
                 },
             }

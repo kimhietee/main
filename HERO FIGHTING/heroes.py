@@ -2596,7 +2596,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead() and all([(not self.player_type == 2 if global_vars.SINGLE_MODE_ACTIVE else True), (global_vars.show_bot_skills)]):
+        if not self.is_dead():
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -3628,7 +3628,7 @@ class Fire_Knight(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and (not self.player_type == 2 or global_vars.show_bot_skills):
+        if not self.is_dead():
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -3727,7 +3727,7 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 11
+        self.agility = 13
 
         # Base Stats
         self.max_health = self.strength * self.str_mult
@@ -4705,7 +4705,7 @@ class Wind_Hashashin(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and (self.player_type == 1 or global_vars.show_bot_skills):
+        if not self.is_dead():
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -5995,7 +5995,7 @@ class Water_Princess(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead() and not global_vars.SINGLE_MODE_ACTIVE and all([not self.player_type == 2, (not global_vars.show_bot_skills if self.player_type == 2 else True)]):
+        if not self.is_dead():
             if not self.special_active:
                 for attack in self.attacks:
                     attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
@@ -6274,11 +6274,11 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
 HERO_INFO = {
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 12, HP: 190, Mana: 200, Damage: 2.4",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 5"
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5, 10), Attack Speed: -3200"
 }
 
 

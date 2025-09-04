@@ -1058,7 +1058,7 @@ def create_bot(selected_hero, player_type):
                                     bot.bot_hp_percent() < bot.enemy_hp_percent() and
                                     bot.enemy_distance >= 250 and
                                     not bot.attacks[3].is_ready() and
-                                    botchance.update(50)
+                                    botchance.update(70)
                                 ),
 
                                 lambda bot: (not bot.special_active and
@@ -1066,18 +1066,18 @@ def create_bot(selected_hero, player_type):
                                     bot.bot_hp_percent() < 70 and
                                     bot.bot_hp_percent() < bot.enemy_hp_percent() and
                                     bot.enemy_distance >= 200 and
-                                    botchance.update(70)
+                                    botchance.update(90)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 30 and
                                     bot.enemy_distance >= 150 and
-                                    botchance.update(80)
+                                    botchance.update(100)
                                 ),
 
                                 # sp logic
                                 lambda bot: (bot.special_active and
-                                    botchance.update(80)
+                                    botchance.update(100)
                                 )
                             ]
                         },

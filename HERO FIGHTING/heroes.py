@@ -1026,7 +1026,7 @@ class Fire_Wizard(Player):
         # Skill 3: 37 = 37
         # Skill 4: 86 -> 69
 
-        #fire knight
+        #fire knight nerf
         # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
         # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
         # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
@@ -1044,6 +1044,21 @@ class Fire_Wizard(Player):
         # x slashes (both slashes) (12/15, 4) -> (13/15, 5) total=(23-24 dmg)
         # 26 -> 28 (due to x slash)
         # 58 -> 64 (16)
+
+        #fire knight nerf and wind hashashin buff
+        #fire knight:
+        # Intelligence: 40 = 40, 180 -> 200 (removed -20 max mana)
+        # Skill 1: 0
+        # Skill 2: cd 16s - > 20s, mana cost 80 -> 100
+        # Skill 3: cd 26s - > 30s, mana cost 140 -> 160
+        # Skill 4: mana cost 180 -> 200, dmg = (65/65, 15) = 80 -> (60/65, 15) = 75 
+        #            -> (25/10, 5):start + (10/10, 40):explosion = 85
+
+        #wind hashashin:
+        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
+        # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
+        # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
+        # Skill 4: 80 = 80
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -2729,7 +2744,7 @@ class Fire_Knight(Player):
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
-        self.max_mana = (self.intelligence * self.int_mult) - 20
+        self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
         self.basic_attack_damage = self.agility * self.agi_mult
@@ -2740,27 +2755,30 @@ class Fire_Knight(Player):
         self.width = 200
 
         self.atk1_mana_cost = 30
-        self.atk2_mana_cost = 80
-        self.atk3_mana_cost = 140   
-        self.sp_mana_cost = 180
+        self.atk2_mana_cost = 100
+        self.atk3_mana_cost = 160   
+        self.sp_mana_cost = 200
 
         self.atk1_cooldown = 5000
-        self.atk2_cooldown = 16000
-        self.atk3_cooldown = 26000
+        self.atk2_cooldown = 20000
+        self.atk3_cooldown = 30000
         self.sp_cooldown = 60000
 
         self.atk1_damage = (10/49, 2)
         self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
         self.atk3_damage = (35/60, 7)
-        self.sp_damage = (65/65, 15) 
-        self.special_sp_damage2 = (10/10, 45) # 60
-        self.special_sp_damage1 = (25/10, 5) # 30, total 85 damage
+        self.sp_damage = (60/65, 15) 
+        self.special_sp_damage2 = (10/10, 40) # 60
+        self.special_sp_damage1 = (25/10, 5) # 30, total 80 damage
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+        self.special_sp_damage1 = self.special_sp_damage1[0] + (self.special_sp_damage1[0] * dmg_mult), self.special_sp_damage1[1] + (self.special_sp_damage1[1] * dmg_mult)
+        self.special_sp_damage2 = self.sp_damage[0] + (self.special_sp_damage2[0] * dmg_mult), self.special_sp_damage2[1] + (self.special_sp_damage2[1] * dmg_mult)
+        
         
         # Player Animation Source
         jump_ani = [r'assets\characters\fire knight\03_jump\jump_', FIRE_KNIGHT_JUMP_COUNT, 0]
@@ -6234,7 +6252,7 @@ class Item:
         # self.decor_rect = pygame.Rect(self.rect.centerx - 30, self.rect.centery - 30, 60, 60)
     
     def update(self, position):
-        stats = ',-> '.join(f"{key}: {'' if val < 0 else '+'}{val * (100 if type(val) == float else 1):.0f}{('%' if type(val) == float else '')}" for key, val in self.info.items())
+        stats = ',-> '.join(f"{key}: {'' if val < 0 else '+'}{val * (100 if type(val) == float else 1):.0f}{('%' if type(val) == float else '')}" for key, val in self.info.items()) if '@' not in [v for k, v in self.info.items()] else 'haha'
         arh = (f"{self.name} ,-> {stats}")
         
             
@@ -6265,7 +6283,7 @@ class Item:
 
 
 items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04]),  
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen", "@Strength increase", "@and health", "@regen sustain."], [0.05, 1, 0.04,0,0,0]),  
     Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "mana flat", "mana regen"], [0.08, 8, 0.04]), 
     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
     Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed", "agi flat"], [0.1, 150, 3]), 
@@ -6297,11 +6315,11 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
 HERO_INFO = {
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5, 10), Attack Speed: -3200"
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 5% spell dmg",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%-30% mana, regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 20% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/10), Attack Speed: -3200, , Trait: 15%-20% mana, cost/delay"
 }
 
 
@@ -6403,7 +6421,7 @@ class PlayerSelector:
                     font_size=font_size * 1.05,
                     text_color='white',
                     fku=True,
-                    scale_val=(150, 200),
+                    scale_val=(150, 230),
                     hover_move=0
                 )
                 info_bubble.drawing_info(screen, pygame.mouse.get_pos())
@@ -6655,7 +6673,7 @@ def player_selection():
 
             for selector in p1_select:
                 if selector.hovered:
-                    selector.the_info((width + (width * 0.322), height - 500))
+                    selector.the_info((width + (width * 0.322), height - 525))
                 if selector.is_selected():
                     PLAYER_1_SELECTED_HERO = selector.associate_value()
 
@@ -6695,7 +6713,7 @@ def player_selection():
 
             for selector in p2_select:
                 if selector.hovered:
-                    selector.the_info((-(width * 0.0001), height - 500))
+                    selector.the_info((-(width * 0.0001), height - 525))
                 if selector.is_selected():
                     PLAYER_2_SELECTED_HERO = selector.associate_value()
 

@@ -631,6 +631,10 @@ def menu():
                 if settings_button.is_clicked(event.pos):
                     settings()
                     return
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if campaign_button.is_clicked(event.pos):
+                    pass
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()

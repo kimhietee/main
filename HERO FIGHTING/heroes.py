@@ -19,7 +19,12 @@ step.. done
 '''
 
 
+'''
+Based on what I remembered:
 
+step 1: add to player selector
+        for drawing and selection of the icon
+'''
 
 
 
@@ -1802,7 +1807,7 @@ class Fire_Wizard(Player):
         
 
         
-MULT = 0.7
+# MULT = 0.7
 
 WANDERER_MAGICIAN_JUMP_COUNT = 6
 WANDERER_MAGICIAN_RUN_COUNT = 8
@@ -1820,10 +1825,10 @@ WANDERER_MAGICIAN_SP = 3
 
 WANDERER_MAGICIAN_SPECIAL_ATK3 = 10
 # ---------------------
-WANDERER_MAGICIAN_ATK1_MANA_COST = 70
-WANDERER_MAGICIAN_ATK2_MANA_COST = 125
-WANDERER_MAGICIAN_ATK3_MANA_COST = 125
-WANDERER_MAGICIAN_SP_MANA_COST = 170
+# WANDERER_MAGICIAN_ATK1_MANA_COST = 70
+# WANDERER_MAGICIAN_ATK2_MANA_COST = 125
+# WANDERER_MAGICIAN_ATK3_MANA_COST = 125
+# WANDERER_MAGICIAN_SP_MANA_COST = 170
 
 WANDERER_MAGICIAN_BASIC_SIZE = 1.5
 WANDERER_MAGICIAN_ATK1_SIZE = 2
@@ -1834,15 +1839,15 @@ WANDERER_MAGICIAN_SP_SIZE = 1.3
 WANDERER_MAGICIAN_SPECIAL_ATK3_SIZE = 2
 WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE = 2
 
-WANDERER_MAGICIAN_ATK1_COOLDOWN = 8000
-WANDERER_MAGICIAN_ATK2_COOLDOWN = 15000 + 9000
-WANDERER_MAGICIAN_ATK3_COOLDOWN = 26000
-WANDERER_MAGICIAN_SP_COOLDOWN = 60000
+# WANDERER_MAGICIAN_ATK1_COOLDOWN = 8000
+# WANDERER_MAGICIAN_ATK2_COOLDOWN = 15000 + 9000
+# WANDERER_MAGICIAN_ATK3_COOLDOWN = 26000
+# WANDERER_MAGICIAN_SP_COOLDOWN = 60000
 
-WANDERER_MAGICIAN_ATK1_DAMAGE = 0 # dmg at the input, sry
-WANDERER_MAGICIAN_ATK2_DAMAGE = (18/40, 0)
-WANDERER_MAGICIAN_ATK3_DAMAGE = (30/10, 5) #26
-WANDERER_MAGICIAN_SP_DAMAGE = (55, 0)
+# WANDERER_MAGICIAN_ATK1_DAMAGE = 0 # dmg at the input, sry
+# WANDERER_MAGICIAN_ATK2_DAMAGE = (18/40, 0)
+# WANDERER_MAGICIAN_ATK3_DAMAGE = (30/10, 5) #26
+# WANDERER_MAGICIAN_SP_DAMAGE = (55, 0)
 
 
 class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
@@ -3686,7 +3691,7 @@ class Fire_Knight(Player):
             if not DISABLE_MANA_REGEN:
                 self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
-                self.health += (self.health_regen + (self.health_regen * 0.2))
+                self.health += (self.health_regen + (self.health_regen * 0.15))
         else:
             self.health = 0
 
@@ -6283,7 +6288,7 @@ class Item:
 
 
 items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen", "@Strength increase", "@and health", "@regen sustain."], [0.05, 1, 0.04,0,0,0]),  
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04]),  
     Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "mana flat", "mana regen"], [0.08, 8, 0.04]), 
     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
     Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed", "agi flat"], [0.1, 150, 3]), 
@@ -6297,7 +6302,8 @@ items = [
     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.05, 0.03]),
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1])
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25])
      
 ]
 
@@ -6316,10 +6322,10 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 
 HERO_INFO = {
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 5% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%-30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 20% hp regen",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/10), Attack Speed: -3200, , Trait: 15%-20% mana, cost/delay"
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay"
 }
 
 
@@ -6575,6 +6581,7 @@ def player_selection():
         PlayerSelector(items[3].image, (75 * 4, height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[4].image, (75 * 5, height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[13].image, (75 * 6, height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[14].image, (75 * 7, height - 400), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         
         PlayerSelector(items[5].image, (75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[6].image, (75 * 2, height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
@@ -6594,6 +6601,7 @@ def player_selection():
         PlayerSelector(items[3].image, (width - (75 * 4), height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[4].image, (width - (75 * 5), height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[13].image, (width - (75 * 6), height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[14].image, (width - (75 * 7), height - 400), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
 
         PlayerSelector(items[5].image, (width - 75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[6].image, (width - (75 * 2), height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),

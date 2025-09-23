@@ -78,6 +78,7 @@ class Player(pygame.sprite.Sprite):
         self.items = [] # contains 3 or less than 3 item classes. ex. 
                             # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
         self.damage_reduce = 0
+        self.special_increase = 0
         self.lifesteal = 0
         self.stunned = False
         self.str_mult = 5
@@ -455,6 +456,9 @@ class Player(pygame.sprite.Sprite):
 
                 if bonus_type =='dmg reduce':
                     self.damage_reduce += bonus_value
+
+                if bonus_type =='sp increase':
+                    self.special_increase += bonus_value
 
                 if bonus_type == 'spell dmg':
                     # Apply bonus spell damage to each skill
@@ -1324,6 +1328,8 @@ class Player(pygame.sprite.Sprite):
     def take_special(self, amount):
         if self.is_dead():
             return
+        if self.special_increase > 0:
+            amount += (amount * self.special_increase)
         self.special = max(0, self.special + amount)
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))

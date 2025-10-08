@@ -11,12 +11,12 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 # Colors
-white = 'White'
-red = 'Red'
-black = 'Black'
-green = 'Green'
-cyan2 = 'Cyan2'
-gold = 'Gold'
+white = 'White' #reducing
+red = 'Red' #damage/hp
+black = 'Black' #blank
+green = 'Green' #hp
+cyan2 = 'Cyan2' #mana bar color
+gold = 'Gold' #special
 
 IMMEDIATE_RUN = True
 

@@ -331,6 +331,14 @@ class Player(pygame.sprite.Sprite):
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
         if not hasattr(self, 'rect'):
             return  # Safety check
+        # Don't show healing text if player is already at max health
+        # Color (0,255,0) is used for heal display elsewhere
+        if color == (0, 255, 0) and self.health >= self.max_health:
+            return
+        elif color == cyan2 and self.mana >= self.max_mana:
+            return
+        elif color == gold and self.special >= self.max_special:
+            return
         # if self.health > self.max_health: # don't show hp dmg when  game starts
         #     return
 
@@ -368,6 +376,8 @@ class Player(pygame.sprite.Sprite):
         else:
             display_text = str(damage)
 
+        if self.health > self.max_health: # don't show hp dmg when game starts
+            return
         self.damage_numbers.append({
             'text': display_text,
             'x': x,

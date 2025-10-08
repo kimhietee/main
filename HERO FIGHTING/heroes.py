@@ -301,7 +301,10 @@ class Attacks:
         self.skill_img = skill_img
         self.cooldown = cooldown
         self.mana = mana  # Not used
-        self.last_used_time = -cooldown # Starts the cooldown at 0
+        # Internally store raw last-used timestamp and a snapshot of paused-total at that moment
+        self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
+        self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
+        
         self.atk_mana_cost = 0
         self.special_skill = special_skill
 
@@ -320,18 +323,33 @@ class Attacks:
 
     def reduce_cd(self, val=False):
         if val:
-            # Reset cooldown: set last_used_time such that (now - last_used_time) >= cooldown
-            # We account for any paused duration so reset behaves consistently during pause/resume.
+            # Reset cooldown: set last_used_time such that the attack is ready now
             now = pygame.time.get_ticks()
-            self.last_used_time = now - self.cooldown - global_vars.PAUSED_TOTAL_DURATION
+            # store raw timestamp and snapshot paused total
+            self._last_used_time = now - self.cooldown
+            self._last_used_paused_total = global_vars.PAUSED_TOTAL_DURATION
         return val
          
 
+    @property
+    def last_used_time(self):
+        # expose raw stored timestamp for backward compatibility
+        return self._last_used_time
+
+    @last_used_time.setter
+    def last_used_time(self, value):
+        # whenever code sets last_used_time, capture the current paused-total snapshot
+        self._last_used_time = value
+        self._last_used_paused_total = global_vars.PAUSED_TOTAL_DURATION
+
+    def time_since_use(self):
+        """Return milliseconds elapsed since last use, excluding paused durations."""
+        effective_now = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
+        effective_last = self._last_used_time - self._last_used_paused_total
+        return effective_now - effective_last
+
     def is_ready(self):
-        # print(self.reduce_cd())
-        # Use effective game time that excludes accumulated paused duration so cooldowns stop while paused
-        current_time = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
-        return current_time - self.last_used_time >= self.cooldown
+        return self.time_since_use() >= self.cooldown
 
     def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL):
         # Determine the key to display based on the player type
@@ -362,10 +380,9 @@ class Attacks:
 
                 # Draw scaled cooldown text
                 font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
-                # Use effective game time (exclude paused duration) so display matches actual cooldown logic
-                #it just replaced the pygame.time.get_ticks()
-                effective_time = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
-                cooldown_time = max(0, (self.cooldown - (effective_time - self.last_used_time)) // 1000)
+                # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
+                remaining_ms = max(0, self.cooldown - self.time_since_use())
+                cooldown_time = max(0, remaining_ms // 1000)
                 cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
@@ -6558,7 +6575,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             delay=(True, 800)
                             ) # Replace with the target
                         attack_display.add(attack)
-                        print(WANDERER_MAGICIAN_ATK3_DAMAGE[0], WANDERER_MAGICIAN_ATK3_DAMAGE[1])
+                        # print(WANDERER_MAGICIAN_ATK3_DAMAGE[0], WANDERER_MAGICIAN_ATK3_DAMAGE[1])
                         self.mana -=  self.attacks[2].mana_cost
                         self.attacks[2].last_used_time = current_time
                         self.running = False

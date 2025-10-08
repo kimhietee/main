@@ -18,7 +18,7 @@ green = 'Green'
 cyan2 = 'Cyan2'
 gold = 'Gold'
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
 MAIN_VOLUME = 1
 TEXT_ANTI_ALIASING = False
@@ -34,6 +34,13 @@ MUTE = False # constant
 SHOW_HITBOX = hitboxanddistance
 DRAW_DISTANCE = hitboxanddistance
 SHOW_GRID = False
+
+# Pause tracking (used so UI/cooldowns stop while game is paused)
+PAUSED = False
+# Total milliseconds the game has been paused (accumulated)
+PAUSED_TOTAL_DURATION = 0
+# Timestamp when pause started (ms) - may be None when not paused
+PAUSED_START = None
 
 # Default Dimensions
 DEFAULT_WIDTH = width

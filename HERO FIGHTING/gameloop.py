@@ -87,6 +87,7 @@ MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
 
 winner = 'hero2'
+paused = False
 
 
 def fade(background, action):
@@ -204,9 +205,9 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
         # main.clock.tick(main.FPS)
 def run_background(bg):
     bg.display(screen)
-
+import time
 def game(bg=None):
-    global winner
+    global winner, paused
     game_music_started = False
     second_track_played = False
     print('stopping music')
@@ -249,13 +250,15 @@ def game(bg=None):
     freeze_toggled = True
 
     final_elapsed_time = None
+    paused_start_time = None
+    total_paused_duration = 0
 
     #testing purposes
     #testing
     main.hero1.x_pos += 150
     main.hero2.x_pos -= 150
     while True:
-        
+            
         
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
@@ -264,13 +267,35 @@ def game(bg=None):
 
         current_time = pygame.time.get_ticks()
 
-        if winner is None:
-            elapsed_time = (current_time - start_time) // 1000
+        # Handle pause timing correctly by accumulating paused durations.
+        if not paused:
+            # If we have a paused_start_time it means we just resumed; accumulate the paused duration
+            if paused_start_time is not None:
+                total_paused_duration += (current_time - paused_start_time)
+                paused_start_time = None
+
+            # Update global_vars so other modules (like heroes) can read paused totals
+            global_vars.PAUSED = False
+            global_vars.PAUSED_TOTAL_DURATION = total_paused_duration
+            global_vars.PAUSED_START = None
+
+            if winner is None:
+                # Elapsed time excludes total paused duration
+                elapsed_time = (current_time - start_time - total_paused_duration) // 1000
+            else:
+                # Freeze final elapsed time when a winner is determined
+                if final_elapsed_time is None:
+                    final_elapsed_time = (current_time - start_time - total_paused_duration) // 1000
+                elapsed_time = final_elapsed_time
         else:
-            if final_elapsed_time is None:  # store it only once
-                final_elapsed_time = (current_time - start_time) // 1000
-            elapsed_time = final_elapsed_time
-        main.screen.fill((0, 0, 0))
+            # When entering paused state, record when pause started (only once)
+            if paused_start_time is None:
+                paused_start_time = current_time
+                global_vars.PAUSED = True
+                global_vars.PAUSED_START = paused_start_time
+        
+        # if not paused:
+        #     main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
 
         for event in main.pygame.event.get():
@@ -292,13 +317,19 @@ def game(bg=None):
                 second_track_played = True
                 print("Started game music 2")
 
+            # if keys[pygame.K_ESCAPE]:
+            #     menu()
+            #     return
+
             if keys[pygame.K_ESCAPE]:
-                menu()
-                return
+                paused = True
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     if menu_button.is_clicked(event.pos):
+            #         menu()
+            #         return    
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu()
-                    return    
+                    paused = True 
                 
             
 
@@ -371,91 +402,100 @@ def game(bg=None):
                 
 # -------------------------------------------------------------------------------------
 
-        # Background
-        # Animate_BG.waterfall_bg.display(screen)
-        # Animate_BG.lava_bg.display(screen)
-        # Animate_BG.dark_forest_bg.display(screen)
-        run_background(main.map_selected)
-
-        # main.screen.blit(background, (0, -(720*1.05 - 720)))
-
-        draw_grid(screen) if global_vars.SHOW_GRID else None
-
-        # draws animated cloud background (lag)
-        # animated_bg.update()
-        # animated_bg.draw(screen)
         
-        # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
+        if not paused:
+            # Background
+            # Animate_BG.waterfall_bg.display(screen)
+            # Animate_BG.lava_bg.display(screen)
+            # Animate_BG.dark_forest_bg.display(screen)
+            
+            run_background(main.map_selected)
 
-        # Ground
-        pygame.draw.rect(main.screen, main.black, ground)
+            # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
+            draw_grid(screen) if global_vars.SHOW_GRID else None
 
-        for icons in main.p1_select:
-            if icons.is_selected():
-                icons.draw_icon(size=(75, 75))
-    
-        for icons in main.p2_select:
-            if icons.is_selected():
-                icons.draw_icon(size=(main.width - 75, 75))
+            # draws animated cloud background (lag)
+            # animated_bg.update()
+            # animated_bg.draw(screen)
+            
+            # main.screen.blit(ground, (0,main.DEFAULT_Y_POS))
 
-        for i, item in enumerate(item_list(main.p1_items)):
-            item.draw_icon(item_pos=(150+(50*i), 100), hero_icon=False)
-        for i, item in enumerate(item_list(main.p2_items)):
-            item.draw_icon(item_pos=(main.width-(150+(50*i)), 100), hero_icon=False)
-    
-        for cube in cubes:
-            cube['fall'], cube['x'] = handle_cube(
-                pygame.Rect(cube['x'], cube['fall'], 25, 25),
-                cube['fall'],
-                cube['x'],
-                cube['color'],
-                cube['image'],
-                main.hero1,
-                main.hero2,
-                cube['bonus_type'],
-                cube['bonus_amount'],
-                cube['sound']
-            )
+            # Ground
+            pygame.draw.rect(main.screen, main.black, ground)
 
 
-        timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
-
-        main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
+            for icons in main.p1_select:
+                if icons.is_selected():
+                    icons.draw_icon(size=(75, 75))
         
-        menu_button.draw(main.screen, mouse_pos)
+            for icons in main.p2_select:
+                if icons.is_selected():
+                    icons.draw_icon(size=(main.width - 75, 75))
+
+            for i, item in enumerate(item_list(main.p1_items)):
+                item.draw_icon(item_pos=(150+(50*i), 100), hero_icon=False)
+            for i, item in enumerate(item_list(main.p2_items)):
+                item.draw_icon(item_pos=(main.width-(150+(50*i)), 100), hero_icon=False)
         
-        #drawing the hp and mana icon
-        main.draw_hp_mana_icons()
-
-        #drawing the damage display
-
-        # Update anddddddddddddd draw attacks
-        attack_display.update()
-        attack_display.draw(main.screen)
-
-        # Update and draw Fire Wizard
-        main.hero1_group.update()
-        main.hero1_group.draw(main.screen)
-
-        # Update and draw Wanderer Magician
-        # if not main.hero2.is_dead():
-        main.hero2_group.update()
-        main.hero2_group.draw(main.screen)
-        if global_vars.SINGLE_MODE_ACTIVE:
-            # main.hero1.bot_logic()  # Add bot logic for hero1
-            main.hero2.bot_logic()
+            for cube in cubes:
+                cube['fall'], cube['x'] = handle_cube(
+                    pygame.Rect(cube['x'], cube['fall'], 25, 25),
+                    cube['fall'],
+                    cube['x'],
+                    cube['color'],
+                    cube['image'],
+                    main.hero1,
+                    main.hero2,
+                    cube['bonus_type'],
+                    cube['bonus_amount'],
+                    cube['sound']
+                )
 
 
-        if main.hero1.is_dead():
-            winner = 'hero2'
-        elif main.hero2.is_dead():
-            winner = 'hero1'
+            timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
+
+            main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
+            
+            menu_button.draw(main.screen, mouse_pos)
+            
+            #drawing the hp and mana icon
+            main.draw_hp_mana_icons()
+
+            #drawing the damage display
+
+            # Update anddddddddddddd draw attacks
+            attack_display.update()
+            attack_display.draw(main.screen)
+
+            # Update and draw Fire Wizard
+            main.hero1_group.update()
+            main.hero1_group.draw(main.screen)
+
+            # Update and draw Wanderer Magician
+            # if not main.hero2.is_dead():
+            main.hero2_group.update()
+            main.hero2_group.draw(main.screen)
+            if global_vars.SINGLE_MODE_ACTIVE:
+                # main.hero1.bot_logic()  # Add bot logic for hero1
+                main.hero2.bot_logic()
+
+
+            if main.hero1.is_dead():
+                winner = 'hero2'
+            elif main.hero2.is_dead():
+                winner = 'hero1'
+            else:
+                winner = None
+
+            # main.hero2.health = 1 if not main.hero2.is_dead() else 0
+            battle_end(mouse_pos, mouse_press)
+            pause(mouse_pos, mouse_press)
         else:
-            winner = None
+            pause(mouse_pos, mouse_press)
 
-        # main.hero2.health = 1 if not main.hero2.is_dead() else 0
-        battle_end(mouse_pos, mouse_press)
+
+        
 
         
 
@@ -546,6 +586,28 @@ rematch_game = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
+
+resume_game = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2+(width*0.075), height*0.475),
+    scale=0.8,
+    text='resume',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+restart_game = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2+(width*0.075), height*0.575),
+    scale=0.8,
+    text='restart',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
 def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     if winner is not None:
         if winner == 'hero1':
@@ -561,6 +623,26 @@ def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slks
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             reset_all()
             fade(loading_screen_bg, game)
+
+def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+    global paused
+    if paused:
+        create_title('PAUSED', font, default_size - 0.55, height * 0.40)
+    
+        menu_game.draw(screen, mouse_pos)
+        resume_game.draw(screen, mouse_pos)
+        restart_game.draw(screen, mouse_pos)
+        if mouse_press[0] and menu_game.is_clicked(mouse_pos):
+            menu()
+            paused = False
+
+        if mouse_press[0] and resume_game.is_clicked(mouse_pos):
+            paused = False
+
+        if mouse_press[0] and restart_game.is_clicked(mouse_pos):
+            reset_all()
+            fade(loading_screen_bg, game)
+
             
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
@@ -686,7 +768,7 @@ def controls():
 
         main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.vvtype == pygame.QUIT:
                 pygame.quit()
                 exit()  
             if keys[pygame.K_ESCAPE]:
@@ -861,6 +943,10 @@ def reset_all():
     # fade_start_time = pygame.time.get_ticks()
 
     attack_display.empty()
+    # Reset paused tracking so timers/cooldowns start fresh
+    global_vars.PAUSED = False
+    global_vars.PAUSED_TOTAL_DURATION = 0
+    global_vars.PAUSED_START = None
 
 volume_limit = {'min':100, 'max':300}
 current_volume = (global_vars.MAIN_VOLUME*100) + volume_limit['min']

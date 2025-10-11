@@ -1075,18 +1075,26 @@ class Fire_Wizard(Player):
 
         #fire knight nerf and wind hashashin buff
         #fire knight:
+        # Trait: +20% Health Regen -> +15% Health Regen
         # Intelligence: 40 = 40, 180 -> 200 (removed -20 max mana)
         # Skill 1: 0
         # Skill 2: cd 16s - > 20s, mana cost 80 -> 100
         # Skill 3: cd 26s - > 30s, mana cost 140 -> 160
         # Skill 4: mana cost 180 -> 200, dmg = (65/65, 15) = 80 -> (60/65, 15) = 75 
-        #            -> (25/10, 5):start + (10/10, 40):explosion = 85
+        #            -> (25/10, 5):start = (10/10, 40):explosion = 80
 
         #wind hashashin:
         # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
         # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
         # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
         # Skill 4: 80 = 80
+
+        #fire knight buff
+        # Trait: +15% Health Regen -> +20% Health Regen
+        # Skill 1: 0
+        # Skill 2: cd 20s - > 18s, mana cost 80 -> 100
+        # Skill 3: cd 30s - > 26s, mana cost 160 -> 150
+        # Skill 4: 0
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -2783,12 +2791,12 @@ class Fire_Knight(Player):
 
         self.atk1_mana_cost = 30
         self.atk2_mana_cost = 100
-        self.atk3_mana_cost = 160   
+        self.atk3_mana_cost = 150   
         self.sp_mana_cost = 200
 
         self.atk1_cooldown = 5000
-        self.atk2_cooldown = 20000
-        self.atk3_cooldown = 30000
+        self.atk2_cooldown = 18000
+        self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
         self.atk1_damage = (10/49, 2)
@@ -3713,7 +3721,7 @@ class Fire_Knight(Player):
             if not DISABLE_MANA_REGEN:
                 self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
-                self.health += (self.health_regen + (self.health_regen * 0.15))
+                self.health += (self.health_regen + (self.health_regen * 0.2))
         else:
             self.health = 0
 
@@ -7209,7 +7217,7 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 HERO_INFO = {
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 5% spell dmg",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 15% hp regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 20% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay"
 }

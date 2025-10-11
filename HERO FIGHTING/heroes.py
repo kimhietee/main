@@ -1089,9 +1089,9 @@ class Fire_Wizard(Player):
         # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
         # Skill 4: 80 = 80
 
-        #fire knight buff
+        #fire knight buff/nerf
         # Trait: +15% Health Regen -> +20% Health Regen
-        # Skill 1: 0
+        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
         # Skill 2: cd 20s - > 18s, mana cost 80 -> 100
         # Skill 3: cd 30s - > 26s, mana cost 160 -> 150
         # Skill 4: 0
@@ -2799,7 +2799,7 @@ class Fire_Knight(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10/49, 2)
+        self.atk1_damage = (10/49, 1)
         self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
         self.atk3_damage = (35/60, 7)
         self.sp_damage = (60/65, 15) 

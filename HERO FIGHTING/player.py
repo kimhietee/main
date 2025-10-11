@@ -109,7 +109,7 @@ class Player(pygame.sprite.Sprite):
         self.default_animation_speed = DEFAULT_ANIMATION_SPEED
 
         
-        self.last_health = self.health
+        # self.last_health = self.health
         
         # self.bonus_type = "strength"
         # self.bonus_value = self.strength
@@ -324,6 +324,7 @@ class Player(pygame.sprite.Sprite):
 
         #Attack-------------------------------------------------------------
         self.last_health = self.health
+        # self.just_spawned = True
         self.damage_numbers = []
 
         self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
@@ -331,13 +332,15 @@ class Player(pygame.sprite.Sprite):
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
         if not hasattr(self, 'rect'):
             return  # Safety check
+        # Don't show healing text if player is already at max health or at the start of the game
+        if self.health >= self.max_health or not hasattr(self, "spawn_time") or pygame.time.get_ticks() - self.spawn_time < 1000:
+            return
         # Don't show healing text if player is already at max health
         # Color (0,255,0) is used for heal display elsewhere
-        if color == (0, 255, 0) and self.health >= self.max_health:
+        
+        if color == cyan2 and self.mana >= self.max_mana:
             return
-        elif color == cyan2 and self.mana >= self.max_mana:
-            return
-        elif color == gold and self.special >= self.max_special:
+        if color == gold and self.special >= self.max_special:
             return
         # if self.health > self.max_health: # don't show hp dmg when  game starts
         #     return
@@ -376,8 +379,6 @@ class Player(pygame.sprite.Sprite):
         else:
             display_text = str(damage)
 
-        if self.health > self.max_health: # don't show hp dmg when game starts
-            return
         self.damage_numbers.append({
             'text': display_text,
             'x': x,
@@ -388,11 +389,25 @@ class Player(pygame.sprite.Sprite):
             'font': font
         })
 
+       
+
     def update_damage_numbers(self, screen):
-        # if self.health > self.max_health: # don't show hp dmg when game starts
-        #     return
+         # if getattr(self, "just_spawned", False):
+        #         self.last_health = self.health
+        #         self.just_spawned = False
+        #         return
+        if not hasattr(self, "spawn_time"):
+            self.spawn_time = pygame.time.get_ticks()
+
+        if pygame.time.get_ticks() - self.spawn_time < 1000:
+            self.last_health = self.health
+            return
+        
         for dmg in self.damage_numbers[:]:
-            dmg['y'] -= 1
+            # # Skip rendering and remove healing text if health is already at max
+            
+
+            dmg['y'] -= 1  # Move the text upward
             fade_amount = int(255 / dmg['interval'])
             dmg['alpha'] = max(0, dmg['alpha'] - fade_amount)
 
@@ -402,15 +417,14 @@ class Player(pygame.sprite.Sprite):
 
             surf = dmg['font'].render(str(dmg['text']), TEXT_ANTI_ALIASING, dmg['color'])
             surf.set_alpha(dmg['alpha'])
-            if self.health > self.max_health: # don't show hp dmg when game starts
-                return
-            else:
-                screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
+            screen.blit(surf, (dmg['x'] - surf.get_width() // 2, dmg['y']))
+
 
     def detect_and_display_damage(self, interval=30):
-        # if self.health > self.max_health: # don't show hp dmg when game starts
-        #     return
+        # This function only for health, check other call for display_damage()
+        # print(self.health, self.last_health, 'ahah')
         delta = self.health - self.last_health
+        # print(delta)
         if delta < 0:
             self.display_damage(-delta, interval=interval)  # Normal damage (red)
         elif delta > 0.1:  # Only show healing if it's significant (not just natural regen)
@@ -539,26 +553,22 @@ class Player(pygame.sprite.Sprite):
 
                 if bonus_type == 'str':
                     self.strength += self.strength * bonus_value
-                    self.max_health = self.strength * self.str_mult
-                    self.health = self.max_health
+                    self.max_health = self.str_mult * self.strength
                 if bonus_type == 'str flat':
                     self.strength += bonus_value
-                    self.max_health = self.strength * self.str_mult
-                    self.health = self.max_health
+                    self.max_health = self.str_mult * self.strength
                 if bonus_type == 'int':
                     self.intelligence += self.intelligence * bonus_value
-                    self.max_mana = self.intelligence * self.int_mult
-                    self.mana = self.max_mana
+                    self.max_mana = self.int_mult * self.intelligence
                 if bonus_type == 'int flat':
                     self.intelligence += bonus_value
-                    self.max_mana = self.intelligence * self.int_mult
-                    self.mana = self.max_mana
+                    self.max_mana = self.int_mult * self.intelligence
                 if bonus_type == 'agi':
                     self.agility += self.agility * bonus_value
-                    self.basic_attack_damage = self.agility * self.agi_mult
+                    self.basic_attack_damage = self.agi_mult * self.agility
                 if bonus_type == 'agi flat':
                     self.agility += bonus_value
-                    self.basic_attack_damage = self.agility * self.agi_mult
+                    self.basic_attack_damage = self.agi_mult * self.agility
 
                 if bonus_type == 'mana regen':
                     self.mana_regen += self.mana_regen * bonus_value
@@ -579,16 +589,12 @@ class Player(pygame.sprite.Sprite):
 
                 if bonus_type == 'hp':
                     self.max_health += self.max_health * bonus_value
-                    self.health = self.max_health
                 if bonus_type == 'hp flat':
                     self.max_health += bonus_value
-                    self.health = self.max_health
                 if bonus_type == 'mana':
                     self.max_mana += self.max_mana * bonus_value
-                    self.mana = self.max_mana
                 if bonus_type == 'mana flat':
                     self.max_mana += bonus_value
-                    self.mana = self.max_mana
                 if bonus_type == 'atk':
                     self.basic_attack_damage += self.basic_attack_damage * bonus_value
                 if bonus_type == 'atk flat':
@@ -1244,7 +1250,7 @@ class Player(pygame.sprite.Sprite):
 
             screen.blit(self.special_display_text_p2, (
                 self.special_decor_p2.left - self.special_display_text_p2.get_width() - TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
-                self.special_decor_p2.top + (self.special_decor_p2.height // 2 - self.special_display_text_p2.get_height() // 2)
+                self.special_decor_p2.top + (self.special_decor_p2.height // 2 - self.health_display_text_p2.get_height() // 2)
             ))
 
             
@@ -1303,7 +1309,7 @@ class Player(pygame.sprite.Sprite):
             int: The index of the clicked skill, or -1 if no skill is clicked or not enough mana.
         """
         for i, rect in enumerate(self.rects):
-            if rect.collidepoint(mouse_pos):
+            if (rect.collidepoint(mouse_pos)):
                 if mana >= self.mana_costs[i]:
                     return i
                 else:
@@ -1478,5 +1484,4 @@ class Player(pygame.sprite.Sprite):
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
 
-        
-        
+

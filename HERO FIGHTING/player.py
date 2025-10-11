@@ -333,7 +333,7 @@ class Player(pygame.sprite.Sprite):
         if not hasattr(self, 'rect'):
             return  # Safety check
         # Don't show healing text if player is already at max health or at the start of the game
-        if self.health >= self.max_health or not hasattr(self, "spawn_time") or pygame.time.get_ticks() - self.spawn_time < 1000:
+        if (color == (0, 255, 0) and self.health >= self.max_health) or not hasattr(self, "spawn_time") or pygame.time.get_ticks() - self.spawn_time < 50:
             return
         # Don't show healing text if player is already at max health
         # Color (0,255,0) is used for heal display elsewhere
@@ -361,13 +361,14 @@ class Player(pygame.sprite.Sprite):
         x = self.hitbox_rect.centerx + offset_x
         y = self.hitbox_rect.top - offset_y
 
-        # Font size scaling
-        if damage > 20:
-            size = size or (30 + int(damage))  # Big damage just adds to base size
-        elif damage > 5:
-            size = size or int(20 + damage * 2)  # Medium scaling
-        else:
-            size = size or int(20 + damage * 3)  # Small damage gets boosted size
+        # Font size 
+        if size is None:
+            if damage > 20:
+                size = size or (30 + int(damage))  # Big damage just adds to base size
+            elif damage > 5:
+                size = size or int(20 + damage * 2)  # Medium scaling
+            else:
+                size = size or int(20 + damage * 3)  # Small damage gets boosted 
 
         font = pygame.font.Font('assets/font/slkscr.ttf', size)
 
@@ -399,14 +400,9 @@ class Player(pygame.sprite.Sprite):
         if not hasattr(self, "spawn_time"):
             self.spawn_time = pygame.time.get_ticks()
 
-        if pygame.time.get_ticks() - self.spawn_time < 1000:
-            self.last_health = self.health
-            return
         
         for dmg in self.damage_numbers[:]:
             # # Skip rendering and remove healing text if health is already at max
-            
-
             dmg['y'] -= 1  # Move the text upward
             fade_amount = int(255 / dmg['interval'])
             dmg['alpha'] = max(0, dmg['alpha'] - fade_amount)

@@ -488,10 +488,16 @@ def game(bg=None):
                 winner = 'hero1'
             else:
                 winner = None
+                
+
+            # For displaying mana and special bonus
+            main.hero1.update_damage_numbers(main.screen)
+            main.hero2.update_damage_numbers(main.screen)
 
             # main.hero2.health = 1 if not main.hero2.is_dead() else 0
             battle_end(mouse_pos, mouse_press)
             pause(mouse_pos, mouse_press)
+            # print(FPS)
         else:
             pause(mouse_pos, mouse_press)
 
@@ -544,24 +550,27 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             if bonus_type == 'health':
                 # Only add health and show text if it increases (not already at max)
                 prev = hero1.health
+                # Don't display since it will display 2 times
+                # hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
                 actual = hero1.health - prev
                 if actual > 0:
                     hero1.display_damage(actual, interval=30, color=(0, 255, 0))
-                hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
             elif bonus_type == 'mana':
                 prev = hero1.mana
+                hero1.mana = min(hero1.max_mana, hero1.mana + bonus_amount)
                 actual = hero1.mana - prev
                 if actual > 0:
                     # blue text for mana pickups
                     hero1.display_damage(actual, interval=30, color=cyan2, size=50)
-                hero1.mana = min(hero1.max_mana, hero1.mana + bonus_amount)
+
             elif bonus_type == 'special':
                 prev = hero1.special
+                hero1.special = min(hero1.max_special, hero1.special + bonus_amount)
                 actual = hero1.special - prev
                 if actual > 0:
                     # blue-ish text for special pickups
                     hero1.display_damage(actual, interval=30, color=gold, size=50)
-                hero1.special = min(hero1.max_special, hero1.special + bonus_amount)
+                
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall = random.randint(-2000, -500)
             print(f"Cube collected by Player 1: {bonus_type} +{bonus_amount}")
@@ -569,22 +578,26 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             sound.play()
             if bonus_type == 'health':
                 prev = hero2.health
+                # Don't display since it will display 2 times
+                # hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
                 actual = hero2.health - prev
                 if actual > 0:
                     hero2.display_damage(actual, interval=30, color=(0, 255, 0))
-                hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
+                
             elif bonus_type == 'mana':
                 prev = hero2.mana
+                hero2.mana = min(hero2.max_mana, hero2.mana + bonus_amount)
                 actual = hero2.mana - prev
                 if actual > 0:
                     hero2.display_damage(actual, interval=30, color=cyan2, size=50)
-                hero2.mana = min(hero2.max_mana, hero2.mana + bonus_amount)
+
             elif bonus_type == 'special':
                 prev = hero2.special
+                hero2.special = min(hero2.max_special, hero2.special + bonus_amount)
                 actual = hero2.special - prev
                 if actual > 0:
                     hero2.display_damage(actual, interval=30, color=gold, size=50)
-                hero2.special = min(hero2.max_special, hero2.special + bonus_amount)
+
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall =random.randint(-2000, -500)
             print(f"Cube collected by Player 2: {bonus_type} +{bonus_amount}")
@@ -1284,5 +1297,4 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
 if __name__ == '__main__':
     main_menu()
 
-        
-        
+

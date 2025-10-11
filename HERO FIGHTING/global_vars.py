@@ -63,7 +63,16 @@ LITERAL_HEALTH_DEAD = 0
 SPECIAL_MULTIPLIER = 1 # +dmg
 # SPECIAL_MULTIPLIER = 2
 MAX_SPECIAL = 200
-SPECIAL_DURATION = 0.2
+SPECIAL_DURATION = 0.1111111 # Lasts for 30 seconds (0.166666667 = 20s)
+'''
+Formula:
+# Special Decrease Rate = MAX_SPECIAL / SPECIAL_DURATION / FPS
+# Special Decrease Rate = 200 / 20 / 60 = 0.166
+# I manually modified it
+
+Note: MAX_SPECIAL and SPECIAL_DURATION may be modified by specific hero
+
+'''
 
 MANA_COST_INCREASE = 0.3
 

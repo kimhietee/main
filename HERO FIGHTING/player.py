@@ -329,12 +329,16 @@ class Player(pygame.sprite.Sprite):
 
         self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
 
-    def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None):
+    def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False):
         if not hasattr(self, 'rect'):
             return  # Safety check
         # Don't show healing text if player is already at max health or at the start of the game
-        if (color == (0, 255, 0) and self.health >= self.max_health) or not hasattr(self, "spawn_time") or pygame.time.get_ticks() - self.spawn_time < 50:
+        if not hasattr(self, "spawn_time") or pygame.time.get_ticks() - self.spawn_time < 50:
             return
+        
+        if health_modify:
+            if self.health >= self.max_health:
+                return
         # Don't show healing text if player is already at max health
         # Color (0,255,0) is used for heal display elsewhere
         
@@ -400,10 +404,9 @@ class Player(pygame.sprite.Sprite):
         if not hasattr(self, "spawn_time"):
             self.spawn_time = pygame.time.get_ticks()
 
-        
         for dmg in self.damage_numbers[:]:
             # # Skip rendering and remove healing text if health is already at max
-            dmg['y'] -= 1  # Move the text upward
+            dmg['y'] -= 0.5  # Move the text upward
             fade_amount = int(255 / dmg['interval'])
             dmg['alpha'] = max(0, dmg['alpha'] - fade_amount)
 
@@ -419,12 +422,13 @@ class Player(pygame.sprite.Sprite):
     def detect_and_display_damage(self, interval=30):
         # This function only for health, check other call for display_damage()
         # print(self.health, self.last_health, 'ahah')
+        # print(self.health >= self.max_health)
         delta = self.health - self.last_health
         # print(delta)
         if delta < 0:
-            self.display_damage(-delta, interval=interval)  # Normal damage (red)
+            self.display_damage(-delta, interval=interval, health_modify=True)  # Normal damage (red)
         elif delta > 0.1:  # Only show healing if it's significant (not just natural regen)
-            self.display_damage(delta, interval=interval, color=(0, 255, 0))  # Green heal
+            self.display_damage(delta, interval=interval, color=(0, 255, 0), health_modify=True)  # Green heal
         self.last_health = self.health
 
 
@@ -1388,7 +1392,7 @@ class Player(pygame.sprite.Sprite):
             self.x_pos -= 3
         if self.x_pos < 0:
             self.x_pos += 3
-        
+
     def update(self):
         self.keys = pygame.key.get_pressed()
         self.input(
@@ -1444,16 +1448,6 @@ class Player(pygame.sprite.Sprite):
             self.health += DEFAULT_HEALTH_REGENERATION
         else:
             self.health = 0
-
-        
-
-        
-        # self.draw_hitbox(screen)
-
-        
-
-
-
 
         # PLAYER SPECIFIC UPDATES
 

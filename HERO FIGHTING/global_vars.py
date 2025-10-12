@@ -18,9 +18,9 @@ green = 'Green' #hp
 cyan2 = 'Cyan2' #mana bar color
 gold = 'Gold' #special
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 20

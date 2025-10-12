@@ -89,6 +89,8 @@ GAME_FADE_IN = 1500
 winner = 'hero2'
 paused = False
 
+# Add a global variable to track the pause state
+is_paused = False
 
 def fade(background, action):
     # background = pygame.transform.scale(
@@ -207,7 +209,7 @@ def run_background(bg):
     bg.display(screen)
 import time
 def game(bg=None):
-    global winner, paused
+    global winner, paused, is_paused
     game_music_started = False
     second_track_played = False
     print('stopping music')
@@ -331,7 +333,9 @@ def game(bg=None):
                 if menu_button.is_clicked(event.pos):
                     paused = True 
                 
-            
+            # Toggle pause state when the pause key is pressed
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                is_paused = not is_paused
 
             if keys[main.pygame.K_6]:
                 print('ehj') 
@@ -549,12 +553,12 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             sound.play()
             if bonus_type == 'health':
                 # Only add health and show text if it increases (not already at max)
-                prev = hero1.health
+                # prev = hero1.health
                 # Don't display since it will display 2 times
-                # hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
-                actual = hero1.health - prev
-                if actual > 0:
-                    hero1.display_damage(actual, interval=30, color=(0, 255, 0))
+                hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
+                # actual = hero1.health - prev
+                # if actual > 0:
+                #     hero1.display_damage(actual, interval=30, color=(0, 255, 0))
             elif bonus_type == 'mana':
                 prev = hero1.mana
                 hero1.mana = min(hero1.max_mana, hero1.mana + bonus_amount)
@@ -577,12 +581,12 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
             if bonus_type == 'health':
-                prev = hero2.health
+                # prev = hero2.health
                 # Don't display since it will display 2 times
-                # hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
-                actual = hero2.health - prev
-                if actual > 0:
-                    hero2.display_damage(actual, interval=30, color=(0, 255, 0))
+                hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
+                # actual = hero2.health - prev
+                # if actual > 0:
+                #     hero2.display_damage(actual, interval=30, color=(0, 255, 0))
                 
             elif bonus_type == 'mana':
                 prev = hero2.mana

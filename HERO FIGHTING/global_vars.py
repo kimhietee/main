@@ -18,7 +18,7 @@ green = 'Green' #hp
 cyan2 = 'Cyan2' #mana bar color
 gold = 'Gold' #special
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -63,7 +63,9 @@ LITERAL_HEALTH_DEAD = 0
 SPECIAL_MULTIPLIER = 1 # +dmg
 # SPECIAL_MULTIPLIER = 2
 MAX_SPECIAL = 200
-SPECIAL_DURATION = 0.1111111 # Lasts for 30 seconds (0.166666667 = 20s)
+SPECIAL_DURATION = 0.166667 # Lasts for 30 seconds (0.166666667 = 20s)
+# 0.111111 = 30s
+# 0.166667 = 20s
 '''
 Formula:
 # Special Decrease Rate = MAX_SPECIAL / SPECIAL_DURATION / FPS

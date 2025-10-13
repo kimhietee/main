@@ -1035,12 +1035,6 @@ class Fire_Wizard(Player):
         self.y = 50
         self.width = 200
 
-        #mana cost
-        self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 80
-        self.atk3_mana_cost = 100
-        self.sp_mana_cost = 200
-        
         # Update log for heroes
 
         #wind hashashin
@@ -1100,6 +1094,12 @@ class Fire_Wizard(Player):
         #wanderer magician nerf
         # special basic attack: (3.2/2.4)3 = 4 -> (3.2/2.5)3 = 3.84 per hit
         # special skill 3:  Damage Multiplier 25% -> 15%
+
+        #mana cost
+        self.atk1_mana_cost = 50
+        self.atk2_mana_cost = 80
+        self.atk3_mana_cost = 100
+        self.sp_mana_cost = 200
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -2349,7 +2349,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 if self.mana >= 0 and self.attacks[4].is_ready():
                     attack = Attack_Display(
                         x=self.rect.centerx,
-                        y=self.rect.centery + 30,
+                        y=self.rect.centery + random.randint(0, 40),
                         frames=self.basic if self.facing_right else self.basic_flipped,
                         frame_duration=100,
                         repeat_animation=5,
@@ -2530,7 +2530,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
             if not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                 if self.mana >= 0 and self.attacks_special[4].is_ready():
-                    for i in [(500, 50), (700, 30), (900, 10)]:
+                    for i in [(500, random.randint(0, 30)), (700, random.randint(0, 30)), (900, random.randint(0, 30))]:
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + i[1],

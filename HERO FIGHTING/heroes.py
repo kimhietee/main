@@ -1095,6 +1095,11 @@ class Fire_Wizard(Player):
         # Skill 2: cd 20s - > 18s, mana cost 80 -> 100
         # Skill 3: cd 30s - > 26s, mana cost 160 -> 150
         # Skill 4: 0
+
+
+        #wanderer magician nerf
+        # special basic attack: (3.2/2.4)3 = 4 -> (3.2/2.5)3 = 3.84 per hit
+        # special skill 3:  Damage Multiplier 25% -> 15%
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
@@ -1724,22 +1729,7 @@ class Fire_Wizard(Player):
                         pass
 
                 
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )
+     
             
         
     
@@ -2481,8 +2471,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frame_duration=100,
                             repeat_animation=1,
                             speed=5 if self.facing_right else -5,
-                            dmg=self.atk3_damage[0] + (self.atk3_damage[0] * (SPECIAL_MULTIPLIER * 0.25)),
-                            final_dmg=self.atk3_damage[1] + (self.atk3_damage[1] * (SPECIAL_MULTIPLIER * 0.25)),
+                            dmg=self.atk3_damage[0] + (self.atk3_damage[0] * (SPECIAL_MULTIPLIER * 0.15)),
+                            final_dmg=self.atk3_damage[1] + (self.atk3_damage[1] * (SPECIAL_MULTIPLIER * 0.15)),
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
@@ -2548,7 +2538,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frame_duration=100,
                             repeat_animation=5,
                             speed=8 if self.facing_right else -8,
-                            dmg=self.basic_attack_damage/2.4,
+                            dmg=self.basic_attack_damage/2.5,
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
@@ -2584,22 +2574,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # print(len(self.player_run), len(self.player_run_flipped))
         # print("Run Animation Index:", self.player_run_index)
 
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )
+     
         
     def update(self):
         # print(self.stunned)
@@ -3618,22 +3593,7 @@ class Fire_Knight(Player):
                     else:
                         pass
                 
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )
+     
             
 
     def update(self):
@@ -4615,22 +4575,7 @@ class Wind_Hashashin(Player):
                     else:
                         pass
             
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )     
+          
         
     # def activate_skill_1(self):
     #     if not self.special_active:
@@ -5541,7 +5486,7 @@ class Water_Princess(Player):
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
                                 hitbox_scale_x=i[5][0],
-                                hitbox_scale_y=i[5][1],
+                                hitbox_scale_y=i[5][1], 
                                 consume_mana=[i[6], self.atk4_mana_consume],
                                 ) # Replace with the target
                             attack_display.add(attack)
@@ -5955,22 +5900,7 @@ class Water_Princess(Player):
                         pass
 
                 
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )
+     
             
     def run_animation(self, animation_speed=0):
         if not self.special_active:
@@ -6859,22 +6789,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # print(len(self.player_run), len(self.player_run_flipped))
         # print("Run Animation Index:", self.player_run_index)
 
-    def inputs(self):
-        self.keys = pygame.key.get_pressed()
-        self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
-
-            (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
-            (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
-
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
-
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
-            )
+     
         
     def update(self):
         # print(self.stunned)

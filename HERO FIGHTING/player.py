@@ -1375,12 +1375,11 @@ class Player(pygame.sprite.Sprite):
             self.y_pos = y_pos - adjust_y_pos
             self.x_pos = x_pos
             
-    
+        
     def movement_status(self, type, source=None):
         '''
         Apply frozen or rooted status
         type: freeze/root, 1=freeze, 2=root
-        disable_skills: True if frozen, False if rooted
         mode: (or type)
             1 - while collides player, effect active, else none (collision only)
             2 - when collides player, effect active, until attack ends (if hit once)
@@ -1388,46 +1387,59 @@ class Player(pygame.sprite.Sprite):
         '''
         if self.is_dead():
             return
-        if type == 1: # Freeze
-            if not self.frozen:
-                self.running = False
+
+        # Initialize sets if not exist
+        if not hasattr(self, "freeze_sources"):
+            self.freeze_sources = set()
+        if not hasattr(self, "root_sources"):
+            self.root_sources = set()
+
+        if type == 1:  # Freeze
+            if source not in self.freeze_sources:
+                self.freeze_sources.add(source)
                 self.frozen = True
-                self.freeze_source = source
-                # stop movement
-                try:
-                    self.velocity.x = 0
-                    self.velocity.y = 0
-                except Exception:
-                    pass
-        elif type == 2: # Root
-            if not self.rooted:
                 self.running = False
-                self.rooted = True
-                self.root_source = source
-                # stop movement
                 try:
                     self.velocity.x = 0
                     self.velocity.y = 0
                 except Exception:
                     pass
-        print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
+
+        elif type == 2:  # Root
+            if source not in self.root_sources:
+                self.root_sources.add(source)
+                self.rooted = True
+                self.running = False
+                try:
+                    self.velocity.x = 0
+                    self.velocity.y = 0
+                except Exception:
+                    pass
+        # print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
     def remove_movement_status(self, type, source=None):
         """
-        Remove the named status, but only if source 
-        matches (to avoid removing effects from other attackers).
-
-        If source is None, force-remove.
+        Remove frozen or rooted status only if *all* sources are cleared.
         """
-        if type == 1:
-            if self.frozen and (source is None or self.freeze_source == source):
-                self.frozen = False
-                self.freeze_source = None
-        elif type == 2:
-            if self.rooted and (source is None or self.root_source == source):
-                self.rooted = False
-                self.root_source = None
+        # Initialize sets if missing
+        if not hasattr(self, "freeze_sources"):
+            self.freeze_sources = set()
+        if not hasattr(self, "root_sources"):
+            self.root_sources = set()
 
-        print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
+        if type == 1:  # Freeze
+            if source in self.freeze_sources:
+                self.freeze_sources.remove(source)
+            # Only remove flag if no sources remain
+            if not self.freeze_sources:
+                self.frozen = False
+
+        elif type == 2:  # Root
+            if source in self.root_sources:
+                self.root_sources.remove(source)
+            if not self.root_sources:
+                self.rooted = False
+
+        # print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
                 
     def draw_movement_status(self, screen):
         if self.frozen or self.rooted:

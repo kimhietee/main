@@ -654,12 +654,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
     def kill_self(self):
         # remove status before removing attack
-        if self.who_attacked.frozen or self.who_attacked.rooted:
-            if self.stop_movement[2] in (1, 2, 3):
-                self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
-                self.kill()
-        else:
-            self.kill()
+        if self.stop_movement[0]:
+            mode = self.stop_movement[2]
+            if mode in (1, 2, 3):
+                status_type = self.stop_movement[1]
+                self.who_attacked.remove_movement_status(status_type, source=self)
+        self.kill()
 
     def update(self):
         if global_vars.SHOW_HITBOX:
@@ -725,6 +725,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         if self.delay_triggered:
             # MAIN LOGIC 1
             # Every frame tick (uses current fps)
+            
+            # apply type 3 freeze/root first only once
+            if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
+                self.who_attacked.movement_status(self.stop_movement[1], source=self)
+                self.status_applied = True
+
             if current_time - self.last_update_time > self.frame_duration:
                 self.last_update_time = current_time
                 self.frame_index += 1
@@ -974,11 +980,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     elif self.stop_movement[2] == 1:
                         # removes status
                         self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
-
-                elif self.stop_movement[2] == 3: # type 3
-                    # immediately stoppp
-                    self.who_attacked.movement_status(self.stop_movement[1], source=self)
-
 
             if self.current_repeat >= self.repeat_animation:
                 if self.stop_movement[0]:
@@ -4281,7 +4282,7 @@ class Wind_Hashashin(Player):
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
                                 sound=(True, self.atk2_sound , self.x_slash_sound, None),
-                                stop_movement=(True, 2, 3)
+                                stop_movement=(True, 1, 2)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         # self.mana -=  self.attacks[1].mana_cost

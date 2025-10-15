@@ -962,8 +962,13 @@ def main_menu():
 
 def reset_all():
     global fade_alpha, fading, fade_start_time
+    global_vars.PAUSED = False
+    global_vars.PAUSED_TOTAL_DURATION = 0
+    global_vars.PAUSED_START = None
     # reset hero states
     for hero in [main.hero1, main.hero2]:
+        hero.freeze_sources = set()
+        hero.root_sources = set()
         hero.frozen = False
         hero.rooted = False
         hero.stunned = False
@@ -984,17 +989,17 @@ def reset_all():
         attack.reduce_cd(True)
 
     #reset health
-    main.hero1.health += main.hero1.max_health
-    main.hero2.health += main.hero2.max_health
-    main.hero1.mana += main.hero1.max_mana
-    main.hero2.mana += main.hero2.max_mana
-    main.hero1.special -= main.hero1.max_special
-    main.hero2.special -= main.hero2.max_special
+    main.hero1.health = main.hero1.max_health
+    main.hero2.health = main.hero2.max_health
+    main.hero1.mana = main.hero1.max_mana
+    main.hero2.mana = main.hero2.max_mana
+    main.hero1.special = 0
+    main.hero2.special = 0
 
-    main.hero1.health_bar_p1_after += main.hero1.max_health
-    main.hero2.health_bar_p2_after += main.hero2.max_health
-    main.hero1.mana_bar_p1_after += main.hero1.max_mana
-    main.hero2.mana_bar_p2_after += main.hero2.max_mana
+    main.hero1.white_health_p1 = main.hero1.max_health
+    main.hero2.white_health_p2 = main.hero2.max_health
+    main.hero1.white_mana_p1 = main.hero1.max_mana
+    main.hero2.white_mana_p2 = main.hero2.max_mana
 
     main.hero1.damage_numbers.clear()
     main.hero2.damage_numbers.clear()
@@ -1013,9 +1018,7 @@ def reset_all():
 
     attack_display.empty()
     # Reset paused tracking so timers/cooldowns start fresh
-    global_vars.PAUSED = False
-    global_vars.PAUSED_TOTAL_DURATION = 0
-    global_vars.PAUSED_START = None
+    
 
 volume_limit = {'min':100, 'max':300}
 current_volume = (global_vars.MAIN_VOLUME*100) + volume_limit['min']

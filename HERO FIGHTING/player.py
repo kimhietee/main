@@ -406,7 +406,7 @@ class Player(pygame.sprite.Sprite):
 
         for dmg in self.damage_numbers[:]:
             # # Skip rendering and remove healing text if health is already at max
-            dmg['y'] -= 0.5  # Move the text upward
+            dmg['y'] -= 1  # Move the text upward
             fade_amount = int(255 / dmg['interval'])
             dmg['alpha'] = max(0, dmg['alpha'] - fade_amount)
 
@@ -1281,7 +1281,7 @@ class Player(pygame.sprite.Sprite):
             return self.winner
     
     # Don't forget to have input method on the players since their attacks are specific :))
-    def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey):
+    def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         pass
                     # print(f"Attack did not execute: {self.mana}:")   
                 # print('Skill 4 used')
@@ -1368,9 +1368,6 @@ class Player(pygame.sprite.Sprite):
             
             # if self.y_pos - DEFAULT_Y_POS <= 10:
             #     self.stunned = False
-
-
-
             # self.y_velocity = y_pos
 
             return True if stunned else False
@@ -1393,7 +1390,8 @@ class Player(pygame.sprite.Sprite):
         if self.x_pos < 0:
             self.x_pos += 3
 
-    def update(self):
+    # Handles input for all heroes
+    def inputs(self):
         self.keys = pygame.key.get_pressed()
         self.input(
             (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
@@ -1403,72 +1401,22 @@ class Player(pygame.sprite.Sprite):
 
             (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
             (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
-            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP])
+            (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
+
+            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
+
+            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
             )
-        if not self.is_dead():
-            self.player_death_index = 0
-            self.player_death_index_flipped = 0
-        if self.is_dead():
-            self.play_death_animation()
-        elif self.jumping:
-            self.jump_animation()
-        elif self.running and not self.jumping:
-            self.run_animation()
-        elif self.attacking1:
-            self.atk1_animation()
-        elif self.attacking2:
-            self.atk2_animation()
-        elif self.attacking3:
-            self.atk3_animation()
-        elif self.sp_attacking:
-            self.sp_animation()
-        else:
-            self.simple_idle_animation()
 
-        # Update the player's position
-        self.rect.midbottom = (self.x_pos, self.y_pos)
+    # Phased out code (since I don't use super.init)
+    def update(self):
+        """Base player update: handles universal effects."""
+        if self.is_dead:
+            return
 
-        # Update the hitbox position
-        self.update_hitbox()
-        self.draw_hitbox(screen)
-
-        # Draw skill icons
-        for attack in self.attacks:
-            attack.draw_skill_icon(screen, self.mana)
-
-        for mana in self.attacks:
-            mana.draw_mana_cost(screen, self.mana)
-
-        # Update the player status (health and mana bars)
-        self.player_status(self.health, self.mana)
-
-        # Update the health and mana bars
-        if self.health != 0:
-            self.mana += DEFAULT_MANA_REGENERATION
-            self.health += DEFAULT_HEALTH_REGENERATION
-        else:
-            self.health = 0
-
-        # PLAYER SPECIFIC UPDATES
-
-        # SAMPLE APPLY ITEM CONSUMABLE:
-        if self.keys[pygame.K_1]:  # Example: Use the first item
-            if self.items:
-                item = self.items.pop(0)  # Remove the used item
-                if item.bonus_type == "hp":
-                    self.health = min(self.max_health, self.health + item.bonus_value)
-                elif item.bonus_type == "mana":
-                    self.mana = min(self.max_mana, self.mana + item.bonus_value)
-                elif item.bonus_type == "atk":
-                    self.attack_power += item.bonus_value
-
-        # DISPLAY ITEM ICONS
-
-        for i, item in enumerate(self.items):
-            screen.blit(item.image, (50 + i * 60, 250))  # Adjust position as needed
-
-
-        self.die()
+        # Handle global effects like stun or freeze
+        if self.stunned or getattr(self, "frozen", False):
+            return
 
         
 

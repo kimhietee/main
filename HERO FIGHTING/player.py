@@ -81,6 +81,10 @@ class Player(pygame.sprite.Sprite):
         self.special_increase = 0
         self.lifesteal = 0
         self.stunned = False
+        self.frozen = False
+        self.freeze_source = None
+        self.rooted = False
+        self.root_source = None
         self.str_mult = 5
         self.int_mult = 5
         self.agi_mult = 0.1
@@ -328,6 +332,14 @@ class Player(pygame.sprite.Sprite):
         self.damage_numbers = []
 
         self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
+
+
+        # for reset_all() function
+        self.health_bar_p1_after =0
+        self.health_bar_p2_after =0
+        self.mana_bar_p1_after =0
+        self.mana_bar_p2_after =0
+        
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False):
         if not hasattr(self, 'rect'):
@@ -1357,23 +1369,98 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, 'Red', line_rect)
     
     def stun(self, stunned, x_pos, y_pos, adjust_y_pos, jump_force=DEFAULT_JUMP_FORCE, gravity=DEFAULT_GRAVITY):
+        # I give up stunned stops attacking from magician, i will just not make it not attack while jumping
         if stunned:
             self.jumping = True
             self.y_pos = y_pos - adjust_y_pos
             self.x_pos = x_pos
-
-            # I give up stunned stops attacking from magician, i will just not make it not attack while jumping
-            # self.stunned = True
-            # print(self.y_pos - DEFAULT_Y_POS)
             
-            # if self.y_pos - DEFAULT_Y_POS <= 10:
-            #     self.stunned = False
-            # self.y_velocity = y_pos
+    
+    def movement_status(self, type, source=None):
+        '''
+        Apply frozen or rooted status
+        type: freeze/root, 1=freeze, 2=root
+        disable_skills: True if frozen, False if rooted
+        mode: (or type)
+            1 - while collides player, effect active, else none (collision only)
+            2 - when collides player, effect active, until attack ends (if hit once)
+            3 - effect active, until attack ends (full duration)
+        '''
+        if self.is_dead():
+            return
+        if type == 1: # Freeze
+            if not self.frozen:
+                self.running = False
+                self.frozen = True
+                self.freeze_source = source
+                # stop movement
+                try:
+                    self.velocity.x = 0
+                    self.velocity.y = 0
+                except Exception:
+                    pass
+        elif type == 2: # Root
+            if not self.rooted:
+                self.running = False
+                self.rooted = True
+                self.root_source = source
+                # stop movement
+                try:
+                    self.velocity.x = 0
+                    self.velocity.y = 0
+                except Exception:
+                    pass
+        print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
+    def remove_movement_status(self, type, source=None):
+        """
+        Remove the named status, but only if source 
+        matches (to avoid removing effects from other attackers).
 
-            return True if stunned else False
-            # self.jump_animation()
-        
+        If source is None, force-remove.
+        """
+        if type == 1:
+            if self.frozen and (source is None or self.freeze_source == source):
+                self.frozen = False
+                self.freeze_source = None
+        elif type == 2:
+            if self.rooted and (source is None or self.root_source == source):
+                self.rooted = False
+                self.root_source = None
 
+        print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
+                
+    def draw_movement_status(self, screen):
+        if self.frozen or self.rooted:
+            # Calculate overlay dimensions: 1/4 height from ground up
+            overlay_height = self.hitbox_rect.height // (4 if self.rooted else 1)
+            overlay_rect = pygame.Rect(
+                self.hitbox_rect.x,
+                self.hitbox_rect.bottom - overlay_height,  # from ground up
+                self.hitbox_rect.width,
+                overlay_height
+            )
+
+            # Choose color based on status
+            if self.frozen:
+                color = (0, 100, 255, 100)  # translucent blue
+            else:
+                color = (139, 69, 19, 100)  # brown, translucent
+
+            # Create surface for transparency
+            overlay = pygame.Surface((overlay_rect.width, overlay_rect.height), pygame.SRCALPHA)
+            overlay.fill(color)
+            screen.blit(overlay, overlay_rect.topleft)
+
+        # Optional: Draw hitbox outline (for debugging)
+        # pygame.draw.rect(screen, (0, 255, 0), self.hitbox_rect, 2)
+
+    def can_move(self):
+        """Return True if the player can move (not frozen or rooted or dead)."""
+        return not (self.is_dead() or self.frozen or self.rooted)
+
+    def can_cast(self):
+        """Return True if the player can use skills (not frozen or dead)."""
+        return not (self.is_dead() or self.frozen)
     
     def draw_hp(self):
         pass
@@ -1408,17 +1495,16 @@ class Player(pygame.sprite.Sprite):
             (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
             )
 
+    
     # Phased out code (since I don't use super.init)
     def update(self):
         """Base player update: handles universal effects."""
-        if self.is_dead:
-            return
-
+        self.draw_movement_status(screen)
+        # if self.is_dead:
+        #     return
         # Handle global effects like stun or freeze
-        if self.stunned or getattr(self, "frozen", False):
-            return
-
-        
+        # if self.stunned or getattr(self, "frozen", False):
+        #     return
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
 

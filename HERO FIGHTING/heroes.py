@@ -206,9 +206,9 @@ import time
 import math
 import pygame.sprite
 from global_vars import (IMMEDIATE_RUN,
-    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon,
+    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
-    waterfall_icon, lava_icon, dark_forest_icon, trees_icon,
+    waterfall_icon, lava_icon, dark_forest_icon, trees_icon, 
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, BASIC_ATK_COOLDOWN, BASIC_FRAME_DURATION, BASIC_ATK_DAMAGE, BASIC_ATK_DAMAGE2, BASIC_ATK_DAMAGE3, BASIC_ATK_DAMAGE4,
     DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION, BASIC_ATK_POSX, BASIC_ATK_POSX_END, BASIC_ATK_POSY, SPECIAL_MULTIPLIER, MAX_SPECIAL, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
     LOW_HP, LITERAL_HEALTH_DEAD, SINGLE_MODE_ACTIVE, SHOW_HITBOX, DRAW_DISTANCE,
@@ -541,6 +541,20 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             - Delays the attack’s animation and effect:
                 * [0] – If True, delay is enabled.
                 * [1] – Time in milliseconds to wait before the attack becomes active (e.g. (True, 1000) delays by 1 second).
+
+        UPDATE
+
+        21. stop_movement (bool, int, int)
+            - Prevents enemy from moving (and using skills)
+                * [0] – If True, activates status.
+                * [1] – Status
+                    1 - Freeze
+                    2 - Root
+                * [2] – Status mode/type
+                    1 - While collides player, effect active, else none (collision only)
+                    2 - When collides player, effect active, until attack ends (if hit once)
+                    3 - Effect active, until attack ends (full duration)
+        '''
         """
 
     def __init__(self, x, y, frames:pygame.Surface=list, frame_duration=100, repeat_animation=1, speed=0, 
@@ -551,7 +565,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=False, use_live_position_on_delay=False,
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
-                consume_mana=[False, 0]
+                consume_mana=[False, 0],
+                stop_movement=(False, 0, 0)
                 ):
         super().__init__()
         self.x = x
@@ -582,7 +597,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.self_kill_collide = self_kill_collide
         self.self_moving = self_moving # applies some logic to moving to self
         self.consume_mana = consume_mana # [0] = bool, [1] = how much mana (still same as how dmg is applied)
-        
+        self.stop_movement = stop_movement
 
         self.frame_index = 0
         self.last_update_time = pygame.time.get_ticks()
@@ -637,7 +652,14 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print("Hitbox drawn")
         # print(self.rect.width)
 
-    
+    def kill_self(self):
+        # remove status before removing attack
+        if self.who_attacked.frozen or self.who_attacked.rooted:
+            if self.stop_movement[2] in (1, 2, 3):
+                self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
+                self.kill()
+        else:
+            self.kill()
 
     def update(self):
         if global_vars.SHOW_HITBOX:
@@ -697,9 +719,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
             self.delay_triggered = True
 
+        # Same flag so that I dont have to write this again!!
+        collided = self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect)
 
         if self.delay_triggered:
             # MAIN LOGIC 1
+            # Every frame tick (uses current fps)
             if current_time - self.last_update_time > self.frame_duration:
                 self.last_update_time = current_time
                 self.frame_index += 1
@@ -709,6 +734,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 if self.frame_index < len(self.frames):
                     self.image = self.frames[self.frame_index]
 
+                # Every attack frame (depends on frame duration)
                 elif self.frame_index >= len(self.frames): # kind of 'else' in my s.py
                     self.frame_index = 0
                     self.current_repeat += 1
@@ -736,10 +762,17 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
 
                     # MAIN LOGIC 2
+                    # Final animation end
                     if self.current_repeat >= self.repeat_animation:
+                        # warning: inside these block of codes only runs per frames, not fps frames, 
+                        # which might prone to errors if not read carefully.
+                        # if self.freeze:
+                        #     self.who_attacked.speed = RUNNING_SPEED
+                        
+                                
                         #dmg animation
                         self.animation_done = True
-                        self.kill() # Remove the sprite from the group  
+                        self.kill_self() # Remove the sprite from the group  
 
                     # EVERY END FRAME ATTACK LOGIC -----------------------------
                         
@@ -762,6 +795,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             if self.who_attacks.lifesteal > 0:
                                 lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+
+                    
 
 
                     
@@ -841,11 +876,13 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
                         if self.kill_collide:
                             self.rect.x += 10000
-                            self.kill()
+                            self.kill_self()
                     if self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
                         if self.self_kill_collide:
                             self.rect.x += 10000
-                            self.kill()
+                            self.kill_self()
+
+                    
 
                 # heal logic
                 else:
@@ -891,7 +928,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 # Move the attack
                 self.rect.x += self.speed
                 if self.rect.x > width + 500 or self.rect.x < -500:
-                    self.kill()  # Remove the sprite if it goes off-screen
+                    self.kill_self()  # Remove the sprite if it goes off-screen
 
             #stun logic
             if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
@@ -921,6 +958,38 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
 
             # print(self.follow_self)
+
+            #freeze and root
+            # [0] = enable
+            # [1] = status type (freeze/root)
+            # [2] = type
+            if self.stop_movement[0] : # enable status
+                if self.stop_movement[2] in (1,2): # if either type == 1 or 2
+                    # type 2
+                    # always run code below if type == 2
+                    if collided:
+                        self.who_attacked.movement_status(self.stop_movement[1], source=self)
+                    # type 1 
+                    # run code below if type == 1
+                    elif self.stop_movement[2] == 1:
+                        # removes status
+                        self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
+
+                elif self.stop_movement[2] == 3: # type 3
+                    # immediately stoppp
+                    self.who_attacked.movement_status(self.stop_movement[1], source=self)
+
+
+            if self.current_repeat >= self.repeat_animation:
+                if self.stop_movement[0]:
+                    status_type = self.stop_movement[1]
+                    mode = self.stop_movement[2]
+                    if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
+                        self.who_attacked.remove_movement_status(status_type, source=self)
+                        self.kill_self()
+
+
+            
 
             
 
@@ -1345,7 +1414,7 @@ class Fire_Wizard(Player):
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move():
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -1367,6 +1436,8 @@ class Fire_Wizard(Player):
                     self.y_velocity = DEFAULT_JUMP_FORCE  
                     self.last_atk_time = current_time  # Update the last jump time
             
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -1822,6 +1893,9 @@ class Fire_Wizard(Player):
                     self.special_active = False
         # if self.running:
         #     print('is running')
+
+        
+        super().update()
         
 
 
@@ -2188,7 +2262,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move():
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -2210,6 +2284,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     self.y_velocity = DEFAULT_JUMP_FORCE  
                     self.last_atk_time = current_time  # Update the last jump time
             
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -2678,6 +2754,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
         
+        super().update()
+        
 
 
     
@@ -3124,7 +3202,7 @@ class Fire_Knight(Player):
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move():
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -3146,6 +3224,8 @@ class Fire_Knight(Player):
                     self.y_velocity = (DEFAULT_JUMP_FORCE - (DEFAULT_JUMP_FORCE * 0.05))  
                     self.last_atk_time = current_time  # Update the last jump time  
             
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -3692,6 +3772,9 @@ class Fire_Knight(Player):
                     self.special_active = False
 
         
+        super().update()
+
+        
 
          
 
@@ -4113,7 +4196,7 @@ class Wind_Hashashin(Player):
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move(): # fully working
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -4136,7 +4219,8 @@ class Wind_Hashashin(Player):
                     self.last_atk_time = current_time  # Update the last jump time
 
         
-            
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -4196,11 +4280,12 @@ class Wind_Hashashin(Player):
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
-                                sound=(True, self.atk2_sound , self.x_slash_sound, None)
+                                sound=(True, self.atk2_sound , self.x_slash_sound, None),
+                                stop_movement=(True, 2, 3)
                                 ) # Replace with the target
                             attack_display.add(attack)
-                        self.mana -=  self.attacks[1].mana_cost
-                        self.attacks[1].last_used_time = current_time
+                        # self.mana -=  self.attacks[1].mana_cost
+                        # self.attacks[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
                         self.player_atk2_index = 0
@@ -4611,7 +4696,6 @@ class Wind_Hashashin(Player):
         # print(self.distance_covered)
         
         
-
     
     
     def update(self):
@@ -4705,8 +4789,11 @@ class Wind_Hashashin(Player):
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
         # Apply gravity
+        # if not self.attacking2:
         self.y_velocity += (DEFAULT_GRAVITY - (DEFAULT_GRAVITY * 0.02))
         self.y_pos += self.y_velocity
+        # else:
+        #     self.jumping = False
 
         # Stop at the ground level
         if self.y_pos > DEFAULT_Y_POS:
@@ -4755,6 +4842,9 @@ class Wind_Hashashin(Player):
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
                     self.special_active = False
+
+        
+        super().update()
 
 
 
@@ -5272,7 +5362,7 @@ class Water_Princess(Player):
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move():
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -5294,6 +5384,8 @@ class Water_Princess(Player):
                     self.y_velocity = (DEFAULT_JUMP_FORCE - (DEFAULT_JUMP_FORCE * 0.05))
                     self.last_atk_time = current_time  # Update the last jump time
             
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -6042,40 +6134,43 @@ class Water_Princess(Player):
         # self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
         # print(self.attacks[0].mana_cost)
 
+        
+        super().update()
 
 
 
 
 
-WANDERER_MAGICIAN_JUMP_COUNT = 6
-WANDERER_MAGICIAN_RUN_COUNT = 8
-WANDERER_MAGICIAN_IDLE_COUNT = 8
-WANDERER_MAGICIAN_ATK1_COUNT = 7
-WANDERER_MAGICIAN_ATK3_COUNT = 9
-WANDERER_MAGICIAN_SP_COUNT = 16
-WANDERER_MAGICIAN_DEATH_COUNT = 4
+'''Forest Ranger Config'''
+FR_JUMP_COUNT = 6
+FR_RUN_COUNT = 8
+FR_IDLE_COUNT = 8
+FR_ATK1_COUNT = 7
+FR_ATK3_COUNT = 9
+FR_SP_COUNT = 16
+FR_DEATH_COUNT = 4
 
-WANDERER_MAGICIAN_BASIC = 6
-WANDERER_MAGICIAN_ATK1 = 4
-WANDERER_MAGICIAN_ATK2 = 40
-WANDERER_MAGICIAN_ATK3 = 10
-WANDERER_MAGICIAN_SP = 3
+FR_BASIC = 6
+FR_ATK1 = 4
+FR_ATK2 = 40
+FR_ATK3 = 10
+FR_SP = 3
 
-WANDERER_MAGICIAN_SPECIAL_ATK3 = 10
+FR_SPECIAL_ATK3 = 10
 # ---------------------
 # WANDERER_MAGICIAN_ATK1_MANA_COST = 70
 # WANDERER_MAGICIAN_ATK2_MANA_COST = 125
 # WANDERER_MAGICIAN_ATK3_MANA_COST = 125
 # WANDERER_MAGICIAN_SP_MANA_COST = 170
 
-WANDERER_MAGICIAN_BASIC_SIZE = 1.5
-WANDERER_MAGICIAN_ATK1_SIZE = 2
-WANDERER_MAGICIAN_ATK2_SIZE = 1
-WANDERER_MAGICIAN_ATK3_SIZE = 1.5
-WANDERER_MAGICIAN_SP_SIZE = 1.3
+FR_BASIC_SIZE = 1.5
+FR_ATK1_SIZE = 2
+FR_ATK2_SIZE = 1
+FR_ATK3_SIZE = 1.5
+FR_SP_SIZE = 1.3
 
-WANDERER_MAGICIAN_SPECIAL_ATK3_SIZE = 2
-WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE = 2
+FR_SPECIAL_ATK3_SIZE = 2
+FR_SPECIAL_BASICATK1_SIZE = 2
 
 # WANDERER_MAGICIAN_ATK1_COOLDOWN = 8000
 # WANDERER_MAGICIAN_ATK2_COOLDOWN = 15000 + 9000
@@ -6099,7 +6194,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.strength = 32
         self.intelligence = 60
         self.agility = 38
-        
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -6128,7 +6222,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_damage = (26/10, 8) #26
         self.sp_damage = (55, 0) # 68.75 is the special dmg 
         self.sp_damage_2nd = (4.5/16, 0) # * 30 = 67.5
-
+        
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
@@ -6136,19 +6230,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
 
         # Player Animation Source
-        jump_ani = [r'assets\characters\Forest Ranger\PNG\jump_full\jump_', 22, 1]
-        run_ani = [r'assets\characters\Forest Ranger\PNG\run\run_', 10, 1]
-        idle_ani= [r'assets\characters\Forest Ranger\PNG\idle\idle_', 12, 1]
-        atk1_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
-        atk2_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
-        atk3_ani= [r'assets\characters\Wanderer Magican\attack 2 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
-        sp_ani= [r'assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 1]
-        death_ani= [r'assets\characters\Forest Ranger\PNG\death\death_', 19, 1]
+        jump_ani = [r'assets\characters\Forest Ranger\PNG\jump_full\jump_', 22, 0]
+        run_ani = [r'assets\characters\Forest Ranger\PNG\run\run_', 10, 0]
+        idle_ani= [r'assets\characters\Forest Ranger\PNG\idle\idle_', 12, 0]
+        atk1_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 0]
+        atk2_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 0]
+        atk3_ani= [r'assets\characters\Wanderer Magican\attack 2 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 0]
+        sp_ani= [r'assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 0]
+        death_ani= [r'assets\characters\Forest Ranger\PNG\death\death_', 19, 0]
 
         self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
         self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
         self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Raseng=-an Sound Effect 4.mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
         self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
@@ -6402,7 +6496,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if not self.is_dead():
+        if self.can_move():
             if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
                 if right_hotkey:  # Move right
                     self.running = True
@@ -6424,6 +6518,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     self.y_velocity = DEFAULT_JUMP_FORCE  
                     self.last_atk_time = current_time  # Update the last jump time
             
+        if not self.can_cast():
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -6792,6 +6888,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
      
         
     def update(self):
+        super().update()
         # print(self.stunned)
         if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
@@ -7376,7 +7473,8 @@ def player_selection():
         PlayerSelector(wanderer_magician_icon, (75 * 3, height - 75), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (75 * 5, height - 75), Fire_Knight),
         PlayerSelector(wind_hashashin_icon, (width - (75 * 5), height - 75), Wind_Hashashin),
-        PlayerSelector(water_princess_icon, (width - (75 * 3), height - 75), Water_Princess)
+        PlayerSelector(water_princess_icon, (width - (75 * 3), height - 75), Water_Princess),
+        PlayerSelector(forest_ranger_icon, (width - (75), height - 75), Forest_Ranger)
     ]
 
     p2_select = [
@@ -7384,7 +7482,8 @@ def player_selection():
         PlayerSelector(wanderer_magician_icon, (width - (75 * 3), height - 75), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (width - (75 * 5), height - 75), Fire_Knight),
         PlayerSelector(wind_hashashin_icon, (75 * 5, height - 75), Wind_Hashashin),
-        PlayerSelector(water_princess_icon, (75 * 3, height - 75), Water_Princess)
+        PlayerSelector(water_princess_icon, (75 * 3, height - 75), Water_Princess),
+        PlayerSelector(forest_ranger_icon, (75, height - 75), Forest_Ranger)
     ]
     
     # Item selection
@@ -7447,8 +7546,8 @@ def player_selection():
 
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_1_SELECTED_HERO = Wind_Hashashin
+            PLAYER_2_SELECTED_HERO = Wind_Hashashin
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True

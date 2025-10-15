@@ -18,7 +18,7 @@ green = 'Green' #hp
 cyan2 = 'Cyan2' #mana bar color
 gold = 'Gold' #special
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -176,6 +176,7 @@ wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
 fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
 wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
 water_princess_icon = r'assets\hero profiles\water character profile.png' # temp
+forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'

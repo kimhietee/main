@@ -170,7 +170,6 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
             screen.blit(text_surface, (x - 5, y + 2))
 
 
-
         
 # def map_selection():
 
@@ -257,9 +256,10 @@ def game(bg=None):
 
     #testing purposes
     #testing
-    main.hero1.x_pos += 150
-    main.hero2.x_pos -= 150
+    # main.hero1.x_pos += 150
+    # main.hero2.x_pos -= 150
     while True:
+        # print(main.hero1.mana)
             
         
         keys = pygame.key.get_pressed()
@@ -469,18 +469,22 @@ def game(bg=None):
 
             #drawing the damage display
 
-            # Update anddddddddddddd draw attacks
-            attack_display.update()
-            attack_display.draw(main.screen)
+            
 
             # Update and draw Fire Wizard
-            main.hero1_group.update()
             main.hero1_group.draw(main.screen)
+            main.hero1_group.update()
+            
 
             # Update and draw Wanderer Magician
             # if not main.hero2.is_dead():
-            main.hero2_group.update()
+            
             main.hero2_group.draw(main.screen)
+            main.hero2_group.update()
+
+            # Update anddddddddddddd draw attacks
+            attack_display.update()
+            attack_display.draw(main.screen)
             if global_vars.SINGLE_MODE_ACTIVE:
                 # main.hero1.bot_logic()  # Add bot logic for hero1
                 main.hero2.bot_logic()
@@ -958,6 +962,21 @@ def main_menu():
 
 def reset_all():
     global fade_alpha, fading, fade_start_time
+    # reset hero states
+    for hero in [main.hero1, main.hero2]:
+        hero.frozen = False
+        hero.rooted = False
+        hero.stunned = False
+        hero.freeze_source = None
+        hero.root_source = None
+        hero.y_velocity = 0
+        hero.x_velocity = 0
+        hero.running = False
+        hero.attacking1 = hero.attacking2 = hero.attacking3 = False
+        hero.basic_attacking = hero.sp_attacking = False
+        hero.special_active = False
+        hero.animation_done = False
+
     # reset cd
     for attack in main.hero1.attacks:
         attack.reduce_cd(True)
@@ -971,6 +990,11 @@ def reset_all():
     main.hero2.mana += main.hero2.max_mana
     main.hero1.special -= main.hero1.max_special
     main.hero2.special -= main.hero2.max_special
+
+    main.hero1.health_bar_p1_after += main.hero1.max_health
+    main.hero2.health_bar_p2_after += main.hero2.max_health
+    main.hero1.mana_bar_p1_after += main.hero1.max_mana
+    main.hero2.mana_bar_p2_after += main.hero2.max_mana
 
     main.hero1.damage_numbers.clear()
     main.hero2.damage_numbers.clear()

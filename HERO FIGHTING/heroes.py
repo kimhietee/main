@@ -566,7 +566,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
                 consume_mana=[False, 0],
-                stop_movement=(False, 0, 0)
+                stop_movement=(False, 0, 0),
+                spawn_attack:dict=None, periodic_spawn:dict=None
                 ):
         super().__init__()
         self.x = x
@@ -599,6 +600,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.consume_mana = consume_mana # [0] = bool, [1] = how much mana (still same as how dmg is applied)
         self.stop_movement = stop_movement
 
+        self.spawn_attack = spawn_attack # dict or callable
+        self.periodic_spawn = periodic_spawn # dict or None
+
         self.frame_index = 0
         self.last_update_time = pygame.time.get_ticks()
 
@@ -629,17 +633,14 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.hitbox_width = int(self.rect.width * hitbox_scale_x)
         self.hitbox_height = int(self.rect.height * hitbox_scale_y)
 
-        # self.hitbox_offset_x = hitbox_offset_x
-        # self.hitbox_offset_y = hitbox_offset_y
 
         self.hitbox_rect = pygame.Rect(self.x, self.y, self.hitbox_width, self.hitbox_height)
         
+        #spawn attack
+        self._has_spawned_on_collide = False
+        self._last_periodic_spawn = pygame.time.get_ticks()
+        self._periodic_spawn_count = 0
 
-    # def detect_collision(self):
-    #     if pygame.sprite.spritecollide(self.sprite,fire_wizard_group,False):
-    #         return True
-    #     else:
-    #         return False
 
     def update_hitbox(self):
         self.hitbox_rect.center = self.rect.center
@@ -653,12 +654,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print(self.rect.width)
 
     def kill_self(self):
-        # remove status before removing attack
+        # remove only this attack's status
         if self.stop_movement[0]:
-            mode = self.stop_movement[2]
-            if mode in (1, 2, 3):
-                status_type = self.stop_movement[1]
-                self.who_attacked.remove_movement_status(status_type, source=self)
+            status_type = self.stop_movement[1]
+            # remove only this source
+            self.who_attacked.remove_movement_status(status_type, source=self)
+        # finally kill the sprite
         self.kill()
 
     def update(self):
@@ -726,6 +727,42 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             # MAIN LOGIC 1
             # Every frame tick (uses current fps)
             
+            # Must at be the top (bug)
+            # Spawn attack when collide
+            # 'use_attack_onhit_pos': bool, spawns attack when enemy collides with the attack
+            if collided and self.spawn_attack and not self._has_spawned_on_collide:
+                spec = self.spawn_attack
+                if callable(spec):
+                    new = spec(self)
+                    if new:
+                        attack_display.add(new)
+                else:
+                    ak = spec.get('attack_kwargs', {}).copy()
+                    if spec.get('use_attack_onhit_pos', True):
+                        ak['x'], ak['y'] = self.rect.center
+                    attack_display.add(Attack_Display(**ak))
+                self._has_spawned_on_collide = True
+
+            # Spawns attack periodically
+            # 'interval': int, spaws attack between intervals
+            # 'repeat_count': int, total attack(s) to spawn
+            # 'use_attack_pos': bool, uses current pos of attack and spawns attack every interval
+            if self.periodic_spawn:
+                now = pygame.time.get_ticks()
+                interval = self.periodic_spawn.get('interval', 2000)
+                max_times = self.periodic_spawn.get('repeat_count', None)
+                if now - self._last_periodic_spawn >= interval:
+                    ak = self.periodic_spawn.get('attack_kwargs', {}).copy()
+                    if self.periodic_spawn.get('use_attack_pos', False):
+                        ak['x'], ak['y'] = self.rect.center
+                    attack_display.add(Attack_Display(**ak))
+                    self._last_periodic_spawn = now
+                    self._periodic_spawn_count += 1
+                    if max_times is not None and self._periodic_spawn_count >= max_times:
+                        self.periodic_spawn = None
+
+
+
             # apply type 3 freeze/root first only once
             if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
                 self.who_attacked.movement_status(self.stop_movement[1], source=self)
@@ -988,7 +1025,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
                         self.who_attacked.remove_movement_status(status_type, source=self)
 
-
+            
             
 
             
@@ -2244,24 +2281,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.white_health_p2 = self.health
         self.white_mana_p2 = self.mana
 
-        self.attack_bas = Attack_Display(
-                        x=self.rect.centerx,
-                        y=self.rect.centery + random.randint(0, 40),
-                        frames=self.basic if self.facing_right else self.basic_flipped,
-                        frame_duration=100,
-                        repeat_animation=5,
-                        speed=7 if self.facing_right else -7,
-                        dmg=self.basic_attack_damage,
-                        final_dmg=0,
-                        who_attacks=self,
-                        who_attacked=hero1 if self.player_type == 2 else hero2,
-                        moving=True,
-
-                        sound=(True, self.atk1_sound, None, None),
-                        kill_collide=True,
-                        delay=(True, 500)
-                        )
-
     def atk1_animation(self, animation_speed=0):
         if self.facing_right:
             self.player_atk1_index, anim_active = self.animate(self.player_atk1, self.player_atk1_index, loop=False, basic_atk=True)
@@ -2390,8 +2409,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800),
-                            use_live_position_on_delay=True
+                            delay=(True, 800)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -=  self.attacks[2].mana_cost
@@ -2442,7 +2460,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
             if not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                 if self.mana >= 0 and self.attacks[4].is_ready():
-                    self.attack_bas = Attack_Display(
+                    attack = Attack_Display(
                         x=self.rect.centerx,
                         y=self.rect.centery + random.randint(0, 40),
                         frames=self.basic if self.facing_right else self.basic_flipped,
@@ -2457,9 +2475,53 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                         sound=(True, self.atk1_sound, None, None),
                         kill_collide=True,
-                        delay=(True, 500)
-                        )
-                    attack_display.add(self.attack_bas)
+                        delay=(True, 500),
+
+                        # Experiment Codes
+                        # plan: when attack longer moving, greater damage
+                        # periodic_spawn={
+                        #     'attack_kwargs': {
+                        #         'x': width+100,
+                        #         'y': self.rect.centery + random.randint(0, 40),
+                        #         'frames': self.atk1 if self.facing_right else self.atk1_flipped,
+                        #         'frame_duration': 100,
+                        #         'repeat_animation': 5,
+                        #         'speed': -7 if self.facing_right else 7,
+                        #         'dmg': random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
+                        #         'final_dmg': 0,
+                        #         'who_attacks': self,
+                        #         'who_attacked': hero1 if self.player_type == 2 else hero2,
+                        #         'moving': True,
+                        #         'sound': (False, self.atk1_sound, None, None),
+                        #         'delay': (True, 300),
+                        #         'kill_collide': True
+                        #     },
+                        #     'interval': 1000,
+                        #     'repeat_count': 5,
+                        #     'use_attack_pos': False,
+                        # }
+                        
+
+                        periodic_spawn= {
+                            'attack_kwargs': {
+                                'frames': self.atk3,
+                                'frame_duration': 100,
+                                'repeat_animation': 3,
+                                'speed': 0,
+                                'dmg': self.atk3_damage[0],
+                                'final_dmg': self.atk3_damage[1],
+                                'who_attacks': self,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                'moving': False,
+                                'sound': (False, self.atk3_sound, None, None),
+                                'delay': (False, 0)
+                            },
+                            'interval': 500,
+                            'repeat_count': 20,
+                            'use_attack_pos': True,
+                        }
+                    )
+                    attack_display.add(attack)
                     self.mana -= 0
                     self.attacks[4].last_used_time = current_time
                     self.running = False
@@ -2646,8 +2708,26 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             delay=(True, i[0]),
 
                             hitbox_scale_x=0.2,
-                            hitbox_scale_y=0.2
-                            )
+                            hitbox_scale_y=0.2,
+                            spawn_attack= {
+                            'attack_kwargs': {
+                                'frames': self.atk3,
+                                'frame_duration': 100,
+                                'repeat_animation': 1,
+                                'speed': 0,
+                                'dmg': self.atk3_damage[0],
+                                'final_dmg': self.atk3_damage[1],
+                                'who_attacks': self,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                'moving': False,
+                                'sound': (False, self.atk3_sound, None, None),
+                                'delay': (False, 0)
+                            },
+                            'use_attack_onhit_pos': True
+                            
+                        }
+                        )
+                            
                         attack_display.add(attack)
 
 
@@ -2774,26 +2854,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # print(self.special)
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
-        if not self.attack_bas.damaged:
-            self.attack2 = Attack_Display(
-                            x=hero2.rect.centerx + 0 if self.facing_right else hero2.rect.centerx - 0, # in front of him
-                            y=self.rect.centery + 30,
-                            frames=hero2.atk2,
-                            frame_duration=150,
-                            repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk2_damage[0],
-                            final_dmg=self.atk2_damage[1],
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            stun=(True, 50),
-                            sound=(True, self.atk2_sound , None, None),
-                            delay=(True, 1)
-                        )
-        if self.attack_bas.damaged:
-            attack_display.add(self.attack2)
-            self.attack_bas.damaged = False
-            self.attack_bas.kill_self()
         
         super().update()
         
@@ -7501,6 +7561,8 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
 
 # print('opening player selection')
 # print(global_vars.SMOOTH_BG)
+
+# from global_vars import quick_run_hero1, quick_run_hero2
 def player_selection():
     global map_selected
     # print('player selection opened')
@@ -7594,7 +7656,7 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Fire_Knight
+            PLAYER_2_SELECTED_HERO = Wind_Hashashin
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True

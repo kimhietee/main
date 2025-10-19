@@ -987,7 +987,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     mode = self.stop_movement[2]
                     if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
                         self.who_attacked.remove_movement_status(status_type, source=self)
-                        self.kill_self()
 
 
             
@@ -2245,6 +2244,24 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.white_health_p2 = self.health
         self.white_mana_p2 = self.mana
 
+        self.attack_bas = Attack_Display(
+                        x=self.rect.centerx,
+                        y=self.rect.centery + random.randint(0, 40),
+                        frames=self.basic if self.facing_right else self.basic_flipped,
+                        frame_duration=100,
+                        repeat_animation=5,
+                        speed=7 if self.facing_right else -7,
+                        dmg=self.basic_attack_damage,
+                        final_dmg=0,
+                        who_attacks=self,
+                        who_attacked=hero1 if self.player_type == 2 else hero2,
+                        moving=True,
+
+                        sound=(True, self.atk1_sound, None, None),
+                        kill_collide=True,
+                        delay=(True, 500)
+                        )
+
     def atk1_animation(self, animation_speed=0):
         if self.facing_right:
             self.player_atk1_index, anim_active = self.animate(self.player_atk1, self.player_atk1_index, loop=False, basic_atk=True)
@@ -2373,7 +2390,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800)
+                            delay=(True, 800),
+                            use_live_position_on_delay=True
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -=  self.attacks[2].mana_cost
@@ -2424,7 +2442,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
             if not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                 if self.mana >= 0 and self.attacks[4].is_ready():
-                    attack = Attack_Display(
+                    self.attack_bas = Attack_Display(
                         x=self.rect.centerx,
                         y=self.rect.centery + random.randint(0, 40),
                         frames=self.basic if self.facing_right else self.basic_flipped,
@@ -2441,7 +2459,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         kill_collide=True,
                         delay=(True, 500)
                         )
-                    attack_display.add(attack)
+                    attack_display.add(self.attack_bas)
                     self.mana -= 0
                     self.attacks[4].last_used_time = current_time
                     self.running = False
@@ -2450,6 +2468,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     self.player_atk1_index_flipped = 0
 
                     self.basic_attacking = True
+
+                    
 
                     # print("Attack executed")
                 else:
@@ -2754,6 +2774,26 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # print(self.special)
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
+        if not self.attack_bas.damaged:
+            self.attack2 = Attack_Display(
+                            x=hero2.rect.centerx + 0 if self.facing_right else hero2.rect.centerx - 0, # in front of him
+                            y=self.rect.centery + 30,
+                            frames=hero2.atk2,
+                            frame_duration=150,
+                            repeat_animation=1,
+                            speed=5 if self.facing_right else -5,
+                            dmg=self.atk2_damage[0],
+                            final_dmg=self.atk2_damage[1],
+                            who_attacks=self,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
+                            stun=(True, 50),
+                            sound=(True, self.atk2_sound , None, None),
+                            delay=(True, 1)
+                        )
+        if self.attack_bas.damaged:
+            attack_display.add(self.attack2)
+            self.attack_bas.damaged = False
+            self.attack_bas.kill_self()
         
         super().update()
         
@@ -4281,12 +4321,12 @@ class Wind_Hashashin(Player):
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
-                                sound=(True, self.atk2_sound , self.x_slash_sound, None),
-                                stop_movement=(True, 1, 2)
+                                # sound=(True, self.atk2_sound , self.x_slash_sound, None),
+                                # stop_movement=(True, 1, 2)
                                 ) # Replace with the target
                             attack_display.add(attack)
-                        # self.mana -=  self.attacks[1].mana_cost
-                        # self.attacks[1].last_used_time = current_time
+                        self.mana -=  self.attacks[1].mana_cost
+                        self.attacks[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
                         self.player_atk2_index = 0
@@ -5581,6 +5621,8 @@ class Water_Princess(Player):
                                 hitbox_scale_x=i[5][0],
                                 hitbox_scale_y=i[5][1], 
                                 consume_mana=[i[6], self.atk4_mana_consume],
+                                stop_movement=(True, 1, 2)
+                                
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -5686,7 +5728,9 @@ class Water_Princess(Player):
                                 continuous_dmg=i[11],
                                 stun=(i[11], 40),
 
-                                consume_mana=[i[12], self.atk1_special_mana_consume]
+                                consume_mana=[i[12], self.atk1_special_mana_consume],
+
+                                stop_movement=(True, 1, 2)
 
                             )
                             attack_display.add(attack)
@@ -5745,7 +5789,8 @@ class Water_Princess(Player):
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
                                 hitbox_scale_x=0.4
-                                ,hitbox_scale_y=0.4
+                                ,hitbox_scale_y=0.4,
+                                stop_movement=(True, 1, 1)
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -5765,7 +5810,8 @@ class Water_Princess(Player):
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
                                 hitbox_scale_x=0.7
-                                ,hitbox_scale_y=0.7
+                                ,hitbox_scale_y=0.7,
+                                stop_movement=(True, 1, 1)
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -5785,7 +5831,8 @@ class Water_Princess(Player):
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
                                 hitbox_scale_x=0.7
-                                ,hitbox_scale_y=0.7
+                                ,hitbox_scale_y=0.7,
+                                stop_movement=(True, 1, 1)
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -5878,7 +5925,6 @@ class Water_Princess(Player):
                         self.attacking3 = True
                         self.player_atk3_index = 0
                         self.player_atk3_index_flipped = 0
-
                         
                         # print("Attack executed")
                     else:
@@ -5914,11 +5960,11 @@ class Water_Princess(Player):
                                 hitbox_scale_x=i[5][0],
                                 hitbox_scale_y=i[5][1],
                                 consume_mana=[i[6], self.atk4_special_mana_consume],
-                                moving=i[8][0]
+                                moving=i[8][0],
+                                stop_movement=(True, 1, 2)
                                 ) # Replace with the target
                             attack_display.add(attack)
 
-                        
                         for i in [(100,130*1.23), (300, 191.1*1.23), (700,275*1.23), (1100, 369.5*1.23), (1500, 550*1.23)]:
                             attack = Attack_Display( # WATER SHOT
                                 x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
@@ -5939,7 +5985,6 @@ class Water_Princess(Player):
                                 ) # Replace with the target
                             attack_display.add(attack)
 
-
                         # self.mana -=  self.attacks[3].mana_cost
                         self.attacks_special[3].last_used_time = current_time
                         self.running = False
@@ -5956,9 +6001,9 @@ class Water_Princess(Player):
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
                         for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5),
-                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5)
+                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5,(False, 1, 1)),
+                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage,(False, 1, 1)),
+                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5,(True, 1, 1))
                             
                             ]:
                             attack = Attack_Display(
@@ -5977,7 +6022,8 @@ class Water_Princess(Player):
                                 delay=(True, i[0]),
                                 moving=True,
                                 hitbox_scale_x=i[4][2],
-                                hitbox_scale_y=i[4][3]
+                                hitbox_scale_y=i[4][3],
+                                stop_movement=i[6]
                                 )
                             attack_display.add(attack)
                         self.mana -= 0
@@ -6248,7 +6294,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
-
+        
         # # Player Skill Animations Source
         basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
         atk1 = [r'assets\attacks\wanderer magician\atk1\image_', WANDERER_MAGICIAN_ATK1, 1]
@@ -7547,8 +7593,8 @@ def player_selection():
 
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Wind_Hashashin
-            PLAYER_2_SELECTED_HERO = Wind_Hashashin
+            PLAYER_1_SELECTED_HERO = Wanderer_Magician
+            PLAYER_2_SELECTED_HERO = Fire_Knight
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True

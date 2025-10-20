@@ -2281,6 +2281,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.white_health_p2 = self.health
         self.white_mana_p2 = self.mana
 
+        self.jump_attack_pending = False
+        self.jump_attack_time = 0
+
     def atk1_animation(self, animation_speed=0):
         if self.facing_right:
             self.player_atk1_index, anim_active = self.animate(self.player_atk1, self.player_atk1_index, loop=False, basic_atk=True)
@@ -2395,31 +2398,38 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[2].mana_cost and self.attacks[2].is_ready():
+                        self.jumping = True
+                        self.y_velocity = DEFAULT_JUMP_FORCE  # adjust jump strength as needed
+                        self.jump_attack_pending = True
+                        self.jump_attack_time = pygame.time.get_ticks() + 200  # 500ms later
                         # Create an attack
                         # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=hero1.x_pos if self.player_type == 2 else hero2.x_pos, #self.rect.centerx + 150 if self.facing_right else self.rect.centerx - 150, # in front of him
-                            y=hero1.y_pos - 30 if self.player_type == 2 else hero2.y_pos - 30,
-                            frames=self.atk3,
-                            frame_duration=100,
-                            repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk3_damage[0],
-                            final_dmg=self.atk3_damage[1],
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800)
-                            ) # Replace with the target
-                        attack_display.add(attack)
-                        self.mana -=  self.attacks[2].mana_cost
-                        self.attacks[2].last_used_time = current_time
-                        self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                        # if self.jump_attack_pending and pygame.time.get_ticks() >= self.jump_attack_time:
+                        #     self.jump_attack_pending = False
+                        #     attack = Attack_Display(
+                        #         x=hero1.x_pos if self.player_type == 2 else hero2.x_pos, #self.rect.centerx + 150 if self.facing_right else self.rect.centerx - 150, # in front of him
+                        #         y=hero1.y_pos - 30 if self.player_type == 2 else hero2.y_pos - 30,
+                        #         frames=self.atk3,
+                        #         frame_duration=100,
+                        #         repeat_animation=1,
+                        #         speed=5 if self.facing_right else -5,
+                        #         dmg=self.atk3_damage[0],
+                        #         final_dmg=self.atk3_damage[1],
+                        #         who_attacks=self,
+                        #         who_attacked=hero1 if self.player_type == 2 else hero2,
+                        #         sound=(True, self.atk3_sound , None, None),
+                        #         delay=(True, 800)
+                        #         ) # Replace with the target
+                        #     attack_display.add(attack)
+                        #     # self.mana -=  self.attacks[2].mana_cost
+                        #     # self.attacks[2].last_used_time = current_time
+                        #     self.running = False
+                        #     self.attacking3 = True
+                        #     self.player_atk3_index = 0
+                        #     self.player_atk3_index_flipped = 0
+                        #     # self.y_velocity = 0  # optional: cancel gravity impulse if you want freeze in air
 
-                        # print("Attack executed")
+                            # print("Attack executed")
                     else:
                         pass
                         # print(f"Attack did not execute: {self.mana}:")   
@@ -2451,6 +2461,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         self.running = False
                         self.sp_attacking = True
                         self.player_sp_index = 0
+                        self.player_sp_index_flipped = 0
 
                         # print("Attack executed")
                     else:
@@ -2476,6 +2487,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         sound=(True, self.atk1_sound, None, None),
                         kill_collide=True,
                         delay=(True, 500),
+                    )
 
                         # Experiment Codes
                         # plan: when attack longer moving, greater damage
@@ -2502,25 +2514,25 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         # }
                         
 
-                        periodic_spawn= {
-                            'attack_kwargs': {
-                                'frames': self.atk3,
-                                'frame_duration': 100,
-                                'repeat_animation': 3,
-                                'speed': 0,
-                                'dmg': self.atk3_damage[0],
-                                'final_dmg': self.atk3_damage[1],
-                                'who_attacks': self,
-                                'who_attacked': hero1 if self.player_type == 2 else hero2,
-                                'moving': False,
-                                'sound': (False, self.atk3_sound, None, None),
-                                'delay': (False, 0)
-                            },
-                            'interval': 500,
-                            'repeat_count': 20,
-                            'use_attack_pos': True,
-                        }
-                    )
+                    #     periodic_spawn= {
+                    #         'attack_kwargs': {
+                    #             'frames': self.atk3,
+                    #             'frame_duration': 100,
+                    #             'repeat_animation': 3,
+                    #             'speed': 0,
+                    #             'dmg': self.atk3_damage[0],
+                    #             'final_dmg': self.atk3_damage[1],
+                    #             'who_attacks': self,
+                    #             'who_attacked': hero1 if self.player_type == 2 else hero2,
+                    #             'moving': False,
+                    #             'sound': (False, self.atk3_sound, None, None),
+                    #             'delay': (False, 0)
+                    #         },
+                    #         'interval': 500,
+                    #         'repeat_count': 20,
+                    #         'use_attack_pos': True,
+                    #     }
+                    # )
                     attack_display.add(attack)
                     self.mana -= 0
                     self.attacks[4].last_used_time = current_time
@@ -2754,6 +2766,30 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
      
         
     def update(self):
+        if self.jump_attack_pending and pygame.time.get_ticks() >= self.jump_attack_time:
+            self.jump_attack_pending = False
+            attack = Attack_Display(
+                x=hero1.x_pos if self.player_type == 2 else hero2.x_pos, #self.rect.centerx + 150 if self.facing_right else self.rect.centerx - 150, # in front of him
+                y=hero1.y_pos - 30 if self.player_type == 2 else hero2.y_pos - 30,
+                frames=self.atk3,
+                frame_duration=100,
+                repeat_animation=1,
+                speed=5 if self.facing_right else -5,
+                dmg=self.atk3_damage[0],
+                final_dmg=self.atk3_damage[1],
+                who_attacks=self,
+                who_attacked=hero1 if self.player_type == 2 else hero2,
+                sound=(True, self.atk3_sound , None, None),
+                delay=(True, 800)
+                ) # Replace with the target
+            attack_display.add(attack)
+            # self.mana -=  self.attacks[2].mana_cost
+            # self.attacks[2].last_used_time = current_time
+            self.running = False
+            self.attacking3 = True
+            self.player_atk3_index = 0
+            self.player_atk3_index_flipped = 0
+            self.y_velocity -= DEFAULT_GRAVITY*7  # optional: cancel gravity impulse if you want freeze in air
         # print(self.stunned)
         if global_vars.DRAW_DISTANCE:
             self.draw_distance(hero1 if self.player_type == 2 else hero2)
@@ -2777,14 +2813,15 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
             self.play_death_animation()
         elif self.attacking1:
             self.atk1_animation()
+        elif self.attacking3:
+            self.atk3_animation()
         elif self.jumping:
             self.jump_animation()
         elif self.running and not self.jumping:
             self.run_animation(self.running_animation_speed)
         elif self.attacking2:
             self.atk2_animation()
-        elif self.attacking3:
-            self.atk3_animation()
+        
         elif self.sp_attacking:
             self.sp_animation(-11)
 
@@ -2792,8 +2829,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
             self.simple_idle_animation(RUNNING_ANIMATION_SPEED)
 
         # Apply gravity
-        self.y_velocity += DEFAULT_GRAVITY
-        self.y_pos += self.y_velocity
+        if not self.jump_attack_pending:
+            self.y_velocity += DEFAULT_GRAVITY
+            self.y_pos += self.y_velocity
 
         # Stop at the ground level
         if self.y_pos > DEFAULT_Y_POS:
@@ -6325,10 +6363,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.sp_cooldown = 60000
 
         self.atk1_damage = (0, 0)
-        self.atk2_damage = (15/40, 0) # 30 heal, slow -> 37 heal if special, quick
-        self.atk3_damage = (26/10, 8) #26
-        self.sp_damage = (55, 0) # 68.75 is the special dmg 
-        self.sp_damage_2nd = (4.5/16, 0) # * 30 = 67.5
+        self.atk2_damage = (15/40, 0)
+        self.atk3_damage = (26/10, 8)
+        self.sp_damage = (55, 0)
+        self.sp_damage_2nd = (4.5/16, 0)
         
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)

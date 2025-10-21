@@ -1,4 +1,5 @@
 import pygame
+
 # Screen and Display
 width = 1280
 height = 720
@@ -9,7 +10,12 @@ icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
-screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+# screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+# display_size = pygame.display.get_desktop_sizes()
+# width,height = display_size[0][0]-50, display_size[0][1]-50
+# screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+
+
 # Colors
 white = 'White' #reducing
 red = 'Red' #damage/hp
@@ -18,7 +24,12 @@ green = 'Green' #hp
 cyan2 = 'Cyan2' #mana bar color
 gold = 'Gold' #special
 
-IMMEDIATE_RUN = False
+# special colors
+# 'purple'
+# 'blue'
+# 'yellow'
+
+IMMEDIATE_RUN = True
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -196,7 +207,9 @@ center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14
 
-
+SHOW_MINI_HEALTH_BAR = True
+SHOW_MINI_MANA_BAR = False
+SHOW_MINI_SPECIAL_BAR = False
 
 
 

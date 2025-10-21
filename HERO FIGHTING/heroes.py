@@ -1207,6 +1207,14 @@ class Fire_Wizard(Player):
         # special basic attack: (3.2/2.4)3 = 4 -> (3.2/2.5)3 = 3.84 per hit
         # special skill 3:  Damage Multiplier 25% -> 15%
 
+        #fire knight nerf
+        # Trait: +20% Health Regen -> +15% Health Regen
+        # Skill 1: (10/49, 1) = 11 -> (10/49, 2) = 12
+        # Skill 4: (60/65, 15) = 75 -> (50/65, 15) = 65
+        # Special:
+        # Skill 4: (attack no longer stick to enemy)
+        # (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80 -> (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80
+
         #mana cost
         self.atk1_mana_cost = 50
         self.atk2_mana_cost = 80
@@ -3001,12 +3009,12 @@ class Fire_Knight(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10/49, 1)
+        self.atk1_damage = (10/49, 2)
         self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
         self.atk3_damage = (35/60, 7)
-        self.sp_damage = (60/65, 15) 
-        self.special_sp_damage2 = (10/10, 40) # 60
-        self.special_sp_damage1 = (25/10, 5) # 30, total 80 damage
+        self.sp_damage = (50/65, 15) 
+        self.special_sp_damage2 = (100/10, 5) # 60 #explosion
+        self.special_sp_damage1 = (25/10, 40) # 30, total 80 damage #start
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -3736,7 +3744,7 @@ class Fire_Knight(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.sp_sound , None, None),
                                 delay=(i[1], 1200),
-                                follow=(True, False)
+                                follow=(False, False)
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -7014,46 +7022,46 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # print(f"Attack did not execute: {self.mana}:")   
                     # print('Skill 4 used')
 
-            if not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                if self.mana >= 0 and self.attacks_special[4].is_ready():
-                    for i in [(500, 50), (700, 30), (900, 10)]:
-                        attack = Attack_Display(
-                            x=self.rect.centerx,
-                            y=self.rect.centery + i[1],
-                            frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
-                            frame_duration=100,
-                            repeat_animation=5,
-                            speed=8 if self.facing_right else -8,
-                            dmg=self.basic_attack_damage/2.4,
-                            final_dmg=0,
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=True,
+                elif not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                        for i in [(500, 50), (700, 30), (900, 10)]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx,
+                                y=self.rect.centery + i[1],
+                                frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                frame_duration=100,
+                                repeat_animation=5,
+                                speed=8 if self.facing_right else -8,
+                                dmg=self.basic_attack_damage/2.4,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                moving=True,
 
-                            sound=(True, self.basic_sound, self.atk1_sound, None),
-                            kill_collide=True,
-                            delay=(True, i[0]),
+                                sound=(True, self.basic_sound, self.atk1_sound, None),
+                                kill_collide=True,
+                                delay=(True, i[0]),
 
-                            hitbox_scale_x=0.2,
-                            hitbox_scale_y=0.2
-                            )
-                        attack_display.add(attack)
+                                hitbox_scale_x=0.2,
+                                hitbox_scale_y=0.2
+                                )
+                            attack_display.add(attack)
 
 
-                    
+                        
 
-                    self.mana -= 0
-                    self.attacks_special[4].last_used_time = current_time
-                    self.running = False
-                    self.attacking1 = True
-                    self.player_atk1_index = 0
-                    self.player_atk1_index_flipped = 0
-                    
-                    self.basic_attacking = True
+                        self.mana -= 0
+                        self.attacks_special[4].last_used_time = current_time
+                        self.running = False
+                        self.attacking2 = True
+                        self.player_atk2_index = 0
+                        self.player_atk2_index_flipped = 0
+                        
+                        self.basic_attacking = True
 
-                    # print("Attack executed")
-                else:
-                    pass
+                        # print("Attack executed")
+                    else:
+                        pass
 
         # print(self.running)
         # print(self.player_type)

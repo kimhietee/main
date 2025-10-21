@@ -1051,6 +1051,7 @@ volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
 from button import RectButton
 
 def settings(in_game=False):
+    global paused
     
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
@@ -1082,6 +1083,10 @@ def settings(in_game=False):
     show_distance_button = RectButton(width*0.5, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Distance")
     show_hitbox_button = RectButton(width*0.7, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Hitbox")
     show_grid_button = RectButton(width*0.9, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (don't)")
+
+    show_health_bar = RectButton(width*0.5, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Health Bar")
+    show_mana_bar = RectButton(width*0.7, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Mana Bar")
+    show_special_bar = RectButton(width*0.9, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Special Bar")
     
 
     # text anti-alias
@@ -1112,7 +1117,7 @@ def settings(in_game=False):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     if not in_game:
-                        menu() 
+                        menu()
                     return
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked
@@ -1136,6 +1141,17 @@ def settings(in_game=False):
 
                 if show_grid_button.is_clicked(event.pos):
                     global_vars.SHOW_GRID = show_grid_button.toggle(global_vars.SHOW_GRID)
+
+                if show_health_bar.is_clicked(event.pos):
+                    global_vars.SHOW_MINI_HEALTH_BAR = show_health_bar.toggle(global_vars.SHOW_MINI_HEALTH_BAR)
+
+                if show_mana_bar.is_clicked(event.pos):
+                    global_vars.SHOW_MINI_MANA_BAR = show_mana_bar.toggle(global_vars.SHOW_MINI_MANA_BAR)
+
+                if show_special_bar.is_clicked(event.pos):
+                    global_vars.SHOW_MINI_SPECIAL_BAR = show_special_bar.toggle(global_vars.SHOW_MINI_SPECIAL_BAR)
+                
+                
 
             
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -1177,12 +1193,18 @@ def settings(in_game=False):
         show_distance_button.update(mouse_pos, global_vars.DRAW_DISTANCE)
         show_hitbox_button.update(mouse_pos, global_vars.SHOW_HITBOX)
         show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
+        show_mana_bar.update(mouse_pos, global_vars.SHOW_MINI_MANA_BAR)
+        show_special_bar.update(mouse_pos, global_vars.SHOW_MINI_SPECIAL_BAR)
+        show_health_bar.update(mouse_pos, global_vars.SHOW_MINI_HEALTH_BAR)
         # Drawing buttons
         anti_alias_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         show_distance_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         show_hitbox_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_mana_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_special_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_health_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         # Draw mute text
         # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", global_vars.TEXT_ANTI_ALIASING, white)

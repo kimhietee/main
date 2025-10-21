@@ -13,6 +13,7 @@ from global_vars import (
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped
 # from attack import Attacks, Attack_Display
 import random
+import global_vars
 #AS OF 4/23/25 (12:15 AM)
 '''SPECIAL LASTS 16-17 SECONDS
  if you don't do anything :))'''
@@ -1028,6 +1029,63 @@ class Player(pygame.sprite.Sprite):
                     # Display the last frame of the flipped death animation
                     self.image = self.player_death_flipped[-1]
                     
+
+    def draw_health_bar(self, screen):
+        """Draws a small health bar 10px above the player's hitbox."""
+        bar_width = 50
+        bar_height = 6
+
+        # Health ratio (0.0 to 1.0)
+        hp_ratio = max(0, min(1, self.health / self.max_health))
+
+        # Health bar position (10px above hitbox)
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        bar_y = self.hitbox_rect.top - 14 - bar_height
+
+        # Background (black bar)
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+
+        # Foreground (green health)
+        green_width = int(bar_width * hp_ratio)
+        pygame.draw.rect(screen, green, (bar_x, bar_y, green_width, bar_height))
+    def draw_mana_bar(self, screen):
+        """Draws a small health bar 10px above the player's hitbox."""
+        bar_width = 50
+        bar_height = 4
+
+        # Health ratio (0.0 to 1.0)
+        mana_ratio = max(0, min(1, self.mana / self.max_mana))
+
+        # Health bar position (10px above hitbox)
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        bar_y = self.hitbox_rect.top - 10 - bar_height
+
+        # Background (black bar)
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+
+        # Foreground (green health)
+        blue_width = int(bar_width * mana_ratio)
+        pygame.draw.rect(screen, cyan2, (bar_x, bar_y, blue_width, bar_height))
+    def draw_special_bar(self, screen):
+        """Draws a small health bar 10px above the player's hitbox."""
+        bar_width = 50
+        bar_height = 2
+
+        # Health ratio (0.0 to 1.0)
+        special_ratio = max(0, min(1, self.special / self.max_special))
+
+        # Health bar position (10px above hitbox)
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        bar_y = self.hitbox_rect.top - 20 - bar_height
+
+        # Background (black bar)
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+
+        # Foreground (green health)
+        gold_width = int(bar_width * special_ratio)
+        pygame.draw.rect(screen, ('purple' if self.special == self.max_special else 'blue' if self.special_active else gold),
+                          (bar_x, bar_y, gold_width, bar_height))
+
     def player_status(self, health, mana, special):
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
 
@@ -1540,6 +1598,10 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         """Base player update: handles universal effects."""
         self.draw_movement_status(screen)
+        if not self.is_dead():
+            self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
+            self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
+            self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
         # if self.is_dead:
         #     return
         # Handle global effects like stun or freeze

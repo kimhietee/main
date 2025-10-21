@@ -9,7 +9,7 @@ icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
-# screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 # Colors
 white = 'White' #reducing
 red = 'Red' #damage/hp
@@ -18,12 +18,12 @@ green = 'Green' #hp
 cyan2 = 'Cyan2' #mana bar color
 gold = 'Gold' #special
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 20
+MAX_ITEM = 4
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False

@@ -1388,56 +1388,84 @@ class Player(pygame.sprite.Sprite):
         if self.is_dead():
             return
 
-        # Initialize sets if not exist
-        if not hasattr(self, "freeze_sources"):
-            self.freeze_sources = set()
-        if not hasattr(self, "root_sources"):
-            self.root_sources = set()
+        # Ensure storage structures exist
+        if not hasattr(self, "_freeze_sources"):
+            self._freeze_sources = []
+        if not hasattr(self, "_root_sources"):
+            self._root_sources = []
 
         if type == 1:  # Freeze
-            if source not in self.freeze_sources:
-                self.freeze_sources.add(source)
-                self.frozen = True
+            # add source if not already present
+            if source not in self._freeze_sources:
+                self._freeze_sources.append(source)
+            # set flag if not already
+            if not getattr(self, "frozen", False):
                 self.running = False
-                try:
-                    self.velocity.x = 0
-                    self.velocity.y = 0
-                except Exception:
-                    pass
+                self.frozen = True
+            # stop movement immediate
+            try:
+                self.velocity.x = 0
+                self.velocity.y = 0
+            except Exception:
+                pass
 
         elif type == 2:  # Root
-            if source not in self.root_sources:
-                self.root_sources.add(source)
-                self.rooted = True
+            if source not in self._root_sources:
+                self._root_sources.append(source)
+            if not getattr(self, "rooted", False):
                 self.running = False
-                try:
-                    self.velocity.x = 0
-                    self.velocity.y = 0
-                except Exception:
-                    pass
+                self.rooted = True
+            try:
+                self.velocity.x = 0
+                self.velocity.y = 0
+            except Exception:
+                pass
         # print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
     def remove_movement_status(self, type, source=None):
         """
         Remove frozen or rooted status only if *all* sources are cleared.
         """
-        # Initialize sets if missing
-        if not hasattr(self, "freeze_sources"):
-            self.freeze_sources = set()
-        if not hasattr(self, "root_sources"):
-            self.root_sources = set()
+        """
+        Remove the named status only for the given source.
+        If source is None, force-remove all sources and the status.
+        """
+        # Ensure storage structures exist
+        if not hasattr(self, "_freeze_sources"):
+            self._freeze_sources = []
+        if not hasattr(self, "_root_sources"):
+            self._root_sources = []
 
         if type == 1:  # Freeze
-            if source in self.freeze_sources:
-                self.freeze_sources.remove(source)
-            # Only remove flag if no sources remain
-            if not self.freeze_sources:
+            if source is None:
+                # force remove all freezes
+                self._freeze_sources.clear()
+            else:
+                # remove specific source if present
+                try:
+                    self._freeze_sources.remove(source)
+                except ValueError:
+                    pass
+
+            # clear flag only if no other sources remain
+            if len(self._freeze_sources) == 0:
                 self.frozen = False
+                # additional cleanup
+                self.running = getattr(self, "running", False)
+                # optional: reset velocities if relevant (or let physics resume)
+                # self.velocity = pygame.math.Vector2(whatever)  # if you want
 
         elif type == 2:  # Root
-            if source in self.root_sources:
-                self.root_sources.remove(source)
-            if not self.root_sources:
+            if source is None:
+                self._root_sources.clear()
+            else:
+                try:
+                    self._root_sources.remove(source)
+                except ValueError:
+                    pass
+
+            if len(self._root_sources) == 0:
                 self.rooted = False
+                self.running = getattr(self, "running", False)
 
         # print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
                 
@@ -1454,9 +1482,9 @@ class Player(pygame.sprite.Sprite):
 
             # Choose color based on status
             if self.frozen:
-                color = (0, 100, 255, 100)  # translucent blue
+                color = (0, 100, 255, 50)  # translucent blue
             else:
-                color = (139, 69, 19, 100)  # brown, translucent
+                color = (139, 69, 19, 50)  # brown, translucent
 
             # Create surface for transparency
             overlay = pygame.Surface((overlay_rect.width, overlay_rect.height), pygame.SRCALPHA)

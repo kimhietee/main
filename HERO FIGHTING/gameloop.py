@@ -657,6 +657,17 @@ restart_game = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
+
+in_game_settings_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2-(width*0.075), height*0.575),
+    scale=scale*0.8,
+    text='Settings',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
 def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     if winner is not None:
         if winner == 'hero1':
@@ -681,6 +692,7 @@ def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.tt
         menu_game.draw(screen, mouse_pos)
         resume_game.draw(screen, mouse_pos)
         restart_game.draw(screen, mouse_pos)
+        in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             menu()
             paused = False
@@ -689,8 +701,14 @@ def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.tt
             paused = False
 
         if mouse_press[0] and restart_game.is_clicked(mouse_pos):
+            paused = False
             reset_all()
             fade(loading_screen_bg, game)
+            
+
+        if mouse_press[0] and in_game_settings_button.is_clicked(mouse_pos):
+            settings(in_game=True)
+
 
             
 
@@ -892,7 +910,7 @@ def info():
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
+                    menu()  
                     return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if next.is_clicked(event.pos) and not switch:
@@ -988,6 +1006,11 @@ def reset_all():
     for attack in main.hero2.attacks:
         attack.reduce_cd(True)
 
+    for attack in main.hero1.attacks_special:
+        attack.reduce_cd(True)
+    for attack in main.hero2.attacks_special :
+        attack.reduce_cd(True)
+
     #reset health
     main.hero1.health = main.hero1.max_health
     main.hero2.health = main.hero2.max_health
@@ -1027,7 +1050,7 @@ volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
 # NOTE: The mute button does not use this function
 from button import RectButton
 
-def settings():
+def settings(in_game=False):
     
     font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
@@ -1080,14 +1103,16 @@ def settings():
                 exit()   
 
             if keys[pygame.K_ESCAPE]:
-                menu()
+                if not in_game:
+                    menu()
                 return
             
             
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
+                    if not in_game:
+                        menu() 
                     return
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked

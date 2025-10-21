@@ -126,6 +126,8 @@ class AnimatedBackground: # simple framed background animation (smooth)
 # animated_bg = BackgroundHandler(bg_paths)
 
 
+# ------------------------------------
+# Game Backgrounds
 
 waterfall_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall\\",
@@ -153,6 +155,7 @@ trees_bg = AnimatedBackground(
 )
 
 # ------------------------------------
+# Main Menu Background
 
 dragon_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Dragon\\",
@@ -162,6 +165,7 @@ dragon_bg = AnimatedBackground(
 )
 
 # ------------------------------------
+# Menu Backgrounds
 
 waterfall_day_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Day\\",

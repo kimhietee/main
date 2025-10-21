@@ -1213,7 +1213,8 @@ class Fire_Wizard(Player):
         # Skill 4: (60/65, 15) = 75 -> (50/65, 15) = 65
         # Special:
         # Skill 4: (attack no longer stick to enemy)
-        # (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80 -> (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80
+            # (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80 -> 
+            # (20/10, 5):start = 25, (40/10, 5):explosion = 45 = 80
 
         #mana cost
         self.atk1_mana_cost = 50
@@ -3013,8 +3014,9 @@ class Fire_Knight(Player):
         self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
         self.atk3_damage = (35/60, 7)
         self.sp_damage = (50/65, 15) 
-        self.special_sp_damage2 = (100/10, 5) # 60 #explosion
-        self.special_sp_damage1 = (25/10, 40) # 30, total 80 damage #start
+        self.special_sp_damage1 = (20/10, 5) # 25, total 70 damage #start
+        self.special_sp_damage2 = (40/10, 5) # 45 #explosion
+        
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -3022,7 +3024,7 @@ class Fire_Knight(Player):
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
         self.special_sp_damage1 = self.special_sp_damage1[0] + (self.special_sp_damage1[0] * dmg_mult), self.special_sp_damage1[1] + (self.special_sp_damage1[1] * dmg_mult)
-        self.special_sp_damage2 = self.sp_damage[0] + (self.special_sp_damage2[0] * dmg_mult), self.special_sp_damage2[1] + (self.special_sp_damage2[1] * dmg_mult)
+        self.special_sp_damage2 = self.special_sp_damage2[0] + (self.special_sp_damage2[0] * dmg_mult), self.special_sp_damage2[1] + (self.special_sp_damage2[1] * dmg_mult)
         
         
         # Player Animation Source
@@ -3760,7 +3762,7 @@ class Fire_Knight(Player):
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.burn_sound, None, None),
-                                delay=(i[1], 100),
+                                delay=(i[1], 1200),
                                 follow=(True, False),
                                 follow_offset=(0, 80)
                                 )

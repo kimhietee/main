@@ -4015,8 +4015,8 @@ class Wind_Hashashin(Player):
 
         percen = 0.15
         base1 = 50
-        base2 = 80
-        base3 = 140
+        base2 = 70 #80 -> 70
+        base3 = 130 #140 -> 130
         base4 = 200
 
         self.atk1_mana_cost = int(base1 - (base1 * percen))
@@ -4026,7 +4026,7 @@ class Wind_Hashashin(Player):
 
 
         self.atk1_cooldown = 7000
-        self.atk2_cooldown = 14000
+        self.atk2_cooldown = 10000 #14000 -> 10000
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
@@ -7419,7 +7419,7 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 HERO_INFO = {
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 10% spell dmg",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 20% hp regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay"
 }

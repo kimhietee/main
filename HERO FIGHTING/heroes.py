@@ -1238,7 +1238,7 @@ class Fire_Wizard(Player):
         self.atk2_damage = self.damage_list[1]
         self.atk3_damage = self.damage_list[2]
         self.sp_damage = self.damage_list[3] 
-        dmg_mult = 0.05
+        dmg_mult = 0.1
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
@@ -7417,7 +7417,7 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
 HERO_INFO = {
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 5% spell dmg",
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 10% spell dmg",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%->30% mana, regen",
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 20% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",

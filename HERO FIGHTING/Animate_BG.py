@@ -103,6 +103,17 @@ class AnimatedBackground: # simple framed background animation (smooth)
             image.set_alpha(self.set_alpha[1]) if self.set_alpha[0] else None
             self.frames.append(image)
 
+    def load_frames_type2(self, extension=".gif") -> pygame.Surface:
+        self.frames.clear()
+        for i in range(self.count):
+            img_path = fr"{self.path}frame ({i+1}){extension}"
+            image = pygame.transform.scale(
+                pygame.image.load(img_path).convert(),
+                self.size
+            )
+            image.set_alpha(self.set_alpha[1]) if self.set_alpha[0] else None
+            self.frames.append(image)
+# img_path = f"assets\backgrounds\animated_bg\Mountains\frame ({i+1}).gif
     def display(self, surface, speed=150):
         """
         surface: pygame.Surface to blit to
@@ -152,6 +163,19 @@ trees_bg = AnimatedBackground(
     40,
     size="full",
     pos=(0, -50)
+)
+
+mountains_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Mountains\\",
+    40,
+    size=["custom", (main.width, int(main.height * 0.870))],
+    pos=(0, -50)
+)
+
+sunset_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\Sunset\\",
+    40,
+    size=["custom", (main.width, main.height-100)]
 )
 
 # ------------------------------------
@@ -204,6 +228,9 @@ waterfall_bg.load_frames()
 lava_bg.load_frames()
 dark_forest_bg.load_frames()
 trees_bg.load_frames()
+mountains_bg.load_frames_type2()
+sunset_bg.load_frames_type2()
+# trees_bg = mountains_bg
 
 # Main
 dragon_bg.load_frames()

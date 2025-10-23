@@ -556,10 +556,13 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 * [1] – Status
                     1 - Freeze
                     2 - Root
+                    3 - Slow
                 * [2] – Status mode/type
                     1 - While collides player, effect active, else none (collision only)
                     2 - When collides player, effect active, until attack ends (if hit once)
                     3 - Effect active, until attack ends (full duration)
+                * [3] – Slow Rate
+                    < 1.0 - Only if Status is slow
         '''
         """
 
@@ -572,7 +575,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
                 consume_mana=[False, 0],
-                stop_movement=(False, 0, 0),
+                stop_movement=(False, 0, 0, 1.0),
                 spawn_attack:dict=None, periodic_spawn:dict=None
                 ):
         super().__init__()
@@ -646,6 +649,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self._has_spawned_on_collide = False
         self._last_periodic_spawn = pygame.time.get_ticks()
         self._periodic_spawn_count = 0
+
+
+
 
 
     def update_hitbox(self):
@@ -1016,6 +1022,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 if self.stop_movement[2] in (1,2): # if either type == 1 or 2
                     # type 2
                     # always run code below if type == 2
+                    # print(self.stop_movement)
                     if collided:
                         self.who_attacked.movement_status(self.stop_movement[1], source=self)
                     # type 1 
@@ -1544,7 +1551,8 @@ class Fire_Wizard(Player):
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 800),
-                                sound=(True, self.atk2_sound, None, None)
+                                sound=(True, self.atk2_sound, None, None),
+                                # stop_movement=(True,3,2,0.7)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
@@ -1575,7 +1583,8 @@ class Fire_Wizard(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             delay=(True, 800),
-                            sound=(True, self.atk3_sound , None, None)
+                            sound=(True, self.atk3_sound , None, None),
+                                # stop_movement=(True,3,1, 0.2)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -= self.attacks[2].mana_cost
@@ -1606,7 +1615,8 @@ class Fire_Wizard(Player):
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.sp_sound, None, None)
+                            sound=(True, self.sp_sound, None, None),
+                                # stop_movement=(True, 3, 3, 0.5)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -6425,16 +6435,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         special_atk3 = [r'assets\attacks\wanderer magician\special1\Explosion_blue_oval', WANDERER_MAGICIAN_SPECIAL_ATK3, 0]
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon_06.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon_08.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon9.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Massive_Rasen.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\special.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\kkkk.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\icon1.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\icon2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\depositphotos_362566930-stock-illustration-vector-green-sun-rays.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\special_icon.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\ChatGPT Image Apr 18, 2025, 07_46_01 AM.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\HealingWindIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon4.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\Icon_02.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        # special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\wanderer_magician\ChatGPT Image Apr 18, 2025, 07_46_01 AM.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\poison.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\icon3.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\hq720.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         
         # Player Attack Animations Load
         arrow_size = 2
@@ -6526,7 +6536,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
             self.special_rect = special_icon.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 4 + 50, SKILL_Y_OFFSET))
 
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
+            self.special_skill_1_rect = skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
             self.special_skill_2_rect = special_skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
             self.special_skill_3_rect = special_skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
             self.special_skill_4_rect = special_skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
@@ -6534,7 +6544,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         elif self.player_type == 2:
             self.special_rect = special_icon.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 4 - 50, SKILL_Y_OFFSET))
 
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
+            self.special_skill_1_rect = skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
             self.special_skill_2_rect = special_skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
             self.special_skill_3_rect = special_skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
             self.special_skill_4_rect = special_skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
@@ -6591,7 +6601,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             Attacks(
                 mana_cost=0,
                 skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon2,
+                skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana
             )
@@ -6612,7 +6622,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             Attacks(
                 mana_cost=self.mana_cost_list[0],
                 skill_rect=self.special_skill_1_rect,
-                skill_img=special_skill_1,
+                skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
                 mana=self.mana
             ),
@@ -6643,7 +6653,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             Attacks(
                 mana_cost=0,
                 skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon2,
+                skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana
             )
@@ -7714,10 +7724,13 @@ def player_selection():
     ]
         
     map_select = [
-        PlayerSelector(waterfall_icon, (75*2, height - (75*5)), Animate_BG.waterfall_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*5)), Animate_BG.lava_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*5)), Animate_BG.dark_forest_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*5)), Animate_BG.trees_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72))
+        PlayerSelector(waterfall_icon, (75*2, height - (75*6)), Animate_BG.waterfall_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*6)), Animate_BG.lava_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*6)), Animate_BG.dark_forest_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*6)), Animate_BG.trees_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        # im just gonna use global_vars. at this point
+        PlayerSelector(global_vars.mountains_icon, (75*2, height - (75*3)), Animate_BG.mountains_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
     ]
     
     player_1_choose = True
@@ -7734,7 +7747,8 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Forest_Ranger
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_2_SELECTED_HERO = Fire_Wizard
+            map_selected = Animate_BG.mountains_bg # Default
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True

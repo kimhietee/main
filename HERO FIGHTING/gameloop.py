@@ -91,6 +91,7 @@ paused = False
 
 # Add a global variable to track the pause state
 is_paused = False
+xaxa = pygame.time.Clock()
 
 def fade(background, action):
     # background = pygame.transform.scale(
@@ -203,7 +204,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
         # menu_button.draw(screen, mouse_pos)
 
         # pygame.display.update()
-        # main.clock.tick(main.FPS)
+        # xaxa.tick(main.FPS)
 def run_background(bg):
     bg.display(screen)
 import time
@@ -521,6 +522,8 @@ def game(bg=None):
                 
         main.pygame.display.update()
         main.clock.tick(main.FPS)
+        # xaxa.tick(10000)
+
             
 def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound):
     """
@@ -669,6 +672,7 @@ in_game_settings_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+    global paused
     if winner is not None:
         if winner == 'hero1':
             create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.40)
@@ -679,8 +683,10 @@ def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slks
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             menu()
+            paused = False
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
+            paused = False
             reset_all()
             fade(loading_screen_bg, game)
 

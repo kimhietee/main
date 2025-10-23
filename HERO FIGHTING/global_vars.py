@@ -29,7 +29,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -114,6 +114,9 @@ DEFAULT_Y_POS = 574
 
 The screen size (gameplay screeen):
 background_size = (width, int(height * 0.798))  # 0.798 = 574 / 720
+
+Example: mountains_bg, size:
+(main.width, int(main.height * 0.870)) -> 626.4 (accurate as possible) (ONLY IF HEIGHT-50 first)
 '''
 
 SPACING_X = int(width * 0.078)
@@ -200,6 +203,8 @@ waterfall_icon = r'assets\backgrounds\map_icon\waterfall_icon.gif'
 lava_icon = r'assets\backgrounds\map_icon\magma_chamber_icon.gif'
 dark_forest_icon = r'assets\backgrounds\map_icon\dark_forest_icon.gif'
 trees_icon = r'assets\backgrounds\map_icon\trees.gif'
+mountains_icon = r'assets\backgrounds\map_icon\mountains_icon.gif'
+sunset_icon = r'assets\backgrounds\map_icon\sunset_icon.gif'
 # button modifers
 
 scale = 1

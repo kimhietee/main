@@ -86,6 +86,9 @@ class Player(pygame.sprite.Sprite):
         self.freeze_source = None
         self.rooted = False
         self.root_source = None
+        self.speed_multiplier = 1.0
+        self.slowed = False
+        self.slow_source = None
         self.str_mult = 5
         self.int_mult = 5
         self.agi_mult = 0.1
@@ -313,7 +316,8 @@ class Player(pygame.sprite.Sprite):
 
         # ranged
         self.basic_icon2 = pygame.transform.scale(pygame.image.load(r'assets\icons\aghanims-scepter-from-dota-2-made-in-blender-v0-ew9qzvl10s2d1.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
-
+        self.basic_icon3 = pygame.transform.scale(pygame.image.load(r'assets\icons\arrow image ICON.jpg').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
+        
         self.basic_sound = pygame.mixer.Sound(r'assets\sound effects\jump.swing-whoosh-110410.mp3')
         self.basic_sound.set_volume(0.5 * MAIN_VOLUME)
         
@@ -937,7 +941,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     index = len(frames) - 1  # Stay on the last frame
                     return index, False  # Animation finished
-        return index, True  # Animation still active
+        return index, True  # Animation stzill active
     
     def jump_animation(self):
         if self.facing_right:
@@ -1434,10 +1438,10 @@ class Player(pygame.sprite.Sprite):
             self.x_pos = x_pos
             
         
-    def movement_status(self, type, source=None):
+    def movement_status(self, type, source=None, slow_rate=1.0):
         '''
         Apply frozen or rooted status
-        type: freeze/root, 1=freeze, 2=root
+        type: freeze/root, 1=freeze, 2=root, 3=slow:tuple(slow, slow rate)
         mode: (or type)
             1 - while collides player, effect active, else none (collision only)
             2 - when collides player, effect active, until attack ends (if hit once)
@@ -1451,6 +1455,8 @@ class Player(pygame.sprite.Sprite):
             self._freeze_sources = []
         if not hasattr(self, "_root_sources"):
             self._root_sources = []
+        if not hasattr(self, "_slow_sources"):
+            self._slow_sources = []
 
         if type == 1:  # Freeze
             # add source if not already present
@@ -1461,11 +1467,11 @@ class Player(pygame.sprite.Sprite):
                 self.running = False
                 self.frozen = True
             # stop movement immediate
-            try:
-                self.velocity.x = 0
-                self.velocity.y = 0
-            except Exception:
-                pass
+            # try:
+            #     self.velocity.x = 0
+            #     self.velocity.y = 0
+            # except Exception:
+            #     pass
 
         elif type == 2:  # Root
             if source not in self._root_sources:
@@ -1473,13 +1479,22 @@ class Player(pygame.sprite.Sprite):
             if not getattr(self, "rooted", False):
                 self.running = False
                 self.rooted = True
-            try:
-                self.velocity.x = 0
-                self.velocity.y = 0
-            except Exception:
-                pass
+            # try:
+            #     self.velocity.x = 0
+            #     self.velocity.y = 0
+            # except Exception:
+            #     pass
+
+        if type == 3:  # Slow
+            # add source if not already present
+            if source not in self._freeze_sources:
+                self._slow_sources.append(source)
+            # set flag if not already
+            if not getattr(self, "slowed", False):
+                self.speed_multiplier = slow_rate
+                self.slowed = True
         # print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
-    def remove_movement_status(self, type, source=None):
+    def remove_movement_status(self, type, source=None, slow_rate=1.0):
         """
         Remove frozen or rooted status only if *all* sources are cleared.
         """
@@ -1525,6 +1540,18 @@ class Player(pygame.sprite.Sprite):
                 self.rooted = False
                 self.running = getattr(self, "running", False)
 
+        elif type == 3:
+            if source is None:
+                self._slow_sources.clear()
+            else:
+                try:
+                    self._root_sources.remove(source)
+                except ValueError:
+                    pass
+            if len(self._slow_sources) == 0:
+                self.slowed = False
+                self.speed_multiplier = slow_rate
+
         # print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
                 
     def draw_movement_status(self, screen):
@@ -1552,6 +1579,9 @@ class Player(pygame.sprite.Sprite):
         # Optional: Draw hitbox outline (for debugging)
         # pygame.draw.rect(screen, (0, 255, 0), self.hitbox_rect, 2)
 
+    def is_slowed(self):
+        '''return true if slowed'''
+        return (self.is_dead() or self.slowed)
     def can_move(self):
         """Return True if the player can move (not frozen or rooted or dead)."""
         return not (self.is_dead() or self.frozen or self.rooted)
@@ -1602,6 +1632,9 @@ class Player(pygame.sprite.Sprite):
             self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+
+            if self.is_slowed():
+                self.speed * self.speed_multiplier
         # if self.is_dead:
         #     return
         # Handle global effects like stun or freeze

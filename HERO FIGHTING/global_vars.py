@@ -29,7 +29,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
@@ -205,6 +205,8 @@ dark_forest_icon = r'assets\backgrounds\map_icon\dark_forest_icon.gif'
 trees_icon = r'assets\backgrounds\map_icon\trees.gif'
 mountains_icon = r'assets\backgrounds\map_icon\mountains_icon.gif'
 sunset_icon = r'assets\backgrounds\map_icon\sunset_icon.gif'
+city_icon = r'assets\backgrounds\map_icon\city icon.gif'
+
 # button modifers
 
 scale = 1

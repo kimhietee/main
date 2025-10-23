@@ -6405,6 +6405,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
 
         # Player Animation Source
+        atk3_sp_ani = [r'assets\characters\Forest Ranger\PNG\3_atk\3_atk_', 12, 0]
+
         jump_ani = [r'assets\characters\Forest Ranger\PNG\jump_full\jump_', 22, 0]
         run_ani = [r'assets\characters\Forest Ranger\PNG\run\run_', 10, 0]
         idle_ani= [r'assets\characters\Forest Ranger\PNG\idle\idle_', 12, 0]
@@ -6492,7 +6494,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         rows=6, 
         columns=5, 
         scale=2, 
-        rotation=90,
+        rotation=-90,
     )
         
         self.sp_special_flipped = load_attack(
@@ -6502,10 +6504,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         rows=6, 
         columns=5, 
         scale=2, 
-        rotation=180,
+        rotation=90,
     )
 
         # Player Animations Load
+        self.player_atk3_sp = self.load_img_frames(atk3_sp_ani[0], atk3_sp_ani[1], atk3_sp_ani[2], DEFAULT_CHAR_SIZE_2)
+        self.player_atk3_sp_flipped = self.load_img_frames_flipped(atk3_sp_ani[0], atk3_sp_ani[1], atk3_sp_ani[2], DEFAULT_CHAR_SIZE_2)
+
         self.player_jump = self.load_img_frames(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_jump_flipped = self.load_img_frames_flipped(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE_2)
         self.player_idle = self.load_img_frames(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE_2)
@@ -6682,6 +6687,21 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.basic_attacking = False  # Only matters if this was a basic attack
             self.player_atk2_index = 0
             self.player_atk2_index_flipped = 0    
+
+    def atk3_animation(self, animation_speed=0):
+        if not self.special_active:
+            if self.facing_right:
+                self.player_atk3_index, self.attacking3 = self.animate(self.player_atk3, self.player_atk3_index, loop=False)
+            else:
+                self.player_atk3_index_flipped, self.attacking3 = self.animate(self.player_atk3_flipped, self.player_atk3_index_flipped, loop=False)
+        else:
+            if self.facing_right:
+                self.player_atk3_index, self.attacking3 = self.animate(self.player_atk3_sp, self.player_atk3_index, loop=False)
+            else:
+                self.player_atk3_index_flipped, self.attacking3 = self.animate(self.player_atk3_sp_flipped, self.player_atk3_index_flipped, loop=False)
+
+        self.last_atk_time -= animation_speed
+
 
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
@@ -7024,9 +7044,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         self.mana -=  self.attacks_special[3].mana_cost
                         self.attacks_special[3].last_used_time = current_time
                         self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                        self.sp_attacking = True
+                        self.player_sp_index = 0
+                        self.player_sp_index_flipped = 0
 
                         # print("Attack executed")
                     else:
@@ -7091,8 +7111,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             
             self.draw_hitbox(screen)
         self.update_hitbox()
-        
-        self.keys = pygame.key.get_pressed()
 
         self.inputs()
         self.move_to_screen()
@@ -7116,7 +7134,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         elif self.attacking3:
             self.atk3_animation()
         elif self.sp_attacking:
-            self.sp_animation(-11)
+            self.sp_animation() #fix the sp animation become attack 3 when special.
         elif self.basic_attacking:
             pass
 
@@ -7731,6 +7749,7 @@ def player_selection():
         # im just gonna use global_vars. at this point
         PlayerSelector(global_vars.mountains_icon, (75*2, height - (75*3)), Animate_BG.mountains_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
         PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(global_vars.city_icon, (width/2 + (55 * 3), height - (75*3)), Animate_BG.city_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
     ]
     
     player_1_choose = True
@@ -7748,7 +7767,7 @@ def player_selection():
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Forest_Ranger
             PLAYER_2_SELECTED_HERO = Fire_Wizard
-            map_selected = Animate_BG.mountains_bg # Default
+            map_selected = Animate_BG.city_bg # Default
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True

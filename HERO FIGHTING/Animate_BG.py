@@ -71,7 +71,7 @@ class AnimatedBackground: # simple framed background animation (smooth)
     - ["custom", (w,h)] → arbitrary dimensions
 
     '''
-    def __init__(self, path, count, size="full", pos=(0,0), set_alpha=(False, 255)):  # 0.798 = 574 / 720):
+    def __init__(self, path, count, size="full", pos=(0,0), set_alpha=(False, 255), speed=150):  # 0.798 = 574 / 720):
         self.path = path if path.endswith(("\\", "/")) else path + "/"
         self.count = count
         self.pos = pos
@@ -79,6 +79,7 @@ class AnimatedBackground: # simple framed background animation (smooth)
         self.frames = []
         self.current_frame = 0
         self.last_update_time = pygame.time.get_ticks()
+        self.speed = speed
 
 
         if size == "full":
@@ -114,13 +115,14 @@ class AnimatedBackground: # simple framed background animation (smooth)
             image.set_alpha(self.set_alpha[1]) if self.set_alpha[0] else None
             self.frames.append(image)
 # img_path = f"assets\backgrounds\animated_bg\Mountains\frame ({i+1}).gif
-    def display(self, surface, speed=150):
+    def display(self, surface, speed=0):
         """
         surface: pygame.Surface to blit to
         speed: milliseconds per frame
         """
+        self.speed=speed if speed>0 else self.speed
         now = pygame.time.get_ticks()
-        if now - self.last_update_time > speed:
+        if now - self.last_update_time > self.speed:
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.last_update_time = now
 
@@ -178,6 +180,13 @@ sunset_bg = AnimatedBackground(
     size=["custom", (main.width, main.height-100)]
 )
 
+city_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\CIty\\",
+    107,
+    size="game_bg",
+    speed=40
+)
+
 # ------------------------------------
 # Main Menu Background
 
@@ -230,6 +239,7 @@ dark_forest_bg.load_frames()
 trees_bg.load_frames()
 mountains_bg.load_frames_type2()
 sunset_bg.load_frames_type2()
+city_bg.load_frames_type2()
 # trees_bg = mountains_bg
 
 # Main

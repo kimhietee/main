@@ -1492,6 +1492,7 @@ class Player(pygame.sprite.Sprite):
             # set flag if not already
             if not getattr(self, "slowed", False):
                 self.speed_multiplier = slow_rate
+                self.speed * self.speed_multiplier
                 self.slowed = True
         # print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
     def remove_movement_status(self, type, source=None, slow_rate=1.0):
@@ -1633,8 +1634,6 @@ class Player(pygame.sprite.Sprite):
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 
-            if self.is_slowed():
-                self.speed * self.speed_multiplier
         # if self.is_dead:
         #     return
         # Handle global effects like stun or freeze

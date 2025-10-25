@@ -1001,8 +1001,10 @@ def reset_all():
         hero.root_source = None
         if hasattr(hero, 'atk_hasted'):
             print('ahah')
+            default_atk_speed_with_bonus = hero.get_atk_speed()
             hero.atk_hasted = False # removes the buff for forest ranger if possible
-            hero.basic_attack_animation_speed = hero.default_atk_speed
+            hero.basic_attack_animation_speed = default_atk_speed_with_bonus
+            
         hero.y_velocity = 0
         hero.x_velocity = 0
         hero.running = False

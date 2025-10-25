@@ -29,7 +29,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False

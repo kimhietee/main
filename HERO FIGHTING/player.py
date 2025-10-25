@@ -482,22 +482,22 @@ class Player(pygame.sprite.Sprite):
     def apply_item_bonuses(self):
         # print(self.basic_attack_animation_speed)
         #misc
-        
+        print(self.basic_attack_animation_speed)
         for item in self.items: # self.items is a list of item classes
             for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
                 if bonus_type == 'move speed':
                     self.speed += self.speed * bonus_value
                     self.running_animation_speed += 10 * bonus_value
                     self.default_speed = self.speed
-
+                
                 if bonus_type == 'attack speed': 
-                    self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 1 animation speed
+                    self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 10 animation speed
                     if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
                         self.basic_attack_animation_speed = 0.01
                     self.basic_attack_cooldown -= 0.5 * bonus_value
                     if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
                         self.basic_attack_cooldown = 0.01     
-
+                    print(self.basic_attack_animation_speed)
                     self.attacks[4].cooldown = self.basic_attack_cooldown
                     self.attacks_special[4].cooldown = self.basic_attack_cooldown
 
@@ -635,7 +635,12 @@ class Player(pygame.sprite.Sprite):
                     self.basic_attack_damage += self.basic_attack_damage * bonus_value
                 if bonus_type == 'atk flat':
                     self.basic_attack_damage += bonus_value
-                
+
+        # get final attack speed with bonuses
+        self.get_current_atk_speed = self.basic_attack_animation_speed
+    def get_atk_speed(self): # pls dont change this variable
+        return self.get_current_atk_speed # im tired debugging
+     
 
         # print(self.basic_attack_damage)
 
@@ -1690,7 +1695,12 @@ class Player(pygame.sprite.Sprite):
             # print('current:', self.speed)
 
             if hasattr(self, 'atk_hasted'):
-                print(self.basic_attack_animation_speed)
+                pass
+                # print(self.get_current_atk_speed)
+                # print('jump pos:', self.get_jump_pos)
+                # print(self.y_pos)
+                # print('jump time:', pygame.time.get_ticks() - self.jump_attack_time)
+                # print('jump done:', self.jump_done)
 
         # if self.is_dead:
         #     return

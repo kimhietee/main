@@ -1214,7 +1214,7 @@ class Fire_Wizard(Player):
 
         #wind hashashin:
         # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
-        # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
+        # Skill 2: (28/20, 2) = 30 -> (26/20, 2) = 28
         # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
         # Skill 4: 80 = 80
 
@@ -1568,7 +1568,7 @@ class Fire_Wizard(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 800),
                                 sound=(True, self.atk2_sound, None, None),
-                                stop_movement=(True,3,3,2.2)
+                                # stop_movement=(True,3,3,2.2)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
@@ -2538,6 +2538,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         self.player_atk1_index_flipped = 0
 
                         self.basic_attacking = True
+                        print(self.basic_attack_animation_speed)
 
                         # Experiment Codes
                         # plan: when attack longer moving, greater damage
@@ -6393,19 +6394,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.width = 200
         self.height = 20
 
-        self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 100
-        self.atk3_mana_cost = 50
-        self.sp_mana_cost = 50
+        self.atk1_mana_cost = 120
+        self.atk2_mana_cost = 100 #50
+        self.atk3_mana_cost = 175 #75
+        self.sp_mana_cost = 220
 
-        self.atk1_cooldown = 8
+        self.atk1_cooldown = 10000
         self.atk2_cooldown = 5000
-        self.atk3_cooldown = 2
-        self.sp_cooldown = 2
+        self.atk3_cooldown = 12000
+        self.sp_cooldown = 30000
 
         self.atk1_damage = (0, 0) # buff
-        self.atk2_damage = (10/8, 0) # roots arrow
-        self.atk3_damage = (26/8, 8) # green roots
+        self.atk2_damage = (7.5/8, 2.5) # roots arrow +50 mana
+        self.atk3_damage = (17.5/8, 2.5) # green roots +100 mana
         self.sp_damage = (30/10, 0) # beam
 
         #special
@@ -6449,7 +6450,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         sp_atk2 = [r'assets\attacks\forest ranger\atk2_sp\arrow_hit_poison_', 8, 0]
         atk3 = [r'assets\attacks\forest ranger\atk3\diagonal_arrow_hit_thorns_', 8, 0]
         sp_atk3 = [r'assets\attacks\forest ranger\atk3_sp\arrow_shower_effect_', 18, 0]
-        sp = [r'assets\characters\Forest Ranger\PNG\projectiles_and_effects\beam_extension_effect\beam_extension_effect_', 5, 0]
+        sp = [r'assets\attacks\forest ranger\atk4\beam_extension_effect_', 10, 0]
 
         # Player Skill Icons Source
         skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\kkkk.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
@@ -6702,40 +6703,25 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
 
         # Trait: + 20% attack speed
-        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
+        # self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
         # Trait: + 20% lifesteal
         self.lifesteal = 0.2
+        # Trait : + 200% mana damage
 
         self.atk_hasted = False
         self.atk_haste_duration = 0
         self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
-        self.get_current_atk_speed = 0
         self.default_atk_speed = self.basic_attack_animation_speed
 
+        self.jump_attack_pending = False
+        self.jump_attack_time = 0
+        self.get_jump_pos = 0
+        self.jump_done = False
+        self.jump_time = 0
         
 
     # Will modify the attack speed of forest ranger when basic attacking
-    def animate(self, frames, index, loop=True, basic_atk=False):
-        current_time = pygame.time.get_ticks()
-        #print(f"{self.__class__.__name__} animation speed: {self.basic_attack_animation_speed}")
-        frame_duration = self.default_animation_speed if not self.basic_attacking else self.basic_attack_animation_speed
-        #print(f"Animation type: {'basic' if self.basic_attacking else 'default'}, Duration: {frame_duration}")
-        if current_time - self.last_atk_time > frame_duration:
-            self.last_atk_time = current_time
-            self.image = frames[int(index)]
-            index += 1
-            #print(basic_atk)
-            if index >= len(frames):
-                if loop:
-                    index = 0  # Restart the animation
-                else:
-                    index = len(frames) - 1  # Stay on the last frame
-                    if basic_atk:
-                        return index, False, False
-                    #if not attacking basic:
-                    else:
-                        return index, False  # Animation finished
-        return index, True  # Animation stzill active
+
     def atk2_animation(self, animation_speed=0):
         if self.facing_right:
             self.player_atk2_index, anim_active = self.animate(self.player_atk2, self.player_atk2_index, loop=False, basic_atk=False)
@@ -6841,7 +6827,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         self.atk_hasted = True
                         self.haste_value = 500 # attack speed bonus
                         self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 5000
-                        self.get_current_atk_speed = self.basic_attack_animation_speed
                         self.default_atk_speed = self.basic_attack_animation_speed # gets previous atk_speed (NEVER CAST SKILL TWICE! : wont reset properly)
                         
  
@@ -6895,7 +6880,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'add_mana': True,
-                                'mana_mult': 2
+                                'mana_mult': 5
                             }
                             
                         }
@@ -6918,31 +6903,37 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[2].mana_cost and self.attacks[2].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=self.rect.centerx, # in front of him
-                            y=self.rect.centery + 20,
-                            frames=self.atk3,
-                            frame_duration=100,
-                            repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk3_damage[0],
-                            final_dmg=self.atk3_damage[1],
-                            who_attacks=self,
-                            who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800),
-                            moving=True
-                            ) # Replace with the target
-                        attack_display.add(attack)
+                        self.jumping = True
+                        self.jump_done = False
+                        self.y_velocity = DEFAULT_JUMP_FORCE  # adjust jump strength as needed
+                        self.jump_attack_pending = True
+                        self.jump_attack_time = pygame.time.get_ticks() + 400  #  delay time before performing the attack
+                        self.jump_time = pygame.time.get_ticks() + 1700 # time before falling down and stopping the  jump (attack done)
+                        
+                        
+                        # attack = Attack_Display(
+                        #     x=self.rect.centerx, # in front of him
+                        #     y=self.rect.centery + 20,
+                        #     frames=self.atk3,
+                        #     frame_duration=100,
+                        #     repeat_animation=1,
+                        #     speed=5 if self.facing_right else -5,
+                        #     dmg=self.atk3_damage[0],
+                        #     final_dmg=self.atk3_damage[1],
+                        #     who_attacks=self,
+                        #     who_attacked=hero1 if self.player_type == 2 else hero2,
+                        #     sound=(True, self.atk3_sound , None, None),
+                        #     delay=(True, 800),
+                        #     moving=True
+                        #     ) # Replace with the target
+                        # attack_display.add(attack)
                         # print(WANDERER_MAGICIAN_ATK3_DAMAGE[0], WANDERER_MAGICIAN_ATK3_DAMAGE[1])
-                        self.mana -=  self.attacks[2].mana_cost
-                        self.attacks[2].last_used_time = current_time
-                        self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                        # self.mana -=  self.attacks[2].mana_cost
+                        # self.attacks[2].last_used_time = current_time
+                        # self.running = False
+                        # self.attacking3 = True
+                        # self.player_atk3_index = 0
+                        # self.player_atk3_index_flipped = 0
 
                         # print("Attack executed")
                     else:
@@ -7320,6 +7311,51 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             if pygame.time.get_ticks() >= self.atk_haste_duration:
                 self.atk_hasted = False
                 self.basic_attack_animation_speed = self.get_current_atk_speed
+
+        # atk3
+        if not self.jump_attack_pending and not self.jump_done: # freeze y_pos when attacking starts
+            # prevent going to y 0
+            if not self.get_jump_pos <= 0:
+                self.y_pos = self.get_jump_pos
+        if not self.jump_done and pygame.time.get_ticks() >= self.jump_time: #
+            self.jump_done = True
+            self.jumping = True
+            self.y_velocity = 0
+        if self.jump_attack_pending and pygame.time.get_ticks() >= self.jump_attack_time:
+            self.get_jump_pos = self.y_pos # get current y_pos to freeze when attacking
+            self.jump_attack_pending = False # attacking starts
+            self.jumping = False # override jumping animation with attack animation
+            for i in [100,250,400]:
+                attack = Attack_Display(
+                    x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,
+                    y=DEFAULT_Y_POS-20,
+                    frames=self.atk3 if self.facing_right else self.atk3_flipped,
+                    frame_duration=250,
+                    repeat_animation=1,
+                    speed=5 if self.facing_right else -5,
+                    dmg=self.atk3_damage[0],
+                    final_dmg=self.atk3_damage[1],
+                    who_attacks=self,
+                    who_attacked=hero1 if self.player_type == 2 else hero2,
+                    sound=(True, self.atk3_sound , None, None),
+                    delay=(True, 600+i), #starting 700
+
+                    hitbox_scale_x=0.1,
+                    hitbox_scale_y=0.5,
+
+                    stop_movement=(True, 2, 1),
+
+                    add_mana=True,
+                    mana_mult=5
+                    ) # Replace with the targe t
+                attack_display.add(attack)
+            self.mana -=  self.attacks[2].mana_cost
+            self.attacks[2].last_used_time = pygame.time.get_ticks()
+            self.running = False
+            self.attacking3 = True
+            self.player_atk3_index = 0
+            self.player_atk3_index_flipped = 0
+            # self.y_velocity -= DEFAULT_GRAVITY  # optional: cancel gravity impulse if you want freeze in air
 
 
         

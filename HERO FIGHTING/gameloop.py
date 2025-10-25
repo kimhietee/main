@@ -996,12 +996,17 @@ def reset_all():
         hero.frozen = False
         hero.rooted = False
         hero.stunned = False
+        hero.slowed = False
         hero.freeze_source = None
         hero.root_source = None
+        if hasattr(hero, 'atk_hasted'):
+            print('ahah')
+            hero.atk_hasted = False # removes the buff for forest ranger if possible
+            hero.basic_attack_animation_speed = hero.default_atk_speed
         hero.y_velocity = 0
         hero.x_velocity = 0
         hero.running = False
-        hero.attacking1 = hero.attacking2 = hero.attacking3 = False
+        hero.attacking1 = hero.attacking2 = hero.attacking3 = hero.sp_attacking = False
         hero.basic_attacking = hero.sp_attacking = False
         hero.special_active = False
         hero.animation_done = False

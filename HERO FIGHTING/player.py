@@ -89,6 +89,7 @@ class Player(pygame.sprite.Sprite):
         self.speed_multiplier = 1.0
         self.slowed = False
         self.slow_source = None
+        self.slow_speed = 0
         self.str_mult = 5
         self.int_mult = 5
         self.agi_mult = 0.1
@@ -286,6 +287,7 @@ class Player(pygame.sprite.Sprite):
         self.jumping = False
         self.facing_right = True 
         self.speed = RUNNING_SPEED
+        self.default_speed = self.speed
         self.running_animation_speed = RUNNING_ANIMATION_SPEED
         
         # self.base_attack_animation_speed = 0 # base atk speed for every hero, modify each if you want to set base 
@@ -333,6 +335,7 @@ class Player(pygame.sprite.Sprite):
 
         #Attack-------------------------------------------------------------
         self.last_health = self.health
+        self.last_mana = self.mana
         # self.just_spawned = True
         self.damage_numbers = []
 
@@ -346,7 +349,7 @@ class Player(pygame.sprite.Sprite):
         self.mana_bar_p2_after =0
         
 
-    def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False):
+    def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
             return  # Safety check
         # Don't show healing text if player is already at max health or at the start of the game
@@ -355,6 +358,9 @@ class Player(pygame.sprite.Sprite):
         
         if health_modify:
             if self.health >= self.max_health:
+                return
+        if mana_modify:
+            if self.mana >= self.max_mana:
                 return
         # Don't show healing text if player is already at max health
         # Color (0,255,0) is used for heal display elsewhere
@@ -444,9 +450,21 @@ class Player(pygame.sprite.Sprite):
         # print(delta)
         if delta < 0:
             self.display_damage(-delta, interval=interval, health_modify=True)  # Normal damage (red)
-        elif delta > 0.1:  # Only show healing if it's significant (not just natural regen)
+        elif delta > DEFAULT_HEALTH_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
             self.display_damage(delta, interval=interval, color=(0, 255, 0), health_modify=True)  # Green heal
         self.last_health = self.health
+
+    def detect_and_display_mana(self, interval=30):
+        # This function only for health, check other call for display_damage()
+        # print(self.health, self.last_health, 'ahah')
+        # print(self.health >= self.max_health)
+        delta = self.mana - self.last_mana
+        # print(delta)
+        if delta < 0:
+            pass # Do nothing if mana consumed (annoying display)
+        elif delta > DEFAULT_MANA_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
+            self.display_damage(delta, interval=interval, color=cyan2, mana_modify=True)  # Green heal
+        self.last_mana = self.mana
 
 
             
@@ -470,6 +488,7 @@ class Player(pygame.sprite.Sprite):
                 if bonus_type == 'move speed':
                     self.speed += self.speed * bonus_value
                     self.running_animation_speed += 10 * bonus_value
+                    self.default_speed = self.speed
 
                 if bonus_type == 'attack speed': 
                     self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 1 animation speed
@@ -1391,15 +1410,21 @@ class Player(pygame.sprite.Sprite):
                     return -1
         return -1
 
-    def take_damage(self, damage, add_mana_to_self=False, enemy:object=None):
+    def take_damage(self, damage, add_mana_to_self=False, enemy:object=None, add_mana_to_enemy=False, mana_multiplier=1):
         if self.is_dead():
             return
         if self.damage_reduce > 0:
             damage -= (damage * self.damage_reduce)
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
+
+        # adds mana to the attacker
         if add_mana_to_self and enemy is not None:
-            self.add_mana(damage, enemy)
+            self.add_mana(damage, enemy, mana_mult=mana_multiplier)
+        
+        # adds mana to the attacked player (which is self)
+        if add_mana_to_enemy:
+            self.add_mana(damage, mana_mult=mana_multiplier)
 
         if self.health <= 0:
             self.die()  # Trigger the death process
@@ -1419,11 +1444,11 @@ class Player(pygame.sprite.Sprite):
             return
         self.health = max(0, self.health + heal)
 
-    def add_mana(self, mana, enemy:object=None): # add mana
+    def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
-            enemy.mana = max(0, enemy.mana + mana)
+            enemy.mana = max(0, enemy.mana + (mana*mana_mult))
         else: #add mana to the attacked player
-            self.mana = max(0, self.mana + mana) # add mana to hero
+            self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
 
     def take_special(self, amount):
         if self.is_dead():
@@ -1448,7 +1473,7 @@ class Player(pygame.sprite.Sprite):
             self.x_pos = x_pos
             
         
-    def movement_status(self, type, source=None, slow_rate=1.0):
+    def movement_status(self, type, source=None, slow_rate=0.5):
         '''
         Apply frozen or rooted status
         type: freeze/root, 1=freeze, 2=root, 3=slow:tuple(slow, slow rate)
@@ -1497,14 +1522,15 @@ class Player(pygame.sprite.Sprite):
 
         if type == 3:  # Slow
             # add source if not already present
-            if source not in self._freeze_sources:
+            if source not in self._slow_sources:
                 self._slow_sources.append(source)
             # set flag if not already
             if not getattr(self, "slowed", False):
                 self.speed_multiplier = slow_rate
-                self.speed * self.speed_multiplier
-                self.slowed = True
-        # print(f"APPLY status {'freeze' if type == 1 else 'root'} from {source}")
+                self.slow_speed = self.speed * self.speed_multiplier
+                if not self.slowed:
+                    self.slowed = True
+        print(f"APPLY status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source}")
     def remove_movement_status(self, type, source=None, slow_rate=1.0):
         """
         Remove frozen or rooted status only if *all* sources are cleared.
@@ -1518,6 +1544,8 @@ class Player(pygame.sprite.Sprite):
             self._freeze_sources = []
         if not hasattr(self, "_root_sources"):
             self._root_sources = []
+        if not hasattr(self, "_slow_sources"):
+            self._slow_sources = []
 
         if type == 1:  # Freeze
             if source is None:
@@ -1556,14 +1584,16 @@ class Player(pygame.sprite.Sprite):
                 self._slow_sources.clear()
             else:
                 try:
-                    self._root_sources.remove(source)
+                    self._slow_sources.remove(source)
                 except ValueError:
                     pass
             if len(self._slow_sources) == 0:
                 self.slowed = False
-                self.speed_multiplier = slow_rate
+                
+                # self.speed = self.default_speed
 
-        # print(f"REMOVE status {'freeze' if type == 1 else 'root'} from {source}")
+
+        print(f"REMOVE status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source}")
                 
     def draw_movement_status(self, screen):
         if self.frozen or self.rooted:
@@ -1593,6 +1623,12 @@ class Player(pygame.sprite.Sprite):
     def is_slowed(self):
         '''return true if slowed'''
         return (self.is_dead() or self.slowed)
+
+    def handle_speed(self):
+        if self.slowed:
+            self.speed = self.slow_speed
+        else:
+            self.speed = self.default_speed
     def can_move(self):
         """Return True if the player can move (not frozen or rooted or dead)."""
         return not (self.is_dead() or self.frozen or self.rooted)
@@ -1643,6 +1679,18 @@ class Player(pygame.sprite.Sprite):
             self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+
+            # Updates display damage/mana
+            self.detect_and_display_damage()
+            self.detect_and_display_mana()
+            self.update_damage_numbers(screen)
+            
+            self.handle_speed() # thit shii finally worked! (coder: kimhietee)
+            # print(self.slowed, 'default:', self.default_speed)
+            # print('current:', self.speed)
+
+            if hasattr(self, 'atk_hasted'):
+                print(self.basic_attack_animation_speed)
 
         # if self.is_dead:
         #     return

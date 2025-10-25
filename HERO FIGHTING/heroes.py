@@ -815,7 +815,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
-                            if self.who_attacks.lifesteal > 0:
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                                 lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
@@ -856,7 +856,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.final_dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
 
-                            if self.who_attacks.lifesteal > 0:
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                                 lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
@@ -893,7 +893,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
-                            if self.who_attacks.lifesteal > 0:
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                                 lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
                     
@@ -912,7 +912,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                         self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
-                        if self.who_attacks.lifesteal > 0:
+                        if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                             lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                             self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
@@ -925,11 +925,11 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
                             
-                            if self.who_attacks.lifesteal > 0:
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                                 lifesteal_amount = self.dmg * self.who_attacks.lifesteal
                                 self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
                             
-                            # if self.who_attacks.lifesteal > 0:
+                            # if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
                             #     lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
                             #     self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
@@ -1886,8 +1886,7 @@ class Fire_Wizard(Player):
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
         
         if not self.is_dead():
             self.player_death_index = 0
@@ -2487,8 +2486,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             kill_collide=True,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(True, 5000),
-                            add_mana=True
+                            delay=(True, 5000)
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -2521,7 +2519,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,
-                            delay=(True, 500),
+                            delay=(True, self.basic_attack_animation_speed*4.16667), # 500/120
                         )
                     
                         attack_display.add(attack)
@@ -2840,8 +2838,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
         
         if not self.is_dead():
             self.player_death_index = 0
@@ -3869,8 +3866,7 @@ class Fire_Knight(Player):
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
 
         if not self.is_dead():
             self.player_death_index = 0
@@ -4890,8 +4886,7 @@ class Wind_Hashashin(Player):
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
         
         if not self.is_dead():
             self.player_death_index = 0
@@ -6232,8 +6227,7 @@ class Water_Princess(Player):
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
         
         if not self.is_dead():
             self.player_death_index = 0
@@ -6393,17 +6387,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 50
+        self.atk2_mana_cost = 100
         self.atk3_mana_cost = 50
         self.sp_mana_cost = 50
 
         self.atk1_cooldown = 8
-        self.atk2_cooldown = 2
+        self.atk2_cooldown = 5000
         self.atk3_cooldown = 2
         self.sp_cooldown = 2
 
         self.atk1_damage = (0, 0)
-        self.atk2_damage = (15/40, 0)
+        self.atk2_damage = (10/40, 0)
         self.atk3_damage = (26/10, 8)
         self.sp_damage = (55, 0)
         self.sp_damage_2nd = (4.5/16, 0)
@@ -6848,21 +6842,45 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # Create an attack
                         # print("Z key pressed")
                         attack = Attack_Display(
-                            x=self.rect.centerx, # in front of him
-                            y=self.rect.centery + 20,
-                            frames=self.atk2 if self.facing_right else self.atk2_flipped,
-                            frame_duration=100,
-                            repeat_animation=2,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk2_damage[0], 
-                            final_dmg=self.atk2_damage[1],
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 60,
+                            frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                            frame_duration=5,
+                            repeat_animation=1000,
+                            speed=30 if self.facing_right else -30,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
+                            moving=True,
+                            sound=(True, self.atk1_sound, None, None),
+                            kill_collide=True,
+                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
 
-                            heal=True,
-                            sound=(True, self.atk2_sound , None, None),
-                            moving=True
-                            ) # Replace with the target
+                            hitbox_scale_x=0.1,
+                            hitbox_scale_y=0.1,
+
+                            add_mana=True,
+
+                            spawn_attack= {
+                            'use_attack_onhit_pos': True,
+
+                            'attack_kwargs': {
+                                'frames': self.atk3,
+                                'frame_duration': 100,
+                                'repeat_animation': 1,
+                                'speed': 0,
+                                'dmg': self.atk2_damage[0],
+                                'final_dmg': self.atk2_damage[1],
+                                'who_attacks': self,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                'moving': False,
+                                'sound': (False, self.atk3_sound, None, None),
+                                'delay': (False, 0)
+                            }
+                            
+                        }
+                            )
                         attack_display.add(attack)
                         self.mana -=  self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
@@ -6961,7 +6979,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,
-                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
+                            delay=(True, (self.basic_attack_animation_speed*9.166667)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
 
                             hitbox_scale_x=0.1,
                             hitbox_scale_y=0.1,
@@ -7195,8 +7213,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.inputs()
         self.move_to_screen()
 
-        self.detect_and_display_damage()
-        self.update_damage_numbers(screen)
+         
         
         if not self.is_dead():
             self.player_death_index = 0

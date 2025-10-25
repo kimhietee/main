@@ -1118,6 +1118,7 @@ def create_bot(selected_hero, player_type):
             else:
                 # self.hero.bot = selected_hero.__name__
                 self.hero_bot = 'Fire_Wizard' # default
+                self.hero_bot = 'Wanderer_Magician'
 
 
             self.default_timer = self.hero_data[self.hero_bot]['default_timer'] / FPS

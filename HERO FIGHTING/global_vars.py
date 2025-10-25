@@ -34,7 +34,7 @@ IMMEDIATE_RUN = False
 MAIN_VOLUME = 0
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 4
+MAX_ITEM = 41
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False

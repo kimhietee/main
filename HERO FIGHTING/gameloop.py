@@ -841,7 +841,7 @@ def controls():
 
         main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
-            if event.vvtype == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()  
             if keys[pygame.K_ESCAPE]:

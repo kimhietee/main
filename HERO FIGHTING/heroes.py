@@ -537,7 +537,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             - If True, the attack sprite disappears instantly upon colliding with the target.
 
         NEW PARAMETERS (to be added to class):
-
         19. follow (tuple(bool, bool)):
             - Controls if the attack should follow another sprite:
                 * [0] – If True, the attack will stick to the enemy upon collision and follow them.
@@ -6396,31 +6395,59 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         self.atk1_mana_cost = 120
         self.atk2_mana_cost = 100 #50
-        self.atk3_mana_cost = 175 #75
-        self.sp_mana_cost = 220
+        self.atk3_mana_cost = 170 #75
+        self.sp_mana_cost = 220 #100
+        self.sp_mana_cost_for_special = 250
 
-        self.atk1_cooldown = 10000
-        self.atk2_cooldown = 5000
-        self.atk3_cooldown = 12000
+        self.atk1_cooldown = 12000
+        self.atk2_cooldown = 7000
+        self.atk3_cooldown = 15000
         self.sp_cooldown = 30000
+        self.sp_cooldown_for_special = 90000
 
         self.atk1_damage = (0, 0) # buff
         self.atk2_damage = (7.5/8, 2.5) # roots arrow +50 mana
         self.atk3_damage = (17.5/8, 2.5) # green roots +100 mana
-        self.sp_damage = (30/10, 0) # beam
+        self.sp_damage = (30/5, 0) # beam
 
         #special
-        self.sp_atk2_damage = (10/8, 0) # poison arrow
+        self.sp_atk2_damage_2nd = (10/8, 0) # poison arrow
         self.atk2_damage_2nd = (10/45, 0) # poison 2nd
         self.sp_atk3_damage = (20/18, 0) # arrow rain roots
-        self.sp_damage_2nd = (40/30, 0) # laser beam
+        self.sp_damage_2nd = (70/30, 0) # laser beam
 
-        
+        self.arrow_stuck_duration = 5000
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+
+        # (mana cost * multiplier) / skill total damage
+        # ex. 100 / 0.5 = 50 / 10 = 5
+        # (Skill mana cost / Desired mana refund) * attack total damage (modify the frames of attack)
+        # mana refund for arrow is default at 2
+        sk1 = 0
+        sk2 = 50
+        sk3 = 75
+        sk4 = 100
+
+        sk2_sp = 30
+        sk3_sp = 100
+        sk4_sp = 150
+        # desired mana refund / skill damage (REAL)
+        self.atk2_mana_refund = (sk2) / (self.atk2_damage[0] * 8 + self.atk2_damage[1])
+        self.atk3_mana_refund = (sk3) / (self.atk3_damage[0] * 8 + self.atk3_damage[1])
+        self.sp_mana_refund = (sk4) / (self.sp_damage[0] * 5 + self.sp_damage[1])
+
+        self.sp_atk2_mana_refund_2nd = (sk2_sp) / (self.sp_atk2_damage_2nd[0] * 8 + self.sp_atk2_damage_2nd[1]) # poison arrow
+        self.atk2_mana_refund_2nd = (sk2_sp) / (self.atk2_damage_2nd[0] * 45 + self.atk2_damage_2nd[1]) # poison 2nd
+        self.sp_atk3_mana_refund = (sk3_sp) / (self.sp_atk3_damage[0] * 18 + self.sp_atk3_damage[1]) # arrow rain roots
+        self.sp_mana_refund_2nd = (sk4_sp) / (self.sp_damage_2nd[0] * 30 + self.sp_damage_2nd[1]) # laser beam
+
+
+
+
 
         # Player Animation Source
         atk3_sp_ani = [r'assets\characters\Forest Ranger\PNG\3_atk\3_atk_', 12, 0]
@@ -6450,7 +6477,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         sp_atk2 = [r'assets\attacks\forest ranger\atk2_sp\arrow_hit_poison_', 8, 0]
         atk3 = [r'assets\attacks\forest ranger\atk3\diagonal_arrow_hit_thorns_', 8, 0]
         sp_atk3 = [r'assets\attacks\forest ranger\atk3_sp\arrow_shower_effect_', 18, 0]
-        sp = [r'assets\attacks\forest ranger\atk4\beam_extension_effect_', 10, 0]
+        sp = [r'assets\attacks\forest ranger\atk4\beam_extension_effect_', 5, 0]
 
         # Player Skill Icons Source
         skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\kkkk.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
@@ -6470,13 +6497,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk2_flipped = self.load_img_frames_flipped(atk2[0], atk2[1], atk2[2], size=arrow_size)
         self.atk3 = self.load_img_frames(atk3[0], atk3[1], atk3[2], size=arrow_size)
         self.atk3_flipped = self.load_img_frames_flipped(atk3[0], atk3[1], atk3[2], size=arrow_size)
-        self.sp = self.load_img_frames(sp[0], sp[1], atk3[2], size=arrow_size)
+        self.sp = self.load_img_frames(sp[0], sp[1], atk3[2], size=5)
+        # self.sp_flipped = self.load_img_frames_flipped(sp[0], sp[1], atk3[2], size=5)
 
         self.sp_atk2 = self.load_img_frames(sp_atk2[0], sp_atk2[1], sp_atk2[2], size=arrow_size)
         self.sp_atk2_flipped = self.load_img_frames_flipped(sp_atk2[0], sp_atk2[1], sp_atk2[2], size=arrow_size)
 
         self.sp_atk3 = self.load_img_frames(sp_atk3[0], sp_atk3[1], sp_atk3[2], size=arrow_size)
-        self.sp_atk3_flipped = self.load_img_frames_flipped(sp_atk3[0], sp_atk3[1], sp_atk3[2], size=arrow_size)
         
         # Attack Skill Frames
         self.base_arrow = [
@@ -6508,9 +6535,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         filepath=r"assets\attacks\forest ranger\atk2_sp_poison_circle\077.PNG",
         frame_width=10, 
         frame_height=10, 
-        rows=9, 
+        rows=10, 
         columns=5, 
-        scale=2, 
+        scale=1, 
         rotation=0,
     )
         
@@ -6520,7 +6547,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         frame_height=10, 
         rows=6, 
         columns=5, 
-        scale=2, 
+        scale=8, 
         rotation=-90,
     )
         
@@ -6530,7 +6557,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         frame_height=10, 
         rows=6, 
         columns=5, 
-        scale=2, 
+        scale=8, 
         rotation=90,
     )
 
@@ -6673,10 +6700,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 mana=self.mana
             ),
             Attacks(
-                mana_cost=self.mana_cost_list[3],
+                mana_cost=self.sp_mana_cost_for_special,
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
-                cooldown=self.sp_cooldown,
+                cooldown=self.sp_cooldown_for_special,
                 mana=self.mana
             )
         ]
@@ -6703,10 +6730,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
 
         # Trait: + 20% attack speed
-        # self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
+        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
         # Trait: + 20% lifesteal
         self.lifesteal = 0.2
-        # Trait : + 200% mana damage
+        # Trait : + (some values)% mana refund if hits enemy
 
         self.atk_hasted = False
         self.atk_haste_duration = 0
@@ -6839,8 +6866,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks[1].mana_cost and self.attacks[1].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
+                        enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + 60,
@@ -6880,7 +6907,36 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'add_mana': True,
-                                'mana_mult': 5
+                                'mana_mult': self.atk2_mana_refund,
+                                'hitbox_scale_x': 0.1,
+                                'hitbox_scale_y': 0.1,
+
+                                # leave arrow bullets
+                                'spawn_attack': {
+
+                                    'attack_kwargs': {
+                                        'x': enemy_posx,
+                                        'y': enemy_posy + (random.randint(-40, 40)),
+                                        'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                        'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                        'repeat_animation': 1,
+                                        'speed': 0,
+                                        'dmg': 0,
+                                        'final_dmg': 0,
+                                        'who_attacks': self,
+                                        'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                        'moving': False,
+                                        'sound': (False, self.atk2_sound, None, None),
+                                        'delay': (False, 0),
+                                        'stop_movement': (False, 3, 2, 0.2),
+                                        'follow': (False, True),
+                                        'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                        'add_mana': True,
+                                        # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                        'hitbox_scale_x': 0.1,
+                                        'hitbox_scale_y': 0.1,
+                                        }
+                                    }
                             }
                             
                         }
@@ -6945,21 +7001,23 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # Create an attack
                         # print("Z key pressed")
                         attack = Attack_Display(
-                            x=self.rect.centerx, # in front of him
-                            y=self.rect.centery,
+                            x=self.rect.centerx + 650 if self.facing_right else self.rect.centerx - 650, # in front of him
+                            y=DEFAULT_Y_POS-50,
                             frames=self.sp,
-                            frame_duration=120,
+                            frame_duration=100,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
                             dmg=self.sp_damage[0],
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=False,
-
-                            kill_collide=False,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(True, 500)
+                            delay=(True, 1200),
+
+                            hitbox_scale_x=1,
+                            hitbox_scale_y=0.10,
+
+                            add_mana=True,
+                            mana_mult=self.sp_mana_refund,
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -6968,6 +7026,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         self.running = False
                         self.sp_attacking = True
                         self.player_sp_index = 0
+                        self.player_sp_index_flipped = 0
 
                         # print("Attack executed")
                     else:
@@ -6977,6 +7036,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
+                        enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + 60,
@@ -6997,7 +7058,34 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=2
+                            mana_mult=2,
+                            
+                            # leave arrow bullets
+                            spawn_attack= {
+
+                                'attack_kwargs': {
+                                    'x': enemy_posx,
+                                    'y': enemy_posy + (random.randint(-40, 40)),
+                                    'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                    'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': 0,
+                                    'final_dmg': 0,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (False, 3, 2, 0.2),
+                                    'follow': (False, True),
+                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'add_mana': True,
+                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                    'hitbox_scale_x': 0.1,
+                                    'hitbox_scale_y': 0.1,
+                                    }
+                                }
                             )
                         # self.atk_haste_duration = pygame.time.get_ticks()
                         print(self.basic_attack_animation_speed) #120
@@ -7033,32 +7121,37 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        for i in [(0, 30), (40, 60), (40, 0)]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx - i[0] if self.facing_right else self.rect.centerx + i[0],
-                                y=self.rect.centery + i[1] if self.facing_right else self.rect.centery + i[1],
-                                frames=self.atk1,
-                                frame_duration=100,
-                                repeat_animation=5,
-                                speed=7 if self.facing_right else -7,
-                                dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 1.2,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=hero1 if self.player_type == 2 else hero2,
-                                moving=True,
-
-                                kill_collide=True,
+                        attack = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 0,
+                            frames=self.atk1,
+                            frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
+                            repeat_animation=2,
+                            speed=7 if self.facing_right else -7,
+                            dmg=0,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
+                            follow=(False,True),
+                            follow_offset=(0,60),
+                            disable_collide=True,
+                            follow_self=True,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 500)) # Replace with the target
-                            attack_display.add(attack)
+                            delay=(True, 500)
+                            ) # Replace with the target
+                        attack_display.add(attack)
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
                         self.running = False
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+
+                        # Activate attack speed haste
+                        self.atk_hasted = True
+                        self.haste_value = 500 # attack speed bonus
+                        self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 10000
+                        self.default_atk_speed = self.basic_attack_animation_speed # gets previous atk_speed (NEVER CAST SKILL TWICE! : wont reset properly)
 
                         # print("Attack executed")
                     else:
@@ -7069,23 +7162,107 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
+                        enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
                         attack = Attack_Display(
-                            x=self.rect.centerx, # in front of him
-                            y=self.rect.centery + 20,
-                            frames=self.sp_atk2 if self.facing_right else self.sp_atk2_flipped,
-                            frame_duration=100,
-                            repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=(self.atk2_damage[0]*2) + ((self.atk2_damage[0]*2) * (SPECIAL_MULTIPLIER * 0.25)),
-                            final_dmg=self.atk2_damage[1],
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 60,
+                            frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                            frame_duration=5,
+                            repeat_animation=1000,
+                            speed=30 if self.facing_right else -30,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
+                            moving=True,
+                            sound=(True, self.atk1_sound, None, None),
+                            kill_collide=True,
+                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
 
-                            heal=False,
-                            sound=(True, self.atk2_sound , None, None),
-                            moving=True) # Replace with the target
+                            hitbox_scale_x=0.1,
+                            hitbox_scale_y=0.1,
+
+                            add_mana=True,
+                            mana_mult=2,
+
+                            spawn_attack= {
+                            'use_attack_onhit_pos': True,
+
+                            'attack_kwargs': {
+                                'frames': self.sp_atk2 if self.facing_right else self.sp_atk2_flipped,
+                                'frame_duration': 125, # slow for 1s (second / frames)
+                                'repeat_animation': 1,
+                                'speed': 0,
+                                'dmg': self.sp_atk2_damage_2nd[0],
+                                'final_dmg': self.sp_atk2_damage_2nd[1],
+                                'who_attacks': self,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                'moving': False,
+                                'sound': (True, self.atk2_sound, None, None),
+                                'delay': (False, 0),
+                                'stop_movement': (True, 3, 2, 0.2),
+                                'follow': (True, False),
+                                'follow_offset': (-30 if self.facing_right else 30, 0),
+                                'add_mana': True,
+                                'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                'hitbox_scale_x': 0.1,
+                                'hitbox_scale_y': 0.1,
+                                'spawn_attack': {
+                                                'use_attack_onhit_pos': True,
+
+                                                'attack_kwargs': {
+                                                    'frames': self.atk2_sp_poison,
+                                                    'frame_duration': 40, # slow 2s (second / frames)
+                                                    'repeat_animation': 1,
+                                                    'speed': 0,
+                                                    'dmg': self.atk2_damage_2nd[0],
+                                                    'final_dmg': self.atk2_damage_2nd[1],
+                                                    'who_attacks': self,
+                                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                                    'sound': (True, self.atk2_sound, None, None),
+                                                    'delay': (True, 1050),
+                                                    'stop_movement': (True, 3, 2, 0.8),
+                                                    'follow': (True, False),
+                                                    'follow_offset': (0, 40),
+                                                    'add_mana': True,
+                                                    'mana_mult': self.atk2_mana_refund_2nd,
+                                                    'hitbox_scale_x': 0.3,
+                                                    'hitbox_scale_y': 0.3,
+                                                    
+                                                    # leave arrow bullets
+                                                    'spawn_attack': {
+
+                                                        'attack_kwargs': {
+                                                            'x': enemy_posx,
+                                                            'y': enemy_posy + (random.randint(-40, 40)),
+                                                            'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                                            'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                                            'repeat_animation': 1,
+                                                            'speed': 0,
+                                                            'dmg': 0,
+                                                            'final_dmg': 0,
+                                                            'who_attacks': self,
+                                                            'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                                            'moving': False,
+                                                            'sound': (False, self.atk2_sound, None, None),
+                                                            'delay': (False, 0),
+                                                            'stop_movement': (False, 3, 2, 0.2),
+                                                            'follow': (False, True),
+                                                            'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                                            'add_mana': True,
+                                                            # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                                            'hitbox_scale_x': 0.1,
+                                                            'hitbox_scale_y': 0.1,
+                                                            }
+                                                        }
+                                                }
+                                                
+                                            }
+                            }
+                            
+                        }
+                            )
                         attack_display.add(attack)
                         self.mana -=  self.attacks_special[1].mana_cost
                         self.attacks_special[1].last_used_time = current_time
@@ -7102,22 +7279,71 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
+                        enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
+                        # one liner is getting hard, took codes from bot_ai
+                        self.enemy_on_right = self.x_pos < (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        self.enemy_on_left = self.x_pos > (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_pos = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        target_detected = False
+                        if self.enemy_on_right and self.facing_right:
+                            target = enemy_pos
+                            target_detected = True
+                        elif self.enemy_on_right and not self.facing_right:
+                            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+                        elif self.enemy_on_left and not self.facing_right:
+                            target = enemy_pos
+                            target_detected = True
+                        else:
+                            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+
                         attack = Attack_Display(
-                            x=hero1.x_pos if self.player_type == 2 else hero2.x_pos,
-                            y=hero1.y_pos - 30 if self.player_type == 2 else hero2.y_pos - 30,
-                            frames=self.sp_atk3 if self.facing_right else self.sp_atk3_flipped,
-                            frame_duration=100,
+                            x=target,
+                            y=DEFAULT_Y_POS-130,
+                            frames=self.sp_atk3, 
+                            frame_duration=111.111, # (2000 / 18) 2s root
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk3_damage[0] + (self.atk3_damage[0] * (SPECIAL_MULTIPLIER * 0.25)),
-                            final_dmg=self.atk3_damage[1] + (self.atk3_damage[1] * (SPECIAL_MULTIPLIER * 0.25)),
+                            dmg=self.sp_atk3_damage[0],
+                            final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800),
-                            ) # Replace with the target
+                            delay=(True, 1750),
+                            follow=(False, target_detected),
+                            follow_offset= (0, -50),
+                            stop_movement=(True, 2, 2),
+                            hitbox_scale_x=0.35,
+                            hitbox_scale_y=1,
+                            add_mana=True,
+                            mana_mult=self.sp_atk3_mana_refund,
+                            
+                            # leave arrow bullets
+                            spawn_attack= {
+
+                                'attack_kwargs': {
+                                    'x': enemy_posx,
+                                    'y': enemy_posy + (random.randint(-40, 40)),
+                                    'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                    'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': 0,
+                                    'final_dmg': 0,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (False, 3, 2, 0.2),
+                                    'follow': (False, True),
+                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'add_mana': True,
+                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                    'hitbox_scale_x': 0.1,
+                                    'hitbox_scale_y': 0.1,
+                                    }
+                                }
+                        )
                         attack_display.add(attack)
                         self.mana -=  self.attacks_special[2].mana_cost
                         self.attacks_special[2].last_used_time = current_time
@@ -7133,26 +7359,24 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     # print('Skill 3 used')
                 elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
                         attack = Attack_Display(
-                            x=hero1.x_pos if self.player_type == 2 else hero2.x_pos,
-                            y=hero1.y_pos + 40,
+                            x=self.rect.centerx + 540 if self.facing_right else self.rect.centerx-540, # in front of him
+                            y=DEFAULT_Y_POS-50,
                             frames=self.sp_special if self.facing_right else self.sp_special_flipped,
-                            frame_duration=130,
+                            frame_duration=66.6666667, #2s(66.6666667), 1s(33.3333333)
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
                             dmg=self.sp_damage_2nd[0],
                             final_dmg=self.sp_damage_2nd[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=False,
-                            follow=(False, True),
-                            follow_offset=(0, 50),
+                            sound=(True, self.sp_sound , None, None),
+                            delay=(True, 1200),
 
-                            kill_collide=False,
-                            sound=(True, self.sp_sound , self.atk3_sound, None),
-                            delay=(True, 800)
+                            hitbox_scale_x=0.8,
+                            hitbox_scale_y=1,
+
+                            add_mana=True,
+                            mana_mult=self.sp_mana_refund_2nd,
                             )
                         attack_display.add(attack)
                         self.mana -=  self.attacks_special[3].mana_cost
@@ -7170,36 +7394,69 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 elif not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
-                        for i in [(500, 50), (700, 30), (900, 10)]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx,
-                                y=self.rect.centery + i[1],
-                                frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
-                                frame_duration=100,
-                                repeat_animation=5,
-                                speed=8 if self.facing_right else -8,
-                                dmg=self.basic_attack_damage/2.4,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=hero1 if self.player_type == 2 else hero2,
-                                moving=True,
+                        enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+                        enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
+                        attack = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 60,
+                            frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                            frame_duration=2,
+                            repeat_animation=2500,
+                            speed=40 if self.facing_right else -40,
+                            dmg=self.basic_attack_damage*1.2, # +20% damage in special mode
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
+                            moving=True,
+                            sound=(True, self.atk1_sound, None, None),
+                            kill_collide=True,
+                            delay=(True, (self.basic_attack_animation_speed*9.166667)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
 
-                                sound=(True, self.basic_sound, self.atk1_sound, None),
-                                kill_collide=True,
-                                delay=(True, i[0]),
+                            hitbox_scale_x=0.1,
+                            hitbox_scale_y=0.1,
 
-                                hitbox_scale_x=0.2,
-                                hitbox_scale_y=0.2
-                                )
-                            attack_display.add(attack)
+                            add_mana=True,
+                            mana_mult=2,
 
+                            # leave arrow bullets
+                            spawn_attack= {
+
+                                'attack_kwargs': {
+                                    'x': enemy_posx,
+                                    'y': enemy_posy + (random.randint(-40, 40)),
+                                    'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                    'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': 0,
+                                    'final_dmg': 0,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (False, 3, 2, 0.2),
+                                    'follow': (False, True),
+                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'add_mana': True,
+                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                    'hitbox_scale_x': 0.1,
+                                    'hitbox_scale_y': 0.1,
+                                    }
+                                }
+                            )
+                        # self.atk_haste_duration = pygame.time.get_ticks()
+                        print(self.basic_attack_animation_speed) #120
+                        # print(self.atk_haste_duration)
+                        attack_display.add(attack)
                         self.mana -= 0
+                        # self.display_damage(50, interval=30, color=cyan2, size=50)
                         self.attacks_special[4].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
                         self.player_atk2_index = 0
                         self.player_atk2_index_flipped = 0
-                        
+
                         self.basic_attacking = True
 
                         # print("Attack executed")
@@ -7346,7 +7603,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     stop_movement=(True, 2, 1),
 
                     add_mana=True,
-                    mana_mult=5
+                    mana_mult=self.atk3_mana_refund
                     ) # Replace with the targe t
                 attack_display.add(attack)
             self.mana -=  self.attacks[2].mana_cost

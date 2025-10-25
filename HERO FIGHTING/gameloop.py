@@ -372,10 +372,10 @@ def game(bg=None):
             #     FREEZE_SPECIAL = False
             #     # freeze_toggled = True
             #     if event.type == pygame.USEREVENT:
-            #         print('unfreeze special toggled')
+            #         print('unfreeze special toggled') 
 
             if keys[main.pygame.K_3] and not keys[main.pygame.K_LALT]: # special to 1
-                main.hero1.special = 0.01
+                main.hero1.special = 0.01   
                 main.hero2.special = 0.01
                 
 
@@ -682,8 +682,8 @@ def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slks
         menu_game.draw(screen, mouse_pos)
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
-            menu()
             paused = False
+            menu()
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False

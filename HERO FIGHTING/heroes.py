@@ -542,6 +542,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             - Controls if the attack should follow another sprite:
                 * [0] – If True, the attack will stick to the enemy upon collision and follow them.
                 * [1] – If True, the attack always follows the enemy, even without collision.
+                
+        19.1 follow_self (bool):
+            - Make the follow logic for self
+
+        19.2 follow_offset (tuple(int,int)):
+            - Position of the follow in x and y (positive/negative values)
 
         20. delay (tuple(bool, int)):
             - Delays the attack’s animation and effect:
@@ -576,7 +582,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
                 consume_mana=[False, 0],
                 stop_movement=(False, 0, 0, 1.0),
-                spawn_attack:dict=None, periodic_spawn:dict=None
+                spawn_attack:dict=None, periodic_spawn:dict=None,
+                add_mana=False
                 ):
         super().__init__()
         self.x = x
@@ -611,6 +618,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
         self.spawn_attack = spawn_attack # dict or callable
         self.periodic_spawn = periodic_spawn # dict or None
+
+        self.add_mana = add_mana
 
         self.frame_index = 0
         self.last_update_time = pygame.time.get_ticks()
@@ -803,7 +812,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     # normal logic, damages enemy anywhere
                     if not self.damaged and self.per_end_dmg[1]:
                         if not self.continuous_dmg:
-                            self.who_attacked.take_damage(self.dmg)
+                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
                             if self.who_attacks.lifesteal > 0:
@@ -844,7 +853,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.follow[0] and not self.following_target:
                             self.following_target = True
                         if not self.disable_collide: # end animation will do the damaging
-                            self.who_attacked.take_damage(self.final_dmg)
+                            self.who_attacked.take_damage(self.final_dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
 
                             if self.who_attacks.lifesteal > 0:
@@ -881,7 +890,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.follow[0] and not self.following_target:
                             self.following_target = True
                         if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
-                            self.who_attacked.take_damage(self.dmg)
+                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
                             if self.who_attacks.lifesteal > 0:
@@ -890,7 +899,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     
                         # #combine for moving dmg [1]:
                         # if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
-                        #     self.who_attacked.take_damage(self.final_dmg)
+                        #     self.who_attacked.take_damage(self.final_dmg, , add_mana_to_self=true if self.add_mana else false)
 
                         if self.moving:
                             self.damaged = True
@@ -900,7 +909,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if self.continuous_dmg and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
                         if self.follow[0] and not self.following_target:
                             self.following_target = True
-                        self.who_attacked.take_damage(self.dmg)
+                        self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                         self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
                         if self.who_attacks.lifesteal > 0:
@@ -913,7 +922,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.follow[0] and not self.following_target:
                             self.following_target = True
                         if not self.continuous_dmg:
-                            self.who_attacked.take_damage(self.dmg)
+                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks)
                             self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
                             
                             if self.who_attacks.lifesteal > 0:
@@ -2478,7 +2487,8 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             kill_collide=True,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(True, 5000)
+                            delay=(True, 5000),
+                            add_mana=True
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -2996,14 +3006,14 @@ class Fire_Knight(Player):
         # stat
         self.strength = 42
         self.intelligence = 40
-        self.agility = 65
+        self.agility = 32 # 32*2 = 64 agility(65 -> 63)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
+        self.basic_attack_damage = (self.agility*2) * self.agi_mult
 
         # Player Position
         self.x = 50
@@ -4009,14 +4019,14 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 13
+        self.agility = 52 #(13*4=52)
 
         # Base Stats
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
+        self.basic_attack_damage = (self.agility/4) * self.agi_mult
 
         # Player Position
         self.x = 50
@@ -6367,8 +6377,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         # stat
         self.strength = 32
-        self.intelligence = 60
-        self.agility = 38
+        self.intelligence = 48
+        self.agility = 36
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -6382,10 +6392,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.width = 200
         self.height = 20
 
-        self.atk1_mana_cost = 7
-        self.atk2_mana_cost = 15
-        self.atk3_mana_cost = 12
-        self.sp_mana_cost = 17
+        self.atk1_mana_cost = 50
+        self.atk2_mana_cost = 50
+        self.atk3_mana_cost = 50
+        self.sp_mana_cost = 50
 
         self.atk1_cooldown = 8
         self.atk2_cooldown = 2
@@ -6434,8 +6444,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         sp_atk3 = [r'assets\attacks\forest ranger\atk3_sp\arrow_shower_effect_', 18, 0]
         sp = [r'assets\attacks\wanderer magician\sp atk\vv', WANDERER_MAGICIAN_SP, 0]
 
-        special_atk3 = [r'assets\attacks\wanderer magician\special1\Explosion_blue_oval', WANDERER_MAGICIAN_SPECIAL_ATK3, 0]
-
         # Player Skill Icons Source
         skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\kkkk.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\forest_ranger\icon1.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
@@ -6479,6 +6487,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Buff
         self.atk1 = load_attack(
         filepath=r"assets\attacks\forest ranger\atk1\1.PNG",
+        frame_width=10, 
+        frame_height=10, 
+        rows=9, 
+        columns=5, 
+        scale=1, 
+        rotation=0,
+    )
+        
+
+        self.atk2_sp_poison = load_attack(
+        filepath=r"assets\attacks\forest ranger\atk2_sp_poison_circle\077.PNG",
         frame_width=10, 
         frame_height=10, 
         rows=9, 
@@ -6674,11 +6693,46 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.white_health_p2 = self.health
         self.white_mana_p2 = self.mana   
 
+
+        # Trait: + 20% attack speed
+        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
+        # Trait: + 20% lifesteal
+        self.lifesteal = 0.2
+
+        self.atk_hasted = False
+        self.atk_haste_duration = 0
+        self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
+        self.get_current_atk_speed = 0
+
+        
+
+    # Will modify the attack speed of forest ranger when basic attacking
+    def animate(self, frames, index, loop=True, basic_atk=False):
+        current_time = pygame.time.get_ticks()
+        #print(f"{self.__class__.__name__} animation speed: {self.basic_attack_animation_speed}")
+        frame_duration = self.default_animation_speed if not self.basic_attacking else self.basic_attack_animation_speed
+        #print(f"Animation type: {'basic' if self.basic_attacking else 'default'}, Duration: {frame_duration}")
+        if current_time - self.last_atk_time > frame_duration:
+            self.last_atk_time = current_time
+            self.image = frames[int(index)]
+            index += 1
+            #print(basic_atk)
+            if index >= len(frames):
+                if loop:
+                    index = 0  # Restart the animation
+                else:
+                    index = len(frames) - 1  # Stay on the last frame
+                    if basic_atk:
+                        return index, False, False
+                    #if not attacking basic:
+                    else:
+                        return index, False  # Animation finished
+        return index, True  # Animation stzill active
     def atk2_animation(self, animation_speed=0):
         if self.facing_right:
-            self.player_atk2_index, anim_active = self.animate(self.player_atk2, self.player_atk2_index, loop=False, basic_atk=True)
+            self.player_atk2_index, anim_active = self.animate(self.player_atk2, self.player_atk2_index, loop=False, basic_atk=False)
         else:
-            self.player_atk2_index_flipped, anim_active = self.animate(self.player_atk2_flipped, self.player_atk2_index_flipped, loop=False, basic_atk=True)
+            self.player_atk2_index_flipped, anim_active = self.animate(self.player_atk2_flipped, self.player_atk2_index_flipped, loop=False, basic_atk=False)
 
         self.last_atk_time -= animation_speed
 
@@ -6702,7 +6756,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         self.last_atk_time -= animation_speed
 
+    def basic_animation(self, animation_speed=0): # will make the atk_haste False
+        if self.facing_right:
+            self.player_basic_index, self.basic_attacking, _ = self.animate(self.player_basic, self.player_basic_index, loop=False, basic_atk=True)
+        else:
+            self.player_basic_index_flipped, self.basic_attacking, _ = self.animate(self.player_basic_flipped, self.player_basic_index_flipped, loop=False, basic_atk=True)
 
+        self.last_atk_time -= animation_speed
+
+    def haste_atk(self, current_atk_speed, bonus_value=500):
+        atk_buff = bonus_value * 0.1
+        atk_speed = current_atk_speed - atk_buff
+        return atk_speed
+    
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
@@ -6739,18 +6805,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # print("Z key pressed")
                         attack = Attack_Display(
                             x=self.rect.centerx,
-                            y=self.rect.centery + 30,
-                            frames=self.atk1 if self.facing_right else self.atk1,
-                            frame_duration=100,
-                            repeat_animation=5,
+                            y=self.rect.centery + 0,
+                            frames=self.atk1,
+                            frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
+                            repeat_animation=1,
                             speed=7 if self.facing_right else -7,
-                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
+                            dmg=0,
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            moving=False,
-
-                            kill_collide=True,
+                            follow=(False,True),
+                            follow_offset=(0,60),
+                            disable_collide=True,
+                            follow_self=True,
                             sound=(True, self.atk1_sound , None, None),
                             delay=(True, 500)
                             ) # Replace with the target
@@ -6761,6 +6828,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+
+                        # Activate attack speed haste
+                        self.atk_hasted = True
+                        self.haste_value = 500 # attack speed bonus
+                        self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 5000
+                        self.get_current_atk_speed = self.basic_attack_animation_speed
+                        
  
                         # print("Attack executed")
                     else:
@@ -6859,6 +6933,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
+                        # self.display_damage(50, interval=30, color=cyan2, size=50)
                         self.attacks[3].last_used_time = current_time
                         self.running = False
                         self.sp_attacking = True
@@ -6874,23 +6949,31 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
                         attack = Attack_Display(
                             x=self.rect.centerx,
-                            y=self.rect.centery + 30,
+                            y=self.rect.centery + 60,
                             frames=self.base_arrow if self.facing_right else self.base_arrow_flipped,
-                            frame_duration=100,
-                            repeat_animation=5,
-                            speed=7 if self.facing_right else -7,
+                            frame_duration=5,
+                            repeat_animation=1000,
+                            speed=30 if self.facing_right else -30,
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
-
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,
-                            delay=(True, 500)
+                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
+
+                            hitbox_scale_x=0.1,
+                            hitbox_scale_y=0.1,
+
+                            add_mana=True
                             )
+                        # self.atk_haste_duration = pygame.time.get_ticks()
+                        print(self.basic_attack_animation_speed) #120
+                        # print(self.atk_haste_duration)
                         attack_display.add(attack)
                         self.mana -= 0
+                        # self.display_damage(50, interval=30, color=cyan2, size=50)
                         self.attacks[4].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
@@ -7079,9 +7162,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 )
                             attack_display.add(attack)
 
-
-                        
-
                         self.mana -= 0
                         self.attacks_special[4].last_used_time = current_time
                         self.running = False
@@ -7194,6 +7274,15 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
                     self.special_active = False
+
+        # print(self.basic_attack_animation_speed)
+        if self.atk_hasted:
+            self.basic_attack_animation_speed = self.haste_atk(self.get_current_atk_speed, self.haste_value)
+            if pygame.time.get_ticks() >= self.atk_haste_duration:
+                self.atk_hasted = False
+                self.basic_attack_animation_speed = self.get_current_atk_speed
+
+        
                     #self.apply_item_bonuses()
         # print(self.basic_attack_damage)
                 # self.max_mana = min(200, self.max_mana + 10)
@@ -7766,7 +7855,7 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Forest_Ranger
-            PLAYER_2_SELECTED_HERO = Fire_Wizard
+            PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.city_bg # Default
             bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

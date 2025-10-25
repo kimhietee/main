@@ -1391,13 +1391,15 @@ class Player(pygame.sprite.Sprite):
                     return -1
         return -1
 
-    def take_damage(self, damage):
+    def take_damage(self, damage, add_mana_to_self=False, enemy:object=None):
         if self.is_dead():
             return
         if self.damage_reduce > 0:
             damage -= (damage * self.damage_reduce)
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
+        if add_mana_to_self and enemy is not None:
+            self.add_mana(damage, enemy)
 
         if self.health <= 0:
             self.die()  # Trigger the death process
@@ -1407,13 +1409,21 @@ class Player(pygame.sprite.Sprite):
         self.mana = max(0, self.mana - mana)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 
+    
+
     def is_dead(self):
         return hasattr(self, "health") and self.health <= LITERAL_HEALTH_DEAD
     
-    def take_heal(self,heal):
+    def take_heal(self,heal): # add health
         if self.is_dead():
             return
         self.health = max(0, self.health + heal)
+
+    def add_mana(self, mana, enemy:object=None): # add mana
+        if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
+            enemy.mana = max(0, enemy.mana + mana)
+        else: #add mana to the attacked player
+            self.mana = max(0, self.mana + mana) # add mana to hero
 
     def take_special(self, amount):
         if self.is_dead():

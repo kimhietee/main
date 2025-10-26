@@ -1680,7 +1680,7 @@ class Fire_Wizard(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
-                                delay=(True, i),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 moving=True
                                 )
                             attack_display.add(attack)
@@ -1875,7 +1875,7 @@ class Fire_Wizard(Player):
                             who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
-                            delay=(True, 200),
+                            delay=(True, self.basic_attack_animation_speed * (200 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             moving=True,
 
                             hitbox_scale_x=0.4
@@ -2403,7 +2403,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             kill_collide=True,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 500)
+                            delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -=  self.attacks[0].mana_cost
@@ -2542,7 +2542,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,
-                            delay=(True, self.basic_attack_animation_speed*4.16667), # 500/120
+                            delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed) # 500/120
                         )
                     
                         attack_display.add(attack)
@@ -2642,7 +2642,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                                 kill_collide=True,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 500)) # Replace with the target
+                            delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)) # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)) # Replace with the target
                             attack_display.add(attack)
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
@@ -2776,7 +2776,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             sound=(True, self.basic_sound, self.atk1_sound, None),
                             kill_collide=True,
-                            delay=(True, i[0]),
+                           delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
 
                             hitbox_scale_x=0.2,
                             hitbox_scale_y=0.2,
@@ -3444,7 +3444,7 @@ class Fire_Knight(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             hitbox_scale_x=0.4
                             ,hitbox_scale_y=0.4
                             ) # Replace with the target
@@ -3575,7 +3575,7 @@ class Fire_Knight(Player):
                             who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             moving=True
 
                             )
@@ -3622,7 +3622,7 @@ class Fire_Knight(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             hitbox_scale_x=0.4
                             ,hitbox_scale_y=0.4
                             ) # Replace with the target
@@ -3640,7 +3640,7 @@ class Fire_Knight(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             follow=(True, False),
                             follow_offset=(0, 80)
                             )
@@ -3836,7 +3836,7 @@ class Fire_Knight(Player):
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             sound=(True, self.basic_sound, None, None),
                             moving=True
 
@@ -3856,7 +3856,7 @@ class Fire_Knight(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
-                            delay=(True, 700),
+                            delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             follow=(True, False),
                             follow_offset=(0, 80)
                             )
@@ -4594,7 +4594,7 @@ class Wind_Hashashin(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.basic_sound, None, None),
                                 moving=True,
-                                delay=(True, i),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
 
                                 hitbox_scale_y=0.3,
                                 hitbox_scale_x=0.3,
@@ -4843,7 +4843,7 @@ class Wind_Hashashin(Player):
                                 stun=(False, 0),
                                 sound=(True, self.basic_sound, None, None),
                                 kill_collide=False,
-                                delay=(True, i),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
 
                                 hitbox_scale_y=0.4,
                                 hitbox_scale_x=0.4,
@@ -5604,7 +5604,7 @@ class Water_Princess(Player):
                                 final_dmg=i[4],
                                 who_attacks=self,
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
-                                delay=(True, 300),
+                                delay=(True, self.basic_attack_animation_speed * (300 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 sound=(True, i[5], None, None),
 
                                 moving=i[6],
@@ -5819,7 +5819,7 @@ class Water_Princess(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
-                                delay=(True, i[0]),
+                                delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 moving=True,
                                 hitbox_scale_x=i[4][2],
                                 hitbox_scale_y=i[4][3]
@@ -6177,7 +6177,7 @@ class Water_Princess(Player):
                                 who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
-                                delay=(True, i[0]),
+                                delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 moving=True,
                                 hitbox_scale_x=i[4][2],
                                 hitbox_scale_y=i[4][3],
@@ -6936,8 +6936,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
-                            kill_collide=True,
-                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
+                            kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            delay=(True, self.basic_attack_animation_speed * (1100 / DEFAULT_ANIMATION_SPEED)), #120*9.16667 = 1100 -> attack delay
 
                             hitbox_scale_x=0.1,
                             hitbox_scale_y=0.1,
@@ -7128,8 +7128,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
-                            kill_collide=True,
-                            delay=(True, (self.basic_attack_animation_speed*9.166667)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
+                            kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            delay=(True, self.basic_attack_animation_speed * (1100 / DEFAULT_ANIMATION_SPEED)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
 
                             hitbox_scale_x=0.1,
                             hitbox_scale_y=0.1,
@@ -7277,8 +7277,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
-                            kill_collide=True,
-                            delay=(True, (self.basic_attack_animation_speed*9.166667)), #120*9.16667 = 1100 -> attack delay
+                            kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            delay=(True, self.basic_attack_animation_speed * (1100 / DEFAULT_ANIMATION_SPEED)), #120*9.16667 = 1100 -> attack delay
 
                             hitbox_scale_x=0.1,
                             hitbox_scale_y=0.1,
@@ -7530,9 +7530,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
-                            kill_collide=True,
-                            delay=(True, (self.basic_attack_animation_speed*9.166667)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
-
+                            kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            delay=(True, self.basic_attack_animation_speed * (1100 / DEFAULT_ANIMATION_SPEED)), # (1100/120=9.16667): 120*9.16667 = 1100 -> attack delay
                             hitbox_scale_x=0.1,
                             hitbox_scale_y=0.1,
 

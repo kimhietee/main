@@ -31,14 +31,17 @@ gold = 'Gold' #special
 
 IMMEDIATE_RUN = False
 
-MAIN_VOLUME = 0
+HERO1_BOT = True
+
+MAIN_VOLUME = 1
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 41
+MAX_ITEM = 4
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False
-show_bot_skills = False
+show_bot_skills = True
+show_bot_stats = True
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant

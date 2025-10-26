@@ -816,14 +816,20 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         self.damaged = False
                         
                     # normal logic, damages enemy anywhere
-                    if not self.damaged and self.per_end_dmg[1]:
-                        if not self.continuous_dmg:
-                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                    if not self.heal and not self.heal_enemy:
+                        if not self.damaged and self.per_end_dmg[1]:
+                            if not self.continuous_dmg:
+                                self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
-                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                                    lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                    else:
+                        if not self.damaged and self.per_end_dmg[1]:
+                            if not self.continuous_dmg:
+                                self.who_attacks.take_heal(self.dmg)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
 
 
@@ -1154,7 +1160,7 @@ class Fire_Wizard(Player):
         # stat
         self.strength = 40
         self.intelligence = 40
-        self.agility = 27
+        self.agility = 27 # real agility = 27
 
         # Base Stats
         self.max_health = self.strength * self.str_mult
@@ -1237,6 +1243,16 @@ class Fire_Wizard(Player):
         # Skill 4: (attack no longer stick to enemy)
             # (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80 -> 
             # (20/10, 5):start = 25, (40/10, 5):explosion = 45 = 80
+
+        # fire knight nerf
+        # Intelligence: 40 = 200 mana ->  Intelligence: 36 = 180 mana
+        # Skill 4: mana cost 200 -> 180
+        #           damage = 75 -> 65
+
+        # fire knight buff
+        # Skill 2: mana cost 100 -> 80
+        # SKill 4 hitbox modified
+        # Skill 4 special: total damage = 70(20,40,5,5) = 100 (30,60,5,5)
 
         #mana cost
         self.atk1_mana_cost = 50
@@ -3009,15 +3025,15 @@ class Fire_Knight(Player):
 
         # stat
         self.strength = 42
-        self.intelligence = 40
-        self.agility = 32 # 32*2 = 64 agility(65 -> 63)
+        self.intelligence = 36
+        self.agility = 64 # 32*2 = 64 agility(65 -> 64)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = (self.agility*2) * self.agi_mult
+        self.basic_attack_damage = self.agility * self.agi_mult
 
         # Player Position
         self.x = 50
@@ -3025,9 +3041,9 @@ class Fire_Knight(Player):
         self.width = 200
 
         self.atk1_mana_cost = 30
-        self.atk2_mana_cost = 100
+        self.atk2_mana_cost = 80
         self.atk3_mana_cost = 150   
-        self.sp_mana_cost = 200
+        self.sp_mana_cost = 180
 
         self.atk1_cooldown = 5000
         self.atk2_cooldown = 18000
@@ -3038,8 +3054,8 @@ class Fire_Knight(Player):
         self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
         self.atk3_damage = (35/60, 7)
         self.sp_damage = (50/65, 15) 
-        self.special_sp_damage1 = (20/10, 5) # 25, total 70 damage #start
-        self.special_sp_damage2 = (40/10, 5) # 45 #explosion
+        self.special_sp_damage1 = (20/10, 0) # 25, total 70 damage #start
+        self.special_sp_damage2 = (60/10, 0) # 45 #explosion (total=70 -> )
         
 
         dmg_mult = 0
@@ -3526,7 +3542,8 @@ class Fire_Knight(Player):
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            sound=(True, self.sp_sound , None, None)
+                            sound=(True, self.sp_sound , None, None),
+                            hitbox_scale_x=0.7
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -3818,7 +3835,7 @@ class Fire_Knight(Player):
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
-                            
+                            delay=(True, 700),
                             sound=(True, self.basic_sound, None, None),
                             moving=True
 
@@ -4022,14 +4039,14 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 52 #(13*4=52)
+        self.agility = 13 #(13*4=52)
 
         # Base Stats
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = (self.agility/4) * self.agi_mult
+        self.basic_attack_damage = self.agility * self.agi_mult
 
         # Player Position
         self.x = 50
@@ -4421,7 +4438,8 @@ class Wind_Hashashin(Player):
                             who_attacks=self,
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
-                            sound=(True, self.atk1_sound , None, None)
+                            sound=(True, self.atk1_sound , None, None),
+                            # stop_movement=(True, 3, 2, 0.8)
                             ) # Replace with the target
                         attack_display.add(attack)
                         #dash  
@@ -4462,8 +4480,8 @@ class Wind_Hashashin(Player):
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
-                                # sound=(True, self.atk2_sound , self.x_slash_sound, None),
-                                # stop_movement=(True, 1, 2)
+                                sound=(True, self.atk2_sound , self.x_slash_sound, None),
+                                stop_movement=(i[1], 3, 2, 0.5)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         self.mana -=  self.attacks[1].mana_cost
@@ -4623,7 +4641,8 @@ class Wind_Hashashin(Player):
                                 moving=True,
                                 sound=(True, self.atk1_sound, None, None),
                                 delay=(True, i),
-                                use_live_position_on_delay=True
+                                use_live_position_on_delay=True,
+                                # stop_movement=(True, 3, 1, 0.7)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         #dash  
@@ -4864,8 +4883,6 @@ class Wind_Hashashin(Player):
     #         self.y_velocity = (DEFAULT_JUMP_FORCE * 0.5)
 
     def trigger_dash(self): # this thing so buggy, fix this soon
-        
-
         if self.distance_covered < self.max_distance:
             if self.facing_right:
                 self.x_pos += self.dash_speed
@@ -5083,7 +5100,7 @@ class Water_Princess(Player):
         # stat
         self.strength = 40
         self.intelligence = 48
-        self.agility = 20
+        self.agility = 20 # real agility = 20
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
@@ -6379,7 +6396,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # stat
         self.strength = 32
         self.intelligence = 52
-        self.agility = 36
+        self.agility = 36 # = 48
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -6395,28 +6412,33 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         self.atk1_mana_cost = 120
         self.atk2_mana_cost = 100 #50
-        self.atk3_mana_cost = 170 #75
-        self.sp_mana_cost = 220 #100
-        self.sp_mana_cost_for_special = 250
+        self.atk3_mana_cost = 170 #100
+        self.sp_mana_cost = 220 #70
+        self.atk3_mana_cost_for_special = 200 #100
+        self.sp_mana_cost_for_special = 250 #100
 
-        self.atk1_cooldown = 12000
+        self.atk1_cooldown = 15000 # 15 seconds
         self.atk2_cooldown = 7000
-        self.atk3_cooldown = 15000
+        self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
-        self.sp_cooldown_for_special = 90000
+        self.sp_cooldown_for_special = 100000
+        self.atk3_cooldown_for_special = 20000
 
         self.atk1_damage = (0, 0) # buff
-        self.atk2_damage = (7.5/8, 2.5) # roots arrow +50 mana
-        self.atk3_damage = (17.5/8, 2.5) # green roots +100 mana
-        self.sp_damage = (30/5, 0) # beam
+        self.atk2_damage = (8/8, 2) # roots arrow +50 mana
+        self.atk3_damage = (15/8, 5) # green roots +70 mana
+        self.sp_damage = (20/5, 0) # beam +150 mana
 
         #special
-        self.sp_atk2_damage_2nd = (10/8, 0) # poison arrow
-        self.atk2_damage_2nd = (10/45, 0) # poison 2nd
-        self.sp_atk3_damage = (20/18, 0) # arrow rain roots
-        self.sp_damage_2nd = (70/30, 0) # laser beam
+        self.sp_atk2_damage_2nd = (2/8, 0) # poison arrow +30 mana
+        self.atk2_damage_2nd = (8/45, 0) # poison 2nd +30 mana
+        self.sp_atk3_damage = (30/18, 0) # arrow rain roots +100 mana
+        self.sp_damage_2nd = (50/30, 0) # laser beam +170 mana
+
+        # self.damage_to_heal_percentage =
 
         self.arrow_stuck_duration = 5000
+        self.arrow_stuck_damage = 1
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
@@ -6429,10 +6451,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # mana refund for arrow is default at 2
         sk1 = 0
         sk2 = 50
-        sk3 = 75
-        sk4 = 100
+        sk3 = 70
+        sk4 = 150
 
-        sk2_sp = 30
+        sk2_sp = 40 #x2
         sk3_sp = 100
         sk4_sp = 150
         # desired mana refund / skill damage (REAL)
@@ -6517,6 +6539,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             pygame.transform.rotozoom(
             pygame.image.load(r"assets\attacks\forest ranger\arrow.png").convert_alpha(),
             angle=0, scale=2.0), True, False)
+            ]
+        self.blank_frame = [
+            pygame.transform.rotozoom(
+            pygame.image.load(r"assets\attacks\forest ranger\atk4\blank frame\beam_extension_effect_10.png").convert_alpha(),
+            angle=0, scale=2.0)
             ]
         
         # Buff
@@ -6696,7 +6723,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
-                cooldown=self.atk3_cooldown,
+                cooldown=self.atk3_cooldown_for_special,
                 mana=self.mana
             ),
             Attacks(
@@ -6731,8 +6758,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         # Trait: + 20% attack speed
         self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
-        # Trait: + 20% lifesteal
-        self.lifesteal = 0.2
+        # Trait: + 15% lifesteal
+        self.lifesteal = 0.15
         # Trait : + (some values)% mana refund if hits enemy
 
         self.atk_hasted = False
@@ -6745,6 +6772,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.get_jump_pos = 0
         self.jump_done = False
         self.jump_time = 0
+
+        self.distance_covered = 0
+        self.max_distance = 200
+        self.dash_speed = 4
         
 
     # Will modify the attack speed of forest ranger when basic attacking
@@ -6840,9 +6871,32 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             disable_collide=True,
                             follow_self=True,
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 500)
+                            delay=(True, 500),
                             ) # Replace with the target
                         attack_display.add(attack)
+
+                        #speed buff
+                        # increase speed for self
+                        attack2 = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 0,
+                            frames=self.blank_frame,
+                            frame_duration=5000, # 5 seconds
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=0,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self,
+                            follow=(True,False),
+                            disable_collide=True,
+                            follow_self=True,
+                            follow_offset=(0, 40),
+                            sound=(True, self.atk1_sound , None, None),
+                            delay=(True, 500),
+                            stop_movement=(True, 3, 3, 1.2),
+                            ) # Replace with the target
+                        attack_display.add(attack2)
                         self.mana -=  self.attacks[0].mana_cost
                         self.attacks[0].last_used_time = current_time
                         self.running = False
@@ -6906,13 +6960,15 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
+                                'follow': (True, False),
+                                'follow_offset': (-30 if self.facing_right else 30, random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height)),
                                 'add_mana': True,
                                 'mana_mult': self.atk2_mana_refund,
                                 'hitbox_scale_x': 0.1,
                                 'hitbox_scale_y': 0.1,
 
                                 # leave arrow bullets
-                                'spawn_attack': {
+                                'spawn_attack':  {
 
                                     'attack_kwargs': {
                                         'x': enemy_posx,
@@ -6922,7 +6978,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'repeat_animation': 1,
                                         'speed': 0,
                                         'dmg': 0,
-                                        'final_dmg': 0,
+                                        'final_dmg': self.arrow_stuck_damage,
                                         'who_attacks': self,
                                         'who_attacked': hero1 if self.player_type == 2 else hero2,
                                         'moving': False,
@@ -6930,15 +6986,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'delay': (False, 0),
                                         'stop_movement': (False, 3, 2, 0.2),
                                         'follow': (False, True),
-                                        'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                        'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
                                         'add_mana': True,
                                         # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
                                         'hitbox_scale_y': 0.1,
-                                        }
                                     }
+                                }
                             }
-                            
                         }
                             )
                         attack_display.add(attack)
@@ -7018,6 +7073,27 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             add_mana=True,
                             mana_mult=self.sp_mana_refund,
+                            
+                            # heals self if it hits enemy once
+                            spawn_attack= {
+                                'attack_kwargs': {
+                                    'x': self.rect.centerx,
+                                    'y': self.rect.centery,
+                                    'frames': self.blank_frame,
+                                    'frame_duration': 50, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': self.sp_damage[0]*5,
+                                    'final_dmg': 0,
+                                    'heal': True,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'follow': (False, True),
+                                    'follow_self': True
+                                    }
+                                }
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -7071,7 +7147,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'repeat_animation': 1,
                                     'speed': 0,
                                     'dmg': 0,
-                                    'final_dmg': 0,
+                                    'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
                                     'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
@@ -7079,7 +7155,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -7088,7 +7164,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 }
                             )
                         # self.atk_haste_duration = pygame.time.get_ticks()
-                        print(self.basic_attack_animation_speed) #120
+                        # print(self.basic_attack_animation_speed) #120
                         # print(self.atk_haste_duration)
                         attack_display.add(attack)
                         self.mana -= 0
@@ -7126,7 +7202,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             y=self.rect.centery + 0,
                             frames=self.atk1,
                             frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
-                            repeat_animation=2,
+                            repeat_animation=1,
                             speed=7 if self.facing_right else -7,
                             dmg=0,
                             final_dmg=0,
@@ -7140,6 +7216,29 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             delay=(True, 500)
                             ) # Replace with the target
                         attack_display.add(attack)
+
+                        #speed buff
+                        # increase speed for self
+                        attack2 = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 0,
+                            frames=self.blank_frame,
+                            frame_duration=5000, # 5 seconds
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=0,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self,
+                            follow=(True,False),
+                            disable_collide=True,
+                            follow_self=True,
+                            follow_offset=(0, 40),
+                            sound=(True, self.atk1_sound , None, None),
+                            delay=(True, 500),
+                            stop_movement=(True, 3, 3, 1.4),
+                            ) # Replace with the target
+                        attack_display.add(attack2)
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
                         self.running = False
@@ -7150,7 +7249,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # Activate attack speed haste
                         self.atk_hasted = True
                         self.haste_value = 500 # attack speed bonus
-                        self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 10000
+                        self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 5000
                         self.default_atk_speed = self.basic_attack_animation_speed # gets previous atk_speed (NEVER CAST SKILL TWICE! : wont reset properly)
 
                         # print("Attack executed")
@@ -7203,7 +7302,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 3, 2, 0.2),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, 0),
+                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height)),),
                                 'add_mana': True,
                                 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                 'hitbox_scale_x': 0.1,
@@ -7222,9 +7321,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'who_attacked': hero1 if self.player_type == 2 else hero2,
                                                     'sound': (True, self.atk2_sound, None, None),
                                                     'delay': (True, 1050),
-                                                    'stop_movement': (True, 3, 2, 0.8),
-                                                    'follow': (True, False),
-                                                    'follow_offset': (0, 40),
+                                                    'stop_movement': (True, 3, 2, 0.5),
+                                                    'follow': (False, True),
+                                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
                                                     'add_mana': True,
                                                     'mana_mult': self.atk2_mana_refund_2nd,
                                                     'hitbox_scale_x': 0.3,
@@ -7241,7 +7340,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'repeat_animation': 1,
                                                             'speed': 0,
                                                             'dmg': 0,
-                                                            'final_dmg': 0,
+                                                            'final_dmg': self.arrow_stuck_damage,
                                                             'who_attacks': self,
                                                             'who_attacked': hero1 if self.player_type == 2 else hero2,
                                                             'moving': False,
@@ -7249,7 +7348,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'delay': (False, 0),
                                                             'stop_movement': (False, 3, 2, 0.2),
                                                             'follow': (False, True),
-                                                            'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                                            'follow_offset': (random.randint(-30, 30), random.randint(-40, 80)),
                                                             'add_mana': True,
                                                             # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                                             'hitbox_scale_x': 0.1,
@@ -7328,7 +7427,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'repeat_animation': 1,
                                     'speed': 0,
                                     'dmg': 0,
-                                    'final_dmg': 0,
+                                    'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
                                     'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
@@ -7336,7 +7435,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -7377,6 +7476,27 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             add_mana=True,
                             mana_mult=self.sp_mana_refund_2nd,
+
+                            # heals self if it hits enemy once (once only 50% dmg)
+                            spawn_attack= {
+                                'attack_kwargs': {
+                                    'x': self.rect.centerx,
+                                    'y': self.rect.centery,
+                                    'frames': self.blank_frame,
+                                    'frame_duration': 50, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': (self.sp_damage_2nd[0]*30),
+                                    'final_dmg': 0,
+                                    'heal': True,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'follow': (False, True),
+                                    'follow_self': True
+                                    }
+                                }
                             )
                         attack_display.add(attack)
                         self.mana -=  self.attacks_special[3].mana_cost
@@ -7429,7 +7549,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'repeat_animation': 1,
                                     'speed': 0,
                                     'dmg': 0,
-                                    'final_dmg': 0,
+                                    'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
                                     'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
@@ -7437,7 +7557,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), random.randint(-4, 80)),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -7446,7 +7566,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 }
                             )
                         # self.atk_haste_duration = pygame.time.get_ticks()
-                        print(self.basic_attack_animation_speed) #120
+                        # print(self.basic_attack_animation_speed) #120
                         # print(self.atk_haste_duration)
                         attack_display.add(attack)
                         self.mana -= 0
@@ -7469,7 +7589,18 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # print("Run Animation Index:", self.player_run_index)
 
      
-        
+    def trigger_dash(self): # this thing so buggy, fix this soon
+        if self.distance_covered >= self.max_distance:
+            self.distance_covered = 0
+        else:
+            if self.facing_right:
+                self.x_pos += self.dash_speed
+                self.distance_covered += self.dash_speed
+            elif not self.facing_right:
+                self.x_pos -= self.dash_speed
+                self.distance_covered += self.dash_speed
+            
+
     def update(self):
         super().update()
         # print(self.stunned)
@@ -7483,14 +7614,23 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.inputs()
         self.move_to_screen()
 
-         
-        
+        # print(self.distance_covered)
         if not self.is_dead():
             self.player_death_index = 0
             self.player_death_index_flipped = 0
         if self.is_dead():
             self.play_death_animation()
         elif self.attacking1:
+            self.activate_dash = True
+            if self.distance_covered >= self.max_distance:
+                self.attacking1 = False
+                self.distance_covered = 0
+                self.activate_dash = False
+                
+                
+            else: 
+                if self.activate_dash:
+                    self.trigger_dash()
             self.atk1_animation()
         elif self.jumping:
             self.jump_animation()
@@ -7544,8 +7684,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     for mana in self.attacks_special:
                         mana.draw_mana_cost(screen, self.mana)
 
-        # Update the player status (health and mana bars)
-        self.player_status(self.health, self.mana, self.special)
+        if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
+            pass
+        else:
+            # Update the player status (health and mana bars)
+            self.player_status(self.health, self.mana, self.special)
         
         # Update the health and mana bars
         if self.health != 0:
@@ -7582,6 +7725,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.get_jump_pos = self.y_pos # get current y_pos to freeze when attacking
             self.jump_attack_pending = False # attacking starts
             self.jumping = False # override jumping animation with attack animation
+            enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
+            enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
             for i in [100,250,400]:
                 attack = Attack_Display(
                     x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,
@@ -7597,13 +7742,40 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     sound=(True, self.atk3_sound , None, None),
                     delay=(True, 600+i), #starting 700
 
-                    hitbox_scale_x=0.1,
+                    hitbox_scale_x=0.15,
                     hitbox_scale_y=0.5,
+                    hitbox_offset_x=20,
 
                     stop_movement=(True, 2, 1),
 
                     add_mana=True,
                     mana_mult=self.atk3_mana_refund
+                    ,
+                    # leave arrow bullets
+                            spawn_attack= {
+                                'attack_kwargs': {
+                                    'x': enemy_posx,
+                                    'y': enemy_posy + (random.randint(-40, 40)),
+                                    'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
+                                    'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': 0,
+                                    'final_dmg': self.arrow_stuck_damage,
+                                    'who_attacks': self,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
+                                    'moving': False,
+                                    'sound': (False, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (False, 3, 2, 0.2),
+                                    'follow': (False, True),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, hero1.hitbox_rect.height if self.player_type == 2 else hero2.hitbox_rect.height))),
+                                    'add_mana': True,
+                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                    'hitbox_scale_x': 0.1,
+                                    'hitbox_scale_y': 0.1,
+                                    }
+                                }
                     ) # Replace with the targe t
                 attack_display.add(attack)
             self.mana -=  self.attacks[2].mana_cost
@@ -7867,12 +8039,12 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
 HERO_INFO = {
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, HP: 200, Mana: 200, Damage: 5.4, Attack Speed: -200, , Trait: 10% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, HP: 200, Mana: 180, Damage: 3.2, Attack Speed: -500, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65, HP: 220, Mana: 200, Damage: 6.5, Attack Speed: -700, , Trait: 15% hp regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, HP: 190, Mana: 200, Damage: 2.6, Attack Speed: 0, , Trait: 15% mana, reduce",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 36, HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 20% atk speed, 20% lifesteal, x2 atk mana refund"
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 36(27), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 10% spell dmg",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32(32), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 32(65), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 52(13), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 40(20), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 48(36), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, *50%+ mana refund"
 }
 
 
@@ -8352,11 +8524,16 @@ def player_selection():
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
 
                     if global_vars.SINGLE_MODE_ACTIVE:
-                        # bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1)
-                        # hero1 = bot1_class(hero2)  # pass live hero2 reference
+                        if global_vars.HERO1_BOT:
+                            bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1)
+                            hero1 = bot1_class(hero2)  # pass live hero2 reference
 
                         bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2)
                         hero2 = bot2_class(hero1)  # pass live hero1 reference
+
+                        if global_vars.HERO1_BOT:
+                            hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
+
 
 
                     for item in p1_items:

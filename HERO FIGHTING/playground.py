@@ -21,8 +21,12 @@ def solve(print_res=False, sub=False, left=False, add=False):
     elif add:
         x = a+(a*b)
         return x
-    
-print(solve(add=True))
+# items = [object()]
+
+# items += [object()]
+
+# print(items*2)
+# print(solve(add=True))
 # print(solve(left=True))
 # print(width-int(width*0.039)-1)
 

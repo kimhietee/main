@@ -28,6 +28,11 @@ def create_bot(selected_hero, player_type):
         def __init__(self, player):
             super().__init__(player_type)
             self.player = player
+            # self.strength += self.strength
+            # self.intelligence += self.intelligence
+            # self.agility += self.agility
+            from heroes import items #make a button hard mode
+            self.items = items # from heroes.py
 
             
 
@@ -1102,7 +1107,224 @@ def create_bot(selected_hero, player_type):
                         'atk_range': 110,
                         'min_cast_range': 20,
                     }
-                },
+                }
+                
+                ,'Forest_Ranger': {
+                    'default_timer': 1,
+                    'timer_slow_decrease': 2,
+
+                    'cast_special_threshold': self.get_special_threshold,
+                    'special_if_sp_skill_ready': True,
+                    'special_conditions': [True, 1],
+
+                    'special_threshold': {
+                        'health_high_prio': self.max_health * 0.4,
+                        'low_prio': 0.70,
+                        'high_prio': 0.40
+                    },
+
+                    'stuck_logic': {
+                        'threshold': 1,
+                        'detect': 2,
+                        'duration': 3
+                    },
+
+                    'edge_escape_logic': {
+                        'duration': 1.5,
+                        'distance': 225
+                    },
+
+                    'took_alot_dmg': {
+                        'damage_interval': 0.3,
+                        'damage_threshold': 3.4,
+                        'damage_taken_logic': 2,
+                    },
+                    
+                    'panic_logic': {
+                        'threshold': 0.4,
+                        'cooldown': 5
+                    },
+
+                    'cast_special_threshold_distance': 1000,
+
+                    'random_unstuck': 0.0001,
+                    'random_edge_escape': 0.000001,
+
+                    'decide_logic': {
+                        'chase_distance': 300,
+                        'panic_chase_distance': 10, # dont chase at all
+                        'escape_distance': 200
+                    },
+                    
+                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
+                        'skill_1': {
+                            'cast_range': 800,
+                            'min_cast_range': 50,
+                            'require_all': False,
+                            'not_require_facing_enemy': True,
+                            'face_away': True,
+                            'force_escape': True,
+                            'disable_random_escape_direction': True,
+                            'conditions': [
+                                # Casual buff
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 300 and
+                                    botchance.update(70)
+                                ),
+                                # Immediate buff if enemy is far
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 700
+                                ),
+                                # Intermediate buff
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 500 and
+                                    botchance.update(80)
+                                ),
+                                # Buff for escape
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.enemy_distance <= 300 and
+                                    bot.is_facing_away_from_enemy()
+                                ),
+
+                                #sp
+                                # Always consider using 1st skill when special active
+                                lambda bot: (bot.special_active
+                                ),
+                            ]
+                        },
+                            
+                        'skill_2': {
+                            'cast_range': 1050,
+                            'min_cast_range': 5,
+                            'require_all': False,
+                            'conditions': [
+                                # Trick skill while buffed
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 100 and
+                                    bot.atk_hasted
+                                ),
+                                # Prefer not to buff
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 300 and
+                                    not bot.atk_hasted and
+                                    botchance.update(70)
+                                ),
+                                # If far, try to shoot, and if enemy is casting
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 500 and
+                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(90)
+                                ),
+                                # Shoot if possible and enemy is while attacking
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.enemy_distance >= 100 and
+                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(90)
+                                ),
+
+                                #sp
+                                # Trick skill while buffed
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 100 and
+                                    bot.atk_hasted
+                                ),
+                                # Casual skill
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 100 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                ),
+                                # Very casual skill, if enemy is casting
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.is_facing_from_enemy() and
+                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking)
+                                ),
+
+                                
+                            ]
+                        },
+                            
+                        'skill_3': {
+                            'cast_range': 300,
+                            'min_cast_range': 200,
+                            'not_require_facing_enemy': True,
+                            'require_all': False,
+                            'conditions': [
+                                # Try to hit enemy
+                               lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 200 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                ),
+                                # Slightly far, will try to hit
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.enemy_distance >= 280 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(90)
+                                ),
+
+                                #sp
+                                # Cast before enemy go past through back
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                ),
+                                # Not preferably far but possible
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(60)
+                                ),
+                                # Will cast anyways
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.is_facing_from_enemy()
+                                ),
+                                
+                            ]
+                        },
+                        'skill_4': {
+                            'cast_range': 1070,
+                            'min_cast_range': 200,
+                            'require_all': False,
+                            'conditions': [
+                                # Casual skill, casts if enemy is using skill (can't be avoided)
+                                lambda bot: (not bot.special_active and
+                                    ((bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) or
+                                    (bot.bot_hp_percent() < 50) or
+                                     bot.bot_hp_percent() < 20)
+                                ),
+                                #sp logic
+                                # Enemy is gone
+                                lambda bot: (bot.special_active and
+                                    bot.enemy_distance >= 100
+                                ),
+                            ]
+                        }
+                    },
+                    'basic_attack': {
+                        'atk_range': 1075,
+                        'min_cast_range': 160,
+                        'disable_min_cast_range_while_special': True
+                    }
+                }
             }
 
             if selected_hero.__name__ == 'Fire_Wizard' and 'Fire_Wizard' in self.hero_data:
@@ -1115,10 +1337,12 @@ def create_bot(selected_hero, player_type):
                 self.hero_bot = 'Wind_Hashashin'
             elif selected_hero.__name__ == 'Water_Princess' and 'Water_Princess' in self.hero_data:
                 self.hero_bot = 'Water_Princess'
+            elif selected_hero.__name__ == 'Forest_Ranger' and 'Forest_Ranger' in self.hero_data:
+                self.hero_bot = 'Forest_Ranger'
             else:
                 # self.hero.bot = selected_hero.__name__
                 self.hero_bot = 'Fire_Wizard' # default
-                self.hero_bot = 'Wanderer_Magician'
+                # self.hero_bot = 'Wanderer_Magician'
 
 
             self.default_timer = self.hero_data[self.hero_bot]['default_timer'] / FPS
@@ -1232,6 +1456,7 @@ def create_bot(selected_hero, player_type):
             if self.print_timer.should_run():
                 
                 pass
+                # self.hehe()
             # print(self.state)
                 # print()
                 # print("Bot state:", self.state)
@@ -1724,6 +1949,139 @@ def create_bot(selected_hero, player_type):
                 self.botkey_attack,
                 self.botkey_special,
             )
+
+
+
+        # debug purposes for print timer
+        # def hehe(self):
+        #     # print(self.hero_bot, 'bot')
+        #     # print(selected_hero.__name__, 'kurasu namae')
+        #     debug = True
+        #     self.forcemove_left = False
+        #     self.forcemove_right = False
+        #     if self.special_ready() and self.special_condition():
+        #         if debug:
+        #             print("[SKIP] Special skill ready & conditions met — saving mana.")
+        #         return
+            
+        #     if any([self.attacking1, self.attacking2, self.attacking3, self.sp_attacking]):
+        #         return
+
+        #     skills = self.hero_data[self.hero_bot]['skills']
+        #     for i in range(4):
+        #         skill_key = f'skill_{i+1}'
+        #         skill = self.attacks_special[i] if self.special_active else self.attacks[i]
+        #         config = skills[skill_key]
+
+        #         if debug:
+        #             print(f"\n[SKILL CHECK] Evaluating {skill_key}...")
+
+        #         # Mana and cooldown
+        #         if self.mana < skill.mana_cost:
+        #             if debug:
+        #                 print(f"[SKIP] Not enough mana ({self.mana}/{skill.mana_cost})")
+        #             continue
+        #         if not skill.is_ready():
+        #             if debug:
+        #                 print(f"[SKIP] Skill is on cooldown.")
+        #             continue
+
+        #         min_r = config['min_cast_range']
+        #         max_r = config['cast_range']
+        #         not_facing_enemy = config.get('not_require_facing_enemy', False)
+        #         allow_jump_cast = config.get('allow_while_jumping', False)
+        #         #misc code
+        #         face_enemy_away = config.get('face_away', False)
+        #         force_escape = config.get('force_escape', False)
+        #         self.disabled_random_unstuck_direction = config.get('disable_random_escape_direction', False) 
+
+        #         # Jumping check
+        #         if self.jumping and not allow_jump_cast:
+        #             if debug:
+        #                 print(f"[SKIP] Cannot cast {skill_key} while jumping.")
+        #             continue
+
+
+        #         # Evaluate conditions
+        #         require_all = config.get('require_all', True)
+        #         conditions = config.get('conditions', [])
+
+        #         if callable(require_all):
+        #             result = require_all(self)
+        #         else:
+        #             result = require_all
+
+        #         if debug:
+        #             print(f"[CONDITIONS] require_all = {result}")
+        #             for idx, cond in enumerate(conditions):
+        #                 try:
+        #                     cond_result = cond(self) if callable(cond) else cond
+        #                 except Exception as e:
+        #                     print(f"[ERROR] Condition {idx+1} threw error: {e}")
+        #                     cond_result = False
+        #                 print(f"  Condition {idx+1}: {cond_result}")
+
+        #         passed = (
+        #             result and all((cond(self) if callable(cond) else cond) for cond in conditions)
+        #         ) or (
+        #             not result and any((cond(self) if callable(cond) else cond) for cond in conditions)
+        #         )
+
+        #         if not passed:
+        #             if debug:
+        #                 print(f"[SKIP] Conditions not met for {skill_key}.")
+        #             continue
+
+        #         # Distance handling
+        #         # print(f"[DISTANCE] enemy_distance = {self.enemy_distance}, min_r = {min_r}, max_r = {max_r}")
+        #         # print(f"[DISTANCE] enemy_distance = {self.enemy_distance}")
+        #         if self.enemy_distance < min_r:
+        #             if debug:
+        #                 print(f"[ACTION] Too close to cast — moving away from enemy.")
+        #             # self.unface_enemy()
+        #             self.state = 'retreat_for_attack'
+        #             if self.enemy_on_left:
+        #                 self.forcemove_right = True
+        #             elif self.enemy_on_right:
+        #                 self.forcemove_left = True
+        #             continue
+                
+        #         if self.enemy_distance <= max_r:
+        #             if not not_facing_enemy: # require facing enemy
+        #                 facing_wrong = (
+        #                     (self.enemy_on_left and self.facing_right) or
+        #                     (self.enemy_on_right and not self.facing_right)
+        #                 )
+        #                 if debug:
+        #                     print(f"[FACING] Facing right? {self.facing_right}, Enemy on right? {self.enemy_on_right}")
+        #                 if facing_wrong:
+        #                     if debug:
+        #                         print(f"[ACTION] Turning to face enemy before casting.")
+        #                     self.face_enemy() #DOUBLE CHECK JUST MAKING SURE (IN THE LOGIC FUNC, already face_enemy active, same for unface enemy)
+        #                     self.state = 'chase'
+        #                     return
+        #             else: # not require facing enemy, if True, then facing enemy is not required (bot no need to face enemy) damn so confusing
+        #                 pass
+        #             if force_escape:
+        #                 self.state = 'escape'
+        #             if face_enemy_away:
+        #                 self.forcemove_left = False
+        #                 self.forcemove_right = False
+        #                 # print(f"[DEBUG] Bot facing_right: {self.facing_right}, enemy_on_right: {self.enemy_on_right}, is_facing_away: {self.is_facing_away_from_enemy()}")
+        #                 if debug:
+        #                     print(f"[FACING] Facing enemy away before casting.")
+        #                 self.unface_enemy()
+        #                 if debug:
+        #                     print(f"[CAST] All checks passed. Casting {skill_key}!")
+        #                 setattr(self, f'botkey_skill{i+1}', True)
+        #                 return
+        #             else:
+        #                 self.forcemove_left = False
+        #                 self.forcemove_right = False
+        #                 if debug:
+        #                     print(f"[CAST] All checks passed. Casting {skill_key}!")
+        #                 setattr(self, f'botkey_skill{i+1}', True)
+        #                 return
     return Bot
 
 

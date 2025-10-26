@@ -257,8 +257,8 @@ def game(bg=None):
 
     #testing purposes
     #testing
-    # main.hero1.x_pos += 150
-    # main.hero2.x_pos -= 150
+    main.hero1.x_pos += 250
+    main.hero2.x_pos -= 150
     while True:
         # print(main.hero1.mana)
             
@@ -487,7 +487,8 @@ def game(bg=None):
             attack_display.update()
             attack_display.draw(main.screen)
             if global_vars.SINGLE_MODE_ACTIVE:
-                # main.hero1.bot_logic()  # Add bot logic for hero1
+                if global_vars.HERO1_BOT:
+                    main.hero1.bot_logic()  # Add bot logic for hero1
                 main.hero2.bot_logic()
 
 
@@ -700,8 +701,9 @@ def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.tt
         restart_game.draw(screen, mouse_pos)
         in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
-            menu()
             paused = False
+            menu()
+            
 
         if mouse_press[0] and resume_game.is_clicked(mouse_pos):
             paused = False

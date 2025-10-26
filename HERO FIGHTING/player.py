@@ -1535,7 +1535,7 @@ class Player(pygame.sprite.Sprite):
                 self.slow_speed = self.speed * self.speed_multiplier
                 if not self.slowed:
                     self.slowed = True
-        # print(f"APPLY status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source}")
+        # print(f"APPLY status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source} in {self._freeze_sources if type == 1 else self._root_sources if type == 2 else self._slow_sources}")
     def remove_movement_status(self, type, source=None, slow_rate=1.0):
         """
         Remove frozen or rooted status only if *all* sources are cleared.
@@ -1562,7 +1562,8 @@ class Player(pygame.sprite.Sprite):
                     self._freeze_sources.remove(source)
                 except ValueError:
                     pass
-
+            
+            self._freeze_sources.clear() # remove frozen anyways
             # clear flag only if no other sources remain
             if len(self._freeze_sources) == 0:
                 self.frozen = False
@@ -1597,8 +1598,7 @@ class Player(pygame.sprite.Sprite):
                 
                 # self.speed = self.default_speed
 
-
-        # print(f"REMOVE status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source}")
+        # print(f"REMOVE status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source} in {self._freeze_sources if type == 1 else self._root_sources if type == 2 else self._slow_sources}")
                 
     def draw_movement_status(self, screen):
         if self.frozen or self.rooted:
@@ -1707,6 +1707,10 @@ class Player(pygame.sprite.Sprite):
                 #     print('attack start')
                 # print(pygame.time.get_ticks())
                 # print(self.sp_mana_refund)
+
+
+
+            # print(self.frozen, self.can_cast(), self.can_move())
 
         # if self.is_dead:
         #     return

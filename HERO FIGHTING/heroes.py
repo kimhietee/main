@@ -680,7 +680,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print("Hitbox drawn")
         # print(self.rect.width)
 
-    def kill_self(self):
+    def kill_self(self): # (Possible bug here that removing status won't work, see the moving section part)
         # remove only this attack's status
         if self.stop_movement[0]:
             status_type = self.stop_movement[1]
@@ -1002,9 +1002,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             
             if self.moving: # moving logic
                 # Move the attack
-                self.rect.x += self.speed
-                if self.rect.x > width + 500 or self.rect.x < -500:
+                self.rect.x += self.speed #(Theres a bug where you use water princess special skill 4 on left border so it moves enemy outside border, that has freeze effect, after it goes back to screen, still frozen. Fix the player movement statuses if bug persists.)
+                if self.rect.x > width + 2000 or self.rect.x < -2000: # (the 2nd part might be the culprit...)
                     self.kill_self()  # Remove the sprite if it goes off-screen
+                    # (There, fixed, but somethings wrong with removing effect on kill self)
 
             #stun logic
             if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
@@ -1050,7 +1051,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     # run code below if type == 1
                     elif self.stop_movement[2] == 1:
                         # removes status
-                        self.who_attacked.remove_movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                        self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
 
             if self.current_repeat >= self.repeat_animation:
                 if self.stop_movement[0]:
@@ -2643,6 +2644,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                                 kill_collide=True,
                             sound=(True, self.atk1_sound , None, None),
                             delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)) # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)) # Replace with the target
+                            )
                             attack_display.add(attack)
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
@@ -3027,7 +3029,7 @@ class Fire_Knight(Player):
         # stat
         self.strength = 42
         self.intelligence = 36
-        self.agility = 64 # 32*2 = 64 agility(65 -> 64)
+        self.agility = 65 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
@@ -4440,7 +4442,7 @@ class Wind_Hashashin(Player):
                             who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound , None, None),
-                            # stop_movement=(True, 3, 2, 0.8)
+                            stop_movement=(True, 3, 2, 0.8)
                             ) # Replace with the target
                         attack_display.add(attack)
                         #dash  
@@ -4643,7 +4645,7 @@ class Wind_Hashashin(Player):
                                 sound=(True, self.atk1_sound, None, None),
                                 delay=(True, i),
                                 use_live_position_on_delay=True,
-                                # stop_movement=(True, 3, 1, 0.7)
+                                stop_movement=(True, 3, 1, 0.7)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         #dash  
@@ -6386,6 +6388,20 @@ FR_SPECIAL_BASICATK1_SIZE = 2
 # WANDERER_MAGICIAN_ATK3_DAMAGE = (30/10, 5) #26
 # WANDERER_MAGICIAN_SP_DAMAGE = (55, 0)
 
+# Important details to note as of version idk, date: 10/26/25
+# - damage compare to other heroes with total basic attack damage (no items)
+# - including the arrow stuck which is 1 damage
+# - right = forest ranger
+
+# --- RANKED HIGH DAMAGE --- 
+# water princess = 30 <-> 18 about 5s
+# wind hashahsin = 28 <-> 17 about 5s (wind hashashin about 26 dmg, identical to fire knight -> 26 dmg when compared)
+# fire wizard = 26 <-> 18 about 6s
+# fire knight = 26 <-> 18 about 6s
+# wanderer magician = 19 <-> 18 about 5s 
+
+
+
 class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
     def __init__(self, player_type):
         super().__init__(player_type)
@@ -6397,7 +6413,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # stat
         self.strength = 32
         self.intelligence = 52
-        self.agility = 36 # = 48
+        self.agility = 35 # = 48
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -8038,13 +8054,13 @@ Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
-HERO_INFO = {
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 36(27), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 10% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32(32), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 32(65), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 52(13), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 40(20), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 48(36), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, *50%+ mana refund"
+HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 10% spell dmg",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32 (19 dmg), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, *50%+ mana refund"
 }
 
 

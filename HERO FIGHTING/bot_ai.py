@@ -32,7 +32,7 @@ def create_bot(selected_hero, player_type):
             # self.intelligence += self.intelligence
             # self.agility += self.agility
             from heroes import items #make a button hard mode
-            self.items = items # from heroes.py
+            # self.items = items # from heroes.py
 
             
 

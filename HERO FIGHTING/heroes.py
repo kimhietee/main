@@ -1253,6 +1253,7 @@ class Fire_Wizard(Player):
         # Skill 2: mana cost 100 -> 80
         # SKill 4 hitbox modified
         # Skill 4 special: total damage = 70(20,40,5,5) = 100 (30,60,5,5)
+        # 100 -> 80
 
         #mana cost
         self.atk1_mana_cost = 50
@@ -7477,7 +7478,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             add_mana=True,
                             mana_mult=self.sp_mana_refund_2nd,
 
-                            # heals self if it hits enemy once (once only 50% dmg)
+                            # heals self if it hits enemy once (once only 50% dmg) only heals 50% now! update!
                             spawn_attack= {
                                 'attack_kwargs': {
                                     'x': self.rect.centerx,
@@ -7486,7 +7487,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'frame_duration': 50, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
                                     'speed': 0,
-                                    'dmg': (self.sp_damage_2nd[0]*30),
+                                    'dmg': (self.sp_damage_2nd[0]*30)*0.5,
                                     'final_dmg': 0,
                                     'heal': True,
                                     'who_attacks': self,

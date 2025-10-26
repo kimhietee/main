@@ -31,7 +31,7 @@ gold = 'Gold' #special
 
 IMMEDIATE_RUN = False
 
-HERO1_BOT = True
+HERO1_BOT = False
 
 MAIN_VOLUME = 1
 TEXT_ANTI_ALIASING = False

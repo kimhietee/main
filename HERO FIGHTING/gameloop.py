@@ -478,6 +478,8 @@ def game(bg=None):
             
 
             # Update and draw Wanderer Magician
+            # main.hero3_group.draw(main.screen)
+            # main.hero3_group.update()
             # if not main.hero2.is_dead():
             
             main.hero2_group.draw(main.screen)
@@ -488,8 +490,9 @@ def game(bg=None):
             attack_display.draw(main.screen)
             if global_vars.SINGLE_MODE_ACTIVE:
                 if global_vars.HERO1_BOT:
-                    main.hero1.bot_logic()  # Add bot logic for hero1
+                    main.hero1.bot_logic()  # Add bot logic for 
                 main.hero2.bot_logic()
+                # main.hero3.bot_logic()
 
 
             if main.hero1.is_dead():
@@ -500,9 +503,10 @@ def game(bg=None):
                 winner = None
                 
 
-            # For displaying mana and special bonus
-            main.hero1.update_damage_numbers(main.screen)
-            main.hero2.update_damage_numbers(main.screen)
+            # For displaying mana and special bonus (already on player class)
+            # main.hero1.update_damage_numbers(main.screen)
+            # main.hero2.update_damage_numbers(main.screen)
+            # main.hero3.update_damage_numbers(main.screen)
 
             # main.hero2.health = 1 if not main.hero2.is_dead() else 0
             battle_end(mouse_pos, mouse_press)

@@ -1256,6 +1256,9 @@ class Fire_Wizard(Player):
         # Skill 4 special: total damage = 70(20,40,5,5) = 100 (30,60,5,5)
         # 100 -> 80
 
+        # fire wizard buff
+        # Skill 4: damage (50/28, 10) = 60 -> (55/28, 10) -> 65
+
         #mana cost
         self.atk1_mana_cost = 50
         self.atk2_mana_cost = 80
@@ -2555,7 +2558,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         self.player_atk1_index_flipped = 0
 
                         self.basic_attacking = True
-                        print(self.basic_attack_animation_speed)
+                        # print(self.basic_attack_animation_speed)
 
                         # Experiment Codes
                         # plan: when attack longer moving, greater damage
@@ -6407,6 +6410,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         super().__init__(player_type)
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Forest Ranger"
+        # from heroes import items #make a button hard mode
+        # self.items = items+items # from heroes.py
 
         self.hitbox_rect = pygame.Rect(0, 0, 45, 100)
 
@@ -6427,12 +6432,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.width = 200
         self.height = 20
 
-        self.atk1_mana_cost = 120
-        self.atk2_mana_cost = 100 #50
+        # real mana cost is commented
+        self.atk1_mana_cost = 120 #120
+        self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
-        self.sp_mana_cost = 220 #70
+        self.sp_mana_cost = 220 #120
         self.atk3_mana_cost_for_special = 200 #100
-        self.sp_mana_cost_for_special = 250 #100
+        self.sp_mana_cost_for_special = 250 #120
 
         self.atk1_cooldown = 15000 # 15 seconds
         self.atk2_cooldown = 7000
@@ -6469,11 +6475,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         sk1 = 0
         sk2 = 50
         sk3 = 70
-        sk4 = 150
+        sk4 = 100
 
-        sk2_sp = 40 #x2
+        sk2_sp = 30 #x2
         sk3_sp = 100
-        sk4_sp = 150
+        sk4_sp = 130
         # desired mana refund / skill damage (REAL)
         self.atk2_mana_refund = (sk2) / (self.atk2_damage[0] * 8 + self.atk2_damage[1])
         self.atk3_mana_refund = (sk3) / (self.atk3_damage[0] * 8 + self.atk3_damage[1])
@@ -7091,7 +7097,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             add_mana=True,
                             mana_mult=self.sp_mana_refund,
                             
-                            # heals self if it hits enemy once
+                            # heals self if it hits enemy  (only heal for 50% of damage)
                             spawn_attack= {
                                 'attack_kwargs': {
                                     'x': self.rect.centerx,
@@ -7100,7 +7106,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'frame_duration': 50, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
                                     'speed': 0,
-                                    'dmg': self.sp_damage[0]*5,
+                                    'dmg': (self.sp_damage[0]*5)*0.5,
                                     'final_dmg': 0,
                                     'heal': True,
                                     'who_attacks': self,
@@ -8020,24 +8026,33 @@ class Item:
 # Red Crystal: 20% mana reduce, 5% cd reduce, 3% spell dmg -> 15% mana reduce, 3% cd reduce, 2% spell dmg
 # Ruby: 20% cd reduce, 5% mana reduce, 3% spell dmg -> 15% cd reduce, 3% mana reduce, 2% spell dmg
 
+# Update:
+# Spirit Feather: removed 3 agi flat, 150 atk speed to 200
+# Emblem Necklace: 8% mana -> 10%, 4% mana regen -> 5%, removed 8 mana -> 4 int flat
+# Buff:
+# Elixir: 6% all effect ->  8%
+# War Helmet: 5% str -> 10%, 4% hp regen -> 5%
+
 
 items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04]),  
-    Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "mana flat", "mana regen"], [0.08, 8, 0.04]), 
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.05]),  
+    Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.05]), 
     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed", "agi flat"], [0.1, 150, 3]), 
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed"], [0.1, 200]), 
     Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
-    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]), 
-    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.06, 0.06, 0.06]),
+    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]),
+
+    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.08, 0.08, 0.08]),
     Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
     Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal"], [0.15]),
-
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25]), 
+    
     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.03, 0.03]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25])
+    
      
 ]
 
@@ -8271,10 +8286,13 @@ done = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
-def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
+def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, modify_xpos=False):
     title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (width / 2, y_offset))
+    if modify_xpos != False:
+        title_rect.x = modify_xpos
     screen.blit(title, title_rect)
+    # print(title_rect)
 
 # print('opening player selection')
 # print(global_vars.SMOOTH_BG)
@@ -8284,72 +8302,104 @@ def player_selection():
     global map_selected
     # print('player selection opened')
     # print(global_vars.SMOOTH_BG)
-    global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group
+    global PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, hero1, hero2, hero1_group, hero2_group, bot, bot_group, hero3_group, hero3
     global p1_select, p2_select, p1_items, p2_items
     # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
     background = pygame.transform.scale(
         pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
-    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
-    default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH))
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 50)
+    default_size = (((width*0.2) * DEFAULT_HEIGHT) / ((height*0.2) * DEFAULT_WIDTH))
 
     #upper position PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)
+    #p1
+    addd=10
+    yposlower=75
+    yposupper=200
+    xpos1=width - (75 * 7)+addd
+    xpos2=width - (75 * 5.5)+addd
+    xpos3=width - (75 * 4)+addd
+    xpos4=width - (75 * 2.5)+addd
+    xpos5=width - (75)+addd
+    
+    # last is only 75 position for xpos4
+
+    #p2
+    yposlower=75
+    yposupper=200
     p1_select = [
-        PlayerSelector(fire_wizard_icon, (75, height - 75), Fire_Wizard),
-        PlayerSelector(wanderer_magician_icon, (75 * 3, height - 75), Wanderer_Magician),
-        PlayerSelector(fire_knight_icon, (75 * 5, height - 75), Fire_Knight),
-        PlayerSelector(wind_hashashin_icon, (width - (75 * 5), height - 75), Wind_Hashashin),
-        PlayerSelector(water_princess_icon, (width - (75 * 3), height - 75), Water_Princess),
-        PlayerSelector(forest_ranger_icon, (width - (75), height - 75), Forest_Ranger)
+        #lower
+        PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
+        PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
+        PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
+        PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(fire_wizard_icon, (xpos5, height - yposlower), Fire_Wizard), #temp
+
+        #upper
+        PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
+        PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
+        PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
+        PlayerSelector(fire_wizard_icon, (xpos4, height - yposupper), Fire_Wizard), #temp
+        PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
 
     p2_select = [
-        PlayerSelector(fire_wizard_icon, (width - 75, height - 75), Fire_Wizard),
-        PlayerSelector(wanderer_magician_icon, (width - (75 * 3), height - 75), Wanderer_Magician),
-        PlayerSelector(fire_knight_icon, (width - (75 * 5), height - 75), Fire_Knight),
-        PlayerSelector(wind_hashashin_icon, (75 * 5, height - 75), Wind_Hashashin),
-        PlayerSelector(water_princess_icon, (75 * 3, height - 75), Water_Princess),
-        PlayerSelector(forest_ranger_icon, (75, height - 75), Forest_Ranger)
+        #lower
+        PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
+        PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
+        PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
+        PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(fire_wizard_icon, (xpos5, height - yposlower), Fire_Wizard), #temp
+
+        #upper
+        PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
+        PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
+        PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
+        PlayerSelector(fire_wizard_icon, (xpos4, height - yposupper), Fire_Wizard), #temp
+        PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
-    
+    upper=550
+    lower=450
+    lower2=350
     # Item selection
     p1_items = [
-        PlayerSelector(items[0].image, (75, height - 400), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[1].image, (75 * 2, height - 400), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[2].image, (75 * 3, height - 400), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[3].image, (75 * 4, height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[4].image, (75 * 5, height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[13].image, (75 * 6, height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[14].image, (75 * 7, height - 400), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         
-        PlayerSelector(items[5].image, (75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[6].image, (75 * 2, height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[7].image, (75 * 3, height - 300), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[8].image, (75 * 4, height - 300), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[9].image, (75 * 5, height - 300), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[10].image, (75 * 6, height - 300), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[11].image, (75 * 7, height - 300), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[12].image, (75 * 8, height - 300), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[6].image, (75, height - lower), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
 
+        PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
     ]
 
     p2_items = [
-        PlayerSelector(items[0].image, (width - 75, height - 400), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[1].image, (width - (75 * 2), height - 400), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[2].image, (width - (75 * 3), height - 400), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[3].image, (width - (75 * 4), height - 400), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[4].image, (width - (75 * 5), height - 400), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[13].image, (width - (75 * 6), height - 400), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[14].image, (width - (75 * 7), height - 400), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        
+        PlayerSelector(items[6].image, (75, height - lower), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
 
-        PlayerSelector(items[5].image, (width - 75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[6].image, (width - (75 * 2), height - 300), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[7].image, (width - (75 * 3), height - 300), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[8].image, (width - (75 * 4), height - 300), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[9].image, (width - (75 * 5), height - 300), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[10].image, (width - (75 * 6), height - 300), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[11].image, (width - (75 * 7), height - 300), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[12].image, (width - (75 * 8), height - 300), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
     ]
         
     map_select = [
@@ -8372,8 +8422,19 @@ def player_selection():
     go = False
 
     immediate_run = IMMEDIATE_RUN # for dev option only
-    
 
+    from button import RectButton
+    hard_bot_button = RectButton((width/2), height*0.8, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hard Mode")
+    
+    # chosen hero will be the name
+    def get_name(v:str):
+        r = v.split('_')
+        if len(r) == 2:
+            return r[0] + (' ' + r[1])
+        elif len(r) == 3:
+            return r[0] +  (' ' + r[1]) +  (' ' + r[2])
+        else:
+            return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Forest_Ranger
@@ -8406,15 +8467,27 @@ def player_selection():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if hard_bot_button.is_clicked(event.pos):
+                    if player_2_choose:
+                        global_vars.hard_bot = hard_bot_button.toggle(global_vars.hard_bot)
+                
 
         # screen.blit(background, (0, 0))
         Animate_BG.waterfall_night_bg.display(screen, speed=50) if not global_vars.SMOOTH_BG else Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
-        create_title('Hero Selection', font, default_size, height * 0.1) if not map_choose else None
+        if not go:
+            create_title('Hero Selection', font, default_size, height * 0.1, modify_xpos=width*0.05) if not map_choose else None
+        else:
+            create_title('Item Selection', font, default_size, height * 0.1, modify_xpos=width*0.05) if not map_choose else None
         menu_button.draw(screen, mouse_pos)
         
 
-        if player_1_choose:                      
-            create_title('PLAYER 1 CHOOSE HERO', font, default_size - 0.55, height * 0.19)
+        if player_1_choose:    
+            if not go:                  
+                create_title('PLAYER 1', font, default_size, height * 0.1, modify_xpos=width*0.5) #height*0., default_size - 0.55
+            else: #display selected hero name
+                create_title(get_name(PLAYER_1_SELECTED_HERO.__name__), font, default_size, height * 0.1, modify_xpos=width*0.5)
+                
             # fire_wizard_select.update(mouse_pos, mouse_press)
             # wanderer_magician_select.update(mouse_pos, mouse_press)
 
@@ -8425,7 +8498,8 @@ def player_selection():
 
             for selector in p1_select:
                 if selector.hovered:
-                    selector.the_info((width + (width * 0.322), height - 525))
+                    selector.the_info((-(width * 0.0001), height - 525))
+                    # selector.the_info((width + (width * 0.322), height - 525)) #previous position
                 if selector.is_selected():
                     PLAYER_1_SELECTED_HERO = selector.associate_value()
 
@@ -8451,7 +8525,7 @@ def player_selection():
                 if pygame.mouse.get_pressed()[0] and done.is_clicked(mouse_pos) or keys[pygame.K_SPACE]:
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
-                    pygame.time.delay(500)
+                    pygame.time.delay(100)
 
                     player_1_choose = False
                     player_2_choose = True
@@ -8459,7 +8533,10 @@ def player_selection():
 
 
         if player_2_choose:
-            create_title('PLAYER 2 CHOOSE HERO', font, default_size - 0.55, height * 0.19)
+            if not go:
+                create_title('PLAYER 2', font, default_size, height * 0.1, modify_xpos=width*0.5)
+            else:
+                create_title(get_name(PLAYER_2_SELECTED_HERO.__name__), font, default_size, height * 0.1, modify_xpos=width*0.5)
             for selector in p2_select:
                 selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
 
@@ -8477,8 +8554,13 @@ def player_selection():
 
                     for item in p2_items:
                         if item.hovered:
-                            item.class_item.update((-(width * 0.0001), height - 500))
-  
+                            item.class_item.update((width + (width * 0.322), height - 500))
+                            # item.class_item.update((-(width * 0.0001), height - 500)) #previous position
+                    
+                    # Hard Bot Option (has all items) draws hard mode option
+                    if global_vars.SINGLE_MODE_ACTIVE:
+                        hard_bot_button.update(mouse_pos, global_vars.hard_bot)
+                        hard_bot_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
                     # print(PLAYER_2_SELECTED_HERO)
                     go = True
                     break
@@ -8492,7 +8574,7 @@ def player_selection():
                 if pygame.mouse.get_pressed()[0] and done.is_clicked(mouse_pos) or keys[pygame.K_SPACE]:
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
-                    pygame.time.delay(500)
+                    pygame.time.delay(100)
 
                     player_2_choose = False
                     map_choose = True
@@ -8538,6 +8620,7 @@ def player_selection():
                     
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
+                    # hero3 = PLAYER_1_SELECTED_HERO(PLAYER_2)
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.HERO1_BOT:
@@ -8546,6 +8629,8 @@ def player_selection():
 
                         bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2)
                         hero2 = bot2_class(hero1)  # pass live hero1 reference
+                        # bot3_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_2)
+                        # hero3 = bot3_class(hero1)  # pass live hero1 reference
 
                         if global_vars.HERO1_BOT:
                             hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
@@ -8568,6 +8653,9 @@ def player_selection():
 
                     hero2_group = pygame.sprite.Group()
                     hero2_group.add(hero2)
+                    # hero3_group = pygame.sprite.Group()
+                    # hero3_group.add(hero3)
+                    
 
                     pygame.mixer.music.fadeout(1000)
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)

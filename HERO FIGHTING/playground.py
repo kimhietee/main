@@ -21,9 +21,85 @@ def solve(print_res=False, sub=False, left=False, add=False):
     elif add:
         x = a+(a*b)
         return x
+    
+# x = []
+# h = type(x)
+# if h is list:
+#     print('asd')
+# else:
+    # print('is not')
 # items = [object()]
 
 # items += [object()]
+
+# o = []
+# for i in o:
+#     print('sad')
+clean = False 
+e = [['slicer', True, 100], ['archer', False, 100]]
+t = []
+for i in range(40): # acts as game loop
+    print(i)
+    for j in e: # iterate through enemy, bool means collided
+        print(f'Identifying {j}...')
+        if i == 1:
+            print(f'{e[0]} is not colliding') if not clean else None
+            e[0][1] = False
+        if i == 2:
+            print(f'{e[1]} is colliding') if not clean else None
+            e[1][1] = True
+        
+        if i == 3:
+            print(f'{e[0]} is colliding') if not clean else None
+            e[0][1] = True
+        # if i == 3:
+        #     print(f'{e[1]} is not colliding') if not clean else None
+        #     e[1][1] = False
+        print('current:',t) if not clean else None
+        if j[1] and j not in t: # add enemy if enemy collided and not in targets
+            print('added', j) if not clean else None
+            t.append(j)
+            # print(t)
+        else: 
+            if j in t: # don't add enemy if enemy still collided and enemy already in targets
+                print(f'{j} already in current') if not clean else None
+            else: # subject for remove if enemy is not collided anymore and still inside targets
+                print('not collided') if not clean else None
+        if not j[1] and j in t: # remove enemy if enemy not collided and enemy is present in targets
+            print('removed', j) if not clean else None
+            t.remove(j)
+            # print(t)
+        else:
+            if j not in t: # don't remove when enemy is not in current, cannot remove anything
+                print(f'{j} is not in current') if not clean else None
+            else: # don't remove if enemy still colliding
+                print('already collided') if not clean else None
+        print('current:',t)    if not clean else None
+        print()    if not clean else None
+    print('final current:',t) if not clean else None
+    print(f'DEALING DAMAGE TO THESE: {t}')
+    for d in t: # iterate through targets
+        if len(t)>0: # make sure targets isn't empty
+            for hp in d: # iterate through enemy like dealing damage (object)
+            # print(t)
+                d[2] -= 1
+                
+                
+                
+                break
+            
+            continue
+        else:
+            pass
+    print('removing enemies in', t)
+    t.clear() # remove all enemies in target 
+    print(f'STATUS OF THESE: {t}')
+    
+        
+        
+    
+
+
 
 # print(items*2)
 # print(solve(add=True))

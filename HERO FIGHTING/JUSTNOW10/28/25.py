@@ -8939,7 +8939,7 @@ def player_selection():
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, [hero1])
                     print(hero1.enemy)
                     print(hero2.enemy)
-                    hero3 = Wind_Hashashin(PLAYER_2, [hero1])
+                    # hero3 = Wind_Hashashin(PLAYER_2, [hero1])
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.HERO1_BOT:
@@ -8948,12 +8948,12 @@ def player_selection():
 
                         bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
                         hero2 = bot2_class(hero1, hero1)  # pass live hero1 reference (first is for bot reference, second is for player reference)
-                        bot3_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
-                        hero3 = bot3_class(hero1, hero1)  # pass live hero1 reference
+                        # bot3_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
+                        # hero3 = bot3_class(hero1, hero1)  # pass live hero1 reference
 
                         if global_vars.HERO1_BOT:
                             hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
-
+                            hero1.enemy = [hero2]
                     # For player and bot, update referenced enemy to hero2  (IMPORTANT)
                     # had to manually set each other enemies first sop the attack won't error
                     hero1.enemy = [hero2]

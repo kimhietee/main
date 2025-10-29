@@ -4,7 +4,6 @@ from chance import Chance
 import pygame
 import time
 import random
-import global_vars
 
 botchance = Chance(0.3)
 
@@ -24,16 +23,16 @@ botchance = Chance(0.3)
 
 # MAIN PROBLEM, INHERITANCE, BOT ENHERITS FROM THE SELECTED HERO, THEN USE IT AS A BOT, IM SLEEPING
 
-def create_bot(selected_hero, player_type, enemy):
+def create_bot(selected_hero, player_type):
     class Bot(selected_hero):
-        def __init__(self, player, enemy):
-            super().__init__(player_type, enemy)
-            self.enemy = enemy # Used for player
-            self.player = player # Used for bot logic
+        def __init__(self, player):
+            super().__init__(player_type)
+            self.player = player
             # self.strength += self.strength
             # self.intelligence += self.intelligence
             # self.agility += self.agility
             from heroes import items #make a button hard mode
+            import global_vars
             if global_vars.hard_bot:
                 self.items = items # from heroes.py
 
@@ -252,7 +251,7 @@ def create_bot(selected_hero, player_type, enemy):
                     'timer_slow_decrease': 2, # how fast slowly reduce the timer
 
                     'cast_special_threshold': self.get_special_threshold, # percentage
-                    'special_if_sp_skill_ready': False, # decision if always cast special whenever the mana is sufficient for sp  (only use special when sp is not cd) Note: wont use  in sp_skill if its cooldown
+                    'special_if_sp_skill_ready': True, # decision if always cast special whenever the mana is sufficient for sp skill
                     'special_conditions': [False, 2], # [0] = enable condition: 
                                                         # True = with conditions,
                                                         # False = use skills whenever
@@ -1118,12 +1117,12 @@ def create_bot(selected_hero, player_type, enemy):
 
                     'cast_special_threshold': self.get_special_threshold,
                     'special_if_sp_skill_ready': True,
-                    'special_conditions': [True, 0],
+                    'special_conditions': [True, 1],
 
                     'special_threshold': {
                         'health_high_prio': self.max_health * 0.4,
-                        'low_prio': 0.60,
-                        'high_prio': 0.30
+                        'low_prio': 0.70,
+                        'high_prio': 0.40
                     },
 
                     'stuck_logic': {
@@ -1314,9 +1313,6 @@ def create_bot(selected_hero, player_type, enemy):
                                     (bot.bot_hp_percent() < 50) or
                                      bot.bot_hp_percent() < 20)
                                 ),
-                                lambda bot: (not bot.special_active and
-                                    bot.bot_hp_percent() < 20
-                                ),
                                 #sp logic
                                 # Enemy is gone
                                 lambda bot: (bot.special_active and
@@ -1327,7 +1323,7 @@ def create_bot(selected_hero, player_type, enemy):
                     },
                     'basic_attack': {
                         'atk_range': 1075,
-                        'min_cast_range': 180,
+                        'min_cast_range': 160,
                         'disable_min_cast_range_while_special': True
                     }
                 }
@@ -1425,7 +1421,7 @@ def create_bot(selected_hero, player_type, enemy):
             # print(self.mana)
             # print(self.max_mana * self.special_threshold)
             # print(self.special_threshold)
-            return self.special >= 200 and not self.special_active
+            return self.special == 200 and not self.special_active
 
         # def special_condition_threshold(self, skill):
         #     if self.mana / self.max_mana >= (1 if self.max_mana / self.attacks[skill].mana_cost <= 1 else 2 - self.max_mana / self.attacks[skill].mana_cost):
@@ -1873,7 +1869,7 @@ def create_bot(selected_hero, player_type, enemy):
                 if (self.special_in_range and facing_condition and (self.mana / self.max_mana >= self.special_threshold)):
                     self.botkey_special = True
                 elif self.special_in_range and facing_condition and self.sp_ready_condition:
-                    if (self.mana / self.max_mana >= (self.attacks_special[3].mana_cost) / self.max_mana) and self.attacks_special[3].is_ready(): #Always cast special if mana == skill 4 and not special skill 4 if ready
+                    if (self.mana / self.max_mana >= (self.attacks[3].mana_cost or self.attacks_special[3].mana_cost) / self.max_mana) and self.attacks_special[3].is_ready(): #Always cast special if mana == skill 4 and not special skill 4 if ready
                         self.botkey_special = True
 
         # def draw_distance(self): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
@@ -1955,10 +1951,6 @@ def create_bot(selected_hero, player_type, enemy):
                 self.botkey_attack,
                 self.botkey_special,
             )
-        
-        def update(self):
-            super().update()
-            self.bot_logic()
 
 
 

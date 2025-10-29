@@ -71,11 +71,8 @@ special
 '''
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, player_type, enemy):
+    def __init__(self, player_type):
         super().__init__()
-        # print('from player itself. player:', player_type)
-        # print(enemy)
-        self.enemy = enemy
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Unknown"
         self.enemy = None
@@ -96,9 +93,6 @@ class Player(pygame.sprite.Sprite):
         self.str_mult = 5
         self.int_mult = 5
         self.agi_mult = 0.1
-
-        self.damaged = False # important for detecting if the attack already damaged this hero
-        self.following_target = False # not used for now
 
         # stat
         self.strength = 40
@@ -1702,7 +1696,6 @@ class Player(pygame.sprite.Sprite):
 
             if hasattr(self, 'atk_hasted'):
                 pass
-            # print(self.enemy)
                 # print(self.get_current_atk_speed)
                 # print('jump pos:', self.get_jump_pos)
                 # print(self.y_pos)
@@ -1714,10 +1707,9 @@ class Player(pygame.sprite.Sprite):
                 #     print('attack start')
                 # print(pygame.time.get_ticks())
                 # print(self.sp_mana_refund)
-            # print(self.items)
-            
-            # if self.player_type == 1:
-            #     print(self.enemy)
+
+
+
             # print(self.frozen, self.can_cast(), self.can_move())
 
         # if self.is_dead:

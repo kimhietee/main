@@ -519,10 +519,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             - Two boolean flags:
                 * [0] – Enables damage to occur at the end of each animation cycle.
                 * [1] – Applies damage when animation ends, regardless of collision. (1 set of damage)
-                * [2] – Damage application type
-                    1 - deals damage to single, specified enemy
-                    2 - randomly deals damage to multiple enemies
-                    3 - deals damage to all enemies
 
         15. disable_collide (bool): 
             - If True, the attack does not deal damage upon direct collision.
@@ -586,8 +582,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 consume_mana=[False, 0],
                 stop_movement=(False, 0, 0, 1.0),
                 spawn_attack:dict=None, periodic_spawn:dict=None,
-                add_mana=False, add_mana_to_enemy=False, mana_mult=1,
-                damage_mode=3
+                add_mana=False, add_mana_to_enemy=False, mana_mult=1
                 ):
         super().__init__()
         self.x = x
@@ -599,10 +594,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.dmg = dmg
         self.final_dmg = final_dmg
         self.who_attacks = who_attacks
-        if type(who_attacked) is list:
-            self.who_attacked = who_attacked
-        else:
-            self.who_attacked = [who_attacked]
+        self.who_attacked = who_attacked
         self.moving = moving
         self.heal = heal
         self.continuous_dmg = continuous_dmg
@@ -626,7 +618,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         else: #just in case if the status is not slow
             self.stop_movement = list(stop_movement)
             self.stop_movement.insert(4, 1.0)
-        self.damage_mode = damage_mode
         
 
         self.spawn_attack = spawn_attack # dict or callable
@@ -674,13 +665,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self._last_periodic_spawn = pygame.time.get_ticks()
         self._periodic_spawn_count = 0
 
-        #handle collision globally
-        self.collided = False
-        self.applying_dmg=False
-        self.targets = []
 
-        #get enemy using collision function
-        # self.enemy = False
 
 
 
@@ -695,446 +680,31 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print("Hitbox drawn")
         # print(self.rect.width)
 
-    def kill_self(self, enemy:object): # (Possible bug here that removing status won't work, see the moving section part)
+    def kill_self(self): # (Possible bug here that removing status won't work, see the moving section part)
         # remove only this attack's status
-
         if self.stop_movement[0]:
             status_type = self.stop_movement[1]
             # remove only this source
-            self.add_enemy(enemy) # adding enemy to targets
-            enemy.remove_movement_status(status_type, source=self) #removing statuses from enemy
-            self.remove_enemy(enemy) # removing enemy to targets
+            self.who_attacked.remove_movement_status(status_type, source=self)
         # finally kill the sprite
         self.kill()
-    
-    def get_enemy(self, who_attacked):
-        return who_attacked
-    
-    def atk_collided(self, enemy):
-        # self.add_enemy(enemy)
-        if self.hitbox_rect.colliderect(enemy.hitbox_rect):
-            # print(f'atk collide with {who_attacked}')
-            # self.remove_enemy(enemy)
-            self.add_enemy(enemy)
-            return True    
-        # self.remove_enemy(enemy) 
-        return False
 
-            
-            
-        # return False, who_attacked
-#follow
-    def apply_dmg(self, final_dmg=False, damage_mode=3):
-        '''damage_mode - (int)  1 - apply damage to 1 specified hero, use who_attacked as enemy(single) expected if enemy passed is single, converting it into list
-                                2 - apply damage to random enemy 
-                                3 - apply damage to all enemy'''
-        if damage_mode == 1: #use who_attacked as enemy(single) expected if enemy passed is single
-            print(f'dealing damage to lonely {target}')
-            for target in self.targets:
-                target.take_damage(
-                    self.dmg if not final_dmg else self.final_dmg,
-                    add_mana_to_self=True if self.add_mana else False, 
-                    enemy=self.who_attacks, 
-                    add_mana_to_enemy=self.add_mana_to_enemy, 
-                    mana_multiplier=self.mana_mult
-                    ) 
-        elif damage_mode == 2: #if no collision needed, randomize enemy damage in whole area
-            if type(self.targets) is list:
-                target = self.targets[random.randint(0, len(self.targets)-1)]
-            print(f'dealing damage to lucky {target}')
-            target.take_damage(
-                self.dmg if not final_dmg else self.final_dmg,
-                add_mana_to_self=True if self.add_mana else False, 
-                enemy=self.who_attacks, 
-                add_mana_to_enemy=self.add_mana_to_enemy, 
-                mana_multiplier=self.mana_mult
-                )
-        elif damage_mode == 3: # apply per end dmg to all enemy
-            print(f'dealing damage to these people: {self.targets}')
-            for target in self.targets:
-                target.take_damage(
-                    self.dmg if not final_dmg else self.final_dmg,
-                    add_mana_to_self=True if self.add_mana else False, 
-                    enemy=self.who_attacks, 
-                    add_mana_to_enemy=self.add_mana_to_enemy, 
-                    mana_multiplier=self.mana_mult
-                    )
-                
-    def apply_heal(self):
-        for target in self.targets:
-            print(f'give heal to {target}')
-            target.take_heal(
-                self.dmg
-                ) 
-    def apply_stun(self):
-        for target in self.targets:
-            print(f'applying stun to {target}')
-            target.stun(
-                self.stun,
-                self.rect.centerx,
-                self.rect.centery,
-                self.stun[1]
-                )
-    def apply_movement_status_type3(self):
-        # apply type 3 freeze/root first only once
-        for target in self.targets:
-            if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
-                    
-                print(f'applied move status to {target}')
-                target.movement_status(
-                self.stop_movement[1],
-                source=self,
-                slow_rate=self.stop_movement[3]
-                )
-                self.status_applied = True
-    def apply_movement_status(self):
-        for target in self.targets:
-            print(f'applying move status to {target}')
-            target.movement_status(
-                self.stop_movement[1],
-                source=self,
-                slow_rate=self.stop_movement[3]
-                )
-    def remove_movement_status1(self):
-        for target in self.targets:
-            print(f'removing move status to {target}')
-            target.remove_movement_status(
-                self.stop_movement[1],
-                source=self
-                )
-    def remove_movement_status2(self, status_type):
-        for target in self.targets:
-            print(f'removing end move status to {target}')
-            target.remove_movement_status(
-                status_type,
-                source=self
-                )
-    def apply_follow(self): # make sure attack only follow 1 enemy
-        # if type(who_attacked) is list:#random if no collide target
-        #     who_attacked = self.who_attacked[random.randint(0, len(self.who_attacked)-1)]
-        for target in self.targets:
-            print(f'following {target}')
-            self.rect.centerx = target.rect.centerx + self.follow_offset[0]
-            self.rect.centery = target.rect.centery + self.follow_offset[1]
-            # print(self.following_target)
-    
-    # ATK LOGIC --------
-    def add_enemy(self, enemy):
-        self.targets.clear()
-        if enemy not in self.targets:
-            print(f'Adding {enemy} to targets')
-            self.targets.insert(0, enemy)
-        # else:
-        #     if enemy in self.targets:
-        #         print(f'{enemy} already in targets, pass')
-        #     else:
-                # print(f'Ready to remove {enemy} in targets')
-    def remove_enemy(self, enemy):
-        if enemy in self.targets:
-            # print(f'Removing {enemy} to targets')
-            self.targets.remove(enemy)
-            
-        # else:
-        #     if enemy not in self.targets:
-        #         print(f'{enemy} not in targets, pass')
-
-        #refresh status (some only, since something might be broken ex. self.damaged)
-        self.following_target = False
-
-    def per_end_dmg_f(self, enemy):
-        if self.per_end_dmg[0]:
-            self.damaged_detect = False 
-            self.damaged = False
-            
-        # normal logic, damages enemy anywhere
-        if not self.heal and not self.heal_enemy:
-            if not self.damaged and self.per_end_dmg[1]:
-                if not self.continuous_dmg:
-                    self.add_enemy(enemy) # adding enemy to targets
-                    self.apply_dmg(damage_mode=self.damage_mode) # damaging enemy
-                    self.remove_enemy(enemy) # removing enemy to targets
-                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-                    if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                        lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                        self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-        else:
-            if not self.damaged and self.per_end_dmg[1]:
-                if not self.continuous_dmg:
-                    self.who_attacks.take_heal(self.dmg)
-                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-    def final_dmg_f(self, enemy):
-        if not self.damaged and self.collided:
-            if self.follow[0] and not self.following_target:
-                self.following_target = True
-            if not self.disable_collide: # end animation will do the damaging
-                self.apply_dmg(damage_mode=self.damage_mode) # damaging enemy
-                self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
-
-                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                    lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
-                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-        
-    def main_atk_logic(self, enemy):
-        if not self.damaged and self.collided:
-            if self.follow[0] and not self.following_target:
-                self.following_target = True
-            if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
-                self.apply_dmg(damage_mode=self.damage_mode) # damaging enemy
-                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                    lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-            if self.moving:
-                self.damaged = True
-                        
-    def continuous_dmg_logic(self, enemy):
-        if self.continuous_dmg and self.collided:
-            if self.follow[0] and not self.following_target:
-                self.following_target = True
-            self.add_enemy(enemy) # adding enemy to targets
-            self.apply_dmg(damage_mode=self.damage_mode) # damaging enemy
-            self.remove_enemy(enemy) # removing enemy to targets
-            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-    def per_end_dmg_continuous_dmg_logic(self, enemy):
-        if not self.damaged and self.collided and self.per_end_dmg[0] and self.disable_collide:
-            if self.follow[0] and not self.following_target:
-                self.following_target = True
-            if not self.continuous_dmg:
-                self.apply_dmg(damage_mode=self.damage_mode) # damaging enemy
-                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-                
-                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                    lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-
-            if self.damaged_detect:
-                self.damaged = True
-
-    def collide_kill_logic(self, enemy):
-        if self.collided:
-            if self.kill_collide:
-                self.rect.x += 10000
-                self.kill_self(enemy)
-        if self.collided:
-            if self.self_kill_collide:
-                self.rect.x += 10000
-                self.kill_self(enemy)
-    def main_atk_heal_logic(self, enemy):
-        if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
-            if self.heal_enemy:
-                if not self.damaged and self.collided:
-                    if self.follow[0] and not self.following_target:
-                        self.following_target = True
-                    self.add_enemy(enemy) # adding enemy to targets
-                    self.apply_heal() # healing enemy
-                    self.remove_enemy(enemy) # removing enemy to targets
-                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-            else:
-                if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
-                    if self.follow[0] and not self.following_target:
-                        self.following_target = True
-                    self.who_attacks.take_heal(self.dmg)
-                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-        if self.self_moving:
-            self.damaged = True
-
-    def main_atk_heal_logic2(self, enemy):
-        if self.heal_enemy:
-            if not self.damaged and self.collided:
-                if self.follow[0] and not self.following_target:
-                    self.following_target = True
-                self.add_enemy(enemy) # adding enemy to targets
-                self.apply_heal() # healing enemy
-                self.remove_enemy(enemy) # removing enemy to targets
-                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-        else:
-            if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
-                if self.follow[0] and not self.following_target:
-                    self.following_target = True
-                self.who_attacks.take_heal(self.dmg)
-                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-    def moving_logic(self, enemy):
-        self.rect.x += self.speed #(Theres a bug where you use water princess special skill 4 on left border so it moves enemy outside border, that has freeze effect, after it goes back to screen, still frozen. Fix the player movement statuses if bug persists.)
-        if self.rect.x > width + 2000 or self.rect.x < -2000: # (the 2nd part might be the culprit...)
-            self.kill_self(enemy)  # Remove the sprite if it goes off-screen
-            # (There, fixed, but somethings wrong with removing effect on kill self)
-    def stun_logic(self, enemy):
-        if self.collided:
-            if self.follow[0] and not self.following_target:
-                self.following_target = True
-            # end animation will do the damaging
-            if self.stun[0]:
-                self.add_enemy(enemy) # adding enemy to targets
-                self.apply_stun() # stunning enemy
-                self.remove_enemy(enemy) # removing enemy to targets
-                # self.who_attacked.stunned = True
-    def follow_logic(self, enemy):
-        if not self.follow_self:
-            if self.follow[1]: # FOLLOW ENEMY
-                # if type(who_attacked) is list: # if there are multiple enemy, random pick follow
-                #     who_attacked = self.who_attacked[random.randint(0, len(self.who_attacked)-1)]
-                self.add_enemy(enemy) # adding enemy to targets
-                self.apply_follow() # following enemy
-                self.remove_enemy(enemy) # removing enemy to targets
-            elif self.follow[0] and self.following_target:
-                self.add_enemy(enemy) # adding enemy to targets
-                self.apply_follow() # following enemy
-                self.remove_enemy(enemy) # removing enemy to targets
-
-        else:
-            if self.follow[1]: # FOLLOW SELF
-                self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
-                self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
-            elif self.follow[0] and self.following_target:
-                self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
-                self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
-    def stop_movement_logic(self, enemy):
-        for who_attacked in self.who_attacked:
-            if self.stop_movement[0] : # enable status
-                if self.stop_movement[2] in (1,2): # if either type == 1 or 2
-                    # type 2
-                    # always run code below if type == 2
-                    # print(self.stop_movement)
-                    if self.collided:
-                        self.add_enemy(enemy) # adding enemy to targets
-                        self.apply_movement_status() # applying status to enemy
-                        self.remove_enemy(enemy) # removing enemy to targets
-                    # type 1 
-                    # run code below if type == 1
-                    elif self.stop_movement[2] == 1:
-                        # removes status
-                        self.add_enemy(enemy) # adding enemy to targets
-                        self.remove_movement_status1() # removing status to enemy
-                        self.remove_enemy(enemy) # removing enemy to targets
-
-            if self.current_repeat >= self.repeat_animation:
-                if self.stop_movement[0]:
-                    status_type = self.stop_movement[1]
-                    mode = self.stop_movement[2]
-                    if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
-                        self.add_enemy(enemy) # adding enemy to targets
-                        self.remove_movement_status2(status_type) # removing status to enemy
-                        self.remove_enemy(enemy) # removing enemy to targets
     def update(self):
         if global_vars.SHOW_HITBOX:
-            self.draw_hitbox(screen)
-        self.update_hitbox()
-        current_time = pygame.time.get_ticks()
-        if self.delay[0] and not self.delay_triggered:
-            if current_time - self.delay_start_time < self.delay[1]:
-                return
-            else:
-                if self.use_live_position_on_delay:
-                    self.x = self.who_attacks.x_pos + self.follow_offset[0]
-                    self.y = self.who_attacks.y_pos + self.follow_offset[1]
-                self.image = self.frames[self.frame_index]
-                self.rect = self.image.get_rect(center=(self.x, self.y))
-                self.hitbox_width = int(self.rect.width * self.hitbox_scale_x)
-                self.hitbox_height = int(self.rect.height * self.hitbox_scale_y)
-                self.hitbox_rect = pygame.Rect(self.x, self.y, self.hitbox_width, self.hitbox_height)
-                if self.sound[0] == True and not self.repeat_sound:
-                    if self.sound[1] != None:
-                        self.sound[1].play()
-                    if self.sound[2] != None:
-                        self.sound[2].play()
-                    if self.sound[3] != None:
-                        self.sound[3].play()
-                self.delay_triggered = True
-        elif not self.delay[0] and not self.delay_triggered:
-            if self.sound[0] == True and not self.repeat_sound:
-                if self.sound[1] != None:
-                    self.sound[1].play()
-                if self.sound[2] != None:
-                    self.sound[2].play()
-                if self.sound[3] != None:
-                    self.sound[3].play()
-            self.delay_triggered = True
-        if self.delay_triggered:
-            print(self.targets)
-            for num, enemy in enumerate(self.who_attacked):
-                # self.add_enemy(enemy)
-                # print(self.who_attacked,'enemies')
-                print(self.targets, 'targets')
-                # print(num, self.damaged)
-                self.collided = self.atk_collided(enemy)
-                if self.collided and self.spawn_attack and not self._has_spawned_on_collide:
-                    spec = self.spawn_attack
-                    if callable(spec):
-                        new = spec(self)
-                        if new:
-                            attack_display.add(new)
-                    else:
-                        ak = spec.get('attack_kwargs', {}).copy()
-                        if spec.get('use_attack_onhit_pos', True):
-                            ak['x'], ak['y'] = self.rect.center
-                        attack_display.add(Attack_Display(**ak))
-                    self._has_spawned_on_collide = True
-                if self.periodic_spawn:
-                    now = pygame.time.get_ticks()
-                    interval = self.periodic_spawn.get('interval', 2000)
-                    max_times = self.periodic_spawn.get('repeat_count', None)
-                    if now - self._last_periodic_spawn >= interval:
-                        ak = self.periodic_spawn.get('attack_kwargs', {}).copy()
-                        if self.periodic_spawn.get('use_attack_pos', False):
-                            ak['x'], ak['y'] = self.rect.center
-                        attack_display.add(Attack_Display(**ak))
-                        self._last_periodic_spawn = now
-                        self._periodic_spawn_count += 1
-                        if max_times is not None and self._periodic_spawn_count >= max_times:
-                            self.periodic_spawn = None
-                self.apply_movement_status_type3()
-                if current_time - self.last_update_time > self.frame_duration:
-                    self.last_update_time = current_time
-                    self.frame_index += 1
-                    if self.frame_index < len(self.frames):
-                        self.image = self.frames[self.frame_index]
-                    elif self.frame_index >= len(self.frames):
-                        self.frame_index = 0
-                        self.current_repeat += 1
-                        self.per_end_dmg_f(enemy)
-                    if self.current_repeat >= self.repeat_animation:
-                        self.animation_done = True
-                        self.kill_self(enemy)
-                    if self.sound[0] == True and self.repeat_sound:
-                        if self.sound[1] != None:
-                            self.sound[1].play()
-                        if self.sound[2] != None:
-                            self.sound[2].play()
-                        if self.sound[3] != None:
-                            self.sound[3].play()
-                    self.final_dmg_f(enemy)
-                    if not self.heal and not self.heal_enemy:
-                        self.main_atk_logic(enemy)
-                        self.continuous_dmg_logic(enemy)
-                        self.per_end_dmg_continuous_dmg_logic(enemy)
-                        self.collide_kill_logic(enemy)
-                    else:
-                        if self.self_moving:
-                            self.main_atk_heal_logic(enemy)
-                        else:
-                            self.main_atk_heal_logic2(enemy)
-                    if self.consume_mana[0]:
-                        self.who_attacks.take_mana(self.consume_mana[1])
-                if self.moving:
-                    self.moving_logic(enemy)
-                self.stun_logic(enemy)
-                self.follow_logic(enemy)
-                self.stop_movement_logic(enemy)
-
-                # self.remove_enemy(enemy)
-    '''def update(self):
-        if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
         self.update_hitbox()
+        
+        '''
+        Update the attack display's position and animation.
+        This method is called every frame to update the attack display's state.
+        It handles the animation frames, movement, and collision detection.
+        It also plays the attack sound if specified.
+        The method checks for collisions with the target and applies damage if necessary.
+        The method also handles the stun effect if specified.
+        The method is designed to be used with Pygame and integrates with the Pygame sprite system.
+        The method is called by the main game loop to update the attack display's state.
+        '''
         # print(self.following_target)
         # print(self.detect_collision())
         """Update the attack animation and position."""
@@ -1178,8 +748,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             self.delay_triggered = True
 
         # Same flag so that I dont have to write this again!!
-        # self.enemy = self.get_enemy()
-        self.collided = self.atk_collided()[0]
+        collided = self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect)
 
         if self.delay_triggered:
             # MAIN LOGIC 1
@@ -1188,7 +757,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             # Must at be the top (bug)
             # Spawn attack when collide
             # 'use_attack_onhit_pos': bool, spawns attack when enemy collides with the attack
-            if self.collided and self.spawn_attack and not self._has_spawned_on_collide:
+            if collided and self.spawn_attack and not self._has_spawned_on_collide:
                 spec = self.spawn_attack
                 if callable(spec):
                     new = spec(self)
@@ -1221,10 +790,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
 
 
-            # print('target hero:')
-            # print(who_attacked)
             # apply type 3 freeze/root first only once
-            self.apply_movement_status_type3()
+            if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
+                self.who_attacked.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                self.status_applied = True
 
             if current_time - self.last_update_time > self.frame_duration:
                 self.last_update_time = current_time
@@ -1241,8 +810,26 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     self.current_repeat += 1
 
                     # EVERY FRAME ATTACK LOGIC --------------------------
-        
-                    self.per_end_dmg_f()
+
+                    if self.per_end_dmg[0]:
+                        self.damaged_detect = False 
+                        self.damaged = False
+                        
+                    # normal logic, damages enemy anywhere
+                    if not self.heal and not self.heal_enemy:
+                        if not self.damaged and self.per_end_dmg[1]:
+                            if not self.continuous_dmg:
+                                self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+
+                                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                                    lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                    else:
+                        if not self.damaged and self.per_end_dmg[1]:
+                            if not self.continuous_dmg:
+                                self.who_attacks.take_heal(self.dmg)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
 
 
@@ -1250,31 +837,40 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
 
 
-                # MAIN LOGIC 2
-                # Final animation end
-                if self.current_repeat >= self.repeat_animation:
-                    # warning: inside these block of codes only runs per frames, not fps frames, 
-                    # which might prone to errors if not read carefully.
-                    # if self.freeze:
-                    #     self.who_attacked.speed = RUNNING_SPEED
-                    
-                            
-                    #dmg animation
-                    self.animation_done = True
-                    self.kill_self() # Remove the sprite from the group  
+                    # MAIN LOGIC 2
+                    # Final animation end
+                    if self.current_repeat >= self.repeat_animation:
+                        # warning: inside these block of codes only runs per frames, not fps frames, 
+                        # which might prone to errors if not read carefully.
+                        # if self.freeze:
+                        #     self.who_attacked.speed = RUNNING_SPEED
+                        
+                                
+                        #dmg animation
+                        self.animation_done = True
+                        self.kill_self() # Remove the sprite from the group  
 
-                # EVERY END FRAME ATTACK LOGIC -----------------------------
-                    
-                if self.sound[0] == True and self.repeat_sound:
-                    if self.sound[1] != None:
-                        self.sound[1].play()
-                    if self.sound[2] != None:
-                        self.sound[2].play()
-                    if self.sound[3] != None:
-                        self.sound[3].play()
+                    # EVERY END FRAME ATTACK LOGIC -----------------------------
+                        
+                    if self.sound[0] == True and self.repeat_sound:
+                        if self.sound[1] != None:
+                            self.sound[1].play()
+                        if self.sound[2] != None:
+                            self.sound[2].play()
+                        if self.sound[3] != None:
+                            self.sound[3].play()
 
-                #final dmg
-                self.final_dmg_f()
+                    #final dmg
+                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                        if self.follow[0] and not self.following_target:
+                            self.following_target = True
+                        if not self.disable_collide: # end animation will do the damaging
+                            self.who_attacked.take_damage(self.final_dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                            self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
+
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                                lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
                     
 
@@ -1302,32 +898,101 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     #dmg per frame
 
                     # main atk logic
-                    self.main_atk_logic()
+                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                        if self.follow[0] and not self.following_target:
+                            self.following_target = True
+                        if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
+                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
                     
                         # #combine for moving dmg [1]:
-                        # ??? None ???
+                        # if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
+                        #     self.who_attacked.take_damage(self.final_dmg, , add_mana_to_self=true if self.add_mana else false)
 
+                        if self.moving:
+                            self.damaged = True
                         
                         
                     # continuous dmg logic
-                    self.continuous_dmg_logic()
+                    if self.continuous_dmg and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                        if self.follow[0] and not self.following_target:
+                            self.following_target = True
+                        self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                        self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+
+                        if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                            lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
 
                     #for per_end_dmg logic
                     # NOW WHY TF DOES THIS WORK SUDDENLY? this is .... good?
-                    self.per_end_dmg_continuous_dmg_logic()
+                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect) and self.per_end_dmg[0] and self.disable_collide:
+                        if self.follow[0] and not self.following_target:
+                            self.following_target = True
+                        if not self.continuous_dmg:
+                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
+                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                            
+                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
+                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            
+                            # if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+                            #     lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
+                            #     self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+
+                        if self.damaged_detect:
+                            self.damaged = True
 
                     #whenn collide, kill
-                    self.collide_kill_logic()
+                    if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                        if self.kill_collide:
+                            self.rect.x += 10000
+                            self.kill_self()
+                    if self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
+                        if self.self_kill_collide:
+                            self.rect.x += 10000
+                            self.kill_self()
 
                     
 
                 # heal logic
                 else:
                     if self.self_moving:
-                        self.main_atk_heal_logic()
+                        if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
+                            if self.heal_enemy:
+                                if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                                    if self.follow[0] and not self.following_target:
+                                        self.following_target = True
+                                    self.who_attacked.take_heal(self.dmg)
+                                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                            else:
+                                if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
+                                    if self.follow[0] and not self.following_target:
+                                        self.following_target = True
+                                    self.who_attacks.take_heal(self.dmg)
+                                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+
+                        if self.self_moving:
+                            self.damaged = True
 
                     else:#normal stuff
-                        self.main_atk_heal_logic2()
+                        if self.heal_enemy:
+                            if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                                if self.follow[0] and not self.following_target:
+                                    self.following_target = True
+                                self.who_attacked.take_heal(self.dmg)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                        else:
+                            if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
+                                if self.follow[0] and not self.following_target:
+                                    self.following_target = True
+                                self.who_attacks.take_heal(self.dmg)
+                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
 
 
                 if self.consume_mana[0]:
@@ -1337,14 +1002,37 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             
             if self.moving: # moving logic
                 # Move the attack
-                self.moving_logic()
+                self.rect.x += self.speed #(Theres a bug where you use water princess special skill 4 on left border so it moves enemy outside border, that has freeze effect, after it goes back to screen, still frozen. Fix the player movement statuses if bug persists.)
+                if self.rect.x > width + 2000 or self.rect.x < -2000: # (the 2nd part might be the culprit...)
+                    self.kill_self()  # Remove the sprite if it goes off-screen
+                    # (There, fixed, but somethings wrong with removing effect on kill self)
 
             #stun logic
-            self.stun_logic()
+            if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                if self.follow[0] and not self.following_target:
+                    self.following_target = True
+                if True: # end animation will do the damaging
+                    if self.stun[0]:
+                        self.who_attacked.stun(self.stun, self.rect.centerx, self.rect.centery, self.stun[1])
+                        # self.who_attacked.stunned = True
 
 
             #follow logic
-            self.follow_logic()
+            if not self.follow_self:
+                if self.follow[1]: # FOLLOW ENEMY
+                    self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
+                    self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
+                elif self.follow[0] and self.following_target:
+                    self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
+                    self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
+
+            else:
+                if self.follow[1]: # FOLLOW SELF
+                    self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
+                    self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
+                elif self.follow[0] and self.following_target:
+                    self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
+                    self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
 
             # print(self.follow_self)
 
@@ -1352,8 +1040,26 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             # [0] = enable
             # [1] = status type (freeze/root)
             # [2] = type
-            self.stop_movement_logic()
-            # print(self.collided)'''
+            if self.stop_movement[0] : # enable status
+                if self.stop_movement[2] in (1,2): # if either type == 1 or 2
+                    # type 2
+                    # always run code below if type == 2
+                    # print(self.stop_movement)
+                    if collided:
+                        self.who_attacked.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                    # type 1 
+                    # run code below if type == 1
+                    elif self.stop_movement[2] == 1:
+                        # removes status
+                        self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
+
+            if self.current_repeat >= self.repeat_animation:
+                if self.stop_movement[0]:
+                    status_type = self.stop_movement[1]
+                    mode = self.stop_movement[2]
+                    if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
+                        self.who_attacked.remove_movement_status(status_type, source=self)
+
             
             
 
@@ -1445,8 +1151,8 @@ FIRE_WIZARD_ATK3_SIZE = 0.3
 FIRE_WIZARD_SP_SIZE = 1.3
 
 class Fire_Wizard(Player):
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Fire Wizard"
 
@@ -1842,7 +1548,7 @@ class Fire_Wizard(Player):
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             delay=(True, 800),
                             sound=(True, self.atk1_sound, None, None),
@@ -1879,7 +1585,7 @@ class Fire_Wizard(Player):
                                 dmg=self.atk2_damage[0],
                                 final_dmg=self.atk2_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 800),
                                 sound=(True, self.atk2_sound, None, None),
                                 # stop_movement=(True,3,3,2.2)
@@ -1911,7 +1617,7 @@ class Fire_Wizard(Player):
                             dmg=self.atk3_damage[0],
                             final_dmg=self.atk3_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             delay=(True, 800),
                             sound=(True, self.atk3_sound , None, None),
                                 # stop_movement=(True,3,1, 0.2)
@@ -1944,7 +1650,7 @@ class Fire_Wizard(Player):
                             dmg=self.sp_damage[0],
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.sp_sound, None, None),
                                 # stop_movement=(True, 3, 3, 0.5)
                             ) # Replace with the target
@@ -1975,7 +1681,7 @@ class Fire_Wizard(Player):
                                 dmg=self.basic_attack_damage,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
                                 delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -2027,7 +1733,7 @@ class Fire_Wizard(Player):
                                 dmg=self.atk1_damage[0]/3,
                                 final_dmg=self.atk1_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
                             sound=(True, self.atk1_sound , None, None),
                             delay=(True, 800)) # Replace with the target
@@ -2044,7 +1750,7 @@ class Fire_Wizard(Player):
                                 dmg=self.atk1_damage[0]/6,
                                 final_dmg=self.atk1_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
                             delay=(True, 800)) # Replace with the target
                             attack_display.add(attack2)
@@ -2077,7 +1783,7 @@ class Fire_Wizard(Player):
                                 dmg=self.atk2_damage[0]/2,
                                 final_dmg=self.atk2_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                             delay=(True, 800)) # Replace with the target
                             attack_display.add(attack)
                         self.atk2_sound.play()
@@ -2108,7 +1814,7 @@ class Fire_Wizard(Player):
                             dmg=self.atk3_damage[0] * 0.7,
                             final_dmg=self.atk3_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             continuous_dmg=True,
                             sound=(True, self.atk3_sound , None, None),
@@ -2142,7 +1848,7 @@ class Fire_Wizard(Player):
                                 dmg=self.sp_damage[0]/1.1,
                                 final_dmg=self.sp_damage[1]/1.1,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.sp_sound , None, None)) # Replace with the target
                             attack_display.add(attack)
                         self.mana -=  self.attacks_special[3].mana_cost
@@ -2170,7 +1876,7 @@ class Fire_Wizard(Player):
                             dmg=self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
                             delay=(True, self.basic_attack_animation_speed * (200 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -2198,7 +1904,7 @@ class Fire_Wizard(Player):
     
     def update(self):
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -2337,8 +2043,8 @@ WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE = 2
 
 
 class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Wanderer Magician"
 
@@ -2696,7 +2402,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
 
                             kill_collide=True,
@@ -2732,7 +2438,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.atk2_damage[0], 
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             heal=True,
                             sound=(True, self.atk2_sound , None, None)) # Replace with the target
@@ -2770,7 +2476,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.atk3_damage[0],
                             final_dmg=self.atk3_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
                             delay=(True, 800)
                             ) # Replace with the target
@@ -2802,7 +2508,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.sp_damage[0],
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
 
                             kill_collide=True,
@@ -2835,7 +2541,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
 
                             sound=(True, self.atk1_sound, None, None),
@@ -2867,7 +2573,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     #             'dmg': random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
                     #             'final_dmg': 0,
                     #             'who_attacks': self,
-                    #             'who_attacked': self.enemy,
+                    #             'who_attacked': hero1 if self.player_type == 2 else hero2,
                     #             'moving': True,
                     #             'sound': (False, self.atk1_sound, None, None),
                     #             'delay': (True, 300),
@@ -2889,7 +2595,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     #             'dmg': self.atk3_damage[0],
                     #             'final_dmg': self.atk3_damage[1],
                     #             'who_attacks': self,
-                    #             'who_attacked': self.enemy,
+                    #             'who_attacked': hero1 if self.player_type == 2 else hero2,
                     #             'moving': False,
                     #             'sound': (False, self.atk3_sound, None, None),
                     #             'delay': (False, 0)
@@ -2935,7 +2641,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                                 dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 1.2,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
 
                                 kill_collide=True,
@@ -2971,7 +2677,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=(self.atk2_damage[0]*2) + ((self.atk2_damage[0]*2) * (SPECIAL_MULTIPLIER * 0.25)),
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             heal=True,
                             sound=(True, self.atk2_sound , None, None)) # Replace with the target
@@ -3003,7 +2709,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.atk3_damage[0] + (self.atk3_damage[0] * (SPECIAL_MULTIPLIER * 0.15)),
                             final_dmg=self.atk3_damage[1] + (self.atk3_damage[1] * (SPECIAL_MULTIPLIER * 0.15)),
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
                             delay=(True, 800)
                             ) # Replace with the target
@@ -3034,7 +2740,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.sp_damage_2nd[0],
                             final_dmg=self.sp_damage_2nd[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=False,
                             follow=(False, True),
                             follow_offset=(0, 50),
@@ -3070,7 +2776,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             dmg=self.basic_attack_damage/2.5,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
 
                             sound=(True, self.basic_sound, self.atk1_sound, None),
@@ -3088,7 +2794,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         #         'dmg': self.atk3_damage[0],
                         #         'final_dmg': self.atk3_damage[1],
                         #         'who_attacks': self,
-                        #         'who_attacked': self.enemy,
+                        #         'who_attacked': hero1 if self.player_type == 2 else hero2,
                         #         'moving': False,
                         #         'sound': (False, self.atk3_sound, None, None),
                         #         'delay': (False, 0)
@@ -3136,7 +2842,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         #         dmg=self.atk3_damage[0],
         #         final_dmg=self.atk3_damage[1],
         #         who_attacks=self,
-        #         who_attacked=self.enemy,
+        #         who_attacked=hero1 if self.player_type == 2 else hero2,
         #         sound=(True, self.atk3_sound , None, None),
         #         delay=(True, 800)
         #         ) # Replace with the target
@@ -3150,7 +2856,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         #     self.y_velocity -= DEFAULT_GRAVITY*7  # optional: cancel gravity impulse if you want freeze in air
         # print(self.stunned)
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -3314,8 +3020,8 @@ class Display_Text: # display damage taken text previously (not working for now)
   
 
 class Fire_Knight(Player):
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
         self.player_type = player_type
@@ -3741,7 +3447,7 @@ class Fire_Knight(Player):
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk1_sound , None, None),
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             hitbox_scale_x=0.4
@@ -3777,7 +3483,7 @@ class Fire_Knight(Player):
                             dmg=self.atk2_damage[0],
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             stun=(True, 50),
                             sound=(True, self.atk2_sound , None, None),
                             delay=(True, 700)
@@ -3810,7 +3516,7 @@ class Fire_Knight(Player):
                             dmg=self.atk3_damage[0],
                             final_dmg=self.atk3_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
                             delay=(True, 700)
                             )
@@ -3841,7 +3547,7 @@ class Fire_Knight(Player):
                             dmg=self.sp_damage[0],
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.sp_sound , None, None),
                             hitbox_scale_x=0.7
                             ) # Replace with the target
@@ -3871,7 +3577,7 @@ class Fire_Knight(Player):
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
 
                             sound=(True, self.basic_sound, None, None),
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -3919,7 +3625,7 @@ class Fire_Knight(Player):
                             dmg=self.atk1_damage[0]* 0.6,
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk1_sound , None, None),
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             hitbox_scale_x=0.4
@@ -3937,7 +3643,7 @@ class Fire_Knight(Player):
                             dmg=0,
                             final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.2,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             follow=(True, False),
@@ -3974,7 +3680,7 @@ class Fire_Knight(Player):
                                 dmg=self.atk2_damage[0] * 0.4,
                                 final_dmg=self.atk2_damage[1] * 0.4,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 stun=(True, 50),
                                 sound=(True, self.atk2_sound , None, None),
                                 delay=(True, i[1]),
@@ -3994,7 +3700,7 @@ class Fire_Knight(Player):
                             dmg=0,
                             final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.4,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
                             delay=(True, i[1]),
                             follow=(True, False),
@@ -4029,7 +3735,7 @@ class Fire_Knight(Player):
                             dmg=self.atk2_damage[0]*1.6,
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             stun=(True, 100),
                             sound=(True, self.atk2_sound , None, None),
                             delay=(True, 700)
@@ -4047,7 +3753,7 @@ class Fire_Knight(Player):
                             dmg=0,
                             final_dmg=FIRE_KNIGHT_BURN_DAMAGE,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
                             delay=(True, 700),
                             follow=(True, False),
@@ -4084,7 +3790,7 @@ class Fire_Knight(Player):
                                 dmg=i[4],
                                 final_dmg=i[5],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.sp_sound , None, None),
                                 delay=(i[1], 1200),
                                 follow=(False, False)
@@ -4101,7 +3807,7 @@ class Fire_Knight(Player):
                                 dmg=0,
                                 final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.5,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.burn_sound, None, None),
                                 delay=(i[1], 1200),
                                 follow=(True, False),
@@ -4134,7 +3840,7 @@ class Fire_Knight(Player):
                             dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             sound=(True, self.basic_sound, None, None),
                             moving=True
@@ -4153,7 +3859,7 @@ class Fire_Knight(Player):
                             dmg=0,
                             final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.1,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.burn_sound, None, None),
                             delay=(True, self.basic_attack_animation_speed * (700 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                             follow=(True, False),
@@ -4179,7 +3885,7 @@ class Fire_Knight(Player):
     def update(self):
         self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -4329,8 +4035,8 @@ WIND_HASHASHIN_ATK3_SPECIAL_SIZE = 2
 
 
 class Wind_Hashashin(Player):
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.player_type = player_type
         self.name = "Wind Hashashin"
 
@@ -4690,8 +4396,6 @@ class Wind_Hashashin(Player):
         self.distance_covered = 0
         self.dash_speed = 5
         self.max_distance = 600 #(400 -> 600)
-
-        self.target = None
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         self.keys = pygame.key.get_pressed()
@@ -4738,7 +4442,7 @@ class Wind_Hashashin(Player):
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound , None, None),
                             stop_movement=(True, 3, 2, 0.8)
@@ -4778,7 +4482,7 @@ class Wind_Hashashin(Player):
                                 dmg=i[4],
                                 final_dmg=i[6],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
@@ -4820,7 +4524,7 @@ class Wind_Hashashin(Player):
                                 dmg=i[4],
                                 final_dmg=i[5],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=i[1],
                                 stun=(True, 0),
                                 sound=(True, self.atk3_sound , self.x_slash_sound, None)
@@ -4846,7 +4550,6 @@ class Wind_Hashashin(Player):
                     if self.mana >=  self.attacks[3].mana_cost and self.attacks[3].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        self.target = self.enemy[random.randint(0, len(self.enemy)-1)]
                         attack = Attack_Display(
                                 x=self.rect.centerx,
                                 y=self.rect.centery + 60,
@@ -4857,12 +4560,11 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.target,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 per_end_dmg=(False, True),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
-                                repeat_sound=True,
-                                damage_mode='single'
+                                repeat_sound=True
                                 )
                                 # Replace with the target
                         attack_display.add(attack)
@@ -4872,8 +4574,6 @@ class Wind_Hashashin(Player):
                         self.sp_attacking = True
                         self.player_sp_index = 0
                         self.player_sp_index_flipped = 0
-
-                        
                         # self.sp_sound.play()
                         # self.x_slash_sound.play()
                         # self.sp_sound2.play()
@@ -4896,7 +4596,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.basic_attack_damage,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.basic_sound, None, None),
                                 moving=True,
                                 delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -4943,7 +4643,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.atk1_damage[0] * 0.3,
                                 final_dmg=self.atk1_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
                                 sound=(True, self.atk1_sound, None, None),
                                 delay=(True, i),
@@ -4986,7 +4686,7 @@ class Wind_Hashashin(Player):
                                 dmg=i[4],
                                 final_dmg=i[5],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=i[1],
                                 stun=(True, 0),
                                 sound=(True, self.atk3_sound , self.x_slash_sound, None)
@@ -5026,7 +4726,7 @@ class Wind_Hashashin(Player):
                                 dmg=i[4],
                                 final_dmg=i[6],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
@@ -5047,7 +4747,6 @@ class Wind_Hashashin(Player):
                     # print('Skill 3 used')
                 elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
-                        self.target = self.enemy[random.randint(0, len(self.enemy)-1)]
                         attack = Attack_Display(
                                 x=self.rect.centerx,
                                 y=self.rect.centery + 60,
@@ -5058,12 +4757,11 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage * 0.4,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.target,
-                                per_end_dmg=(False, True, 1),
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
+                                per_end_dmg=(False, True),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
-                                repeat_sound=True,
-                                damage_mode='single'
+                                repeat_sound=True
                                 )
                         attack_display.add(attack)
 
@@ -5078,7 +4776,7 @@ class Wind_Hashashin(Player):
                                     dmg=self.real_sp_damage * 0,
                                     final_dmg=0,
                                     who_attacks=self,
-                                    who_attacked=self.enemy,
+                                    who_attacked=hero1 if self.player_type == 2 else hero2,
                                     per_end_dmg=(False, True),
                                     disable_collide=False,
                                     sound=(True, self.sp_sound, self.sp_sound2, self.x_slash_sound),
@@ -5099,7 +4797,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage * 0.2,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 per_end_dmg=(False, True),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
@@ -5141,7 +4839,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
                                 heal=False,
                                 continuous_dmg=False,
@@ -5207,7 +4905,7 @@ class Wind_Hashashin(Player):
     
     def update(self):
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -5255,35 +4953,35 @@ class Wind_Hashashin(Player):
             
         elif self.attacking2: # not special, used by skill2, when special, used by skill 3
             self.atk1_move_speed += 0.4 #just trying, plan is to make this special move that knokes back enemies 
-            # if not self.special_active:
-            #     if self.player_type == 1: # idea for slow, if enemy ffacing right, - x pos, else + x pos
-            #         if self.facing_right:
-            #             hero2.x_pos += self.atk2_move_speed
-            #         else:
-            #             hero2.x_pos -= self.atk2_move_speed
-            #     if self.player_type == 2:
-            #         if self.facing_right:
-            #             hero1.x_pos += self.atk2_move_speed
-            #         else:
-            #             hero1.x_pos -= self.atk2_move_speed
-            # elif self.special_active:
-            #     if self.player_type == 1: # idea for slow, if enemy ffacing right, - x pos, else + x pos
-            #         if self.facing_right:
-            #             hero2.x_pos += self.atk3_move_speed
-            #         else:
-            #             hero2.x_pos -= self.atk3_move_speed
-            #     if self.player_type == 2:
-            #         if self.facing_right:
-            #             hero1.x_pos += self.atk3_move_speed
-            #         else:
-            #             hero1.x_pos -= self.atk3_move_speed
+            if not self.special_active:
+                if self.player_type == 1: # idea for slow, if enemy ffacing right, - x pos, else + x pos
+                    if self.facing_right:
+                        hero2.x_pos += self.atk2_move_speed
+                    else:
+                        hero2.x_pos -= self.atk2_move_speed
+                if self.player_type == 2:
+                    if self.facing_right:
+                        hero1.x_pos += self.atk2_move_speed
+                    else:
+                        hero1.x_pos -= self.atk2_move_speed
+            elif self.special_active:
+                if self.player_type == 1: # idea for slow, if enemy ffacing right, - x pos, else + x pos
+                    if self.facing_right:
+                        hero2.x_pos += self.atk3_move_speed
+                    else:
+                        hero2.x_pos -= self.atk3_move_speed
+                if self.player_type == 2:
+                    if self.facing_right:
+                        hero1.x_pos += self.atk3_move_speed
+                    else:
+                        hero1.x_pos -= self.atk3_move_speed
             self.atk2_animation()
         elif self.attacking3:
             self.atk3_animation(2) #animation speed increase
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
         elif self.sp_attacking:
-            self.x_pos = self.target.x_pos
-            self.y_pos = self.target.y_pos
+            self.x_pos = hero1.x_pos if self.player_type == 2 else hero2.x_pos
+            self.y_pos = hero1.y_pos if self.player_type == 2 else hero2.y_pos
             self.sp_animation()
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
@@ -5349,7 +5047,7 @@ class Wind_Hashashin(Player):
                 if self.special <= 0:
                     self.special_active = False
 
-        # print(self.target) #good
+        
         super().update()
 
 
@@ -5396,8 +5094,8 @@ WATER_PRINCESS_SP_SIZE = 4
 
 
 class Water_Princess(Player):
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
         self.player_type = player_type
@@ -5852,16 +5550,6 @@ class Water_Princess(Player):
 
         '''good, the values are now correct.'''
 
-        self.mana_mult =0 
-        self.atk1_mana_consume = 0
-        self.atk2_mana_consume = 0
-        self.atk3_mana_consume = 0
-        self.atk4_mana_consume = 0
-        self.atk1_special_mana_consume = 0
-        self.atk2_special_mana_consume = 0
-        self.atk3_special_mana_consume = 0
-        self.atk4_special_mana_consume = 0
-
     def update_mana_values(self):
         self.mana_mult = 0.2 if not self.special_active else 0.25
         self.atk1_mana_consume = (self.attacks[0].mana_cost/40) - ((self.attacks[0].mana_cost/40)*self.mana_mult)
@@ -5920,7 +5608,7 @@ class Water_Princess(Player):
                                 dmg=i[3],
                                 final_dmg=i[4],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, self.basic_attack_animation_speed * (300 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 sound=(True, i[5], None, None),
 
@@ -5968,7 +5656,7 @@ class Water_Princess(Player):
                                 dmg=self.atk2_damage[0],
                                 final_dmg=self.atk2_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -5989,7 +5677,7 @@ class Water_Princess(Player):
                                 dmg=self.atk2_damage_2nd[0],
                                 final_dmg=self.atk2_damage_2nd[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6021,7 +5709,7 @@ class Water_Princess(Player):
                                 dmg=self.atk3_damage_2nd,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
@@ -6043,7 +5731,7 @@ class Water_Princess(Player):
                                 dmg=self.atk3_damage[0],
                                 final_dmg=self.atk3_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
@@ -6089,7 +5777,7 @@ class Water_Princess(Player):
                                 dmg=i[7][0],
                                 final_dmg=i[7][1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.sp_sound, None, None),
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
@@ -6133,7 +5821,7 @@ class Water_Princess(Player):
                                 dmg=i[5],
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
                                 delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -6189,7 +5877,7 @@ class Water_Princess(Player):
                                 dmg=i[3],
                                 final_dmg=i[4],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 300),
                                 sound=(True, i[5], None, None),
 
@@ -6238,7 +5926,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk2_damage,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6259,7 +5947,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk2_damage_2nd[0],
                                 final_dmg=self.sp_atk2_damage_2nd[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6280,7 +5968,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk2_damage_3rd[0],
                                 final_dmg=self.sp_atk2_damage_3rd[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6301,7 +5989,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk2_damage_3rd[0],
                                 final_dmg=self.sp_atk2_damage_3rd[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=False,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6336,7 +6024,7 @@ class Water_Princess(Player):
                                 dmg=self.atk3_damage_2nd/2,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
@@ -6358,7 +6046,7 @@ class Water_Princess(Player):
                                 dmg=0,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
@@ -6381,7 +6069,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk3_damage[0],
                                 final_dmg=self.sp_atk3_damage[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 delay=(True, 400),
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
@@ -6428,7 +6116,7 @@ class Water_Princess(Player):
                                 dmg=i[7][0],
                                 final_dmg=i[7][1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 sound=(True, self.sp_sound, None, None),
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
@@ -6451,7 +6139,7 @@ class Water_Princess(Player):
                                 dmg=self.sp_atk2_damage_3rd[1],
                                 final_dmg=self.sp_atk2_damage_3rd[1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
                                 moving=True,
                                 delay=(True, i[0]),
                                 sound=(True, self.atk1_sound, None, None),
@@ -6491,7 +6179,7 @@ class Water_Princess(Player):
                                 dmg=i[5],
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=hero1 if self.player_type == 2 else hero2,
 
                                 sound=(True, self.basic_sound, None, None),
                                 delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -6560,7 +6248,7 @@ class Water_Princess(Player):
 
     def update(self):
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -6718,10 +6406,8 @@ FR_SPECIAL_BASICATK1_SIZE = 2
 
 
 class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
-        # print('from forest ranger. player:', player_type)
-        # print(enemy) 
+    def __init__(self, player_type):
+        super().__init__(player_type)
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Forest Ranger"
         # from heroes import items #make a button hard mode
@@ -6740,7 +6426,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.health = self.max_health
         self.mana = self.max_mana
         self.basic_attack_damage = self.agility * self.agi_mult
-        
+
         self.x = 50
         self.y = 50
         self.width = 200
@@ -7113,8 +6799,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.distance_covered = 0
         self.max_distance = 200
         self.dash_speed = 4
-
-        self.get_current_atk_speed = 0 # SEEMS THE BOT DON'T HAVE THIS VARIABLE
         
 
     # Will modify the attack speed of forest ranger when basic attacking
@@ -7204,7 +6888,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=0,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             follow=(False,True),
                             follow_offset=(0,60),
                             disable_collide=True,
@@ -7226,7 +6910,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=0,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=[self],
+                            who_attacked=self,
                             follow=(True,False),
                             disable_collide=True,
                             follow_self=True,
@@ -7271,7 +6955,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -7294,7 +6978,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'dmg': self.atk2_damage[0],
                                 'final_dmg': self.atk2_damage[1],
                                 'who_attacks': self,
-                                'who_attacked': self.enemy,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
                                 'moving': False,
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
@@ -7319,7 +7003,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'dmg': 0,
                                         'final_dmg': self.arrow_stuck_damage,
                                         'who_attacks': self,
-                                        'who_attacked': self.enemy,
+                                        'who_attacked': hero1 if self.player_type == 2 else hero2,
                                         'moving': False,
                                         'sound': (False, self.atk2_sound, None, None),
                                         'delay': (False, 0),
@@ -7371,7 +7055,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         #     dmg=self.atk3_damage[0],
                         #     final_dmg=self.atk3_damage[1],
                         #     who_attacks=self,
-                        #     who_attacked=self.enemy,
+                        #     who_attacked=hero1 if self.player_type == 2 else hero2,
                         #     sound=(True, self.atk3_sound , None, None),
                         #     delay=(True, 800),
                         #     moving=True
@@ -7403,7 +7087,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.sp_damage[0],
                             final_dmg=self.sp_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.sp_sound , None, None),
                             delay=(True, 1200),
 
@@ -7426,7 +7110,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'final_dmg': 0,
                                     'heal': True,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'follow': (False, True),
@@ -7463,7 +7147,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -7488,7 +7172,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'dmg': 0,
                                     'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'delay': (False, 0),
@@ -7546,7 +7230,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=0,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             follow=(False,True),
                             follow_offset=(0,60),
                             disable_collide=True,
@@ -7612,7 +7296,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -7635,7 +7319,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'dmg': self.sp_atk2_damage_2nd[0],
                                 'final_dmg': self.sp_atk2_damage_2nd[1],
                                 'who_attacks': self,
-                                'who_attacked': self.enemy,
+                                'who_attacked': hero1 if self.player_type == 2 else hero2,
                                 'moving': False,
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
@@ -7657,7 +7341,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'dmg': self.atk2_damage_2nd[0],
                                                     'final_dmg': self.atk2_damage_2nd[1],
                                                     'who_attacks': self,
-                                                    'who_attacked': self.enemy,
+                                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                                     'sound': (True, self.atk2_sound, None, None),
                                                     'delay': (True, 1050),
                                                     'stop_movement': (True, 3, 2, 0.5),
@@ -7681,7 +7365,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'dmg': 0,
                                                             'final_dmg': self.arrow_stuck_damage,
                                                             'who_attacks': self,
-                                                            'who_attacked': self.enemy,
+                                                            'who_attacked': hero1 if self.player_type == 2 else hero2,
                                                             'moving': False,
                                                             'sound': (False, self.atk2_sound, None, None),
                                                             'delay': (False, 0),
@@ -7744,7 +7428,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.sp_atk3_damage[0],
                             final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.atk3_sound , None, None),
                             delay=(True, 1750),
                             follow=(False, target_detected),
@@ -7768,7 +7452,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'dmg': 0,
                                     'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'delay': (False, 0),
@@ -7806,7 +7490,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.sp_damage_2nd[0],
                             final_dmg=self.sp_damage_2nd[1],
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             sound=(True, self.sp_sound , None, None),
                             delay=(True, 1200),
 
@@ -7829,7 +7513,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'final_dmg': 0,
                                     'heal': True,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'follow': (False, True),
@@ -7865,7 +7549,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             dmg=self.basic_attack_damage*1.2, # +20% damage in special mode
                             final_dmg=0,
                             who_attacks=self,
-                            who_attacked=self.enemy,
+                            who_attacked=hero1 if self.player_type == 2 else hero2,
                             moving=True,
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,                              # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
@@ -7889,7 +7573,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'dmg': 0,
                                     'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'delay': (False, 0),
@@ -7943,7 +7627,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         super().update()
         # print(self.stunned)
         if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
+            self.draw_distance(hero1 if self.player_type == 2 else hero2)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
@@ -8076,7 +7760,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     dmg=self.atk3_damage[0],
                     final_dmg=self.atk3_damage[1],
                     who_attacks=self,
-                    who_attacked=self.enemy,
+                    who_attacked=hero1 if self.player_type == 2 else hero2,
                     sound=(True, self.atk3_sound , None, None),
                     delay=(True, 600+i), #starting 700
 
@@ -8101,7 +7785,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'dmg': 0,
                                     'final_dmg': self.arrow_stuck_damage,
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    'who_attacked': hero1 if self.player_type == 2 else hero2,
                                     'moving': False,
                                     'sound': (False, self.atk2_sound, None, None),
                                     'delay': (False, 0),
@@ -8756,7 +8440,7 @@ def player_selection():
             PLAYER_1_SELECTED_HERO = Forest_Ranger
             PLAYER_2_SELECTED_HERO = Fire_Wizard
             map_selected = Animate_BG.city_bg # Default
-            bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
+            bot = create_bot(Wanderer_Magician) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
             go = True
@@ -8934,34 +8618,22 @@ def player_selection():
                     pygame.display.update()
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
                     
-                    # Player type seems to be phased out but is still being used
-                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, [hero2]) #not live
-                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, [hero1])
-                    print(hero1.enemy)
-                    print(hero2.enemy)
-                    hero3 = Wind_Hashashin(PLAYER_2, [hero1])
+                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1)
+                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2)
+                    # hero3 = PLAYER_1_SELECTED_HERO(PLAYER_2)
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.HERO1_BOT:
-                            bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1, hero2)
-                            hero1 = bot1_class(hero2, hero2)  # pass live hero2 reference
+                            bot1_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1)
+                            hero1 = bot1_class(hero2)  # pass live hero2 reference
 
-                        bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
-                        hero2 = bot2_class(hero1, hero1)  # pass live hero1 reference (first is for bot reference, second is for player reference)
-                        bot3_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
-                        hero3 = bot3_class(hero1, hero1)  # pass live hero1 reference
+                        bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2)
+                        hero2 = bot2_class(hero1)  # pass live hero1 reference
+                        # bot3_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_2)
+                        # hero3 = bot3_class(hero1)  # pass live hero1 reference
 
                         if global_vars.HERO1_BOT:
                             hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
-
-                    # For player and bot, update referenced enemy to hero2  (IMPORTANT)
-                    # had to manually set each other enemies first sop the attack won't error
-                    hero1.enemy = [hero2]
-                    # hero1.enemy = []
-                    hero2.enemy = [hero1]
-                    # hero3.enemy = [hero1]
-                    # When adding new heroes, make sure the enemy of existing heroes is updated..
-                    # hero1.enemy.append(hero3)
 
 
 
@@ -8981,7 +8653,6 @@ def player_selection():
 
                     hero2_group = pygame.sprite.Group()
                     hero2_group.add(hero2)
-                    # hero2_group.add(hero3)
                     # hero3_group = pygame.sprite.Group()
                     # hero3_group.add(hero3)
                     
@@ -8990,9 +8661,7 @@ def player_selection():
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
 
                     
-                    print('reprint')
-                    print(hero1.enemy)
-                    print(hero2.enemy)
+
                     reset_all()
                     fade(background, game) #lez go it worked
                     # pygame.mixer.fadeout(1500)

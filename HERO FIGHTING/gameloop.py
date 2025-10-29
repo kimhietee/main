@@ -393,6 +393,7 @@ def game(bg=None):
                 main.DISABLE_HEAL_REGEN = True
             if keys[main.pygame.K_5] and keys[main.pygame.K_LALT]: # hp regen (alt)
                 main.DISABLE_HEAL_REGEN = False
+                
             '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
             # if FREEZE_SPECIAL: 

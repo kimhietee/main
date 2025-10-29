@@ -71,11 +71,13 @@ special
 '''
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, player_type):
+    def __init__(self, player_type, enemy):
         super().__init__()
+        # print('from player itself. player:', player_type)
+        # print(enemy)
+        self.enemy = enemy
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Unknown"
-        self.enemy = None
         self.items = [] # contains 3 or less than 3 item classes. ex. 
                             # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
         self.damage_reduce = 0
@@ -1696,6 +1698,7 @@ class Player(pygame.sprite.Sprite):
 
             if hasattr(self, 'atk_hasted'):
                 pass
+            # print(self.enemy)
                 # print(self.get_current_atk_speed)
                 # print('jump pos:', self.get_jump_pos)
                 # print(self.y_pos)
@@ -1707,9 +1710,10 @@ class Player(pygame.sprite.Sprite):
                 #     print('attack start')
                 # print(pygame.time.get_ticks())
                 # print(self.sp_mana_refund)
-
-
-
+            # print(self.items)
+            
+            # if self.player_type == 1:
+            #     print(self.enemy)
             # print(self.frozen, self.can_cast(), self.can_move())
 
         # if self.is_dead:

@@ -32,7 +32,8 @@ gold = 'Gold' #special
 IMMEDIATE_RUN = False
 
 HERO1_BOT = False
-hard_bot = False
+all_items = False #equip bot with all items
+
 
 MAIN_VOLUME = 1
 TEXT_ANTI_ALIASING = False

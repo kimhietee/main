@@ -206,7 +206,7 @@ import time
 import math
 import pygame.sprite
 from global_vars import (IMMEDIATE_RUN,
-    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon,
+    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon, onre_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
     waterfall_icon, lava_icon, dark_forest_icon, trees_icon, 
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, BASIC_ATK_COOLDOWN, BASIC_FRAME_DURATION, BASIC_ATK_DAMAGE, BASIC_ATK_DAMAGE2, BASIC_ATK_DAMAGE3, BASIC_ATK_DAMAGE4,
@@ -598,10 +598,22 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         self.final_dmg = final_dmg
         self.who_attacks = who_attacks
         # print(who_attacked, type(who_attacked))
+        # Always store as a list to handle multiple enemies
         if type(who_attacked) == list:
-            self.who_attacked = who_attacked.pop() # raises error if  have multiple enemies
+            self.who_attacked = who_attacked.copy()  # Make a copy to avoid modifying the original list
         else:
-            self.who_attacked = who_attacked
+            self.who_attacked = [who_attacked] if who_attacked is not None else []
+        
+        # Track collision and damage state per enemy
+        # Dictionary: enemy -> {'colliding': bool, 'damaged': bool, 'following': bool}
+        self.enemy_states = {}
+        for enemy in self.who_attacked:
+            if enemy is not None:
+                self.enemy_states[enemy] = {
+                    'colliding': False,
+                    'damaged': False,
+                    'following': False
+                }
         self.moving = moving
         self.heal = heal
         self.continuous_dmg = continuous_dmg
@@ -688,13 +700,74 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print(self.rect.width)
 
     def kill_self(self): # (Possible bug here that removing status won't work, see the moving section part)
-        # remove only this attack's status
+        # remove only this attack's status from all affected enemies
         if self.stop_movement[0]:
             status_type = self.stop_movement[1]
-            # remove only this source
-            self.who_attacked.remove_movement_status(status_type, source=self)
+            # remove only this source from all enemies
+            for enemy in self.who_attacked:
+                if enemy is not None:
+                    try:
+                        enemy.remove_movement_status(status_type, source=self)
+                    except:
+                        pass  # Enemy might have already been removed
         # finally kill the sprite
         self.kill()
+
+    def _apply_damage(self, enemy, damage_amount, is_final=False):
+        """Helper method to apply damage with all effects (mana, special, lifesteal) to a specific enemy."""
+        if enemy is None:
+            return
+        enemy.take_damage(
+            damage_amount,
+            add_mana_to_self=True if self.add_mana else False,
+            enemy=self.who_attacks,
+            add_mana_to_enemy=self.add_mana_to_enemy,
+            mana_multiplier=self.mana_mult
+        )
+        self.who_attacks.take_special(damage_amount * SPECIAL_MULTIPLIER)
+        
+        if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
+            lifesteal_amount = damage_amount * self.who_attacks.lifesteal
+            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+        if self.who_attacks.lifesteal < 0 and not self.who_attacks.is_dead():
+            # damages the attacker if lifesteal is less than 0
+            lifesteal_amount = damage_amount * self.who_attacks.lifesteal
+            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+            # print('hp reduced', self.who_attacks.lifesteal, damage_amount, self.who_attacks.lifesteal* damage_amount)
+            # print(self.who_attacks.health, lifesteal_amount, self.who_attacks.health-lifesteal_amount)
+    def _apply_heal(self, heal_amount):
+        """Helper method to apply healing with special gain."""
+        self.who_attacks.take_heal(heal_amount)
+        self.who_attacks.take_special(heal_amount * SPECIAL_MULTIPLIER)
+    
+    def _check_and_set_follow(self, enemy):
+        """Helper method to check and set following_target flag for a specific enemy."""
+        if enemy is None:
+            return
+        if enemy not in self.enemy_states:
+            return
+        if self.follow[0] and not self.enemy_states[enemy]['following']:
+            self.enemy_states[enemy]['following'] = True
+    
+    def _check_collision(self, enemy):
+        """Check if attack collides with a specific enemy. Returns True if colliding."""
+        if enemy is None or enemy not in self.enemy_states:
+            return False
+        return self.hitbox_rect.colliderect(enemy.hitbox_rect)
+    
+    def _get_colliding_enemies(self):
+        """Get all enemies that are currently colliding with the attack."""
+        colliding = []
+        for enemy in self.who_attacked:
+            if enemy is not None and self._check_collision(enemy):
+                colliding.append(enemy)
+                # Update collision state
+                if enemy in self.enemy_states:
+                    self.enemy_states[enemy]['colliding'] = True
+            elif enemy is not None and enemy in self.enemy_states:
+                # Enemy is no longer colliding
+                self.enemy_states[enemy]['colliding'] = False
+        return colliding
 
     def update(self):
         if global_vars.SHOW_HITBOX:
@@ -754,8 +827,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
             self.delay_triggered = True
 
-        # Same flag so that I dont have to write this again!!
-        collided = self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect)
+        # Get all currently colliding enemies
+        colliding_enemies = self._get_colliding_enemies()
+        has_collision = len(colliding_enemies) > 0
 
         if self.delay_triggered:
             # MAIN LOGIC 1
@@ -764,7 +838,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
             # Must at be the top (bug)
             # Spawn attack when collide
             # 'use_attack_onhit_pos': bool, spawns attack when enemy collides with the attack
-            if collided and self.spawn_attack and not self._has_spawned_on_collide:
+            if has_collision and self.spawn_attack and not self._has_spawned_on_collide:
                 spec = self.spawn_attack
                 if callable(spec):
                     new = spec(self)
@@ -797,9 +871,14 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
 
 
-            # apply type 3 freeze/root first only once
+            # apply type 3 freeze/root first only once to all enemies
             if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
-                self.who_attacked.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                for enemy in self.who_attacked:
+                    if enemy is not None:
+                        try:
+                            enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                        except:
+                            pass
                 self.status_applied = True
 
             if current_time - self.last_update_time > self.frame_duration:
@@ -819,6 +898,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     # EVERY FRAME ATTACK LOGIC --------------------------
 
                     if self.per_end_dmg[0]:
+                        # Reset damaged state for all enemies
+                        for enemy in self.who_attacked:
+                            if enemy is not None and enemy in self.enemy_states:
+                                self.enemy_states[enemy]['damaged'] = False
                         self.damaged_detect = False 
                         self.damaged = False
                         
@@ -826,17 +909,18 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if not self.heal and not self.heal_enemy:
                         if not self.damaged and self.per_end_dmg[1]:
                             if not self.continuous_dmg:
-                                self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-                                if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                                    lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                                    self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                                # Apply damage to all colliding enemies (per_end_dmg[1] = damage at end of animation cycle)
+                                # Get current colliding enemies at this frame
+                                current_colliding = self._get_colliding_enemies()
+                                for enemy in current_colliding:
+                                    if enemy is not None and enemy in self.enemy_states:
+                                        if not self.enemy_states[enemy]['damaged']:
+                                            self._apply_damage(enemy, self.dmg)
+                                            self.enemy_states[enemy]['damaged'] = True
                     else:
                         if not self.damaged and self.per_end_dmg[1]:
                             if not self.continuous_dmg:
-                                self.who_attacks.take_heal(self.dmg)
-                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                self._apply_heal(self.dmg)
 
 
 
@@ -867,17 +951,13 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.sound[3] != None:
                             self.sound[3].play()
 
-                    #final dmg
-                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                        if self.follow[0] and not self.following_target:
-                            self.following_target = True
-                        if not self.disable_collide: # end animation will do the damaging
-                            self.who_attacked.take_damage(self.final_dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                            self.who_attacks.take_special(self.final_dmg * SPECIAL_MULTIPLIER)
-
-                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                                lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
-                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                    #final dmg - apply to all colliding enemies
+                    for enemy in colliding_enemies:
+                        if enemy is not None and enemy in self.enemy_states:
+                            if not self.enemy_states[enemy]['damaged']:
+                                self._check_and_set_follow(enemy)
+                                if not self.disable_collide: # end animation will do the damaging
+                                    self._apply_damage(enemy, self.final_dmg, is_final=True)
 
                     
 
@@ -904,59 +984,49 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                                 
                     #dmg per frame
 
-                    # main atk logic
-                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                        if self.follow[0] and not self.following_target:
-                            self.following_target = True
-                        if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
-                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-                    
-                        # #combine for moving dmg [1]:
-                        # if not self.continuous_dmg and not self.disable_collide: # end animation will do the damaging
-                        #     self.who_attacked.take_damage(self.final_dmg, , add_mana_to_self=true if self.add_mana else false)
-
-                        if self.moving:
-                            self.damaged = True
+                    # main atk logic - iterate over all colliding enemies
+                    for enemy in colliding_enemies:
+                        if enemy is None or enemy not in self.enemy_states:
+                            continue
                         
+                        enemy_state = self.enemy_states[enemy]
                         
-                    # continuous dmg logic
-                    if self.continuous_dmg and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                        if self.follow[0] and not self.following_target:
-                            self.following_target = True
-                        self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                        self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                        # Only apply damage if this enemy hasn't been damaged yet (for moving attacks)
+                        if not enemy_state['damaged'] and not self.disable_collide:
+                            if not self.continuous_dmg:
+                                self._check_and_set_follow(enemy)
+                                self._apply_damage(enemy, self.dmg)
+                                
+                                # Mark as damaged if it's a moving attack (fireball style)
+                                if self.moving:
+                                    enemy_state['damaged'] = True
+                        
+                    # continuous dmg logic - damage all colliding enemies continuously
+                    if self.continuous_dmg:
+                        for enemy in colliding_enemies:
+                            if enemy is not None and enemy in self.enemy_states:
+                                self._check_and_set_follow(enemy)
+                                self._apply_damage(enemy, self.dmg)
 
-                        if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                            lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
-
-                    #for per_end_dmg logic
+                    #for per_end_dmg logic - only applies to colliding enemies
                     # NOW WHY TF DOES THIS WORK SUDDENLY? this is .... good?
-                    if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect) and self.per_end_dmg[0] and self.disable_collide:
-                        if self.follow[0] and not self.following_target:
-                            self.following_target = True
-                        if not self.continuous_dmg:
-                            self.who_attacked.take_damage(self.dmg, add_mana_to_self=True if self.add_mana else False, enemy=self.who_attacks, add_mana_to_enemy=self.add_mana_to_enemy, mana_multiplier=self.mana_mult)
-                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                    if self.per_end_dmg[0] and self.disable_collide:
+                        for enemy in colliding_enemies:
+                            if enemy is None or enemy not in self.enemy_states:
+                                continue
                             
-                            if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                                lifesteal_amount = self.dmg * self.who_attacks.lifesteal
-                                self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            enemy_state = self.enemy_states[enemy]
                             
-                            # if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
-                            #     lifesteal_amount = self.final_dmg * self.who_attacks.lifesteal
-                            #     self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+                            if not enemy_state['damaged']:
+                                self._check_and_set_follow(enemy)
+                                if not self.continuous_dmg:
+                                    self._apply_damage(enemy, self.dmg)
 
-                        if self.damaged_detect:
-                            self.damaged = True
+                                if self.damaged_detect:
+                                    enemy_state['damaged'] = True
 
                     #whenn collide, kill
-                    if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
+                    if has_collision:
                         if self.kill_collide:
                             self.rect.x += 10000
                             self.kill_self()
@@ -970,36 +1040,40 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 # heal logic
                 else:
                     if self.self_moving:
-                        if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
+                        if self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
                             if self.heal_enemy:
-                                if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                                    if self.follow[0] and not self.following_target:
-                                        self.following_target = True
-                                    self.who_attacked.take_heal(self.dmg)
-                                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                # Heal all colliding enemies
+                                for enemy in colliding_enemies:
+                                    if enemy is None or enemy not in self.enemy_states:
+                                        continue
+                                    enemy_state = self.enemy_states[enemy]
+                                    if not enemy_state['damaged']:
+                                        self._check_and_set_follow(enemy)
+                                        enemy.take_heal(self.dmg)
+                                        self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                        enemy_state['damaged'] = True
                             else:
-                                if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
-                                    if self.follow[0] and not self.following_target:
-                                        self.following_target = True
-                                    self.who_attacks.take_heal(self.dmg)
-                                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-
-                        if self.self_moving:
-                            self.damaged = True
+                                if not self.damaged:
+                                    self._check_and_set_follow(self.who_attacks) if self.who_attacks in self.enemy_states else None
+                                    self._apply_heal(self.dmg)
+                                    self.damaged = True
 
                     else:#normal stuff
                         if self.heal_enemy:
-                            if not self.damaged and self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                                if self.follow[0] and not self.following_target:
-                                    self.following_target = True
-                                self.who_attacked.take_heal(self.dmg)
-                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                            # Heal all colliding enemies
+                            for enemy in colliding_enemies:
+                                if enemy is None or enemy not in self.enemy_states:
+                                    continue
+                                enemy_state = self.enemy_states[enemy]
+                                if not enemy_state['damaged']:
+                                    self._check_and_set_follow(enemy)
+                                    enemy.take_heal(self.dmg)
+                                    self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                    enemy_state['damaged'] = True
                         else:
                             if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
-                                if self.follow[0] and not self.following_target:
-                                    self.following_target = True
-                                self.who_attacks.take_heal(self.dmg)
-                                self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                self._check_and_set_follow(self.who_attacks) if self.who_attacks in self.enemy_states else None
+                                self._apply_heal(self.dmg)
 
 
                 if self.consume_mana[0]:
@@ -1014,24 +1088,34 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     self.kill_self()  # Remove the sprite if it goes off-screen
                     # (There, fixed, but somethings wrong with removing effect on kill self)
 
-            #stun logic
-            if self.hitbox_rect.colliderect(self.who_attacked.hitbox_rect):
-                if self.follow[0] and not self.following_target:
-                    self.following_target = True
-                if True: # end animation will do the damaging
-                    if self.stun[0]:
-                        self.who_attacked.stun(self.stun, self.rect.centerx, self.rect.centery, self.stun[1])
-                        # self.who_attacked.stunned = True
+            #stun logic - apply to all colliding enemies
+            for enemy in colliding_enemies:
+                if enemy is None or enemy not in self.enemy_states:
+                    continue
+                self._check_and_set_follow(enemy)
+                if self.stun[0]:
+                    try:
+                        enemy.stun(self.stun, self.rect.centerx, self.rect.centery, self.stun[1])
+                    except:
+                        pass
 
-
-            #follow logic
+            #follow logic - follow the first enemy that was set to follow
             if not self.follow_self:
-                if self.follow[1]: # FOLLOW ENEMY
-                    self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
-                    self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
-                elif self.follow[0] and self.following_target:
-                    self.rect.centerx = self.who_attacked.rect.centerx + self.follow_offset[0]
-                    self.rect.centery = self.who_attacked.rect.centery + self.follow_offset[1]
+                followed_enemy = None
+                # Check if any enemy should be followed
+                for enemy in self.who_attacked:
+                    if enemy is None or enemy not in self.enemy_states:
+                        continue
+                    if self.follow[1]:  # FOLLOW ENEMY always
+                        followed_enemy = enemy
+                        break
+                    elif self.follow[0] and self.enemy_states[enemy]['following']:
+                        followed_enemy = enemy
+                        break
+                
+                if followed_enemy is not None:
+                    self.rect.centerx = followed_enemy.rect.centerx + self.follow_offset[0]
+                    self.rect.centery = followed_enemy.rect.centery + self.follow_offset[1]
 
             else:
                 if self.follow[1]: # FOLLOW SELF
@@ -1043,29 +1127,46 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
             # print(self.follow_self)
 
-            #freeze and root
+            #freeze and root - apply to all colliding enemies
             # [0] = enable
             # [1] = status type (freeze/root)
             # [2] = type
-            if self.stop_movement[0] : # enable status
+            if self.stop_movement[0]: # enable status
                 if self.stop_movement[2] in (1,2): # if either type == 1 or 2
-                    # type 2
+                    # type 2 - apply when colliding
                     # always run code below if type == 2
                     # print(self.stop_movement)
-                    if collided:
-                        self.who_attacked.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                    for enemy in colliding_enemies:
+                        if enemy is None or enemy not in self.enemy_states:
+                            continue
+                        try:
+                            enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                        except:
+                            pass
                     # type 1 
                     # run code below if type == 1
-                    elif self.stop_movement[2] == 1:
-                        # removes status
-                        self.who_attacked.remove_movement_status(self.stop_movement[1], source=self)
+                    if self.stop_movement[2] == 1:
+                        # removes status from enemies that are no longer colliding
+                        for enemy in self.who_attacked:
+                            if enemy is None:
+                                continue
+                            if enemy not in colliding_enemies and enemy in self.enemy_states:
+                                try:
+                                    enemy.remove_movement_status(self.stop_movement[1], source=self)
+                                except:
+                                    pass
 
             if self.current_repeat >= self.repeat_animation:
                 if self.stop_movement[0]:
                     status_type = self.stop_movement[1]
                     mode = self.stop_movement[2]
                     if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
-                        self.who_attacked.remove_movement_status(status_type, source=self)
+                        for enemy in self.who_attacked:
+                            if enemy is not None:
+                                try:
+                                    enemy.remove_movement_status(status_type, source=self)
+                                except:
+                                    pass
 
             
             
@@ -1266,7 +1367,7 @@ class Fire_Wizard(Player):
         # fire wizard buff
         # Skill 4: damage (50/28, 10) = 60 -> (55/28, 10) -> 65
         
-        # fire wizard buff
+        # fire wizard update
         # Skill 2: reworked skill, low cooldown, low damage, special not changed
 
         #mana cost
@@ -2908,7 +3009,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # if not self.jump_attack_pending:
         #     self.y_velocity += DEFAULT_GRAVITY
         #     self.y_pos += self.y_velocity
-
+        
         # Stop at the ground level
         if self.y_pos > DEFAULT_Y_POS:
             self.y_pos = DEFAULT_Y_POS
@@ -4564,6 +4665,7 @@ class Wind_Hashashin(Player):
                         # Create an attack
                         # print("Z key pressed")
                         # self.target = self.enemy[random.randint(0, len(self.enemy)-1)]
+                        self.target = random.choice(self.enemy)
                         attack = Attack_Display(
                                 x=self.rect.centerx,
                                 y=self.rect.centery + 60,
@@ -4574,7 +4676,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=self.target,
                                 per_end_dmg=(False, True),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
@@ -4765,6 +4867,7 @@ class Wind_Hashashin(Player):
                 elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
                         # self.target = self.enemy[random.randint(0, len(self.enemy)-1)]
+                        self.target = random.choice(self.enemy)
                         attack = Attack_Display(
                                 x=self.rect.centerx,
                                 y=self.rect.centery + 60,
@@ -4775,7 +4878,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage * 0.4,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=self.target,
                                 per_end_dmg=(False, True, 1),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
@@ -4786,8 +4889,8 @@ class Wind_Hashashin(Player):
 
                         for i in [1500, 3000, 4500, 6000]:
                             attack1 = Attack_Display(
-                                    x=hero1.x_pos if self.player_type == 2 else hero2.x_pos,
-                                    y=hero1.y_pos if self.player_type == 2 else hero2.y_pos - 150,
+                                    x=self.target.x_pos,
+                                    y=self.target.y_pos - 150,
                                     frames=self.real_sp, #frames=self.real_sp,
                                     frame_duration=120,
                                     repeat_animation=1,
@@ -4795,7 +4898,7 @@ class Wind_Hashashin(Player):
                                     dmg=self.real_sp_damage * 0,
                                     final_dmg=0,
                                     who_attacks=self,
-                                    who_attacked=self.enemy,
+                                    who_attacked=self.target,
                                     per_end_dmg=(False, True),
                                     disable_collide=False,
                                     sound=(True, self.sp_sound, self.sp_sound2, self.x_slash_sound),
@@ -4816,7 +4919,7 @@ class Wind_Hashashin(Player):
                                 dmg=self.real_sp_damage * 0.2,
                                 final_dmg=0,
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=self.target,
                                 per_end_dmg=(False, True),
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
@@ -4999,8 +5102,8 @@ class Wind_Hashashin(Player):
             self.atk3_animation(2) #animation speed increase
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
         elif self.sp_attacking:
-            self.x_pos = self.enemy.x_pos
-            self.y_pos = self.enemy.y_pos
+            self.x_pos = self.target.x_pos
+            self.y_pos = self.target.y_pos
             self.sp_animation()
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
@@ -5578,6 +5681,9 @@ class Water_Princess(Player):
         self.atk2_special_mana_consume = 0
         self.atk3_special_mana_consume = 0
         self.atk4_special_mana_consume = 0
+
+    def draw_movement_status(self, screen, display=True):
+        super().draw_movement_status(screen, display)
 
     def update_mana_values(self):
         self.mana_mult = 0.2 if not self.special_active else 0.25
@@ -6431,6 +6537,7 @@ FR_SPECIAL_BASICATK1_SIZE = 2
 # fire wizard = 26 <-> 18 about 6s
 # fire knight = 26 <-> 18 about 6s
 # wanderer magician = 19 <-> 18 about 5s 
+# onre = 23 <-> 18 about 5s
 
 
 
@@ -6464,14 +6571,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         # real mana cost is commented
-        self.atk1_mana_cost = 120 #120
+        self.atk1_mana_cost = 100 #100
         self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
         self.sp_mana_cost = 220 #120
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 20000 # 15 seconds
+        self.atk1_cooldown = 12000 + 5000 # 12 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
@@ -6479,13 +6586,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_cooldown_for_special = 25000
 
         self.atk1_damage = (0, 0) # buff
-        self.atk2_damage = (8/8, 2) # roots arrow +50 mana
+        self.atk2_damage = (10/8, 2) # roots arrow +50 mana
         self.atk3_damage = (15/8, 5) # green roots +70 mana
-        self.sp_damage = (25/5, 0) # beam +150 mana
+        self.sp_damage = (30/5, 0) # beam +150 mana
 
         #special
-        self.sp_atk2_damage_2nd = (2/8, 0) # poison arrow +30 mana
-        self.atk2_damage_2nd = (8/45, 0) # poison 2nd +30 mana
+        self.sp_atk2_damage_2nd = (5/8, 0) # poison arrow +30 mana
+        self.atk2_damage_2nd = (10/45, 0) # poison 2nd +30 mana
         self.sp_atk3_damage = (25/18, 0) # arrow rain roots +100 mana
         self.sp_damage_2nd = (50/30, 0) # laser beam +170 mana
 
@@ -7851,6 +7958,1150 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # print(self.special)
 
         # pygame.draw.rect(screen, (255, 0, 0), self.rect)
+
+
+
+class Onre(Player):
+    def __init__(self, player_type, enemy):
+        super().__init__(player_type, enemy)
+        self.player_type = player_type # 1 for player 1, 2 for player 2
+        self.name = "Wanderer Magician"
+
+        self.hitbox_rect = pygame.Rect(0, 0, 45, 100)
+
+        # stat
+        self.strength = 36
+        self.intelligence = 40
+        self.agility = 23
+        
+
+        self.base_max_mana = self.intelligence * self.int_mult
+        
+        self.max_health = self.strength * self.str_mult
+        self.max_mana = self.base_max_mana
+        # self.special_default_max_mana = self.max_mana # max mana and this variable mustt  be the same
+        self.special_bonus_mana = 240
+        self.health = self.max_health
+        self.mana = self.max_mana
+        self.basic_attack_damage = self.agility * self.agi_mult
+
+        self.x = 50
+        self.y = 50
+        self.width = 200
+        self.height = 20
+
+        self.atk1_mana_cost = 50
+        self.atk2_mana_cost = 70    
+        self.atk3_mana_cost = 110
+        self.sp_mana_cost = 80
+
+        self.sp_atk1_mana_cost = 80
+
+        # Trait: cd reduce
+        cooldown_reduction = 1 - 0.15
+        self.atk1_cooldown = int((9000 + 2000)*cooldown_reduction) # root duration
+        self.atk2_cooldown = int((12000 + 2000)*cooldown_reduction)# + 2000 # frozen duration
+        self.atk3_cooldown = int((20000 + 3000)*cooldown_reduction) # frozen duration
+        self.sp_cooldown = int((20000 + 5000)*cooldown_reduction) #invi duration
+
+        # cooldown already reduced, so when equipping items with
+        # cd reduce, it will not stack
+
+        self.sp_atk1_cooldown = 15000 + 2000
+
+        self.atk1_damage = (12/20, 0)
+        self.atk2_damage = (10/15,5)
+        self.atk3_damage = (20/30, 0)
+        # self.sp_damage = (55, 0)
+        # self.sp_damage_2nd = (4.5/16, 0)
+
+        self.sp_atk2_damage_2nd = (20/20, 0) # FOR ATTACK1 SPECIAL MODE ONLY!!
+
+        dmg_mult = 0
+        self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
+        self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
+        self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
+        self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+
+        # Player Animation Source
+        jump_ani = [r'assets\characters\Wanderer Magican\jump pngs\Jump_', WANDERER_MAGICIAN_JUMP_COUNT, 1]
+        run_ani = [r'assets\characters\Wanderer Magican\run pngs\Run_', WANDERER_MAGICIAN_RUN_COUNT, 1]
+        idle_ani= [r'assets\characters\Wanderer Magican\idle pngs\image_0-', WANDERER_MAGICIAN_IDLE_COUNT, 1]
+        atk1_ani= [r'assets\characters\Wanderer Magican\attack 1 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
+        atk3_ani= [r'assets\characters\Wanderer Magican\attack 2 pngs\image_0-', WANDERER_MAGICIAN_ATK1_COUNT, 1]
+        sp_ani= [r'assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 1]
+        death_ani= [r'assets\characters\Wanderer Magican\dead', WANDERER_MAGICIAN_DEATH_COUNT, 1]
+
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
+        self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
+
+        # # Player Skill Animations Source
+        basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
+        atk1 = [r'assets\attacks\wanderer magician\atk1\image_', WANDERER_MAGICIAN_ATK1, 1]
+        atk2 = [r'assets\attacks\wanderer magician\atk2', WANDERER_MAGICIAN_ATK2, 1]
+        atk3 = [r'assets\attacks\wanderer magician\atk3\Explosion_blue_circle', WANDERER_MAGICIAN_ATK3, 0]
+        sp = [r'assets\attacks\wanderer magician\sp atk\vv', WANDERER_MAGICIAN_SP, 0]
+
+        special_atk3 = [r'assets\attacks\wanderer magician\special1\Explosion_blue_oval', WANDERER_MAGICIAN_SPECIAL_ATK3, 0]
+
+        # Player Skill Icons Source
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\565294977_874092654940973_4629586114169668231_n.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\568423507_874092458274326_1563834751575940132_n.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\565712554_874092658274306_7191828115349271824_n.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\566229885_874092704940968_1876919734992652101_n.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\Wakuri.Kaoruko.full.4551281.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1809498085162188896-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1776215573221056799-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1861790162579267917-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\beautiful.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+
+        # # Player Icon Rects
+        if self.player_type == 1:
+            self.skill_1_rect = skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
+            self.skill_2_rect = skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
+            self.skill_3_rect = skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
+            self.skill_4_rect = skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
+
+            self.special_rect = special_icon.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 4 + 50, SKILL_Y_OFFSET))
+
+            self.special_skill_1_rect = special_skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
+            self.special_skill_2_rect = special_skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
+            self.special_skill_3_rect = special_skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
+            self.special_skill_4_rect = special_skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
+
+        elif self.player_type == 2:
+            self.special_rect = special_icon.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 4 - 50, SKILL_Y_OFFSET))
+
+            self.special_skill_1_rect = special_skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
+            self.special_skill_2_rect = special_skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
+            self.special_skill_3_rect = special_skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
+            self.special_skill_4_rect = special_skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
+
+            self.skill_1_rect = skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
+            self.skill_2_rect = skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
+            self.skill_3_rect = skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
+            self.skill_4_rect = skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
+
+        # Player Attack Animations Load
+        # self.basic = self.load_img_frames(basic[0], basic[1], basic[2], WANDERER_MAGICIAN_BASIC_SIZE)
+        # self.basic_flipped = self.load_img_frames_flipped(basic[0], basic[1], basic[2], WANDERER_MAGICIAN_BASIC_SIZE)
+
+        # self.atk1 = self.load_img_frames_rotate(atk1[0], atk1[1], atk1[2], WANDERER_MAGICIAN_ATK1_SIZE, 90)
+        # self.atk1_flipped = self.load_img_frames_flipped_rotate(atk1[0], atk1[1], atk1[2], WANDERER_MAGICIAN_ATK1_SIZE, -90)
+        # self.atk2 = self.load_img_frames_tile_method(atk2[0], atk2[1], atk2[2], WANDERER_MAGICIAN_ATK2_SIZE)
+        # self.atk3 = self.load_img_frames(atk3[0], atk3[1], atk3[2], WANDERER_MAGICIAN_ATK3_SIZE)
+        self.sp = self.load_img_frames(sp[0], sp[1], sp[2], WANDERER_MAGICIAN_SP_SIZE)
+        self.sp_flipped = self.load_img_frames_flipped(sp[0], sp[1], sp[2], WANDERER_MAGICIAN_SP_SIZE)
+
+        # self.special_atk3 = self.load_img_frames(special_atk3[0], special_atk3[1], special_atk3[2], WANDERER_MAGICIAN_SPECIAL_ATK3_SIZE)
+        self.atk1 = load_attack(
+        filepath=r"assets\attacks\Onre\atk1\322.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=4, 
+        columns=5, 
+        scale=1.4, 
+        rotation=0,
+    )
+        self.atk1_sp = load_attack(
+        filepath=r"assets\attacks\Onre\atk1\322.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=4, 
+        columns=5, 
+        scale=2.4, 
+        rotation=0,
+    )
+        
+        self.atk2 = load_attack(
+        filepath=r"assets\attacks\Onre\atk2\326.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=3, 
+        columns=5, 
+        scale=1.2, 
+        rotation=0
+    )
+        
+        self.atk3 = load_attack(
+        filepath=r"assets\attacks\Onre\atk3\093.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=6, 
+        columns=5, 
+        scale=0.5, 
+        rotation=0
+    )
+        
+        self.special_basic = load_attack(
+        filepath=r"assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
+        frame_width=10, 
+        frame_height=10, 
+        rows=1, 
+        columns=4, 
+        scale=WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE, 
+        rotation=0,
+        frame_duration=100
+    )
+        self.special_basic_flipped = load_attack_flipped(
+        filepath=r"assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
+        frame_width=10, 
+        frame_height=10, 
+        rows=1, 
+        columns=4, 
+        scale=WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE, 
+        rotation=0,
+        frame_duration=100
+    )
+        
+        self.sp_special = load_attack(
+        filepath=r"assets\attacks\wanderer magician\sp atk special\2.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=8, 
+        scale=3, 
+        rotation=0,
+        frame_duration=100
+    )
+
+        # Player Animations Load
+        blank_frame = pygame.image.load(r'assets\characters\empty_frame.png')
+
+        # self.player_jump = self.load_img_frames(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_jump_flipped = self.load_img_frames_flipped(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_jump = load_attack(
+        filepath=r"assets\characters\Onre\Flight.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_jump_flipped = load_attack_flipped(
+        filepath=r"assets\characters\Onre\Flight.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        # self.player_idle = self.load_img_frames(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_idle_flipped = self.load_img_frames_flipped(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_idle = load_attack(
+        filepath=r"assets\characters\Onre\Idle.png",
+        frame_width=128, 
+        frame_height=128, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_idle_flipped = load_attack_flipped(
+        filepath=r"assets\characters\Onre\Idle.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_run = load_attack(
+        filepath=r"assets\characters\Onre\Run.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=7, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_run_flipped = load_attack_flipped(
+        filepath=r"assets\characters\Onre\Run.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=7, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        # self.player_run = self.load_img_frames(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_run_flipped = self.load_img_frames_flipped(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_atk1 = load_attack(
+        filepath=r"assets\characters\Onre\Attack_2.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=4,
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_atk1_flipped = load_attack_flipped(
+        filepath=r"assets\characters\Onre\Attack_2.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=4, 
+        scale=DEFAULT_CHAR_SIZE,
+        rotation=0,
+    )
+        # self.player_atk1 = self.load_img_frames(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_atk1_flipped = self.load_img_frames_flipped(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE)
+        
+    #     self.player_atk2 = load_attack(
+    #     filepath=r"assets\characters\Onre\Dead.png",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=1, 
+    #     columns=6, 
+    #     scale=DEFAULT_CHAR_SIZE, 
+    #     rotation=0,
+    # )
+    #     self.player_atk2_flipped = load_attack_flipped(
+    #     filepath=r"",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=1, 
+    #     columns=6, 
+    #     scale=DEFAULT_CHAR_SIZE, 
+    #     rotation=0,
+    # )
+        # self.player_atk2 = self.player_idle[:9]
+        # self.player_atk2_flipped = self.player_idle_flipped[:2]
+        self.player_atk3 = load_attack( #circling water
+        filepath=r"assets\characters\Onre\Scream.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=7, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_atk3_flipped = load_attack_flipped( #circling water
+        filepath=r"assets\characters\Onre\Scream.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=7, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        # self.player_atk3 = self.load_img_frames(atk3_ani[0], atk3_ani[1], atk3_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_atk3_flipped = self.load_img_frames_flipped(atk3_ani[0], atk3_ani[1], atk3_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_sp = load_attack( #circling water
+        filepath=r"assets\characters\Onre\Dead.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_sp_flipped = load_attack_flipped( #circling water
+        filepath=r"assets\characters\Onre\Dead.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_sp.append(blank_frame)
+        self.player_sp_flipped.append(blank_frame)
+        # self.player_sp = self.load_img_frames_tile_method(sp_ani[0], sp_ani[1], sp_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_sp_flipped = self.load_img_frames_flipped_tile_method(sp_ani[0], sp_ani[1], sp_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_death = load_attack( #circling water
+        filepath=r"assets\characters\Onre\Dead.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_death_flipped = load_attack_flipped( #circling water
+        filepath=r"assets\characters\Onre\Dead.png",
+        frame_width=100, 
+        frame_height=100, 
+        rows=1, 
+        columns=6, 
+        scale=DEFAULT_CHAR_SIZE, 
+        rotation=0,
+    )
+        self.player_death.append(blank_frame)
+        self.player_death_flipped.append(blank_frame)
+        # self.player_death = self.load_img_frames_tile_method(death_ani[0], death_ani[1], death_ani[2], DEFAULT_CHAR_SIZE)
+        # self.player_death_flipped = self.load_img_frames_flipped_tile_method(death_ani[0], death_ani[1], death_ani[2], DEFAULT_CHAR_SIZE)
+
+        # Player Image and Rect
+        self.image = self.player_idle[self.player_idle_index]
+        self.rect = self.image.get_rect(midbottom = (self.x_pos, self.y_pos)) #(for p1)
+        
+        # Mana Values
+        self.mana_cost_list = [
+            self.atk1_mana_cost,
+            self.atk2_mana_cost,
+            self.atk3_mana_cost,
+            self.sp_mana_cost
+            ]
+
+        # Modify
+        self.lowest_mana_cost = self.mana_cost_list[0]
+
+        # Skills
+        self.attacks = [
+            Attacks(
+                mana_cost=self.mana_cost_list[0],
+                skill_rect=self.skill_1_rect,
+                skill_img=skill_1,
+                cooldown=self.atk1_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[1],
+                skill_rect=self.skill_2_rect,
+                skill_img=skill_2,
+                cooldown=self.atk2_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[2],
+                skill_rect=self.skill_3_rect,
+                skill_img=skill_3,
+                cooldown=self.atk3_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[3],
+                skill_rect=self.skill_4_rect,
+                skill_img=skill_4,
+                cooldown=self.sp_cooldown,
+                mana=self.mana
+            )
+        ]
+
+        self.attacks.append(
+            Attacks(
+                mana_cost=0,
+                skill_rect=self.basic_icon_rect,
+                skill_img=self.basic_icon2,
+                cooldown=self.basic_attack_cooldown,
+                mana=self.mana
+            )
+        )
+
+        self.attacks.append(
+            Attacks(
+                mana_cost=0,
+                skill_rect=self.special_rect,
+                skill_img=special_icon,
+                cooldown=0,
+                mana=0,
+                special_skill=True
+            )
+        )
+
+        self.attacks_special = [
+            Attacks(
+                mana_cost=self.sp_atk1_mana_cost,
+                skill_rect=self.special_skill_1_rect,
+                skill_img=special_skill_1,
+                cooldown=self.sp_atk1_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[1],
+                skill_rect=self.special_skill_2_rect,
+                skill_img=special_skill_2,
+                cooldown=self.atk2_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[2],
+                skill_rect=self.special_skill_3_rect,
+                skill_img=special_skill_3,
+                cooldown=self.atk3_cooldown,
+                mana=self.mana
+            ),
+            Attacks(
+                mana_cost=self.mana_cost_list[3],
+                skill_rect=self.special_skill_4_rect,
+                skill_img=special_skill_4,
+                cooldown=self.sp_cooldown,
+                mana=self.mana
+            )
+        ]
+
+        self.attacks_special.append(
+            Attacks(
+                mana_cost=0,
+                skill_rect=self.basic_icon_rect,
+                skill_img=self.basic_icon2,
+                cooldown=self.basic_attack_cooldown,
+                mana=self.mana
+            )
+        )
+   
+        # Regen Rate
+        self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
+        self.mana_regen_rate = DEFAULT_MANA_REGENERATION
+
+        # After Bar Reduces
+        self.white_health_p1 = self.health
+        self.white_mana_p1 = self.mana
+        self.white_health_p2 = self.health
+        self.white_mana_p2 = self.mana
+
+        self.invisible = False
+        self.invisible_duration = 0
+        self.casting_invisible = False
+
+    def atk1_animation(self, animation_speed=0):
+        if self.facing_right:
+            self.player_atk1_index, anim_active = self.animate(self.player_atk1, self.player_atk1_index, loop=False)
+        else:
+            self.player_atk1_index_flipped, anim_active = self.animate(self.player_atk1_flipped, self.player_atk1_index_flipped, loop=False)
+
+        self.last_atk_time -= animation_speed
+
+        if not anim_active:
+            self.attacking1 = False
+            self.basic_attacking = False  # Only matters if this was a basic attack
+            self.player_atk1_index = 0
+            self.player_atk1_index_flipped = 0     
+
+    # okay I'm not gonna combine invisible and normal animation :((
+    def animate_invi(self, frames, index, loop=True, invisible=False):
+        current_time = pygame.time.get_ticks()
+        frame_duration = self.default_animation_speed if not self.basic_attacking else self.basic_attack_animation_speed
+        if current_time - self.last_atk_time > frame_duration:
+            self.last_atk_time = current_time
+            if invisible:
+                if index < len(frames): # only increase index if not in last frame
+                    self.image = frames[int(index)]
+                    index += 1
+            else:
+                self.image = frames[int(index)]
+                index += 1
+            if index >= len(frames):
+                self.casting_invisible = False if invisible else None # now invisible!
+                if loop:
+                    index = 0  # Restart the animation
+                else:
+                    if invisible:
+                        self.image = frames[-1] # stay in last frame
+                        if pygame.time.get_ticks() >= self.invisible_duration:
+                            self.invisible = False
+                            index = len(frames) - 1  # Stay on the last frame
+                            print('end of invi')
+                            return index, index, False  # set index for normal and flipped frames
+                    else:
+                        index = len(frames) - 1  # Stay on the last frame
+                        return index, False  # Animation finished
+                        
+        if invisible: return index, index, True # animation still active
+        else: return index, True  # Animation finished  # Animation stzill active
+            
+
+    def sp_animation(self, animation_speed=0):
+        if self.facing_right:
+            self.player_sp_index, self.player_sp_index_flipped, self.sp_attacking = self.animate_invi(self.player_sp, self.player_sp_index, loop=False, invisible=True)
+        else:
+            self.player_sp_index_flipped, self.player_sp_index, self.sp_attacking = self.animate_invi(self.player_sp_flipped, self.player_sp_index_flipped, loop=False, invisible=True)
+
+        self.last_atk_time -= animation_speed
+
+
+    def take_damage(self, damage, add_mana_to_self=False, enemy:object=None, add_mana_to_enemy=False, mana_multiplier=1):
+        if self.invisible:
+            return
+        else:
+            super().take_damage(damage, add_mana_to_self, enemy, add_mana_to_enemy, mana_multiplier)
+        
+    def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
+        self.keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
+        if self.casting_invisible: #dont move if going invisible
+            # print('will not cast because still casting invi')
+            return
+
+        if self.can_move():
+            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.basic_attacking):
+                if right_hotkey:  # Move right
+                    self.running = True
+                    self.facing_right = True #if self.player_type == 1 else False
+                    self.x_pos += (self.speed - ((self.speed * 0.0) if self.special_active else (self.speed * 0.05)))
+                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
+                elif left_hotkey:  # Move left
+                    self.running = True
+                    self.facing_right = False #if self.player_type == 1 else True
+                    self.x_pos -= (self.speed - ((self.speed * 0.0) if self.special_active else (self.speed * 0.05)))
+                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
+                else:
+                    self.running = False
+
+                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                    self.jumping = True
+                    self.y_velocity = DEFAULT_JUMP_FORCE  
+                    self.last_atk_time = current_time  # Update the last jump time
+            
+        if not self.can_cast():
+            # print('will not cast')
+            return
+            
+        if not self.special_active:
+            if not self.jumping and not self.is_dead():
+                if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3  and not self.basic_attacking:
+                    if self.mana >=  self.attacks[0].mana_cost and self.attacks[0].is_ready():
+                        # Create an attack
+                        # print("Z key pressed")
+                        attack = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 30,
+                            frames=self.atk1,
+                            frame_duration=100, # 2 seconds 20 frames
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.atk1_damage[0],
+                            final_dmg=self.atk1_damage[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk1_sound , None, None),
+                            stop_movement=(True, 2, 2),
+                            delay=(True, 100), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            ) # Replace with the target
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks[0].mana_cost
+                        self.attacks[0].last_used_time = current_time
+                        self.running = False
+                        self.attacking1 = True
+                        self.player_atk1_index = 0
+                        self.player_atk1_index_flipped = 0
+ 
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")               
+                    # print('Skill 1 used')
+
+
+                elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3  and not self.basic_attacking:
+                    if self.mana >=  self.attacks[1].mana_cost and self.attacks[1].is_ready():
+                        # Create an attack
+                        # print("Z key pressed")
+                        attack = Attack_Display(
+                            x=self.rect.centerx, # in front of him
+                            y=self.rect.centery,
+                            frames=self.player_run if self.facing_right else self.player_run_flipped,
+                            frame_duration=DEFAULT_ANIMATION_SPEED,
+                            repeat_animation=10,
+                            speed=self.speed if self.facing_right else -self.speed,
+                            moving=True,
+                            dmg=0, 
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk2_sound , None, None),
+                            kill_collide=True,
+                            hitbox_scale_x=0.3,
+                            hitbox_offset_y=150,
+
+
+                            spawn_attack= {
+                                'use_attack_onhit_pos': True,
+
+                                'attack_kwargs': {
+                                    'frames': self.atk2,
+                                    'frame_duration': 133.33, # freeze for 2s (second / frames) 15 frames
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': self.atk2_damage[0],
+                                    'final_dmg': self.atk2_damage[1],
+                                    'who_attacks': self,
+                                    'who_attacked': self.enemy,
+                                    'moving': False,
+                                    'sound': (True, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (True, 1, 2),
+                                }
+                            }
+                            )
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks[1].mana_cost
+                        self.attacks[1].last_used_time = current_time
+                        self.running = False
+                        # self.attacking2 = True
+                        # self.player_atk2_index = 0
+                        # self.player_atk2_index_flipped = 0
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")               
+                    # print('Skill 2 used')
+
+                elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2  and not self.basic_attacking:
+                    if self.mana >= self.attacks[2].mana_cost and self.attacks[2].is_ready():
+                        # self.jumping = True
+                        # self.y_velocity = DEFAULT_JUMP_FORCE  # adjust jump strength as needed
+                        # self.jump_attack_pending = True
+                        # self.jump_attack_time = pygame.time.get_ticks() + 200  # 500ms later
+                        # Create an attack
+                        # print("Z key pressed")
+                        # if self.jump_attack_pending and pygame.time.get_ticks() >= self.jump_attack_time:
+                        #     self.jump_attack_pending = False
+                        attack = Attack_Display(
+                            x=random.choice(self.enemy).rect.centerx,
+                            y=random.choice(self.enemy).rect.centery + 40,
+                            frames=self.atk3,
+                            frame_duration=100, # 30 frames, 3 seconds
+                            repeat_animation=1,
+                            dmg=self.atk3_damage[0],
+                            final_dmg=self.atk3_damage[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk3_sound , None, None),
+                            stop_movement=(True, 1, 2)
+                            ) # Replace with the target
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks[2].mana_cost
+                        self.attacks[2].last_used_time = current_time
+                        self.running = False
+                        self.attacking3 = True
+                        self.player_atk3_index = 0
+                        self.player_atk3_index_flipped = 0
+                            # self.y_velocity = 0  # optional: cancel gravity impulse if you want freeze in air
+
+                            # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")   
+                    # print('Skill 3 used')
+                elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.mana >=  self.attacks[3].mana_cost and self.attacks[3].is_ready():
+
+                        self.mana -=  self.attacks[3].mana_cost
+                        self.attacks[3].last_used_time = current_time
+                        self.running = False
+                        self.sp_attacking = True
+                        self.player_sp_index = 0
+                        self.player_sp_index_flipped = 0
+
+                        self.invisible = True
+                        self.invisible_duration = (pygame.time.get_ticks()+820) + 5000
+                        self.casting_invisible = True
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")   
+                    # print('Skill 4 used')
+
+                elif basic_hotkey and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.mana >= 0 and self.attacks[4].is_ready():
+                        attack = Attack_Display(
+                            x=self.rect.centerx + 30 if self.facing_right else self.rect.centerx - 30,
+                            y=self.rect.centery + 20,
+                            frames=self.basic_slash3 if self.facing_right else self.basic_slash3_flipped,
+                            frame_duration=BASIC_FRAME_DURATION+150,
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+
+                            sound=(True, self.basic_sound, None, None),
+                            delay=(True, self.basic_attack_animation_speed * (200 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            moving=True
+                            )
+                        attack_display.add(attack)
+                        self.mana -= 0
+                        self.attacks[4].last_used_time = current_time
+                        self.running = False
+                        self.attacking1 = True
+                        self.player_atk1_index = 0
+                        self.player_atk1_index_flipped = 0
+                        # print("Attack executed")
+                    else:
+                        pass
+
+                elif special_hotkey  and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.special >= MAX_SPECIAL: # and self.attacks[5].special_is_ready(self.special)
+                        self.special_active = True
+                        self.basic_sound.play()
+                    else:
+                        pass
+
+
+
+
+
+
+        else:
+            if not self.jumping and not self.is_dead():
+                if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3  and not self.basic_attacking:
+                    if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
+                        # Create an attack
+                        # print("Z key pressed")
+                        # for i in [0, 200, 400, 600, 800]:
+                        attack = Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery - 30,
+                            frames=self.atk1_sp,
+                            frame_duration=125, # 2 seconds 20 frames
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.sp_atk2_damage_2nd[0],
+                            final_dmg=self.sp_atk2_damage_2nd[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk1_sound , None, None),
+                            stop_movement=(True, 2, 2),
+                            delay=(True, 100),
+                            )
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks_special[0].mana_cost
+                        self.attacks_special[0].last_used_time = current_time
+                        self.running = False
+                        self.attacking1 = True
+                        self.player_atk1_index = 0
+                        self.player_atk1_index_flipped = 0
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")               
+                    # print('Skill 1 used')
+
+
+                elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3  and not self.basic_attacking:
+                    if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
+                        for i in [True, False]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx, # in front of him
+                                y=self.rect.centery,
+                                frames=self.player_run if i else self.player_run_flipped,
+                                frame_duration=DEFAULT_ANIMATION_SPEED,
+                                repeat_animation=10,
+                                speed=self.speed if i else -self.speed,
+                                moving=True,
+                                dmg=0, 
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=self.enemy,
+                                sound=(True, self.atk2_sound , None, None),
+                                kill_collide=True,
+                                hitbox_scale_x=0.3,
+                                hitbox_offset_y=150,
+
+
+                                spawn_attack= {
+                                    'use_attack_onhit_pos': True,
+
+                                    'attack_kwargs': {
+                                        'frames': self.atk2,
+                                        'frame_duration': 133.33, # freeze for 2s (second / frames) 15 frames
+                                        'repeat_animation': 1,
+                                        'speed': 0,
+                                        'dmg': self.atk2_damage[0],
+                                        'final_dmg': self.atk2_damage[1],
+                                        'who_attacks': self,
+                                        'who_attacked': self.enemy,
+                                        'moving': False,
+                                        'sound': (True, self.atk2_sound, None, None),
+                                        'delay': (False, 0),
+                                        'stop_movement': (True, 1, 2),
+                                    }
+                                }
+                                )
+                            attack_display.add(attack)
+                        self.mana -=  self.attacks_special[1].mana_cost
+                        self.attacks_special[1].last_used_time = current_time
+                        self.running = False
+                        # self.attacking2 = True
+                        # self.player_atk2_index = 0
+                        # self.player_atk2_index_flipped = 0
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")               
+                    # print('Skill 2 used')
+
+                elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2  and not self.basic_attacking:
+                    if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
+                        # Create an attack
+                        # print("Z key pressed")
+                        attack = Attack_Display(
+                            x=random.choice(self.enemy).rect.centerx,
+                            y=random.choice(self.enemy).rect.centery + 40,
+                            frames=self.atk3,
+                            frame_duration=133.33, # 30 frames, 4 seconds
+                            repeat_animation=1,
+                            dmg=self.atk3_damage[0]*1.5,
+                            final_dmg=self.atk3_damage[1]*1.5,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk3_sound , None, None),
+                            stop_movement=(True, 1, 2)
+                            ) # Replace with the target
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks_special[2].mana_cost
+                        self.attacks_special[2].last_used_time = current_time
+                        self.running = False
+                        self.attacking3 = True
+                        self.player_atk3_index = 0
+                        self.player_atk3_index_flipped = 0
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")   
+                    # print('Skill 3 used')
+                elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
+                        attack = Attack_Display(
+                            x=self.rect.centerx, # in front of him
+                            y=self.rect.centery,
+                            frames=self.player_run if self.facing_right else self.player_run_flipped,
+                            frame_duration=DEFAULT_ANIMATION_SPEED,
+                            repeat_animation=10,
+                            speed=self.speed if self.facing_right else -self.speed,
+                            moving=True,
+                            dmg=0, 
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk2_sound , None, None),
+                            kill_collide=True,
+                            hitbox_scale_x=0.3,
+                            hitbox_offset_y=150,
+
+
+                            spawn_attack= {
+                                'use_attack_onhit_pos': True,
+
+                                'attack_kwargs': {
+                                    'frames': self.atk2,
+                                    'frame_duration': 133.33, # freeze for 2s (second / frames) 15 frames
+                                    'repeat_animation': 1,
+                                    'speed': 0,
+                                    'dmg': self.atk2_damage[0]*1.25,
+                                    'final_dmg': self.atk2_damage[1],
+                                    'who_attacks': self,
+                                    'who_attacked': self.enemy,
+                                    'moving': False,
+                                    'sound': (True, self.atk2_sound, None, None),
+                                    'delay': (False, 0),
+                                    'stop_movement': (True, 1, 2),
+                                }
+                            }
+                            )
+                        attack_display.add(attack)
+                        self.mana -=  self.attacks_special[3].mana_cost
+                        self.attacks_special[3].last_used_time = current_time
+                        self.running = False
+                        self.sp_attacking = True
+                        self.player_sp_index = 0
+                        self.player_sp_index_flipped = 0
+
+                        self.invisible = True
+                        self.invisible_duration = (pygame.time.get_ticks()+820) + 5000
+                        self.casting_invisible = True
+
+                        # print("Attack executed")
+                    else:
+                        pass
+                        # print(f"Attack did not execute: {self.mana}:")   
+                    # print('Skill 4 used')
+
+                elif basic_hotkey and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
+                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                        attack = Attack_Display(
+                            x=self.rect.centerx + 30 if self.facing_right else self.rect.centerx - 30,
+                            y=self.rect.centery + 20,
+                            frames=self.basic_slash3 if self.facing_right else self.basic_slash3_flipped,
+                            frame_duration=BASIC_FRAME_DURATION+150,
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+
+                            sound=(True, self.basic_sound, None, None),
+                            delay=(True, self.basic_attack_animation_speed * (200 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            moving=True
+                            )
+                        attack_display.add(attack)
+                        self.mana -= 0
+                        self.attacks_special[4].last_used_time = current_time
+                        self.running = False
+                        self.attacking1 = True
+                        self.player_atk1_index = 0
+                        self.player_atk1_index_flipped = 0
+                        # print("Attack executed")
+                    else:
+                        pass
+
+     
+    def draw_health_bar(self, screen):
+        if not self.invisible:
+            super().draw_health_bar(screen)
+        else:
+            return
+    def draw_mana_bar(self, screen):
+        if not self.invisible:
+            super().draw_mana_bar(screen)
+        else:
+            return
+    def draw_special_bar(self, screen):
+        if not self.invisible:
+            super().draw_special_bar(screen)
+        else:
+            return
+    def update(self):
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
+        
+        self.keys = pygame.key.get_pressed()
+
+        self.inputs()
+        self.move_to_screen()
+        
+        if not self.is_dead():
+            self.player_death_index = 0
+            self.player_death_index_flipped = 0
+        if self.is_dead():
+            self.play_death_animation()
+        elif self.attacking1:
+            if not self.invisible: self.atk1_animation()
+            else: self.attacking1 = False
+        # elif self.attacking2:
+        #     self.atk2_animation()
+        elif self.attacking3:
+            if not self.invisible: self.atk3_animation()
+            else: self.attacking3 = False
+        elif self.jumping:
+            if not self.invisible: self.jump_animation()
+            else: self.jumping = False
+        elif self.running and not self.jumping:
+            if not self.invisible: self.run_animation()
+            else: self.running = False
+
+        if self.sp_attacking:
+            self.sp_animation()
+        
+        else:
+            if not self.is_dead():
+                self.simple_idle_animation(RUNNING_ANIMATION_SPEED)
+
+        
+        
+        
+
+        # print(self.attacking1, self.attacking2, self.attacking3, self.sp_attacking, self.basic_attacking)
+
+        # Apply gravity
+        self.y_velocity += DEFAULT_GRAVITY/2
+        self.y_pos += self.y_velocity/2
+        # if not self.jump_attack_pending:
+        #     self.y_velocity += DEFAULT_GRAVITY
+        #     self.y_pos += self.y_velocity
+
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0
+
+        # print(self.basic_attack_animation_speed)
+        # print(f'cd:{self.basic_attack_cooldown}')
+        # Update the player's position
+        self.rect.midbottom = (self.x_pos, self.y_pos)
+
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        # Update the player status (health and mana bars)
+        self.player_status(self.health, self.mana, self.special)
+        
+        # Update the health and mana bars
+        if self.health != 0:
+            if not DISABLE_MANA_REGEN:
+                self.mana += self.mana_regen
+            if not DISABLE_HEAL_REGEN:
+                self.health += self.health_regen
+        else:
+            self.health = 0
+
+        if not DISABLE_SPECIAL_REDUCE:
+            if self.special_active:
+                self.special -= SPECIAL_DURATION
+                if self.special <= 0:
+                    self.special_active = False
+
+
+        # if self.invisible:
+        #     print(f'invisible for: {int((self.invisible_duration-pygame.time.get_ticks())/1000)}s')
+        # if self.casting_invisible == True: # 820 CAST TIME!
+        #     print('cast time')
+        #     print((self.invisible_duration-pygame.time.get_ticks()))
+        # print(self.is_dead())
+
+        
+        # print(self.sp_attacking)
+        # print(self.invisible)
+
+
+                
+                    #self.apply_item_bonuses()
+        # print(self.basic_attack_damage)
+                # self.max_mana = min(200, self.max_mana + 10)
+
+        # self.special += 0.1
+        # print(self.special)
+
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect)
+        
+        super().update() 
+        # if not self.is_dead() and not self.invisible:
+        #     self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
+        #     self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
+        #     self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 # class Button:
 #     def __init__(self, x, y, width, height, text, color, text_color):
 #         self.rect = pygame.Rect(x, y, width, height)
@@ -8068,25 +9319,35 @@ class Item:
 
 
 items = [
+    # stats
     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.05]),  
-    Item("Emblem Necklace", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.05]), 
-    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed"], [0.1, 150]), 
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
+    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal"], [0.15]),
+    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp flat', 'mana flat', 'agi flat'], [15, 15, 10]),
     Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
     Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]),
 
+    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp flat', 'dmg reduce'], [25, 0.05]),
+    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana flat', 'spell dmg'], [25, 0.05]),
+    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk flat', 'atk speed'], [25, 0.05]),
     Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.07, 0.07, 0.07]),
-    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
-    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal"], [0.15]),
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25]), 
+    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana refund'], [0.75]),
     
     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.03, 0.03]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.08, 0.02]),
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['lifesteal', "spell dmg"], [-0.2, 0.2]),
+    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.05]), 
+
+    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed"], [0.1, 150]), 
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25]), 
+    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk flat', "move speed", 'attack speed'], [10, 0.05, 50]),
+    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
     
-     
+
 ]
 
 # doc
@@ -8108,7 +9369,8 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, *50%+ mana refund"
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, 50%+ mana refund",
+    "Onre": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce"
 }
 
 
@@ -8372,7 +9634,7 @@ def player_selection():
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
-        PlayerSelector(fire_wizard_icon, (xpos4, height - yposupper), Fire_Wizard), #temp
+        PlayerSelector(onre_icon, (xpos4, height - yposupper), Onre),
         PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
 
@@ -8388,12 +9650,13 @@ def player_selection():
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
-        PlayerSelector(fire_wizard_icon, (xpos4, height - yposupper), Fire_Wizard), #temp
+        PlayerSelector(onre_icon, (xpos4, height - yposupper), Onre),
         PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
     upper=550
     lower=450
     lower2=350
+    lower3=250
     # Item selection
     p1_items = [
         PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
@@ -8413,6 +9676,15 @@ def player_selection():
         PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+
+        PlayerSelector(items[18].image, (75, height - lower3), items[18], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
     ]
 
     p2_items = [
@@ -8433,6 +9705,15 @@ def player_selection():
         PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
         PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+
+        PlayerSelector(items[18].image, (75, height - lower3), items[18], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
     ]
         
     map_select = [
@@ -8470,9 +9751,9 @@ def player_selection():
             return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Forest_Ranger
-            PLAYER_2_SELECTED_HERO = Fire_Wizard
-            map_selected = Animate_BG.city_bg # Default
+            PLAYER_1_SELECTED_HERO = Onre
+            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
@@ -8664,6 +9945,10 @@ def player_selection():
                     print(hero1.enemy)
                     print(hero2.enemy)
                     # hero3 = Wind_Hashashin(PLAYER_1, hero2)
+                    heroes = (Fire_Wizard, Wanderer_Magician,
+                              Fire_Knight, Wind_Hashashin,
+                              Water_Princess, Forest_Ranger,
+                              Onre)
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.HERO1_BOT:
@@ -8672,16 +9957,34 @@ def player_selection():
 
                         bot2_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
                         hero2 = bot2_class(hero1, hero1)  # pass live hero1 reference (first is for bot reference, second is for player reference)
-                        # bot3_class = create_bot(PLAYER_1_SELECTED_HERO, PLAYER_1, hero2)
-                        # hero3 = bot3_class(hero2, hero2)  # pass live hero1 reference
+                        
+                        if global_vars.toggle_hero3: # Create a third enemy (hero3) for single player mode
+                            bot3_class = create_bot(PLAYER_2_SELECTED_HERO, PLAYER_2, hero1)
+                            hero3 = bot3_class(hero1, hero1)  # pass live hero1 reference (both enemies target the player)
+                            # Position hero3 slightly offset from hero2 so they don't overlap
+                            from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
+                            hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
+                            hero3.y_pos = DEFAULT_Y_POS
+                            hero3.player_1_y += 150
+                            hero3.player_2_y += 150
+                            
 
                         if global_vars.HERO1_BOT:
                             hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
 
                     # For player and bot, update referenced enemy to hero2  (IMPORTANT)
                     # had to manually set each other enemies first sop the attack won't error
-                    # hero1.enemy = hero3
-                    hero1.enemy = hero2
+                    # In single player mode, player (hero1) targets both enemies, enemies target player
+                    if global_vars.SINGLE_MODE_ACTIVE:
+                        if global_vars.toggle_hero3:
+                            hero1.enemy = [hero2, hero3]  # Player targets both enemies as a list
+                            hero3.enemy = [hero1]
+                        else:
+                            hero1.enemy = [hero2]
+                        hero2.enemy = [hero1]  # Enemy 1 targets the player
+                          # Enemy 2 targets the player
+                    else:
+                        hero1.enemy = [hero2]
                     # # hero1.enemy = []
                     # hero2.enemy = [hero1]
                     # hero3.enemy = [hero1]
@@ -8698,9 +10001,15 @@ def player_selection():
                     for item in p2_items:
                         if item.is_selected():
                             hero2.items.append(item.associate_value())
+                            # Also apply to hero3 in single player mode
+                            if global_vars.SINGLE_MODE_ACTIVE:
+                                hero3.items.append(item.associate_value())
 
                     hero1.apply_item_bonuses()
                     hero2.apply_item_bonuses()
+                    if global_vars.SINGLE_MODE_ACTIVE:
+                        if global_vars.toggle_hero3:
+                            hero3.apply_item_bonuses()
 
                     hero1_group = pygame.sprite.Group()
                     hero1_group.add(hero1)
@@ -8708,6 +10017,11 @@ def player_selection():
 
                     hero2_group = pygame.sprite.Group()
                     hero2_group.add(hero2)
+                    
+                    # In single player mode, add hero3 to hero2_group as another enemy
+                    if global_vars.SINGLE_MODE_ACTIVE:
+                        if global_vars.toggle_hero3:
+                            hero2_group.add(hero3)
                     
                     # hero3_group = pygame.sprite.Group()
                     # hero3_group.add(hero3)

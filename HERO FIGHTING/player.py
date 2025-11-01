@@ -15,6 +15,7 @@ from sprite_loader import SpriteSheet, SpriteSheet_Flipped
 import random
 import global_vars
 #AS OF 4/23/25 (12:15 AM)
+print('pls don\'t pause if you have active buff :)')
 '''SPECIAL LASTS 16-17 SECONDS
  if you don't do anything :))'''
 '''
@@ -75,7 +76,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         # print('from player itself. player:', player_type)
         # print(enemy)
-        self.enemy = enemy
+        self.enemy = enemy # if type(enemy) is list else list(enemy)
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Unknown"
         self.items = [] # contains 3 or less than 3 item classes. ex. 
@@ -83,6 +84,7 @@ class Player(pygame.sprite.Sprite):
         self.damage_reduce = 0
         self.special_increase = 0
         self.lifesteal = 0
+        self.mana_refund = 0
         self.stunned = False
         self.frozen = False
         self.freeze_source = None
@@ -315,6 +317,10 @@ class Player(pygame.sprite.Sprite):
         self.basic_slash2 = self.load_img_frames_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
         self.basic_slash2_flipped = self.load_img_frames_flipped_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
 
+        basic_slash3 = [r'assets\attacks\Basic Attack\3 small', 2, 1]
+        self.basic_slash3 = self.load_img_frames_tile_method(basic_slash3[0], basic_slash3[1], basic_slash3[2], BASIC_SLASH_SIZE_BIG)
+        self.basic_slash3_flipped = self.load_img_frames_flipped_tile_method(basic_slash3[0], basic_slash3[1], basic_slash3[2], BASIC_SLASH_SIZE_BIG)
+        
         # melee
         self.basic_icon = pygame.transform.scale(pygame.image.load(r'assets\icons\Blade_Dance_icon.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))
 
@@ -350,6 +356,12 @@ class Player(pygame.sprite.Sprite):
         self.mana_bar_p1_after =0
         self.mana_bar_p2_after =0
         
+
+        # Player Status positioning
+        self.player_1_x = 101    
+        self.player_1_y = 150
+        self.player_2_x = 96
+        self.player_2_y = 150
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
@@ -484,7 +496,7 @@ class Player(pygame.sprite.Sprite):
     def apply_item_bonuses(self):
         # print(self.basic_attack_animation_speed)
         #misc
-        print(self.basic_attack_animation_speed)
+        print(self.basic_attack_animation_speed) # NOTE, BONUSES ARE NOT CENTRALIZED, each bonus is applied 1 by 1
         for item in self.items: # self.items is a list of item classes
             for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
                 if bonus_type == 'move speed':
@@ -492,14 +504,29 @@ class Player(pygame.sprite.Sprite):
                     self.running_animation_speed += 10 * bonus_value
                     self.default_speed = self.speed
                 
-                if bonus_type == 'attack speed': 
+                # ex. 50, 150 attack speed
+                if bonus_type == 'attack speed':  # FLAT ATTACK SPEED!!!
                     self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 10 animation speed
                     if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
                         self.basic_attack_animation_speed = 0.01
-                    self.basic_attack_cooldown -= 0.5 * bonus_value
+                    self.basic_attack_cooldown -= 0.5 * bonus_value # 100 attack speed = -0.05s cooldown (attack cd = 0.5s)
                     if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
                         self.basic_attack_cooldown = 0.01     
-                    print(self.basic_attack_animation_speed)
+                    print('applied flat atk speed', self.basic_attack_animation_speed)
+                    self.attacks[4].cooldown = self.basic_attack_cooldown
+                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
+                
+                # percentage ex. 0.05 atk speed -> 5%
+                if bonus_type == 'atk speed': # THIS IS PERCENTAGE I NEED TO READ DOCS!!!
+                    print(self.basic_attack_animation_speed * bonus_value, bonus_value)
+                    self.basic_attack_animation_speed -= self.basic_attack_animation_speed * bonus_value  # 100 attack speed, 10% mult = +10 animation speed
+                    if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_animation_speed = 0.01
+                    self.basic_attack_cooldown -= 0.5 * (bonus_value * 1000) # convert back to tick second, then multiply back (atk speed value already added) 
+                                                                             # 100 attack speed, 10% mult = -0.05s cooldown (attack cd = 0.5s)
+                    if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_cooldown = 0.01   
+                    print('applied atk speed percentage', self.basic_attack_animation_speed)
                     self.attacks[4].cooldown = self.basic_attack_cooldown
                     self.attacks_special[4].cooldown = self.basic_attack_cooldown
 
@@ -513,6 +540,7 @@ class Player(pygame.sprite.Sprite):
                         self.attacks[i].cooldown -= int(self.attacks[i].cooldown * bonus_value)
                         self.attacks_special[i].cooldown -= int(self.attacks_special[i].cooldown * bonus_value)
 
+                # CENTRALIZED BONUSES BEFORE APPLYING
                 if bonus_type == "lifesteal":
                     self.lifesteal += bonus_value
 
@@ -522,6 +550,15 @@ class Player(pygame.sprite.Sprite):
                 if bonus_type =='sp increase':
                     self.special_increase += bonus_value
 
+                # print('mana refunding', self)
+                # print(self.mana_refund)
+                # print(bonus_type)
+                if bonus_type =='mana refund':
+                    self.mana_refund += bonus_value
+                # print(self.mana_refund)
+
+
+                # For spell damage vvv -----------------------------------------------------
                 if bonus_type == 'spell dmg':
                     # Apply bonus spell damage to each skill
                     self.atk1_damage = (
@@ -584,28 +621,30 @@ class Player(pygame.sprite.Sprite):
                         self.sp_atk3_damage[0] + (self.sp_atk3_damage[0] * bonus_value),
                         self.sp_atk3_damage[1] + (self.sp_atk3_damage[1] * bonus_value)
                     )
-                    
+                # For spell damage ^^^ -----------------------------------------------------
                 
 
+                # apply flat bonuses first
 
-
-                if bonus_type == 'str':
-                    self.strength += self.strength * bonus_value
-                    self.max_health = self.str_mult * self.strength
                 if bonus_type == 'str flat':
                     self.strength += bonus_value
+                    self.max_health = self.str_mult * self.strength
+                if bonus_type == 'int flat':
+                    self.intelligence += bonus_value
+                    self.max_mana = self.int_mult * self.intelligence
+                if bonus_type == 'agi flat':
+                    self.agility += bonus_value
+                    self.basic_attack_damage = self.agi_mult * self.agility
+
+                # then apply multiplication with the bonus flat (slight difference)
+                if bonus_type == 'str':
+                    self.strength += self.strength * bonus_value
                     self.max_health = self.str_mult * self.strength
                 if bonus_type == 'int':
                     self.intelligence += self.intelligence * bonus_value
                     self.max_mana = self.int_mult * self.intelligence
-                if bonus_type == 'int flat':
-                    self.intelligence += bonus_value
-                    self.max_mana = self.int_mult * self.intelligence
                 if bonus_type == 'agi':
                     self.agility += self.agility * bonus_value
-                    self.basic_attack_damage = self.agi_mult * self.agility
-                if bonus_type == 'agi flat':
-                    self.agility += bonus_value
                     self.basic_attack_damage = self.agi_mult * self.agility
 
                 if bonus_type == 'mana regen':
@@ -624,19 +663,22 @@ class Player(pygame.sprite.Sprite):
                 
 
                 
-
-                if bonus_type == 'hp':
-                    self.max_health += self.max_health * bonus_value
+                # same for these, apply flat, then percentage bonuses
                 if bonus_type == 'hp flat':
                     self.max_health += bonus_value
-                if bonus_type == 'mana':
-                    self.max_mana += self.max_mana * bonus_value
                 if bonus_type == 'mana flat':
                     self.max_mana += bonus_value
+                if bonus_type == 'atk flat':
+                    self.basic_attack_damage += bonus_value/100 # example, +0.25 atk flat, but it convers to percentage, turn into 25, then divide 100 = 0.25
+                    
+                # percentages
+                if bonus_type == 'hp':
+                    self.max_health += self.max_health * bonus_value
+                if bonus_type == 'mana':
+                    self.max_mana += self.max_mana * bonus_value
                 if bonus_type == 'atk':
                     self.basic_attack_damage += self.basic_attack_damage * bonus_value
-                if bonus_type == 'atk flat':
-                    self.basic_attack_damage += bonus_value
+                
 
         # get final attack speed with bonuses
         self.get_current_atk_speed = self.basic_attack_animation_speed
@@ -1118,6 +1160,10 @@ class Player(pygame.sprite.Sprite):
 
     def player_status(self, health, mana, special):
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
+        p1_x = self.player_1_x
+        p1_y = self.player_1_y
+        p2_x = self.player_2_x
+        p2_y = self.player_2_y
 
         # Re-declaring the values
         self.health = health
@@ -1131,21 +1177,21 @@ class Player(pygame.sprite.Sprite):
         dim_gray = 'gray20'  # Dim Gray for decor
 
         if self.player_type == 1:
-            self.health_bar_p1 = pygame.Rect(101, 150, self.health, 20)
-            self.health_bar_p1_after = pygame.Rect(101, 150, self.white_health_p1, 20)
-            self.mana_bar_p1 = pygame.Rect(101, 150+50, self.mana, 20)
-            self.mana_bar_p1_after = pygame.Rect(101, 150+50, self.white_mana_p1, 20)
+            self.health_bar_p1 = pygame.Rect(p1_x, p1_y, self.health, 20)
+            self.health_bar_p1_after = pygame.Rect(p1_x, p1_y, self.white_health_p1, 20)
+            self.mana_bar_p1 = pygame.Rect(p1_x, p1_y+50, self.mana, 20)
+            self.mana_bar_p1_after = pygame.Rect(p1_x, p1_y+50, self.white_mana_p1, 20)
 
-            self.special_bar_p1 = pygame.Rect(101, 125, self.special, 10)
+            self.special_bar_p1 = pygame.Rect(p1_x, p1_y-25, self.special, 10)
 
             # Recalculate mana decor width based on max mana
             self.hpdecor_end_p1 = self.max_health + 10
             self.manadecor_end_p1 = self.max_mana + 10  # Fixing mana decor width based on max mana
 
-            self.hp_decor_p1 = pygame.Rect(96, 145, self.hpdecor_end_p1, 30)
-            self.mana_decor_p1 = pygame.Rect(96, 145 + 50, self.manadecor_end_p1, 30)  # Fixed width for mana decor
+            self.hp_decor_p1 = pygame.Rect(p1_x-6, p1_y-5, self.hpdecor_end_p1, 30)
+            self.mana_decor_p1 = pygame.Rect(p1_x-6, p1_y-5 + 50, self.manadecor_end_p1, 30)  # Fixed width for mana decor
 
-            self.special_decor_p1 = pygame.Rect(96, 145 - 25, self.max_special + 10, 20)
+            self.special_decor_p1 = pygame.Rect(p1_x-6, p1_y-5 - 25, self.max_special + 10, 20)
 
             # White rects
             if self.health < self.white_health_p1:
@@ -1239,16 +1285,16 @@ class Player(pygame.sprite.Sprite):
 
 
 
-            self.healthdecor_p2_starting = width - self.hpdecor_end_p2 - 96
-            self.manadecor_p2_starting = width - self.manadecor_end_p2 - 96
+            self.healthdecor_p2_starting = width - self.hpdecor_end_p2 - p2_x
+            self.manadecor_p2_starting = width - self.manadecor_end_p2 - p2_x
 
-            self.specialdecor_p2_starting = width - self.specialdecor_end_p2 - 96
+            self.specialdecor_p2_starting = width - self.specialdecor_end_p2 - p2_x
 
             # Decorations
-            self.hp_decor_p2 = pygame.Rect(self.healthdecor_p2_starting, 145, self.hpdecor_end_p2, 30)
-            self.mana_decor_p2 = pygame.Rect(self.manadecor_p2_starting, 195, self.manadecor_end_p2, 30)  # Fixed width for mana decor
+            self.hp_decor_p2 = pygame.Rect(self.healthdecor_p2_starting, p2_y-5, self.hpdecor_end_p2, 30)
+            self.mana_decor_p2 = pygame.Rect(self.manadecor_p2_starting, p2_y+50-5, self.manadecor_end_p2, 30)  # Fixed width for mana decor
 
-            self.special_decor_p2 = pygame.Rect(self.specialdecor_p2_starting, 145 - 25, self.specialdecor_end_p2, 20)
+            self.special_decor_p2 = pygame.Rect(self.specialdecor_p2_starting, p2_y-5 - 25, self.specialdecor_end_p2, 20)
 
             # Adjust bar starting x-position to align inside the decor with a 5px padding
             bar_x_start = self.hp_decor_p2.left + 5
@@ -1268,14 +1314,14 @@ class Player(pygame.sprite.Sprite):
             self.white_mana_p2_width = int((self.white_mana_p2 / self.max_mana) * mana_bar_max_width)
 
             # Health and Mana Rects (bars should start from right side and shrink towards left)
-            self.health_bar_p2 = pygame.Rect(self.hp_decor_p2.right - self.health_bar_p2_width - 5, 150, self.health_bar_p2_width, 20)
-            self.health_bar_p2_after = pygame.Rect(self.hp_decor_p2.right - self.white_health_p2_width - 5, 150, self.white_health_p2_width, 20)
+            self.health_bar_p2 = pygame.Rect(self.hp_decor_p2.right - self.health_bar_p2_width - 5, p2_y, self.health_bar_p2_width, 20)
+            self.health_bar_p2_after = pygame.Rect(self.hp_decor_p2.right - self.white_health_p2_width - 5, p2_y, self.white_health_p2_width, 20)
 
-            self.mana_bar_p2 = pygame.Rect(self.mana_decor_p2.right - self.mana_bar_p2_width - 5, 200, self.mana_bar_p2_width, 20)
-            self.mana_bar_p2_after = pygame.Rect(self.mana_decor_p2.right - self.white_mana_p2_width - 5, 200, self.white_mana_p2_width, 20)
+            self.mana_bar_p2 = pygame.Rect(self.mana_decor_p2.right - self.mana_bar_p2_width - 5, p2_y+50, self.mana_bar_p2_width, 20)
+            self.mana_bar_p2_after = pygame.Rect(self.mana_decor_p2.right - self.white_mana_p2_width - 5, p2_y+50, self.white_mana_p2_width, 20)
 
 
-            self.special_bar_p2 = pygame.Rect(self.special_decor_p2.right - self.special_bar_p2_width - 5, 125, self.special_bar_p2_width, 10)
+            self.special_bar_p2 = pygame.Rect(self.special_decor_p2.right - self.special_bar_p2_width - 5, p2_y-25, self.special_bar_p2_width, 10)
 
             
 
@@ -1454,7 +1500,7 @@ class Player(pygame.sprite.Sprite):
     def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
-        else: #add mana to the attacked player
+        else: #add mana to the attacked player, called by take_special
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
 
     def take_special(self, amount):
@@ -1463,6 +1509,11 @@ class Player(pygame.sprite.Sprite):
         if self.special_increase > 0:
             amount += (amount * self.special_increase)
         self.special = max(0, self.special + amount)
+
+        # adds mana to attacker using mana refund item bonus (multiplier < 1 or more)
+        if self.mana_refund > 0:
+            self.add_mana(amount, self, mana_mult=self.mana_refund)
+            print('mana added')
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
@@ -1602,27 +1653,28 @@ class Player(pygame.sprite.Sprite):
 
         # print(f"REMOVE status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source} in {self._freeze_sources if type == 1 else self._root_sources if type == 2 else self._slow_sources}")
                 
-    def draw_movement_status(self, screen):
-        if self.frozen or self.rooted:
-            # Calculate overlay dimensions: 1/4 height from ground up
-            overlay_height = self.hitbox_rect.height // (4 if self.rooted else 1)
-            overlay_rect = pygame.Rect(
-                self.hitbox_rect.x,
-                self.hitbox_rect.bottom - overlay_height,  # from ground up
-                self.hitbox_rect.width,
-                overlay_height
-            )
+    def draw_movement_status(self, screen, display=False):
+        if display:
+            if self.frozen or self.rooted:
+                # Calculate overlay dimensions: 1/4 height from ground up
+                overlay_height = self.hitbox_rect.height // (4 if self.rooted else 1)
+                overlay_rect = pygame.Rect(
+                    self.hitbox_rect.x,
+                    self.hitbox_rect.bottom - overlay_height,  # from ground up
+                    self.hitbox_rect.width,
+                    overlay_height
+                )
 
-            # Choose color based on status
-            if self.frozen:
-                color = (0, 100, 255, 50)  # translucent blue
-            else:
-                color = (139, 69, 19, 50)  # brown, translucent
+                # Choose color based on status
+                if self.frozen:
+                    color = (0, 100, 255, 50)  # translucent blue
+                else:
+                    color = (139, 69, 19, 50)  # brown, translucent
 
-            # Create surface for transparency
-            overlay = pygame.Surface((overlay_rect.width, overlay_rect.height), pygame.SRCALPHA)
-            overlay.fill(color)
-            screen.blit(overlay, overlay_rect.topleft)
+                # Create surface for transparency
+                overlay = pygame.Surface((overlay_rect.width, overlay_rect.height), pygame.SRCALPHA)
+                overlay.fill(color)
+                screen.blit(overlay, overlay_rect.topleft)
 
         # Optional: Draw hitbox outline (for debugging)
         # pygame.draw.rect(screen, (0, 255, 0), self.hitbox_rect, 2)

@@ -34,6 +34,8 @@ IMMEDIATE_RUN = False
 HERO1_BOT = False
 all_items = False #equip bot with all items
 
+toggle_hero3 = True
+
 
 MAIN_VOLUME = 1
 TEXT_ANTI_ALIASING = False
@@ -194,8 +196,9 @@ fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
 wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
 fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
 wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
-water_princess_icon = r'assets\hero profiles\water character profile.png' # temp
+water_princess_icon = r'assets\hero profiles\water character profile.png'
 forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
+onre_icon = r'assets\hero profiles\temp.jpg'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'
@@ -219,7 +222,7 @@ center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14
 
-SHOW_MINI_HEALTH_BAR = True
+SHOW_MINI_HEALTH_BAR = False
 SHOW_MINI_MANA_BAR = False
 SHOW_MINI_SPECIAL_BAR = False
 

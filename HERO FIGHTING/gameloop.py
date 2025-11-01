@@ -309,7 +309,7 @@ def game(bg=None):
             if event.type == pygame.USEREVENT + 1 and not game_music_started:
                 pygame.mixer.music.load(GAME_MUSIC_1)
                 pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME * 0.5)  # Apply mute logic
-                pygame.mixer.music.play(-1, fade_ms=1500)
+                pygame.mixer.music.play(1, fade_ms=1500)
                 game_music_started = True
                 print("Started game music 1")
 
@@ -493,13 +493,27 @@ def game(bg=None):
                 if global_vars.HERO1_BOT:
                     main.hero1.bot_logic()  # Add bot logic for 
                 main.hero2.bot_logic()
-                # main.hero3.bot_logic()
+                if hasattr(main, 'hero3') and main.hero3 is not None:
+                    main.hero3.bot_logic()
 
 
             if main.hero1.is_dead():
                 winner = 'hero2'
             elif main.hero2.is_dead():
-                winner = 'hero1'
+                # In single player mode, check if all enemies are dead
+                if global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+                    if main.hero3.is_dead():
+                        winner = 'hero1'
+                    else:
+                        winner = None
+                else:
+                    winner = 'hero1'
+            elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+                # In single player mode with 2 enemies, player wins only if both enemies are dead
+                if main.hero2.is_dead() and main.hero3.is_dead():
+                    winner = 'hero1'
+                else:
+                    winner = None
             else:
                 winner = None
                 
@@ -997,7 +1011,10 @@ def reset_all():
     global_vars.PAUSED_TOTAL_DURATION = 0
     global_vars.PAUSED_START = None
     # reset hero states
-    for hero in [main.hero1, main.hero2]:
+    heroes_to_reset = [main.hero1, main.hero2]
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        heroes_to_reset.append(main.hero3)
+    for hero in heroes_to_reset:
         hero.freeze_sources = set()
         hero.root_sources = set()
         hero.frozen = False
@@ -1007,11 +1024,14 @@ def reset_all():
         hero.freeze_source = None
         hero.root_source = None
         if hasattr(hero, 'atk_hasted'):
-            print('ahah')
+            # print('ahah')
             default_atk_speed_with_bonus = hero.get_atk_speed()
             hero.atk_hasted = False # removes the buff for forest ranger if possible
             hero.basic_attack_animation_speed = default_atk_speed_with_bonus
-            
+        if hasattr(hero, 'invisible'):
+            hero.invisible = False
+            hero.casting_invisible = False
+            hero.invisible_duration = 0
         hero.y_velocity = 0
         hero.x_velocity = 0
         hero.running = False
@@ -1025,11 +1045,17 @@ def reset_all():
         attack.reduce_cd(True)
     for attack in main.hero2.attacks:
         attack.reduce_cd(True)
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        for attack in main.hero3.attacks:
+            attack.reduce_cd(True)
 
     for attack in main.hero1.attacks_special:
         attack.reduce_cd(True)
     for attack in main.hero2.attacks_special :
         attack.reduce_cd(True)
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        for attack in main.hero3.attacks_special:
+            attack.reduce_cd(True)
 
     #reset health
     main.hero1.health = main.hero1.max_health
@@ -1038,6 +1064,13 @@ def reset_all():
     main.hero2.mana = main.hero2.max_mana
     main.hero1.special = 0
     main.hero2.special = 0
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        main.hero3.health = main.hero3.max_health
+        main.hero3.mana = main.hero3.max_mana
+        main.hero3.special = 0
+        main.hero3.white_health_p2 = main.hero3.max_health
+        main.hero3.white_mana_p2 = main.hero3.max_mana
+        main.hero3.damage_numbers.clear()
 
     main.hero1.white_health_p1 = main.hero1.max_health
     main.hero2.white_health_p2 = main.hero2.max_health
@@ -1048,10 +1081,14 @@ def reset_all():
     main.hero2.damage_numbers.clear()
 
     # reset pos
-    main.hero1.x_pos = X_POS_SPACING if main.hero1.player_type == 1 else DEFAULT_X_POS
-    main.hero1.y_pos = DEFAULT_Y_POS
-    main.hero2.x_pos = X_POS_SPACING if main.hero2.player_type == 1 else DEFAULT_X_POS
-    main.hero2.y_pos = DEFAULT_Y_POS
+    main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
+    main.hero1.y_pos = global_vars.DEFAULT_Y_POS
+    main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
+    main.hero2.y_pos = global_vars.DEFAULT_Y_POS
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
+        main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
+        main.hero3.y_pos = DEFAULT_Y_POS
 
     # fade_overlay = pygame.Surface((width, height))
     # fade_overlay.fill((0, 0, 0))

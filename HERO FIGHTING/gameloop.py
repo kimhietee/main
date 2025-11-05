@@ -704,11 +704,13 @@ def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slks
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
             menu()
+            return
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
             reset_all()
             fade(loading_screen_bg, game)
+            return
 
 def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused

@@ -10,7 +10,7 @@ icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
-# screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
 # screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
@@ -34,7 +34,9 @@ IMMEDIATE_RUN = False
 HERO1_BOT = False
 all_items = False #equip bot with all items
 
-toggle_hero3 = True
+toggle_hero3 = False
+random_pick_p1 = False 
+random_pick_p2 = False 
 
 
 MAIN_VOLUME = 1
@@ -198,7 +200,7 @@ fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
 wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
 water_princess_icon = r'assets\hero profiles\water character profile.png'
 forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
-onre_icon = r'assets\hero profiles\temp.jpg'
+yurei_icon = r'assets\skill icons\onre\Yuriei.jpg'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'
@@ -222,7 +224,7 @@ center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14
 
-SHOW_MINI_HEALTH_BAR = False
+SHOW_MINI_HEALTH_BAR = True
 SHOW_MINI_MANA_BAR = False
 SHOW_MINI_SPECIAL_BAR = False
 

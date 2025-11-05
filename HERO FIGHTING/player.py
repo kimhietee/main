@@ -76,7 +76,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         # print('from player itself. player:', player_type)
         # print(enemy)
-        self.enemy = enemy # if type(enemy) is list else list(enemy)
+        self.enemy = enemy if type(enemy) is list else [enemy]
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Unknown"
         self.items = [] # contains 3 or less than 3 item classes. ex. 
@@ -85,6 +85,8 @@ class Player(pygame.sprite.Sprite):
         self.special_increase = 0
         self.lifesteal = 0
         self.mana_refund = 0
+        self.crit_chance = 0
+        self.crit_damage = 0
         self.stunned = False
         self.frozen = False
         self.freeze_source = None
@@ -301,6 +303,8 @@ class Player(pygame.sprite.Sprite):
 
         self.y_velocity = 0
         self.jumping = False
+
+        self.target = None
 
 
         #Attack-------------------------------------------------------------
@@ -541,7 +545,9 @@ class Player(pygame.sprite.Sprite):
                         self.attacks_special[i].cooldown -= int(self.attacks_special[i].cooldown * bonus_value)
 
                 # CENTRALIZED BONUSES BEFORE APPLYING
-                if bonus_type == "lifesteal":
+                if bonus_type == "lifesteal": # must be higher than 1
+                    self.lifesteal += bonus_value
+                if bonus_type == 'health cost': # value must be less than 1
                     self.lifesteal += bonus_value
 
                 if bonus_type =='dmg reduce':
@@ -557,7 +563,15 @@ class Player(pygame.sprite.Sprite):
                     self.mana_refund += bonus_value
                 # print(self.mana_refund)
 
+                if bonus_type == 'crit chance':
+                    self.crit_chance += bonus_value
 
+                if bonus_type == 'crit dmg':
+                    self.crit_damage += bonus_value
+
+                if bonus_type == 'dmg return':
+                    for enemy in self.enemy:
+                        enemy.lifesteal -= bonus_value
                 # For spell damage vvv -----------------------------------------------------
                 if bonus_type == 'spell dmg':
                     # Apply bonus spell damage to each skill
@@ -993,23 +1007,46 @@ class Player(pygame.sprite.Sprite):
         frames = spritesheet.get_frames()
         return frames
     
+    # def animate(self, frames, index, loop=True, basic_atk=False):
+    #     current_time = pygame.time.get_ticks()
+    #     #print(f"{self.__class__.__name__} animation speed: {self.basic_attack_animation_speed}")
+    #     frame_duration = self.default_animation_speed if not self.basic_attacking else self.basic_attack_animation_speed
+    #     #print(f"Animation type: {'basic' if self.basic_attacking else 'default'}, Duration: {frame_duration}")
+    #     if current_time - self.last_atk_time > frame_duration:
+    #         self.last_atk_time = current_time
+    #         self.image = frames[int(index)]
+    #         index += 1
+    #         #print(basic_atk)
+    #         if index >= len(frames):
+    #             if loop:
+    #                 index = 0  # Restart the animation
+    #             else:
+    #                 index = len(frames) - 1  # Stay on the last frame
+    #                 return index, False  # Animation finished
+    #     return index, True  # Animation stzill active
+    
     def animate(self, frames, index, loop=True, basic_atk=False):
+        if not frames:
+            return 0, False
+        frame_duration = self.basic_attack_animation_speed if self.basic_attacking else self.default_animation_speed
+        # clamp index
+        if index < 0:
+            index = 0
+        if index >= len(frames):
+            index = 0 if loop else len(frames) - 1
+
         current_time = pygame.time.get_ticks()
-        #print(f"{self.__class__.__name__} animation speed: {self.basic_attack_animation_speed}")
-        frame_duration = self.default_animation_speed if not self.basic_attacking else self.basic_attack_animation_speed
-        #print(f"Animation type: {'basic' if self.basic_attacking else 'default'}, Duration: {frame_duration}")
         if current_time - self.last_atk_time > frame_duration:
             self.last_atk_time = current_time
             self.image = frames[int(index)]
             index += 1
-            #print(basic_atk)
             if index >= len(frames):
                 if loop:
-                    index = 0  # Restart the animation
+                    index = 0
                 else:
-                    index = len(frames) - 1  # Stay on the last frame
-                    return index, False  # Animation finished
-        return index, True  # Animation stzill active
+                    index = len(frames) - 1
+                    return index, False  # finished (non-loop)
+        return index, True
     
     def jump_animation(self):
         if self.facing_right:
@@ -1513,7 +1550,7 @@ class Player(pygame.sprite.Sprite):
         # adds mana to attacker using mana refund item bonus (multiplier < 1 or more)
         if self.mana_refund > 0:
             self.add_mana(amount, self, mana_mult=self.mana_refund)
-            print('mana added')
+            # print('mana added')
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
@@ -1710,6 +1747,23 @@ class Player(pygame.sprite.Sprite):
             self.x_pos -= 3
         if self.x_pos < 0:
             self.x_pos += 3
+
+    def single_target(self): # for single target spells, updates self.target when called.
+        if len(self.enemy) == 1:
+            self.target = self.enemy[0]
+        elif len(self.enemy) > 1:
+            # Find closest enemy
+            closest_enemy = None
+            closest_distance = float('inf')
+            for enemy in self.enemy:
+                distance = abs(self.rect.centerx - enemy.rect.centerx)
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_enemy = enemy
+            self.target = closest_enemy if closest_enemy else random.choice(self.enemy)
+        else:
+            # No enemies available, use random as fallback
+            self.target = random.choice(self.enemy)
 
     # Handles input for all heroes
     def inputs(self):

@@ -236,6 +236,8 @@ import Animate_BG
 
 import global_vars
 
+import key
+
 # from chance import Chance
 
 pygame.init()
@@ -357,23 +359,23 @@ class Attacks:
     def is_ready(self):
         return self.time_since_use() >= self.cooldown
 
-    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL):
+    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, keybinds=key.Main_Keybinds):
         # Determine the key to display based on the player type
         key_text = ""
         if player_type == 1:
-            key_text = "Z" if self.skill_rect == hero1.skill_1_rect else \
-                    "X" if self.skill_rect == hero1.skill_2_rect else \
-                    "C" if self.skill_rect == hero1.skill_3_rect else \
-                    "V" if self.skill_rect == hero1.skill_4_rect else \
-                    "E" if self.skill_rect == hero1.basic_icon_rect else \
-                    "F" if self.skill_rect == hero1.special_rect else ""
+            key_text = keybinds['skill_1_p1'][1] if self.skill_rect == hero1.skill_1_rect else \
+                    keybinds['skill_2_p1'][1] if self.skill_rect == hero1.skill_2_rect else \
+                    keybinds['skill_3_p1'][1] if self.skill_rect == hero1.skill_3_rect else \
+                    keybinds['skill_4_p1'][1] if self.skill_rect == hero1.skill_4_rect else \
+                    keybinds['basic_atk_p1'][1] if self.skill_rect == hero1.basic_icon_rect else \
+                    keybinds['sp_skill_p1'][1] if self.skill_rect == hero1.special_rect else ""
         elif player_type == 2:
-            key_text = "U" if self.skill_rect == hero2.skill_1_rect else \
-                    "I" if self.skill_rect == hero2.skill_2_rect else \
-                    "O" if self.skill_rect == hero2.skill_3_rect else \
-                    "P" if self.skill_rect == hero2.skill_4_rect else \
-                    "L" if self.skill_rect == hero2.basic_icon_rect else \
-                    "K" if self.skill_rect == hero2.special_rect else ""
+            key_text = keybinds['skill_1_p2'][1] if self.skill_rect == hero2.skill_1_rect else \
+                    keybinds['skill_2_p2'][1] if self.skill_rect == hero2.skill_2_rect else \
+                    keybinds['skill_3_p2'][1] if self.skill_rect == hero2.skill_3_rect else \
+                    keybinds['skill_4_p2'][1] if self.skill_rect == hero2.skill_4_rect else \
+                    keybinds['basic_atk_p2'][1] if self.skill_rect == hero2.basic_icon_rect else \
+                    keybinds['sp_skill_p2'][1] if self.skill_rect == hero2.special_rect else ""
 
         # Existing logic for drawing the skill icon
         if not self.special_skill:
@@ -7053,8 +7055,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks[0].mana_cost and self.attacks[0].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
+                        
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + 0,
@@ -8113,10 +8114,10 @@ class Yurei(Player):
         skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\dark-silhouette-woman-windblown-hair-her-form-dissolving-chaotic-cloud-black-dust-dissolves-violently-particles-393542673.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\aa.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1809498085162188896-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1776215573221056799-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\_mikami_saka_-1861790162579267917-01.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\special\beautiful.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\magic-summon-circle-purple-magic-footage-162703660_iconl.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\person-fade-away-green-fog-260nw-2585215663.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\a.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\onre\dark-silhouette-woman-windblown-hair-her-form-dissolving-chaotic-cloud-black-dust-dissolves-violently-particles-393542673.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # # Player Icon Rects
         if self.player_type == 1:
@@ -9400,8 +9401,8 @@ items = [
     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.03, 0.03]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce'], [40, 0.08]),
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.10, 0.15]),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.05, 0.05]),
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.20]),
     Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.05]), 
 
     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
@@ -9409,9 +9410,9 @@ items = [
     Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25]), 
     Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk flat', "move speed", 'attack speed'], [10, 0.05, 50]),
     Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
-    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit chance", "crit dmg"], [0.3, 1.00]),
+    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit chance", "crit dmg"], [0.3, 0.8]),
 
-    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg return'], [0.15]),
+    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg return'], [0.20]),
     
 
 ]
@@ -10036,17 +10037,17 @@ def player_selection():
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
-                    
-                    # Player type seems to be phased out but is still being used
-                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) #not live
-                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)
-                    print(hero1.enemy)
-                    print(hero2.enemy)
-                    # hero3 = Wind_Hashashin(PLAYER_1, hero2)
                     heroes = (Fire_Wizard, Wanderer_Magician,
                               Fire_Knight, Wind_Hashashin,
                               Water_Princess, Forest_Ranger,
                               Yurei)
+                    # Player type seems to be phased out but is still being used
+                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2)  if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2) #not live
+                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)  if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                    print(hero1.enemy)
+                    print(hero2.enemy)
+                    # hero3 = Wind_Hashashin(PLAYER_1, hero2)
+                    
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.HERO1_BOT:

@@ -14,6 +14,7 @@ from sprite_loader import SpriteSheet, SpriteSheet_Flipped
 # from attack import Attacks, Attack_Display
 import random
 import global_vars
+import key
 #AS OF 4/23/25 (12:15 AM)
 print('pls don\'t pause if you have active buff :)')
 '''SPECIAL LASTS 16-17 SECONDS
@@ -1766,21 +1767,21 @@ class Player(pygame.sprite.Sprite):
             self.target = random.choice(self.enemy)
 
     # Handles input for all heroes
-    def inputs(self):
+    def inputs(self,keybinds=key.Main_Keybinds):
         self.keys = pygame.key.get_pressed()
         self.input(
-            (self.keys[pygame.K_z]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
-            (self.keys[pygame.K_x]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
-            (self.keys[pygame.K_c]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
-            (self.keys[pygame.K_v]) if self.player_type == 1 else (self.keys[pygame.K_p]),
+            (self.keys[keybinds['skill_1_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_u]), 
+            (self.keys[keybinds['skill_2_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_i]), 
+            (self.keys[keybinds['skill_3_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_o]), 
+            (self.keys[keybinds['skill_4_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_p]),
 
             (self.keys[pygame.K_d]) if self.player_type == 1 else (self.keys[pygame.K_RIGHT]),
             (self.keys[pygame.K_a]) if self.player_type == 1 else (self.keys[pygame.K_LEFT]),
             (self.keys[pygame.K_w]) if self.player_type == 1 else (self.keys[pygame.K_UP]),
 
-            (self.keys[pygame.K_e]) if self.player_type == 1 else (self.keys[pygame.K_l]),
+            (self.keys[keybinds['basic_atk_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_l]),
 
-            (self.keys[pygame.K_f]) if self.player_type == 1 else (self.keys[pygame.K_k])
+            (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[pygame.K_k])
             )
 
     

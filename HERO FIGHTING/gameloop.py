@@ -30,6 +30,8 @@ import heroes as main
 
 import Animate_BG
 
+import key
+
 
 
 
@@ -259,6 +261,17 @@ def game(bg=None):
     #testing
     main.hero1.x_pos += 250
     main.hero2.x_pos -= 150
+
+    
+
+    # Import keybinds as data from json
+    
+
+
+
+
+
+
     while True:
         # print(main.hero1.mana)
             
@@ -775,9 +788,6 @@ def menu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()   
-
-
-            
                 pass
                 # main.player_selection()
                 # return
@@ -812,7 +822,8 @@ def menu():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if campaign_button.is_clicked(event.pos):
-                    pass
+                    campaign()
+                    return
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -851,17 +862,60 @@ def menu():
         pygame.display.update()
         main.clock.tick(main.FPS)
 
+def campaign():
+    while True:
+        keys = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        # mouse_press = pygame.mouse.get_pressed()
+        # key_press = pygame.key.get_pressed()
+
+        main.screen.fill((50, 50, 50))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()  
+            if keys[pygame.K_ESCAPE]:
+                menu()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    menu() 
+                    return
+        menu_button.draw(screen, mouse_pos)
+
+        pygame.display.update()
+        main.clock.tick(main.FPS)
+
+
+
+
+keybinds = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2, height*0.9),
+    scale=0.8,
+    text='Set Keys',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
 def controls():
-    command_img = main.pygame.transform.scale(
-        pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
-    control_img = main.pygame.transform.scale(
-        pygame.image.load(r'assets\control image.png').convert(), (main.width/2, main.height))
+    # command_img = main.pygame.transform.scale(
+    #     pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
+    # control_img = main.pygame.transform.scale(
+    #     pygame.image.load(r'assets\control image.png').convert(), (main.width/2, main.height))
+
+    skill_1_btn = RectButton(width*0.1, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 1")
+    skill_2_btn = RectButton(width*0.1, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 2")
+    skill_3_btn = RectButton(width*0.1, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 3")
+    skill_4_btn = RectButton(width*0.1, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 4")
     while True:
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
-
+        clicked = False
+        
         main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -874,10 +928,84 @@ def controls():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if keybinds.is_clicked(mouse_pos):
+                    print('cliked kbidns') 
+
+            detect = not any([x for x in key.detect_key_skill.values()])
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                
+                if skill_1_btn.is_clicked(event.pos) and detect:
+                    key.detect_key_skill['read_skill_1'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_1'])
+                    clicked = True
+                if skill_2_btn.is_clicked(event.pos) and detect:
+                    key.detect_key_skill['read_skill_2'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_2'])
+                    clicked = True
+                if skill_3_btn.is_clicked(event.pos) and detect:
+                    key.detect_key_skill['read_skill_3'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_3'])
+                    clicked = True
+                if skill_4_btn.is_clicked(event.pos) and detect:
+                    key.detect_key_skill['read_skill_4'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_4'])
+                    clicked = True
+                
+        # print(type(keys))
+            
+            
+            if not detect:
+                # print(event.type)
+                # print(keys[pygame.K_a])
+            
+                # for index, pressed in enumerate(keys):
+                #     print(keys[pygame.K_a])
+                #     if pressed and index > 90:
+                #         key_name = pygame.key.name(index).upper()
+                #         print(f"Selected: {key_name}")
+               
+
+
+                for i in key.status:
+                    if keys[i] == True:
+                        print(f"selected {pygame.key.name(i)}")
+                        
+                        # break  # Remove to detect multiple
+                    
+                
+                # for i in keys:
+                #     if i in key.status:
+                        
+                    # for x,i in enumerate(keys):
+                    #     if i == True:
+                    #         print(x)
+                        for i in key.detect_key_skill:
+                                print(f"falsing {i}")
+                                key.detect_key_skill[i] = False
+
+
+        #------------------------
+        keybinds.draw(screen, mouse_pos)
+
+        #functoinability
+        skill_1_btn.update(mouse_pos, key.detect_key_skill['read_skill_1'])
+        skill_2_btn.update(mouse_pos, key.detect_key_skill['read_skill_2'])
+        skill_3_btn.update(mouse_pos, key.detect_key_skill['read_skill_3'])
+        skill_4_btn.update(mouse_pos, key.detect_key_skill['read_skill_4'])
+
+        #draw
+        skill_1_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_2_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_3_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_4_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+
+
+
+
+
+
                 
         
-        main.screen.blit(command_img, (0, 0))
-        main.screen.blit(control_img, (main.width/2, 0))
+        # main.screen.blit(command_img, (0, 0))
+        # main.screen.blit(control_img, (main.width/2, 0))
         menu_button.draw(screen, mouse_pos)
 
         pygame.display.update()

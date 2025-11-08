@@ -1,4 +1,6 @@
 import pygame
+import json
+import os
 
 import random
 from global_vars import (IMMEDIATE_RUN,
@@ -33,7 +35,7 @@ import Animate_BG
 import key
 
 
-
+key.write_settings()
 
 
 
@@ -94,6 +96,197 @@ paused = False
 # Add a global variable to track the pause state
 is_paused = False
 xaxa = pygame.time.Clock()
+
+def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
+    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
+    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
+
+    screen.blit(title, title_rect)
+
+
+
+
+
+
+
+#BUTTONS SHEEEEEEEESH 
+
+
+# fade()
+loading = ImageButton(
+    image_path=loading_button_img,
+    pos=center_pos,
+    scale=0.8,
+    text='',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+# Menu button to return to menu()
+menu_button = ImageButton(
+    image_path=menu_button_img,
+    pos=(40, 10),
+    scale=0.75,
+    text='',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+# main_menu()
+play_button = ImageButton(
+    image_path=play_button_img,
+    pos=center_pos,
+    scale=scale,
+    text='',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+# menu()
+campaign_button = ImageButton(
+    image_path=text_box_img,
+    pos=(center_pos[0], center_pos[1]-100),
+    scale=scale,
+    text='Campaign',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    hover_move=0
+)
+#_____ for campaign
+coming_soon_button = ImageButton(
+    image_path=text_box_img,
+    pos=(center_pos[0], center_pos[1]-100),
+    scale=scale*0.95,
+    text='Coming Soon',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    hover_move=0,
+    alpha=(0.75, 1)
+)
+
+
+single_button = ImageButton(
+    image_path=text_box_img,
+    pos=(center_pos[0], center_pos[1]-50),
+    scale=scale,
+    text='Single Player',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+multiplayer_button = ImageButton(
+    image_path=text_box_img,
+    pos=(center_pos[0], center_pos[1]),
+    scale=scale,
+    text='Multiplayer',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+info_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width - 100, height - 100),
+    scale=scale*0.8,
+    text='Game Info',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+control_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width - 100, height - 50),
+    scale=scale*0.8,
+    text='Controls',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+settings_button = ImageButton(
+    image_path=text_box_img,
+    pos=(100, height - 50),
+    scale=scale*0.8,
+    text='Settings',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+
+
+
+
+
+
+
+
+def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
+    # Display controls title
+    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.05)
+    
+    # Player 1 Controls
+    create_title('Player 1:', font, 1, height * 0.15, color=gold, angle=0, x_offset=width *0.33)
+
+    # Player 2 Controls
+    create_title('Player 2:', font, 1, height * 0.15, color=cyan2, angle=0, x_offset=((width *0.33) + (width)))
+
+
+    skill_controls = [
+    "Skill 1 Key",
+    "Skill 2 Key",
+    "Skill 3 Key",
+    "Skill 4 Key",
+    ]
+
+    move_controls = [
+    "Move Left",
+    "Jump",
+    "Move Right"
+    ]
+
+    Basic_SP_control = [
+    "Basic Attack Key",
+    "Special Skill Key"
+    ]
+    
+    # Display controls for both players
+    for i, text in enumerate(skill_controls):
+        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=width*0.35)
+        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=((width *0.35) + (width)))
+
+    for i, text in enumerate(move_controls):
+        create_title(text, font, 0.5, height * 0.728 , color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))))
+        create_title(text, font, 0.5, height *0.728, color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))) + width )
+    
+    for i, text in enumerate(Basic_SP_control):
+        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=width*0.8)
+        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=((width *0.8) + (width)))
+
+    
+
+
+
+
+
+
 
 def fade(background, action):
     # background = pygame.transform.scale(
@@ -889,32 +1082,123 @@ def campaign():
 
 
 
+
+
+#-------------------------------------START-----------------------------------------
+
 keybinds = ImageButton(
     image_path=text_box_img,
-    pos=(width/2, height*0.9),
+    pos=(width/2 + width*0.08, height*0.9),
     scale=0.8,
-    text='Set Keys',
+    text='Save Keys',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
+
+
+reset_keybinds = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2 - width*0.08, height*0.9),
+    scale=0.8,
+    text='Default Keys',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+#-------------------------------------END-----------------------------------------
+
+
+
 def controls():
+
+#-------------------------------------START-----------------------------------------
+
+    left_width = width/2
     # command_img = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
     # control_img = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\control image.png').convert(), (main.width/2, main.height))
+    # (text, font=None, scale=1, y_offset=100, color=white, angle=0)
+   
+    
+    Keybinds_keys = key.read_settings()    
+ 
+    new_key = [Keybinds_keys[x] for x in Keybinds_keys]
 
-    skill_1_btn = RectButton(width*0.1, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 1")
-    skill_2_btn = RectButton(width*0.1, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 2")
-    skill_3_btn = RectButton(width*0.1, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 3")
-    skill_4_btn = RectButton(width*0.1, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Skill 4")
+    
+   
+    skill_1_btn_p1 = RectButton(width*0.08, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[0][1],40,40,0)
+    skill_2_btn_p1 = RectButton(width*0.08, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[1][1],40,40,0)
+    skill_3_btn_p1 = RectButton(width*0.08, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[2][1],40,40,0)
+    skill_4_btn_p1 = RectButton(width*0.08, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[3][1],40,40,0)
+
+    basic_atk_btn_p1 = RectButton(width*0.27, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[4][1],40,40,0)
+    sp_skill_btn_p1 = RectButton(width*0.27, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[5][1],40,40,0)
+
+
+    
+    left_move_btn_p1 = RectButton(width*0.1, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[7][1],40,40,0)
+    jump_btn_p1 = RectButton(width*0.20, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[6][1],40,40,0)
+    right_move_btn_p1 = RectButton(width*0.3, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[8][1],40,40,0)
+
+
+
+
+    skill_1_btn_p2 = RectButton(width*0.08 + left_width, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[9][1],40,40,0)
+    skill_2_btn_p2 = RectButton(width*0.08 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[10][1],40,40,0)
+    skill_3_btn_p2 = RectButton(width*0.08 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[11][1],40,40,0)
+    skill_4_btn_p2 = RectButton(width*0.08 + left_width, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[12][1],40,40,0)
+
+    basic_atk_btn_p2 = RectButton(width*0.27 + left_width, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[13][1],40,40,0)
+    sp_skill_btn_p2 = RectButton(width*0.27 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[14][1],40,40,0)
+
+    
+    left_move_btn_p2 = RectButton(width*0.1 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[16][1],40,40,0)
+    jump_btn_p2 = RectButton(width*0.20 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[15][1],40,40,0)
+    right_move_btn_p2 = RectButton(width*0.3 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[17][1],40,40,0)
+
+
+
+
+    key_list = [
+    skill_1_btn_p1,
+    skill_2_btn_p1,
+    skill_3_btn_p1, 
+    skill_4_btn_p1, 
+    basic_atk_btn_p1,
+    sp_skill_btn_p1, 
+    jump_btn_p1, 
+    left_move_btn_p1,
+    right_move_btn_p1, 
+    skill_1_btn_p2, 
+    skill_2_btn_p2,
+    skill_3_btn_p2, 
+    skill_4_btn_p2, 
+    basic_atk_btn_p2, 
+    sp_skill_btn_p2,
+    jump_btn_p2,
+    left_move_btn_p2,
+    right_move_btn_p2
+    ]
+
+# ---------------------END--------------------------------------------------
+
+
+
+
+
+
     while True:
+        
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
-        clicked = False
+        
         
         main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
@@ -922,51 +1206,154 @@ def controls():
                 pygame.quit()
                 exit()  
             if keys[pygame.K_ESCAPE]:
+                key_list = keybind_select_reset(key_list)
                 menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
+                
+
+
+
+
+
+
+
+# Added
+#--------------------------------------------------------------------------------------------------
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if keybinds.is_clicked(mouse_pos):
-                    print('cliked kbidns') 
+                    if os.path.exists(key.filename):
+                        with open(key.filename, "r") as f:
+                            try:
+                                data = json.load(f)
+                            except json.JSONDecodeError:
+                                print("Error")
+                            
+                            for count,i in enumerate(data):
+                                # print(i)
 
-            detect = not any([x for x in key.detect_key_skill.values()])
+
+                                # print(tuple(new_key[count]))
+                                data[i] = tuple(new_key[count])
+
+                            with open(key.filename, "w") as f:
+                                # print(data, "Data type")
+                                json.dump(data, f, indent=4)
+                            f.close()
+                    
+                        
+        
+                    print('Save keybinds') 
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if reset_keybinds.is_clicked(mouse_pos):
+                    print("Reset Key")
+                    with open(key.filename, "w") as f:
+                            # print(data, "Data type")
+                            json.dump(key.data, f, indent=4)
+                    f.close()
+                    temporary_list = []
+                    for i in key.data:
+                        temporary_list.append(key.data[i])
+                    update_key_display(key_list, temporary_list)
+                    new_key = temporary_list
+
+
+            detect = ([x for x in key.detect_key_skill.values()])
             if event.type == pygame.MOUSEBUTTONDOWN:
                 
-                if skill_1_btn.is_clicked(event.pos) and detect:
-                    key.detect_key_skill['read_skill_1'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_1'])
-                    clicked = True
-                if skill_2_btn.is_clicked(event.pos) and detect:
-                    key.detect_key_skill['read_skill_2'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_2'])
-                    clicked = True
-                if skill_3_btn.is_clicked(event.pos) and detect:
-                    key.detect_key_skill['read_skill_3'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_3'])
-                    clicked = True
-                if skill_4_btn.is_clicked(event.pos) and detect:
-                    key.detect_key_skill['read_skill_4'] = skill_1_btn.toggle(key.detect_key_skill['read_skill_4'])
-                    clicked = True
-                
+          
+                if skill_1_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 0 ]):
+                    key.detect_key_skill['read_skill_1_p1'] = skill_1_btn_p1.is_switched()
+                if skill_2_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 1 ]):
+                    key.detect_key_skill['read_skill_2_p1'] = skill_1_btn_p1.is_switched()
+                if skill_3_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 2 ]):
+                    key.detect_key_skill['read_skill_3_p1'] = skill_1_btn_p1.is_switched()
+                if skill_4_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 3 ]):
+                    key.detect_key_skill['read_skill_4_p1'] = skill_1_btn_p1.is_switched()
+
+                if basic_atk_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 4 ]):
+                    key.detect_key_skill['read_basic_atk_p1'] = basic_atk_btn_p1.is_switched()
+                  
+                if sp_skill_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 5]):
+                    key.detect_key_skill['read_sp_skill_p1'] = sp_skill_btn_p1.is_switched()
+                if jump_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 6 ]):
+                    key.detect_key_skill['read_jump_p1'] = jump_btn_p1.is_switched()
+                if left_move_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 7 ]):
+                    key.detect_key_skill['read_left_move_p1'] = left_move_btn_p1.is_switched()
+                if right_move_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 8 ]):
+                    key.detect_key_skill['read_right_move_p1'] = right_move_btn_p1.is_switched()
+
+                #Player 2 settings
+
+                if skill_1_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 9 ]):
+                    key.detect_key_skill['read_skill_1_p2'] = skill_1_btn_p2.is_switched()
+                if skill_2_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 10 ]):
+                    key.detect_key_skill['read_skill_2_p2'] = skill_2_btn_p2.is_switched()
+                if skill_3_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 11 ]):
+                    key.detect_key_skill['read_skill_3_p2'] = skill_3_btn_p2.is_switched()
+                if skill_4_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 12 ]):
+                    key.detect_key_skill['read_skill_4_p2'] = skill_4_btn_p2.is_switched()
+
+                if basic_atk_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 13 ]):
+                    key.detect_key_skill['read_basic_atk_p2'] = basic_atk_btn_p2.is_switched()
+                  
+                if sp_skill_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 14]):
+                    key.detect_key_skill['read_sp_skill_p2'] = sp_skill_btn_p2.is_switched()
+                if jump_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 15 ]):
+                    key.detect_key_skill['read_jump_p2'] = jump_btn_p2.is_switched()
+                if left_move_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 16 ]):
+                    key.detect_key_skill['read_left_move_p2'] = left_move_btn_p2.is_switched()
+                if right_move_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 17 ]):
+                    key.detect_key_skill['read_right_move_p2'] = right_move_btn_p2.is_switched()
+
+
+
+
         # print(type(keys))
             
             
-            if not detect:
-                # print(event.type)
-                # print(keys[pygame.K_a])
-            
-                # for index, pressed in enumerate(keys):
-                #     print(keys[pygame.K_a])
-                #     if pressed and index > 90:
-                #         key_name = pygame.key.name(index).upper()
-                #         print(f"Selected: {key_name}")
-               
+            if any(detect):
+                count = 0
+                for key_index in (key.status):
+                    if keys[key_index] == True:
+                        # print([x[1].upper() for x in new_key])
+                        key_name = pygame.key.name(key_index).upper()
+                        if key_name == "UP":
+                                key_name = "^"
+                        elif key_name == "DOWN":
+                                key_name = "v"
+                        elif key_name  == "LEFT":
+                                key_name = "<"
+                        elif key_name == "RIGHT":
+                                key_name = ">"
+                                
+                        if key_name not in [x[1].upper() for x in new_key]:
+                          
+                            print(f"selected {pygame.key.name(key_index)}")
+                            
+                            
 
+                            new_key[detect.index(True)] = (key_index, key_name)
+                            for i in key_list:
+                                print(i)
+                                i.is_switched(False, False)
+                            for i in (detect):
+                                detect[i] = False
+                                keybind_select_reset()
+                          
+                                update_key_display(key_list, new_key)
+                        else:
+                            print("Key already in use")
+                    
 
-                for i in key.status:
-                    if keys[i] == True:
-                        print(f"selected {pygame.key.name(i)}")
-                        
+                           
+                      
+                
                         # break  # Remove to detect multiple
                     
                 
@@ -976,33 +1363,111 @@ def controls():
                     # for x,i in enumerate(keys):
                     #     if i == True:
                     #         print(x)
-                        for i in key.detect_key_skill:
-                                print(f"falsing {i}")
-                                key.detect_key_skill[i] = False
-
-
+                        
+        
         #------------------------
         keybinds.draw(screen, mouse_pos)
 
+        reset_keybinds.draw(screen, mouse_pos)
         #functoinability
-        skill_1_btn.update(mouse_pos, key.detect_key_skill['read_skill_1'])
-        skill_2_btn.update(mouse_pos, key.detect_key_skill['read_skill_2'])
-        skill_3_btn.update(mouse_pos, key.detect_key_skill['read_skill_3'])
-        skill_4_btn.update(mouse_pos, key.detect_key_skill['read_skill_4'])
+        skill_1_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_1_p1'])
+        skill_2_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_2_p1'])
+        skill_3_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_3_p1'])
+        skill_4_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_4_p1'])
+
+
+        basic_atk_btn_p1.update(mouse_pos, key.detect_key_skill['read_basic_atk_p1'])
+        sp_skill_btn_p1.update(mouse_pos, key.detect_key_skill['read_sp_skill_p1'])
+
+        jump_btn_p1.update(mouse_pos, key.detect_key_skill['read_jump_p1'])
+        left_move_btn_p1.update(mouse_pos, key.detect_key_skill['read_left_move_p1'])
+        right_move_btn_p1.update(mouse_pos, key.detect_key_skill['read_right_move_p1'])
+
+
+
+        #Player 2 shesh
+
+
+        skill_1_btn_p2.update(mouse_pos, key.detect_key_skill['read_skill_1_p2'])
+        skill_2_btn_p2.update(mouse_pos, key.detect_key_skill['read_skill_2_p2'])
+        skill_3_btn_p2.update(mouse_pos, key.detect_key_skill['read_skill_3_p2'])
+        skill_4_btn_p2.update(mouse_pos, key.detect_key_skill['read_skill_4_p2'])
+
+
+        basic_atk_btn_p2.update(mouse_pos, key.detect_key_skill['read_basic_atk_p2'])
+        sp_skill_btn_p2.update(mouse_pos, key.detect_key_skill['read_sp_skill_p2'])
+
+        jump_btn_p2.update(mouse_pos, key.detect_key_skill['read_jump_p2'])
+        left_move_btn_p2.update(mouse_pos, key.detect_key_skill['read_left_move_p2'])
+        right_move_btn_p2.update(mouse_pos, key.detect_key_skill['read_right_move_p2'])
+
+
+
+
+
+
+
+
 
         #draw
-        skill_1_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        skill_2_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        skill_3_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        skill_4_btn.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_1_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_2_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_3_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_4_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        basic_atk_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        sp_skill_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        jump_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        left_move_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        right_move_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+
+
+        skill_1_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_2_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_3_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        skill_4_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        basic_atk_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        sp_skill_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        jump_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        left_move_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        right_move_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
 
 
 
+        
+        # skill_1_btn_p1.text = new_key[0][1]
+        # skill_2_btn_p1.text = new_key[1][1]
+        # skill_3_btn_p1.text = new_key[2][1]
+        # skill_4_btn_p1.text = new_key[3][1]
+
+        # basic_atk_btn_p1.text = new_key[4][1]
+        # sp_skill_btn_p1.text = new_key[5][1]
+        # jump_btn_p1.text = new_key[6][1]
+        # left_move_btn_p1.text = new_key[7][1]
+        # right_move_btn_p1.text = new_key[8][1]
+
+
+        # skill_1_btn_p2.text = new_key[9][1]
+        # skill_2_btn_p2.text = new_key[10][1]
+        # skill_3_btn_p2.text = new_key[11][1]
+        # skill_4_btn_p2.text = new_key[12][1]
+
+        # basic_atk_btn_p2.text = new_key[13][1]
+        # sp_skill_btn_p2.text = new_key[14][1]
+        # jump_btn_p2.text = new_key[15][1]
+        # left_move_btn_p2.text = new_key[16][1]
+        # right_move_btn_p2.text = new_key[17][1]
+        
+
+        show_controls() #Show the controls in screen  
+
+#-------------------------------------END-----------------------------------------     
 
 
 
-                
         
         # main.screen.blit(command_img, (0, 0))
         # main.screen.blit(control_img, (main.width/2, 0))
@@ -1010,6 +1475,42 @@ def controls():
 
         pygame.display.update()
         main.clock.tick(main.FPS)
+
+
+#-------------------------------------START-----------------------------------------
+
+
+def update_key_display(key_list, new_key):
+    
+    for index,key in enumerate(key_list):
+        key.text = new_key[index][1]
+
+
+
+
+def keybind_select_reset(list_key:list=None):
+
+    for detect_key in (key.detect_key_skill):
+        print(f"falsing {detect_key}")
+        key.detect_key_skill[detect_key] = False
+        
+
+#-------------------------------------END-----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
 
 def info():
     hero_detail = main.pygame.transform.scale(
@@ -1427,130 +1928,10 @@ def settings(in_game=False):
 
 # Image Paths
 
-# fade()
-loading = ImageButton(
-    image_path=loading_button_img,
-    pos=center_pos,
-    scale=0.8,
-    text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-# Menu button to return to menu()
-menu_button = ImageButton(
-    image_path=menu_button_img,
-    pos=(40, 10),
-    scale=0.75,
-    text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-# main_menu()
-play_button = ImageButton(
-    image_path=play_button_img,
-    pos=center_pos,
-    scale=scale,
-    text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-# menu()
-campaign_button = ImageButton(
-    image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-100),
-    scale=scale,
-    text='Campaign',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
-    hover_move=0
-)
-#_____ for campaign
-coming_soon_button = ImageButton(
-    image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-100),
-    scale=scale*0.95,
-    text='Coming Soon',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
-    hover_move=0,
-    alpha=(0.75, 1)
-)
-
-
-single_button = ImageButton(
-    image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-50),
-    scale=scale,
-    text='Single Player',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-multiplayer_button = ImageButton(
-    image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]),
-    scale=scale,
-    text='Multiplayer',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-info_button = ImageButton(
-    image_path=text_box_img,
-    pos=(width - 100, height - 100),
-    scale=scale*0.8,
-    text='Game Info',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-control_button = ImageButton(
-    image_path=text_box_img,
-    pos=(width - 100, height - 50),
-    scale=scale*0.8,
-    text='Controls',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-settings_button = ImageButton(
-    image_path=text_box_img,
-    pos=(100, height - 50),
-    scale=scale*0.8,
-    text='Settings',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
 
 
 
-def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0):
-    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
-    title_rect = title.get_rect(center = (width / 2, y_offset))
-    screen.blit(title, title_rect)
+
 
 
 

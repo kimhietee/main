@@ -359,8 +359,10 @@ class Attacks:
     def is_ready(self):
         return self.time_since_use() >= self.cooldown
 
-    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, keybinds=key.Main_Keybinds):
+    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, ):
+        # print("Has entered Heroes")
         # Determine the key to display based on the player type
+        keybinds=key.read_settings()
         key_text = ""
         if player_type == 1:
             key_text = keybinds['skill_1_p1'][1] if self.skill_rect == hero1.skill_1_rect else \

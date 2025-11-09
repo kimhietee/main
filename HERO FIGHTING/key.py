@@ -1,15 +1,57 @@
 import pygame
 
+import json
+import os
 
-def set_keybinds():
-    
-    while True:
-        pass
+   
+
+
+data = {
+"skill_1_p1" : (pygame.K_z,"Z"),
+"skill_2_p1" : (pygame.K_x,"X"),
+"skill_3_p1" : (pygame.K_c,"C"),
+"skill_4_p1" : (pygame.K_v,"V"),
+"basic_atk_p1" : (pygame.K_e,"E"),
+"sp_skill_p1" : (pygame.K_f,"F"),
+
+"jump_p1" : (pygame.K_w,"W"),
+"left_move_p1" : (pygame.K_a,"A"),
+"right_move_p1" : (pygame.K_d,"D"),
+
+
+
+
+
+"skill_1_p2" : (pygame.K_u,"U"),
+"skill_2_p2" : (pygame.K_i,"I"),
+"skill_3_p2" : (pygame.K_o,"O"),
+"skill_4_p2" : (pygame.K_p,"P"),
+
+"basic_atk_p2" : (pygame.K_l,"L"),
+"sp_skill_p2" : (pygame.K_k,"K"),
+
+"jump_p2" : (pygame.K_UP,"^"),
+"left_move_p2" : (pygame.K_LEFT,"<"),
+"right_move_p2" : (pygame.K_RIGHT,">"),
+
+
+}
+
+
+
+
+
+
+
 
 
 
 status = [
     # === Letters A-Z ===
+
+
+
+
     pygame.K_a, pygame.K_b, pygame.K_c, pygame.K_d,
     pygame.K_e, pygame.K_f, pygame.K_g, pygame.K_h,
     pygame.K_i, pygame.K_j, pygame.K_k, pygame.K_l,
@@ -80,35 +122,74 @@ status = [
     pygame.K_DELETE,
 ]
 
-Main_Keybinds = {
-"skill_1_p1" : (pygame.K_z,"ha"),
-"skill_2_p1" : (pygame.K_x,"X"),
-"skill_3_p1" : (pygame.K_c,"C"),
-"skill_4_p1" : (pygame.K_v,"V"),
-"basic_atk_p1" : (pygame.K_e,"E"),
-"sp_skill_p1" : (pygame.K_f,"F"),
+
+filename = "Settings.json"
+
+    
+
+def read_settings():
+
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            try:
+                Main_Keybinds = json.load(f)      # Load existing dictionary
+            except json.JSONDecodeError:
+                print("Error") 
+                Main_Keybinds = data
+                        # If file empty or invalid, start fresh
+    else:
+        Main_Keybinds = data
+
+    return Main_Keybinds
+
+def write_settings():
+    if os.path.exists(filename):
+        return None
+    else:
+        with open(filename, "w") as f:
+            json.dump(data, f, indent = 4)
+            f.close()
 
 
-"skill_1_p2" : (pygame.K_u,"U"),
-"skill_2_p2" : (pygame.K_i,"I"),
-"skill_3_p2" : (pygame.K_o,"O"),
-"skill_4_p2" : (pygame.K_p,"P"),
-"basic_atk_p2" : (pygame.K_l,"L"),
-"sp_skill_p2" : (pygame.K_k,"K"),
 
-}
+
+    
+
 
 
 detect_key_skill = {
-"read_skill_1" : False,
-"read_skill_2" : False,
-'read_skill_3' : False,
-"read_skill_4" : False,
+"read_skill_1_p1" : False,
+"read_skill_2_p1" : False,
+'read_skill_3_p1' : False,
+"read_skill_4_p1" : False,
+
+"read_basic_atk_p1" : False,
+"read_sp_skill_p1" : False,
+
+"read_jump_p1" : False,
+"read_left_move_p1" : False,
+"read_right_move_p1" : False,
+
+
+
+
+
+"read_skill_1_p2" : False,
+"read_skill_2_p2" : False,
+'read_skill_3_p2' : False,
+"read_skill_4_p2" : False,
+
+"read_basic_atk_p2" : False,
+"read_sp_skill_p2" : False,
+
+"read_jump_p2" : False,
+"read_left_move_p2" : False,
+"read_right_move_p2" : False
+
+
 }
 
-class Keybinds:
-    def set_keys():
-        pass
+
 
 
 

@@ -116,12 +116,12 @@ class ImageInfo:
 
 
 class RectButton:
-    def __init__(self, x:int, y:int, font:str, font_size:int, color:str, text:str, width:int=40, height:int=40):
+    def __init__(self, x:int, y:int, font:str, font_size:int, color:str, text:str, width:int=40, height:int=40, height_position:int=40):
         self.rect = pygame.Rect(x, y, width, height)
         self.font = pygame.font.Font(font, font_size)
         self.color = color
         self.text = text
-
+        self.height_position = height_position
         self.rect_color = self.color
         
 
@@ -130,12 +130,12 @@ class RectButton:
         self.button_hovered = False
 
         self.done_clicking = False
-        
+        self.enabled = False
     
     def draw(self, screen:pygame.Surface, text_anti_alias):
         pygame.draw.rect(screen, self.rect_color, self.rect)
         self.text_surf = self.font.render(self.text, text_anti_alias, 'white')
-        self.text_rect = self.text_surf.get_rect(center=(self.rect.centerx, self.rect.centery-self.rect.height))
+        self.text_rect = self.text_surf.get_rect(center=(self.rect.centerx, self.rect.centery-self.height_position))
         screen.blit(self.text_surf, self.text_rect)
         # pygame.draw.rect(screen, self.rect_color, self.rect)
 
@@ -143,6 +143,17 @@ class RectButton:
         if self.rect.collidepoint(mouse_pos):
             return True
         return False
+    
+    def is_switched(self, value=True , switch=True):
+        if value and switch:
+            self.enabled = not self.enabled
+        if not switch:
+            self.enabled = value
+            print(self.enabled)
+        return self.enabled
+
+
+        return self.enabled
     def is_hovered(self, mouse_pos):
         if self.rect.collidepoint(mouse_pos):
             return True

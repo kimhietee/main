@@ -24,7 +24,7 @@ botchance = Chance(0.3)
 
 # MAIN PROBLEM, INHERITANCE, BOT ENHERITS FROM THE SELECTED HERO, THEN USE IT AS A BOT, IM SLEEPING
 
-def create_bot(selected_hero, player_type, enemy):
+def create_bot(selected_hero, player_type, enemy:list):
     global Bot
     class Bot(selected_hero):
         def __init__(self, player, enemy):
@@ -1466,8 +1466,8 @@ def create_bot(selected_hero, player_type, enemy):
                     'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
-                            'cast_range': 50,
-                            'min_cast_range': 10,
+                            'cast_range': 40,
+                            'min_cast_range': 5,
                             'require_all': False,
                             'conditions': [
                                 # Casual buff
@@ -1633,8 +1633,8 @@ def create_bot(selected_hero, player_type, enemy):
                         }
                     },
                     'basic_attack': {
-                        'atk_range': 70,
-                        'min_cast_range': 30
+                        'atk_range': 50,
+                        'min_cast_range': 20
                     }
                 }
             }

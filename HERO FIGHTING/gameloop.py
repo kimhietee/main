@@ -521,7 +521,7 @@ def game(bg=None):
                         winner = None
                 else:
                     winner = 'hero1'
-            elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+            elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None and global_vars.toggle_hero3:
                 # In single player mode with 2 enemies, player wins only if both enemies are dead
                 if main.hero2.is_dead() and main.hero3.is_dead():
                     winner = 'hero1'

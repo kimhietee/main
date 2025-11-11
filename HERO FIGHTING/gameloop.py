@@ -1223,7 +1223,8 @@ def controls():
 
 # Added
 #--------------------------------------------------------------------------------------------------
-
+            
+            #onClick, 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if keybinds.is_clicked(mouse_pos):
                     if os.path.exists(key.filename):

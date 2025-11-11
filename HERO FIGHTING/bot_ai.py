@@ -1633,8 +1633,8 @@ def create_bot(selected_hero, player_type, enemy:list):
                         }
                     },
                     'basic_attack': {
-                        'atk_range': 50,
-                        'min_cast_range': 20
+                        'atk_range': 30,
+                        'min_cast_range': 10
                     }
                 }
             }

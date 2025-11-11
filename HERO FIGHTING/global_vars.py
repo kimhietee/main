@@ -39,7 +39,7 @@ random_pick_p1 = False
 random_pick_p2 = False 
 
 
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0.3
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 40

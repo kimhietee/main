@@ -20,3 +20,18 @@ the Fire Knight became an unstoppable force on the battlefield, striking doom up
 wind_hasashin_desc = """ From the vast deserts of the [desert royalty/capital], the Wind Hasashin are elite assassins who have mastered the art of stealth and agility. Enduring the harsh
 winds and scorching sands, they have honed their skills to perfection, striking swiftly and silently from the surges of desert gales. From  the fabrics and sharp daggers of their remote kingdom, [desert royalty/capital],
 they fight in groups, using the desert winds to their advantage, shrinking the sanity of their enemies as they vanish as quickly as their daggers pass through the bodies of their foes. """
+
+#Mystic Arts/Nature
+
+wanderer_magician = '''Known as the Archmage's Nemesis, the Wanderer Magician seeks the ultimate power to control the elements themselves. His rebellion upon the wizardry 
+teachings of the Archmage led him to explore all fundamental elements of magic, mastering not only fire but also water, earth, and air.'''
+
+forest_ranger = ''' Guardian of the ancient tree, the Forest Ranger, team captain of the elves' defense squad. Wielding the arrows imbued with blessings of nature, and quivers as lightweight
+as those of leaves, he places himself on advantageous points to take down every enemy of the forest, threatening its sancitity. '''
+
+water_princess = ''' Daughter of the Sea King, Grundal. The Water Princess brings herself a staff holding the heart of a Leviathan, imbued with her father's blessing, she commands
+the waters to protect her kingdom from invaders, summoning tidal waves and water spouts to wash away any threats. '''
+
+# Dark Arts
+
+Yurei_Ghost = ''' Once a princess during the Yayoi period. Yurei was freed from her shrine, as the wanderer magician made a devastating blow with a scorching fireball, burning the talisman and breaking the seal that held her spirit captive for hundereds of years.'''

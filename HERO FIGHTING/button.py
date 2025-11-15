@@ -49,6 +49,8 @@ class ImageButton:
         screen.blit(self.image, self.rect)
         screen.blit(self.text_surf, self.text_rect)
 
+
+
     # Input below can only be checked at pygame.event.MOUSEBUTTON... or any input involving event
     def is_clicked(self, mouse_pos):
         # Check if button is clicked
@@ -63,6 +65,16 @@ class ImageButton:
             return True
         return False
     
+
+    def animate(self,screen, keyframe):
+        self.rect = self.image.get_rect(center=keyframe)
+        screen.blit(self.image, self.rect)
+
+        screen.blit(self.text_surf, self.text_rect)
+
+
+
+
     
 
     
@@ -104,9 +116,13 @@ class ImageInfo:
         # Draw the image and text
         screen.blit(self.image, self.rect)
 
+
         screen.blit(self.text_surf, self.text_rect)
         screen.blit(self.text_surf1, self.text_rect1)
         screen.blit(self.text_surf2, self.text_rect2)
+
+    
+
 
     def is_clicked(self, mouse_pos):
         # Check if button is clicked

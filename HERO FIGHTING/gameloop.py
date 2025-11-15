@@ -16,7 +16,7 @@ from global_vars import (IMMEDIATE_RUN,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
     PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
-    attack_display, MULT, dmg_mult, loading_screen_bg
+    attack_display, MULT, dmg_mult, loading_screen_bg, no_swap
 )
 from global_vars import SHOW_HITBOX
 
@@ -230,12 +230,22 @@ settings_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
-
-
-
-
-
-
+flicker_running = True
+def show_confirmation_modals(running, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
+    
+    if no_swap:
+        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
+        create_title('(The existing key will be leave empty)', font, 0.5, height * 0.5)
+    else:
+        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
+        create_title('(The existing key will be swapped)', font, 0.5, height * 0.5)
+    # create_title('Key already in use', font, 1, height * 0.40, color=(150,150,150))
+    # create_title('Key already in use', font, 1, height * 0.40, color=(150,10,10))
+    count = 1
+    color=(150,150,150)
+    
+    create_title('Key already in use', font, 1, height * 0.40, color)
+        
 
 
 def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
@@ -714,7 +724,7 @@ def game(bg=None):
                         winner = None
                 else:
                     winner = 'hero1'
-            elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None and global_vars.toggle_hero3:
+            elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
                 # In single player mode with 2 enemies, player wins only if both enemies are dead
                 if main.hero2.is_dead() and main.hero3.is_dead():
                     winner = 'hero1'
@@ -1109,11 +1119,43 @@ reset_keybinds = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
+
+swapconfirm_yes = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2 + width*0.08, height*1.2),
+    scale=0.8,
+    text='Replace Key',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+swapconfirm_no = ImageButton(
+    image_path=text_box_img,
+    pos=(width/2 - width*0.08, height*1.2),
+    scale=0.8,
+    text='Back',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+
+
+
+
+
+
+
+
 #-------------------------------------END-----------------------------------------
 
-
-
-def controls():
+can_click = True
+opacity = 0
+display_confirmation = False
+def controls(can_click = can_click, opacity=opacity, display_confirmation = display_confirmation):
 
 #-------------------------------------START-----------------------------------------
 
@@ -1193,7 +1235,8 @@ def controls():
 
 
     while True:
-        
+        global flicker_running
+        draw_black_screen(opacity)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -1252,73 +1295,119 @@ def controls():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if reset_keybinds.is_clicked(mouse_pos):
                     print("Reset Key")
-                    with open(key.filename, "w") as f:
-                            # print(data, "Data type")
-                            json.dump(key.data, f, indent=4)
-                    f.close()
+                    
                     temporary_list = []
                     for i in key.data:
                         temporary_list.append(key.data[i])
                     update_key_display(key_list, temporary_list)
                     new_key = temporary_list
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if swapconfirm_yes.is_clicked(mouse_pos):
+                                display_keyswap_confirmation(False)
+                                indexed = key_store.index(key_name)
+                                temp = new_key[detect.index(True)]
+                                new_key[detect.index(True)] = (key_index, key_name)
+                                
+
+                                if no_swap:
+                                    new_key[indexed] = (200, " ")
+                                else:
+                                    new_key[indexed] = temp
+                                for i in key_list:
+                                    print(i)
+                                    i.is_switched(False, False)
+                                for i in (detect):
+                                    detect[i] = False
+                                    keybind_select_reset()
+                            
+                                    update_key_display(key_list, new_key)
+                                    can_click = True
+                                    opacity = 0
+                                    display_confirmation = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if swapconfirm_no.is_clicked(mouse_pos):
+                    can_click = True
+                    display_keyswap_confirmation(False)
+                    opacity = 0
+                    display_confirmation = False
+                            
+
+
 
             detect = ([x for x in key.detect_key_skill.values()])
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # ([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 0 ])
                 
-          
-                if skill_1_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 0 ]):
-                    key.detect_key_skill['read_skill_1_p1'] = skill_1_btn_p1.is_switched()
-                if skill_2_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 1 ]):
-                    key.detect_key_skill['read_skill_2_p1'] = skill_1_btn_p1.is_switched()
-                if skill_3_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 2 ]):
-                    key.detect_key_skill['read_skill_3_p1'] = skill_1_btn_p1.is_switched()
-                if skill_4_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 3 ]):
-                    key.detect_key_skill['read_skill_4_p1'] = skill_1_btn_p1.is_switched()
+                if skill_1_btn_p1.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_1_p1'] = True
+                if skill_2_btn_p1.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_2_p1'] = True
+                if skill_3_btn_p1.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_3_p1'] = True
+                if skill_4_btn_p1.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_4_p1'] = True
 
-                if basic_atk_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 4 ]):
-                    key.detect_key_skill['read_basic_atk_p1'] = basic_atk_btn_p1.is_switched()
-                  
-                if sp_skill_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 5]):
-                    key.detect_key_skill['read_sp_skill_p1'] = sp_skill_btn_p1.is_switched()
-                if jump_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 6 ]):
-                    key.detect_key_skill['read_jump_p1'] = jump_btn_p1.is_switched()
-                if left_move_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 7 ]):
-                    key.detect_key_skill['read_left_move_p1'] = left_move_btn_p1.is_switched()
-                if right_move_btn_p1.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 8 ]):
-                    key.detect_key_skill['read_right_move_p1'] = right_move_btn_p1.is_switched()
-
-                #Player 2 settings
-
-                if skill_1_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 9 ]):
-                    key.detect_key_skill['read_skill_1_p2'] = skill_1_btn_p2.is_switched()
-                if skill_2_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 10 ]):
-                    key.detect_key_skill['read_skill_2_p2'] = skill_2_btn_p2.is_switched()
-                if skill_3_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 11 ]):
-                    key.detect_key_skill['read_skill_3_p2'] = skill_3_btn_p2.is_switched()
-                if skill_4_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 12 ]):
-                    key.detect_key_skill['read_skill_4_p2'] = skill_4_btn_p2.is_switched()
-
-                if basic_atk_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 13 ]):
-                    key.detect_key_skill['read_basic_atk_p2'] = basic_atk_btn_p2.is_switched()
-                  
-                if sp_skill_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 14]):
-                    key.detect_key_skill['read_sp_skill_p2'] = sp_skill_btn_p2.is_switched()
-                if jump_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 15 ]):
-                    key.detect_key_skill['read_jump_p2'] = jump_btn_p2.is_switched()
-                if left_move_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 16 ]):
-                    key.detect_key_skill['read_left_move_p2'] = left_move_btn_p2.is_switched()
-                if right_move_btn_p2.is_clicked(event.pos) and not any([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 17 ]):
-                    key.detect_key_skill['read_right_move_p2'] = right_move_btn_p2.is_switched()
+               
 
 
+                if basic_atk_btn_p1.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_basic_atk_p1'] = True
+
+                if sp_skill_btn_p1.is_clicked(event.pos)and can_click:    
+                    refresh_key(key.detect_key_skill)            
+                    key.detect_key_skill['read_sp_skill_p1'] = True
+                if jump_btn_p1.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_jump_p1'] = True
+                if left_move_btn_p1.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_left_move_p1'] = True
+                if right_move_btn_p1.is_clicked(event.pos)and can_click:       
+                    refresh_key(key.detect_key_skill)           
+                    key.detect_key_skill['read_right_move_p1'] = True
+                             #Player 2 settings
+
+                if skill_1_btn_p2.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_1_p2'] = True
+                if skill_2_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_2_p2'] = True
+                if skill_3_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_3_p2'] = True
+                if skill_4_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_skill_4_p2'] = True
+                if basic_atk_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_basic_atk_p2'] = True
+
+                if sp_skill_btn_p2.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_sp_skill_p2'] = True
+                if jump_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_jump_p2'] = True
+                if left_move_btn_p2.is_clicked(event.pos) and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_left_move_p2'] = True
+                if right_move_btn_p2.is_clicked(event.pos)and can_click:
+                    refresh_key(key.detect_key_skill)
+                    key.detect_key_skill['read_right_move_p2'] = True
 
 
         # print(type(keys))
             
             
             if any(detect):
-                count = 0
+                key_store = [x[1].upper() for x in new_key]
                 for key_index in (key.status):
                     if keys[key_index] == True:
                         # print([x[1].upper() for x in new_key])
@@ -1326,16 +1415,16 @@ def controls():
                         if key_name == "UP":
                                 key_name = "^"
                         elif key_name == "DOWN":
-                                key_name = "v"
+                                key_name = "\/"
                         elif key_name  == "LEFT":
                                 key_name = "<"
                         elif key_name == "RIGHT":
                                 key_name = ">"
                                 
-                        if key_name not in [x[1].upper() for x in new_key]:
-                          
-                            print(f"selected {pygame.key.name(key_index)}")
+                        if key_name not in key_store:
                             
+
+                            print(f"selected {pygame.key.name(key_index)}")
                             
 
                             new_key[detect.index(True)] = (key_index, key_name)
@@ -1347,13 +1436,20 @@ def controls():
                                 keybind_select_reset()
                           
                                 update_key_display(key_list, new_key)
+                        
                         else:
-                            print("Key already in use")
-                    
+                            for index, item in enumerate(key.detect_key_skill):
+                                if key.detect_key_skill[item] == True:
+                                    if new_key[index][1] == key_name:
+                                         keybind_select_reset()
 
+                                    else:
+                                        draw_black_screen(0.5)
+                                        display_confirmation = True
+                                        can_click = False
+                                        opacity = 0.8
+                                    
                            
-                      
-                
                         # break  # Remove to detect multiple
                     
                 
@@ -1369,6 +1465,8 @@ def controls():
         keybinds.draw(screen, mouse_pos)
 
         reset_keybinds.draw(screen, mouse_pos)
+
+
         #functoinability
         skill_1_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_1_p1'])
         skill_2_btn_p1.update(mouse_pos, key.detect_key_skill['read_skill_2_p1'])
@@ -1407,7 +1505,7 @@ def controls():
 
 
 
-
+        
 
         #draw
         skill_1_btn_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
@@ -1433,7 +1531,7 @@ def controls():
         jump_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         left_move_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         right_move_btn_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-
+        # draw_black_screen(1)
 
 
 
@@ -1464,6 +1562,18 @@ def controls():
 
         show_controls() #Show the controls in screen  
 
+        draw_black_screen(opacity)
+
+
+        if display_confirmation:
+            # print("display choice")
+            display_keyswap_confirmation(True)
+            
+            
+            show_confirmation_modals(flicker_running)
+            flicker_running = False
+        swapconfirm_yes.draw(screen, mouse_pos)
+        swapconfirm_no.draw(screen, mouse_pos)
 #-------------------------------------END-----------------------------------------     
 
 
@@ -1495,7 +1605,43 @@ def keybind_select_reset(list_key:list=None):
         key.detect_key_skill[detect_key] = False
         
 
-#-------------------------------------END-----------------------------------------
+
+
+def refresh_key(list_key):
+    for i in list_key:
+        list_key[i] = False
+
+
+
+def display_keyswap_confirmation(condition):
+    if condition:
+        swapconfirm_yes.hover_pos = ((width/2 + width*0.08),(height*0.6))
+        swapconfirm_yes.rect = swapconfirm_yes.image.get_rect(center=((width/2 + width*0.08),(height*0.6)))
+
+        swapconfirm_no.hover_pos = ((width/2 - width*0.08),(height*0.6))
+        swapconfirm_no.rect = swapconfirm_no.image.get_rect(center=((width/2 - width*0.08),(height*0.6)))
+    else:
+        swapconfirm_yes.hover_pos = ((width/2 + width*0.08),(height*1.2))
+        swapconfirm_yes.rect = swapconfirm_yes.image.get_rect(center=((width/2 + width*0.08),(height*1.2)))
+
+        swapconfirm_no.hover_pos = ((width/2 - width*0.08),(height*1.2))
+        swapconfirm_no.rect = swapconfirm_no.image.get_rect(center=((width/2 - width*0.08),(height*1.2)))
+
+
+
+def draw_black_screen(opacity, color=(0,0,0)):
+    base_opacity = 255 * opacity
+    rect = pygame.Rect(pygame.Rect(0, 0, width, height))
+    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+
+    # Fill it with the color + alpha
+    overlay.fill((0,0,0, base_opacity))
+
+    # Blit it on the target surface
+    screen.blit(overlay, rect.topleft)
+
+
+#---------------------------------------END-----------------------------------------
 
 
 

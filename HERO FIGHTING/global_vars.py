@@ -9,19 +9,16 @@ height = 720
 icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((width, height))
+# screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
-<<<<<<< HEAD
 
 screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
 # screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1)
 
-=======
->>>>>>> 6c4a693a1721b2d5c73b030ea263fa9fa2b02dcc
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
 # screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
-no_swap = True
+
 # Colors
 white = 'White' #reducing
 red = 'Red' #damage/hp
@@ -45,7 +42,7 @@ random_pick_p1 = False
 random_pick_p2 = False 
 
 
-MAIN_VOLUME = 1
+MAIN_VOLUME = 0.3
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 40
@@ -238,6 +235,8 @@ SHOW_MINI_SPECIAL_BAR = False
 
 summon_display = pygame.sprite.Group()
 
+
+no_swap = bool
 
 
 

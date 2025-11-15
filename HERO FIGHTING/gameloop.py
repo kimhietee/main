@@ -1159,8 +1159,9 @@ swapconfirm_no = ImageButton(
 can_click = True
 opacity = 0
 display_confirmation = False
+load_green_bg = False
 def controls(can_click = can_click, opacity=opacity, display_confirmation = display_confirmation):
-
+    global load_green_bg
 #-------------------------------------START-----------------------------------------
 
     left_width = width/2
@@ -1466,6 +1467,11 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                         
         
         #------------------------
+        #only load once because its so lag at game start
+        if not load_green_bg:
+            Animate_BG.green_bg.load_frames_type2()
+            load_green_bg = True
+        Animate_BG.green_bg.display(screen, speed=50)
         keybinds.draw(screen, mouse_pos)
 
         reset_keybinds.draw(screen, mouse_pos)

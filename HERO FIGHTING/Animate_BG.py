@@ -228,6 +228,12 @@ smooth_waterfall_night_bg = AnimatedBackground(
     size="full"
 )
 
+green_bg = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\green_bg\\",
+    192,
+    size="full"
+)
+
 
 
 
@@ -251,3 +257,4 @@ waterfall_rainy_bg.load_frames()
 smooth_waterfall_rainy_bg.load_frames()
 waterfall_night_bg.load_frames()
 smooth_waterfall_night_bg.load_frames()
+# green_bg.load_frames_type2()

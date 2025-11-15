@@ -602,11 +602,11 @@ def game(bg=None):
                 
             '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
-            # if FREEZE_SPECIAL: 
-            #     main.hero1.special_active = True
-            #     main.hero2.special_active = True
-            #     main.hero1.special += 0.001
-            #     main.hero2.special += 0.001
+            if FREEZE_SPECIAL: 
+                main.hero1.special_active = True
+                main.hero2.special_active = True
+                main.hero1.special += 0.001
+                main.hero2.special += 0.001
             # elsed:
             #     pass
 
@@ -682,6 +682,10 @@ def game(bg=None):
             # Update and draw Fire Wizard
             main.hero1_group.draw(main.screen)
             main.hero1_group.update()
+
+            #draw summon
+            global_vars.summon_display.draw(main.screen)
+            global_vars.summon_display.update()
             
 
             # Update and draw Wanderer Magician
@@ -1223,7 +1227,6 @@ def controls():
 
 # Added
 #--------------------------------------------------------------------------------------------------
-            
             #onClick, 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if keybinds.is_clicked(mouse_pos):
@@ -1653,8 +1656,7 @@ def reset_all():
         hero.rooted = False
         hero.stunned = False
         hero.slowed = False
-        hero.freeze_source = None
-        hero.root_source = None
+        hero.silenced = False
         if hasattr(hero, 'atk_hasted'):
             # print('ahah')
             default_atk_speed_with_bonus = hero.get_atk_speed()

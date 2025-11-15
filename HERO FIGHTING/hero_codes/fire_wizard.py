@@ -21,6 +21,10 @@ from heroes import Attacks, Attack_Display
 from player import Player
 import global_vars
 import pygame
+
+from summon import create_summon_bot
+from summons.skeleton import Skeleton
+
 # Animation Counts
 FIRE_WIZARD_BASIC_COUNT = 10
 FIRE_WIZARD_JUMP_COUNT = 6
@@ -146,7 +150,7 @@ class Fire_Wizard(Player):
         # Skill 4: mana cost 200 -> 180
         #           damage = 75 -> 65
 
-        # fire knight buff
+        # fire knight buff/update
         # Skill 2: mana cost 100 -> 80
         # SKill 4 hitbox modified
         # Skill 4 special: total damage = 70(20,40,5,5) = 100 (30,60,5,5)
@@ -165,16 +169,34 @@ class Fire_Wizard(Player):
         # Skill 3: cooldown 26s -> 22s
         # Skill 4 special: (4.5/16, 0) = 67.5 -> (5/16, 1) = 90
 
+        # forest ranger buff
+        # I forgot...
+
+        # fire wizard buff
+        # trait: dmg_mult 10% -> 20%
+        # Skill 2: mana cost 30 -> 15, cooldown 3s -> 1s
+
+        # wanderer magician buff
+        # Skill 2: cooldown 24s -> 22s, (15/40, 0)*2 = 30 heal -> (20/40, 0)*2 = 40 heal
+        # Skill 3: cooldown 22s -> 17s
+
+        # forest ranger nerf/buff
+        # Agility: 38 -> 35
+        # Strength: 33 -> 32
+        # trait: lifesteal: 0.15 -> 0.1
+        # arrow_stuck_damage: (self.basic_attack_damage * 0.3) - 0.05 = 1 ->  (self.basic_attack_damage * 0.5) - 0.25 = 1.5
+        # dash speed: 4 -> 5
+
         #mana cost
         self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 30
+        self.atk2_mana_cost = 15
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         self.atk2_mana_cost_sp = 80
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
-        self.atk2_cooldown = 3000
+        self.atk2_cooldown = 1000
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
         self.atk2_cooldown_sp = 5000 + 13000
@@ -182,7 +204,7 @@ class Fire_Wizard(Player):
         self.damage_list = [
             (13, 0),
             (10/53, 0), #total damage=60
-            (35/34, 0),
+            (40/34, 0),
             (50/28, 10)
         ]
         self.atk1_damage = self.damage_list[0]
@@ -440,7 +462,10 @@ class Fire_Wizard(Player):
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            return
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
+        
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -495,7 +520,7 @@ class Fire_Wizard(Player):
                             who_attacked=self.enemy,
                             delay=(True, 800),
                             sound=(True, self.atk2_sound, None, None),
-                            # stop_movement=(True,3,3,2.2)
+                            stop_movement=(True,4,1)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
@@ -504,7 +529,12 @@ class Fire_Wizard(Player):
                         self.attacking2 = True
                         self.player_atk2_index = 0
                         self.player_atk2_index_flipped = 0
-                        # print("Attack executed")
+                        
+                        
+
+                        # summon = create_summon_bot(Skeleton, self.player_type, self.enemy)
+                        # global_vars.summon_display.add(summon)
+
                     else:
                         pass
                         # print(f"Attack did not execute: {self.mana}:")               
@@ -868,10 +898,10 @@ class Fire_Wizard(Player):
             else:
                 if not self.special_active:
                     for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
                 else:
                     for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
 
                 if not self.special_active:
                     for mana in self.attacks:

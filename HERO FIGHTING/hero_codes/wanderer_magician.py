@@ -99,12 +99,12 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.sp_mana_cost = 175
 
         self.atk1_cooldown = 8000
-        self.atk2_cooldown = 15000 + 9000
-        self.atk3_cooldown = 22000  
+        self.atk2_cooldown = 13000 + 9000 #heal duration
+        self.atk3_cooldown = 17000  
         self.sp_cooldown = 60000
 
         self.atk1_damage = (0, 0)
-        self.atk2_damage = (15/40, 0) # 30 heal, slow -> 37 heal if special, quick
+        self.atk2_damage = (20/40, 0) # 30 heal, slow -> 37 heal if special, quick
         self.atk3_damage = (26/10, 8) #26
         self.sp_damage = (55, 0) # 68.75 is the special dmg 
         self.sp_damage_2nd = (5/16, 0.5) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
@@ -407,7 +407,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            return
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
+        
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -946,10 +949,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
             else:
                 if not self.special_active:
                     for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
                 else:
                     for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
 
                 if not self.special_active:
                     for mana in self.attacks:

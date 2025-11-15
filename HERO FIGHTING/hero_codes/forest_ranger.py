@@ -92,9 +92,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.hitbox_rect = pygame.Rect(0, 0, 45, 100)
 
         # stat
-        self.strength = 33
+        self.strength = 32
         self.intelligence = 52
-        self.agility = 38 # = 48
+        self.agility = 35 # = 48
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -458,7 +458,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Trait: + 20% attack speed
         self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.3)
         # Trait: + 15% lifesteal
-        self.lifesteal = 0.15
+        self.lifesteal = 0.1
         # Trait : + (some values)% mana refund if hits enemy
 
         self.atk_hasted = False
@@ -474,7 +474,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         self.distance_covered = 0
         self.max_distance = 200
-        self.dash_speed = 4
+        self.dash_speed = 5
 
         self.get_current_atk_speed = 0 # SEEMS THE BOT DON'T HAVE THIS VARIABLE
         
@@ -549,7 +549,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            return
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -1386,10 +1388,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             else:
                 if not self.special_active:
                     for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
                 else:
                     for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
 
                 if not self.special_active:
                     for mana in self.attacks:

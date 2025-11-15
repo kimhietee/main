@@ -489,7 +489,9 @@ class Fire_Knight(Player):
                     self.last_atk_time = current_time  # Update the last jump time  
             
         if not self.can_cast():
-            return
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -1013,10 +1015,10 @@ class Fire_Knight(Player):
             else:
                 if not self.special_active:
                     for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
                 else:
                     for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type)
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
 
                 if not self.special_active:
                     for mana in self.attacks:

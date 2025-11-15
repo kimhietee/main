@@ -11,7 +11,10 @@ FPS = 60
 clock = pygame.time.Clock()
 # screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+
 screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
+# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1)
+
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
 # screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
@@ -227,6 +230,53 @@ font_size = int(height * 0.02)# = 14
 SHOW_MINI_HEALTH_BAR = False
 SHOW_MINI_MANA_BAR = False
 SHOW_MINI_SPECIAL_BAR = False
+
+
+
+summon_display = pygame.sprite.Group()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

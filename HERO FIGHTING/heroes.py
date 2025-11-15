@@ -359,8 +359,23 @@ class Attacks:
     def is_ready(self):
         return self.time_since_use() >= self.cooldown
 
-    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, ):
+    def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, player=None):
         # print("Has entered Heroes")
+        # Check if player is silenced or frozen
+        # For basic attacks: only frozen blocks them, silenced allows them
+        # For skills: both frozen and silenced block them
+        is_silenced = player and getattr(player, 'silenced', False)
+        is_frozen = player and getattr(player, 'frozen', False)
+        is_disabled_basic = is_frozen  # Basic attacks only blocked by freeze
+        is_disabled_skill = is_frozen or is_silenced  # Skills blocked by both freeze and silence
+        
+        # Check if this is a basic attack by comparing with basic_icon_rect
+        is_basic_attack = False
+        if player_type == 1:
+            is_basic_attack = self.skill_rect == hero1.basic_icon_rect
+        elif player_type == 2:
+            is_basic_attack = self.skill_rect == hero2.basic_icon_rect
+        
         # Determine the key to display based on the player type
         keybinds=key.read_settings()
         key_text = ""
@@ -381,7 +396,26 @@ class Attacks:
 
         # Existing logic for drawing the skill icon
         if not self.special_skill:
-            if not self.is_ready():
+            # Determine if this skill icon is disabled (for basic attacks: only if frozen, for skills: if frozen or silenced)
+            current_is_disabled = is_disabled_basic if is_basic_attack else is_disabled_skill
+            
+            if current_is_disabled:
+                # If disabled, show darkened icon with red X (but only for skills, not basic attacks when just silenced)
+                dark_overlay = pygame.Surface(self.skill_rect.size)
+                dark_overlay.fill((0, 0, 0))
+                dark_overlay.set_alpha(150)
+                screen.blit(self.skill_img, self.skill_rect)
+                screen.blit(dark_overlay, self.skill_rect)
+                
+                # Draw red X to indicate skill is disabled (only for skills, not for basic attacks when just silenced)
+                if not (is_basic_attack and is_silenced and not is_frozen):  # Allow basic when just silenced
+                    x_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
+                    x_text = x_font.render('X', global_vars.TEXT_ANTI_ALIASING, (255, 0, 0))
+                    screen.blit(x_text, (
+                        self.skill_rect.centerx - x_text.get_width() // 2,
+                        self.skill_rect.centery - x_text.get_height() // 2
+                    ))
+            elif not self.is_ready():
                 dark_overlay = pygame.Surface(self.skill_rect.size)
                 dark_overlay.fill((0, 0, 0))
                 dark_overlay.set_alpha(128)
@@ -417,7 +451,25 @@ class Attacks:
                 screen.blit(self.skill_img, self.skill_rect)
 
         else:
-            if not special >= max_special:
+            # Special skills are always blocked by silence (can't use sp skills when silenced)
+            current_is_disabled = is_disabled_skill
+            
+            if current_is_disabled:
+                # If silenced/frozen, show darkened icon with red X for special skill
+                dark_overlay = pygame.Surface(self.skill_rect.size)
+                dark_overlay.fill((0, 0, 0))
+                dark_overlay.set_alpha(150)
+                screen.blit(self.skill_img, self.skill_rect)
+                screen.blit(dark_overlay, self.skill_rect)
+                
+                # Draw red X
+                x_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
+                x_text = x_font.render('X', global_vars.TEXT_ANTI_ALIASING, (255, 0, 0))
+                screen.blit(x_text, (
+                    self.skill_rect.centerx - x_text.get_width() // 2,
+                    self.skill_rect.centery - x_text.get_height() // 2
+                ))
+            elif not special >= max_special:
                 dark_overlay = pygame.Surface(self.skill_rect.size)
                 dark_overlay.fill((0, 0, 0))
                 dark_overlay.set_alpha(128)
@@ -566,12 +618,14 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     1 - Freeze
                     2 - Root
                     3 - Slow
+                    4 - Silence
                 * [2] – Status mode/type
                     1 - While collides player, effect active, else none (collision only)
                     2 - When collides player, effect active, until attack ends (if hit once)
                     3 - Effect active, until attack ends (full duration)
                 * [3] – Slow Rate
-                    < 1.0 - Only if Status is slow
+                    < 1.0 
+                    4 - Silence- Only if Status is slow
 
         ? damage_mode - no use for now
         '''
@@ -619,6 +673,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     'damaged': False,
                     'following': False
                 }
+        # Track which enemies this attack has applied a movement/status effect to
+        # Use a set so we can remove the status reliably on kill/self-removal
+        self.affected_enemies = set()
         self.moving = moving
         self.heal = heal
         self.continuous_dmg = continuous_dmg
@@ -705,17 +762,20 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # print("Hitbox drawn")
         # print(self.rect.width)
 
-    def kill_self(self): # (Possible bug here that removing status won't work, see the moving section part)
+    def kill_self(self): # Remove attack and cleanup status effects
         # remove only this attack's status from all affected enemies
         if self.stop_movement[0]:
             status_type = self.stop_movement[1]
-            # remove only this source from all enemies
-            for enemy in self.who_attacked:
-                if enemy is not None:
-                    try:
-                        enemy.remove_movement_status(status_type, source=self)
-                    except:
-                        pass  # Enemy might have already been removed
+            # Iterate over the set of enemies that we applied the status to
+            for enemy in list(self.affected_enemies):
+                if enemy is None:
+                    continue
+                try:
+                    enemy.remove_movement_status(status_type, source=self)
+                except:
+                    pass
+            # clear the set to avoid dangling refs
+            self.affected_enemies.clear()
         # finally kill the sprite
         self.kill()
 
@@ -890,6 +950,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if enemy is not None:
                         try:
                             enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                            # track that we applied this status to the enemy
+                            self.affected_enemies.add(enemy)
                         except:
                             pass
                 self.status_applied = True
@@ -952,11 +1014,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     # Final animation end
                     if self.current_repeat >= self.repeat_animation:
                         # warning: inside these block of codes only runs per frames, not fps frames, 
-                        # which might prone to errors if not read carefully.
-                        # if self.freeze:
-                        #     self.who_attacked.speed = RUNNING_SPEED
-                        
-                                
+                        # which might prone to errors if not read carefully.            
                         #dmg animation
                         self.animation_done = True
                         self.kill_self() # Remove the sprite from the group  
@@ -1161,6 +1219,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             continue
                         try:
                             enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                            # track applied status so we can remove it on end/kill
+                            self.affected_enemies.add(enemy)
                         except:
                             pass
                     # type 1 
@@ -1173,6 +1233,9 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             if enemy not in colliding_enemies and enemy in self.enemy_states:
                                 try:
                                     enemy.remove_movement_status(self.stop_movement[1], source=self)
+                                    # also forget that we had applied it
+                                    if enemy in self.affected_enemies:
+                                        self.affected_enemies.discard(enemy)
                                 except:
                                     pass
 
@@ -1180,13 +1243,15 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 if self.stop_movement[0]:
                     status_type = self.stop_movement[1]
                     mode = self.stop_movement[2]
-                    if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
-                        for enemy in self.who_attacked:
-                            if enemy is not None:
-                                try:
-                                    enemy.remove_movement_status(status_type, source=self)
-                                except:
-                                    pass
+                    if mode in (1, 2, 3):  # remove statuses from any enemies we applied them to
+                        for enemy in list(self.affected_enemies):
+                            if enemy is None:
+                                continue
+                            try:
+                                enemy.remove_movement_status(status_type, source=self)
+                            except:
+                                pass
+                        self.affected_enemies.clear()
 
             
             
@@ -1451,6 +1516,10 @@ class Item:
 # so many (buffs)
 
 
+# Update:
+# improved crystals by 5% (2% for spell dmg)
+# princess necklace mana reduce 5% -> 10%
+
 items = [
     # stats
     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.08]),  
@@ -1467,10 +1536,10 @@ items = [
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana refund'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.05, 0.03]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.05, 0.03]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.05, 0.05]),
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.15, 0.1, 0.1]),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.10, 0.05]),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.1, 0.05]),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.10, 0.05]),
     Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.25]),
     Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.08]), 
 
@@ -1501,12 +1570,12 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 10% spell dmg",
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 20% spell dmg",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32 (19 dmg), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 15% lifesteal, 20% atk speed, 200%+ mana refund",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 30% atk speed, 200%+ mana refund",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce"
 }
 

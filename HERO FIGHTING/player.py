@@ -99,6 +99,7 @@ class Player(pygame.sprite.Sprite):
         self.slowed = False
         self.slow_source = None
         self.slow_speed = 0
+        self.silenced = False
         self.str_mult = 5
         self.int_mult = 5
         self.agi_mult = 0.1
@@ -1590,6 +1591,10 @@ class Player(pygame.sprite.Sprite):
             self._root_sources = []
         if not hasattr(self, "_slow_sources"):
             self._slow_sources = []
+        if not hasattr(self, "_silence_sources"):
+            self._silence_sources = []
+        if not hasattr(self, "_silence_sources"):
+            self._silence_sources = []
 
         if type == 1:  # Freeze
             # add source if not already present
@@ -1628,6 +1633,13 @@ class Player(pygame.sprite.Sprite):
                 self.slow_speed = self.speed * self.speed_multiplier
                 if not self.slowed:
                     self.slowed = True
+
+        if type == 4:  # Silence
+            if source not in self._silence_sources:
+                self._silence_sources.append(source)
+            if not getattr(self, "silenced", False):
+                self.silenced = True
+
         # print(f"APPLY status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source} in {self._freeze_sources if type == 1 else self._root_sources if type == 2 else self._slow_sources}")
     def remove_movement_status(self, type, source=None, slow_rate=1.0):
         """
@@ -1655,8 +1667,6 @@ class Player(pygame.sprite.Sprite):
                     self._freeze_sources.remove(source)
                 except ValueError:
                     pass
-            
-            self._freeze_sources.clear() # remove frozen anyways
             # clear flag only if no other sources remain
             if len(self._freeze_sources) == 0:
                 self.frozen = False
@@ -1688,8 +1698,18 @@ class Player(pygame.sprite.Sprite):
                     pass
             if len(self._slow_sources) == 0:
                 self.slowed = False
-                
                 # self.speed = self.default_speed
+            
+        elif type == 4:  # Silence
+            if source is None:
+                self._silence_sources.clear()
+            else:
+                try:
+                    self._silence_sources.remove(source)
+                except ValueError:
+                    pass
+            if len(self._silence_sources) == 0:
+                self.silenced = False
 
         # print(f"REMOVE status {'freeze' if type == 1 else 'root' if type == 2 else 'slow'} from {source} in {self._freeze_sources if type == 1 else self._root_sources if type == 2 else self._slow_sources}")
                 
@@ -1707,9 +1727,14 @@ class Player(pygame.sprite.Sprite):
 
                 # Choose color based on status
                 if self.frozen:
-                    color = (0, 100, 255, 50)  # translucent blue
+                    color = (0, 100, 255, 50) # translucent blue
+                elif self.rooted:
+                    color = (139, 69, 19, 50) # brown, translucent
+                elif self.silenced:
+                    color = (100, 100, 100, 50)  # gray
                 else:
-                    color = (139, 69, 19, 50)  # brown, translucent
+                    color = (255, 255, 255, 0) # ???
+
 
                 # Create surface for transparency
                 overlay = pygame.Surface((overlay_rect.width, overlay_rect.height), pygame.SRCALPHA)
@@ -1734,7 +1759,7 @@ class Player(pygame.sprite.Sprite):
 
     def can_cast(self):
         """Return True if the player can use skills (not frozen or dead)."""
-        return not (self.is_dead() or self.frozen)
+        return not (self.is_dead() or self.frozen or self.silenced)
     
     def draw_hp(self):
         pass
@@ -1826,6 +1851,7 @@ class Player(pygame.sprite.Sprite):
             # if self.player_type == 1:
             #     print(self.enemy)
             # print(self.frozen, self.can_cast(), self.can_move())
+                print(self.silenced)
 
         # if self.is_dead:
         #     return

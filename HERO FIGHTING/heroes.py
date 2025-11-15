@@ -1390,13 +1390,6 @@ class Fire_Wizard(Player):
         # fire wizard update
         # Skill 2: reworked skill, low cooldown, low damage, special not changed
 
-        # wanderer magician buff
-        # Agility: 32 -> 35
-        # Skill 1: mana cost 70 -> 65
-        # Skill 2: cooldown 29s -> 24s, (26/10, 8) = 34 -> (29/10, 8) = 37
-        # Skill 3: cooldown 26s -> 22s
-        # Skill 4 special: (4.5/16, 0) = 67.5 -> (5/16, 1) = 90
-
         #mana cost
         self.atk1_mana_cost = 50
         self.atk2_mana_cost = 30
@@ -2194,7 +2187,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # stat
         self.strength = 40
         self.intelligence = 36
-        self.agility = 35
+        self.agility = 32
         
 
         self.base_max_mana = self.intelligence * self.int_mult
@@ -2212,21 +2205,21 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.width = 200
         self.height = 20
 
-        self.atk1_mana_cost = 65
+        self.atk1_mana_cost = 70
         self.atk2_mana_cost = 150
         self.atk3_mana_cost = 125
         self.sp_mana_cost = 175
 
         self.atk1_cooldown = 8000
-        self.atk2_cooldown = 15000 + 9000
-        self.atk3_cooldown = 22000  
+        self.atk2_cooldown = 20000 + 9000
+        self.atk3_cooldown = 26000  
         self.sp_cooldown = 60000
 
         self.atk1_damage = (0, 0)
         self.atk2_damage = (15/40, 0) # 30 heal, slow -> 37 heal if special, quick
         self.atk3_damage = (26/10, 8) #26
         self.sp_damage = (55, 0) # 68.75 is the special dmg 
-        self.sp_damage_2nd = (5/16, 0.5) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
+        self.sp_damage_2nd = (4.5/16, 0) # * 30 = 67.5
 
         dmg_mult = 0
         self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -2540,7 +2533,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frame_duration=100,
                             repeat_animation=5,
                             speed=7 if self.facing_right else -7,
-                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10]) * 3,
+                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
@@ -6602,9 +6595,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.hitbox_rect = pygame.Rect(0, 0, 45, 100)
 
         # stat
-        self.strength = 33
+        self.strength = 30
         self.intelligence = 52
-        self.agility = 38 # = 48
+        self.agility = 35 # = 48
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -6626,11 +6619,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 7000 + 5000 # 12 seconds
+        self.atk1_cooldown = 12000 + 5000 # 12 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
-        self.sp_cooldown_for_special = 90000
+        self.sp_cooldown_for_special = 100000
         self.atk3_cooldown_for_special = 25000
 
         self.atk1_damage = (0, 0) # buff
@@ -6642,7 +6635,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.sp_atk2_damage_2nd = (5/8, 0) # poison arrow +30 mana
         self.atk2_damage_2nd = (10/45, 0) # poison 2nd +30 mana
         self.sp_atk3_damage = (25/18, 0) # arrow rain roots +100 mana
-        self.sp_damage_2nd = (70/30, 0) # laser beam +170 mana
+        self.sp_damage_2nd = (50/30, 0) # laser beam +170 mana
 
         # self.damage_to_heal_percentage =
 
@@ -6966,7 +6959,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
 
         # Trait: + 20% attack speed
-        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.3)
+        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
         # Trait: + 15% lifesteal
         self.lifesteal = 0.15
         # Trait : + (some values)% mana refund if hits enemy
@@ -9390,36 +9383,33 @@ class Item:
 # War Helmet: 5% str -> 10%, 4% hp regen -> 5%
 # Spirit Feather: removed 3 agi flat
 
-# Update:
-# so many (buffs)
-
 
 items = [
     # stats
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.08]),  
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.05]),  
     Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
     Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal"], [0.15]),
-    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp flat', 'mana flat', 'agi flat', 'cd reduce'], [30, -30, 5, 0.05]),
+    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp flat', 'mana flat', 'agi flat', 'cd reduce'], [35, -35, 0.05]),
     Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
     Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]),
 
-    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp flat', 'dmg reduce', 'hp regen'], [25, 0.05, 0.05]),
-    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana flat', 'spell dmg', 'mana regen'], [25, 0.05, 0.05]),
-    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk flat', 'atk speed', 'move speed'], [25, 0.05, 0.05]),
+    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp flat', 'dmg reduce', 'hp regen'], [25, 0.05, 0.02]),
+    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana flat', 'spell dmg', 'mana regen'], [25, 0.05, 0.02]),
+    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk flat', 'atk speed', 'move speed'], [25, 0.05, 0.02]),
     Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.07, 0.07, 0.07]),
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana refund'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.05, 0.05]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.05, 0.03]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.05, 0.03]),
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.1, 0.03, 0.03]),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.03, 0.02]),
     Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.05, 0.05]),
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.25]),
-    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.08]), 
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.20]),
+    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.05]), 
 
     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
     Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed"], [0.1, 150]), 
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.40]), 
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.25]), 
     Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk flat', "move speed", 'attack speed'], [10, 0.05, 50]),
     Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
     Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit chance", "crit dmg"], [0.3, 0.8]),

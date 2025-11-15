@@ -8,20 +8,20 @@
         "X"
     ],
     "skill_3_p1": [
-        99,
-        "C"
-    ],
-    "skill_4_p1": [
         118,
         "V"
     ],
-    "basic_atk_p1": [
-        101,
-        "E"
+    "skill_4_p1": [
+        99,
+        "C"
     ],
-    "sp_skill_p1": [
+    "basic_atk_p1": [
         102,
         "F"
+    ],
+    "sp_skill_p1": [
+        101,
+        "E"
     ],
     "jump_p1": [
         119,

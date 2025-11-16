@@ -1,6 +1,10 @@
 import pygame
 import json
 import os
+import time
+
+
+
 
 import random
 from global_vars import (IMMEDIATE_RUN,
@@ -230,8 +234,8 @@ settings_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
-flicker_running = True
-def show_confirmation_modals(running, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
+has_changes = False
+def show_confirmation_modals(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
     
     if no_swap:
         # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
@@ -241,11 +245,16 @@ def show_confirmation_modals(running, font=pygame.font.Font(fr'assets\font\slksc
         create_title('(The existing key will be swapped)', font, 0.5, height * 0.5)
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,150,150))
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,10,10))
-    count = 1
     color=(150,150,150)
     
     create_title('Key already in use', font, 1, height * 0.40, color)
         
+def save_before_exiting_modal(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
+    
+    create_title('Save before exiting!', font, 0.5, height * 0.95, x_offset=width*0.35)
+   
+    
+
 
 
 def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
@@ -1169,7 +1178,7 @@ can_click = True
 opacity = 0
 display_confirmation = False
 load_green_bg = False
-def controls(can_click = can_click, opacity=opacity, display_confirmation = display_confirmation):
+def controls(can_click = can_click, opacity=opacity, display_confirmation = display_confirmation, has_changes = has_changes):
     global load_green_bg
 #-------------------------------------START-----------------------------------------
 
@@ -1249,7 +1258,8 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
 
     while True:
-        global flicker_running
+       
+
         draw_black_screen(opacity)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
@@ -1303,7 +1313,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             f.close()
                     
                         
-        
+                    has_changes = False
                     print('Save keybinds') 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -1334,7 +1344,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                 for i in (detect):
                                     detect[i] = False
                                     keybind_select_reset()
-                            
+                                    has_changes = True
                                     update_key_display(key_list, new_key)
                                     can_click = True
                                     opacity = 0
@@ -1434,12 +1444,14 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                 key_name = "<"
                         elif key_name == "RIGHT":
                                 key_name = ">"
-                                
+                         
                         if key_name not in key_store:
                             
-
+                        
                             print(f"selected {pygame.key.name(key_index)}")
                             
+                            
+                            print("has changes")
 
                             new_key[detect.index(True)] = (key_index, key_name)
                             for i in key_list:
@@ -1448,20 +1460,23 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             for i in (detect):
                                 detect[i] = False
                                 keybind_select_reset()
-                          
+                                has_changes = True
                                 update_key_display(key_list, new_key)
                         
                         else:
                             for index, item in enumerate(key.detect_key_skill):
                                 if key.detect_key_skill[item] == True:
                                     if new_key[index][1] == key_name:
-                                         keybind_select_reset()
-
+                                        keybind_select_reset()
+                                        has_changes = True
+                           
                                     else:
                                         draw_black_screen(0.5)
                                         display_confirmation = True
                                         can_click = False
                                         opacity = 0.8
+                                        
+                       
                                     
                            
                         # break  # Remove to detect multiple
@@ -1597,10 +1612,19 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             display_keyswap_confirmation(True)
             
             
-            show_confirmation_modals(flicker_running)
-            flicker_running = False
+            show_confirmation_modals()
+  
         swapconfirm_yes.draw(screen, mouse_pos)
         swapconfirm_no.draw(screen, mouse_pos)
+
+
+
+        if has_changes:
+            
+            save_before_exiting_modal()
+            
+
+
 #-------------------------------------END-----------------------------------------     
 
 
@@ -1628,7 +1652,7 @@ def update_key_display(key_list, new_key):
 def keybind_select_reset(list_key:list=None):
 
     for detect_key in (key.detect_key_skill):
-        print(f"falsing {detect_key}")
+        # print(f"falsing {detect_key}")
         key.detect_key_skill[detect_key] = False
         
 
@@ -1637,6 +1661,8 @@ def keybind_select_reset(list_key:list=None):
 def refresh_key(list_key):
     for i in list_key:
         list_key[i] = False
+
+
 
 
 

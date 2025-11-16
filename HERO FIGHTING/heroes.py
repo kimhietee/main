@@ -1362,6 +1362,13 @@ Yurei = yurei.Yurei
 
 
 
+
+import hero_codes.soul_destroyer as soul_destroyer
+Soul_Destroyer = soul_destroyer.Soul_Destroyer
+
+
+
+
 # #-------------------------------------
 # #if have time to make, make the players more centralized
 
@@ -1813,6 +1820,7 @@ def player_selection():
     # last is only 75 position for xpos4
 
     #p2
+    temp_icon = r'assets\hero profiles\temp.jpg'
     yposlower=75
     yposupper=200
     p1_select = [
@@ -1821,7 +1829,7 @@ def player_selection():
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
         PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
-        PlayerSelector(fire_wizard_icon, (xpos5, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(temp_icon, (xpos5, height - yposlower), Soul_Destroyer),
 
         #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
@@ -1837,7 +1845,7 @@ def player_selection():
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
         PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
-        PlayerSelector(fire_wizard_icon, (xpos5, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(temp_icon, (xpos5, height - yposlower), Soul_Destroyer),
 
         #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
@@ -1955,7 +1963,7 @@ def player_selection():
             return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Yurei
+            PLAYER_1_SELECTED_HERO = Soul_Destroyer
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None

@@ -1557,11 +1557,30 @@ class Player(pygame.sprite.Sprite):
             # print('mana added')
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
+        # Accept either a single enemy object or a list of enemies
         font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
-        enemy_distance = int(abs(self.x_pos - enemy.x_pos))
+        target = None
+        # If a list was passed, pick the nearest valid enemy
+        if isinstance(enemy, (list, tuple)):
+            candidates = [e for e in enemy if e is not None and hasattr(e, 'x_pos')]
+            if not candidates:
+                return
+            target = min(candidates, key=lambda e: abs(self.x_pos - getattr(e, 'x_pos', self.x_pos)))
+        else:
+            target = enemy
+
+        if target is None or not hasattr(target, 'x_pos'):
+            return
+
+        try:
+            enemy_distance = int(abs(self.x_pos - target.x_pos))
+        except Exception:
+            return
+
         enemy_distance_surf = font.render(str(enemy_distance), TEXT_ANTI_ALIASING, 'Red')
         screen.blit(enemy_distance_surf, (self.x_pos, self.y_pos - 120))
-        line_rect = pygame.rect.Rect((self.x_pos if enemy.x_pos > self.x_pos else enemy.x_pos), self.y_pos - 60, enemy_distance, 2)
+        left = self.x_pos if target.x_pos > self.x_pos else target.x_pos
+        line_rect = pygame.rect.Rect((left), self.y_pos - 60, enemy_distance, 2)
         pygame.draw.rect(screen, 'Red', line_rect)
     
     def stun(self, stunned, x_pos, y_pos, adjust_y_pos, jump_force=DEFAULT_JUMP_FORCE, gravity=DEFAULT_GRAVITY):
@@ -1851,7 +1870,7 @@ class Player(pygame.sprite.Sprite):
             # if self.player_type == 1:
             #     print(self.enemy)
             # print(self.frozen, self.can_cast(), self.can_move())
-                print(self.silenced)
+                # print(self.silenced)
 
         # if self.is_dead:
         #     return

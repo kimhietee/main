@@ -250,13 +250,22 @@ def show_confirmation_modals(running, font=pygame.font.Font(fr'assets\font\slksc
 
 def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
     # Display controls title
-    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.05)
+    draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
+    draw_black_screen(0.2,size=(width*0.45 + width*0.05, height * 0.2,  width*0.44, height*0.65))
+
+    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.15)
     
     # Player 1 Controls
-    create_title('Player 1:', font, 1, height * 0.15, color=gold, angle=0, x_offset=width *0.33)
+    create_title('Player 1:', font, 1, height * 0.25, angle=0, x_offset=width *0.33)
 
     # Player 2 Controls
-    create_title('Player 2:', font, 1, height * 0.15, color=cyan2, angle=0, x_offset=((width *0.33) + (width)))
+    create_title('Player 2:', font, 1, height * 0.25, angle=0, x_offset=((width *0.33) + (width * 0.9)))
+    
+
+
+
+
+
 
 
     skill_controls = [
@@ -279,16 +288,16 @@ def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
     
     # Display controls for both players
     for i, text in enumerate(skill_controls):
-        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=width*0.35)
-        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=((width *0.35) + (width)))
+        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.35)
+        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.35) + (width * 0.9)))
 
     for i, text in enumerate(move_controls):
         create_title(text, font, 0.5, height * 0.728 , color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))))
-        create_title(text, font, 0.5, height *0.728, color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))) + width )
+        create_title(text, font, 0.5, height *0.728, color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))) + (width * 0.9) )
     
     for i, text in enumerate(Basic_SP_control):
-        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=width*0.8)
-        create_title(text, font, 0.5, height * (0.228 + i * 0.1), color=white, angle=0, x_offset=((width *0.8) + (width)))
+        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.8)
+        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.8) + (width * 0.9)))
 
     
 
@@ -1164,7 +1173,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
     global load_green_bg
 #-------------------------------------START-----------------------------------------
 
-    left_width = width/2
+    left_width = width*0.45
     # command_img = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
     # control_img = main.pygame.transform.scale(
@@ -1178,13 +1187,13 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
     
    
-    skill_1_btn_p1 = RectButton(width*0.08, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[0][1],40,40,0)
-    skill_2_btn_p1 = RectButton(width*0.08, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[1][1],40,40,0)
-    skill_3_btn_p1 = RectButton(width*0.08, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[2][1],40,40,0)
-    skill_4_btn_p1 = RectButton(width*0.08, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[3][1],40,40,0)
+    skill_1_btn_p1 = RectButton(width*0.08, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[0][1],40,40,0)
+    skill_2_btn_p1 = RectButton(width*0.08, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[1][1],40,40,0)
+    skill_3_btn_p1 = RectButton(width*0.08, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[2][1],40,40,0)
+    skill_4_btn_p1 = RectButton(width*0.08, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[3][1],40,40,0)
 
-    basic_atk_btn_p1 = RectButton(width*0.27, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[4][1],40,40,0)
-    sp_skill_btn_p1 = RectButton(width*0.27, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[5][1],40,40,0)
+    basic_atk_btn_p1 = RectButton(width*0.27, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[4][1],40,40,0)
+    sp_skill_btn_p1 = RectButton(width*0.27, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[5][1],40,40,0)
 
 
     
@@ -1195,13 +1204,13 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
 
 
-    skill_1_btn_p2 = RectButton(width*0.08 + left_width, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[9][1],40,40,0)
-    skill_2_btn_p2 = RectButton(width*0.08 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[10][1],40,40,0)
-    skill_3_btn_p2 = RectButton(width*0.08 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[11][1],40,40,0)
-    skill_4_btn_p2 = RectButton(width*0.08 + left_width, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[12][1],40,40,0)
+    skill_1_btn_p2 = RectButton(width*0.08 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[9][1],40,40,0)
+    skill_2_btn_p2 = RectButton(width*0.08 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[10][1],40,40,0)
+    skill_3_btn_p2 = RectButton(width*0.08 + left_width, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[11][1],40,40,0)
+    skill_4_btn_p2 = RectButton(width*0.08 + left_width, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[12][1],40,40,0)
 
-    basic_atk_btn_p2 = RectButton(width*0.27 + left_width, height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[13][1],40,40,0)
-    sp_skill_btn_p2 = RectButton(width*0.27 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[14][1],40,40,0)
+    basic_atk_btn_p2 = RectButton(width*0.27 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[13][1],40,40,0)
+    sp_skill_btn_p2 = RectButton(width*0.27 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[14][1],40,40,0)
 
     
     left_move_btn_p2 = RectButton(width*0.1 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[16][1],40,40,0)
@@ -1472,6 +1481,14 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             Animate_BG.green_bg.load_frames_type2()
             load_green_bg = True
         Animate_BG.green_bg.display(screen, speed=50)
+
+
+
+        show_controls() #Show the controls in screen  
+
+
+
+
         keybinds.draw(screen, mouse_pos)
 
         reset_keybinds.draw(screen, mouse_pos)
@@ -1570,7 +1587,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
         # right_move_btn_p2.text = new_key[17][1]
         
 
-        show_controls() #Show the controls in screen  
+        
 
         draw_black_screen(opacity)
 
@@ -1639,13 +1656,13 @@ def display_keyswap_confirmation(condition):
 
 
 
-def draw_black_screen(opacity, color=(0,0,0)):
+def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
     base_opacity = 255 * opacity
-    rect = pygame.Rect(pygame.Rect(0, 0, width, height))
+    rect = pygame.Rect(pygame.Rect(size[0], size[1], size[2], size[3]))
     overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
 
     # Fill it with the color + alpha
-    overlay.fill((0,0,0, base_opacity))
+    overlay.fill((color[0],color[1],color[2], base_opacity))
 
     # Blit it on the target surface
     screen.blit(overlay, rect.topleft)

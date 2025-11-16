@@ -253,7 +253,7 @@ def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
     draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
     draw_black_screen(0.2,size=(width*0.45 + width*0.05, height * 0.2,  width*0.44, height*0.65))
 
-    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.15)
+    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.1)
     
     # Player 1 Controls
     create_title('Player 1:', font, 1, height * 0.25, angle=0, x_offset=width *0.33)

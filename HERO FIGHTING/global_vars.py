@@ -236,7 +236,7 @@ SHOW_MINI_SPECIAL_BAR = False
 summon_display = pygame.sprite.Group()
 
 
-no_swap = bool
+no_swap = False
 
 
 

@@ -620,10 +620,23 @@ class Player(pygame.sprite.Sprite):
                         self.sp_damage_3rd[0] + (self.sp_damage_3rd[0] * bonus_value),
                         self.sp_damage_3rd[1] + (self.sp_damage_3rd[1] * bonus_value)
                     )
+                        # can handle single, or tuple
                     if hasattr(self, 'sp_atk1_damage'):
-                        self.sp_atk1_damage = self.sp_atk1_damage + (self.sp_atk1_damage * bonus_value)
+                        if isinstance(self.sp_atk1_damage, tuple):
+                            self.sp_atk1_damage = (
+                                self.sp_atk1_damage[0] + (self.sp_atk1_damage[0] * bonus_value),
+                                self.sp_atk1_damage[1] + (self.sp_atk1_damage[1] * bonus_value)
+                            )
+                        else:
+                            self.sp_atk1_damage = self.sp_atk1_damage + (self.sp_atk1_damage * bonus_value)
                     if hasattr(self, 'sp_atk2_damage'):
-                        self.sp_atk2_damage = self.sp_atk2_damage + (self.sp_atk2_damage * bonus_value)
+                        if isinstance(self.sp_atk2_damage, tuple):
+                            self.sp_atk2_damage = (
+                                self.sp_atk2_damage[0] + (self.sp_atk2_damage[0] * bonus_value),
+                                self.sp_atk2_damage[1] + (self.sp_atk2_damage[1] * bonus_value)
+                            )
+                        else:
+                            self.sp_atk2_damage = self.sp_atk2_damage + (self.sp_atk2_damage * bonus_value)
                     if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
                         self.sp_atk2_damage_2nd = (
                         self.sp_atk2_damage_2nd[0] + (self.sp_atk2_damage_2nd[0] * bonus_value),
@@ -1716,8 +1729,14 @@ class Player(pygame.sprite.Sprite):
                 except ValueError:
                     pass
             if len(self._slow_sources) == 0:
+                # Reset slow-related state when no slow sources remain
                 self.slowed = False
-                # self.speed = self.default_speed
+                self.speed_multiplier = 1.0
+                try:
+                    # restore slow_speed to the base speed value
+                    self.slow_speed = self.speed * self.speed_multiplier
+                except Exception:
+                    self.slow_speed = getattr(self, 'default_speed', getattr(self, 'speed', 0))
             
         elif type == 4:  # Silence
             if source is None:
@@ -1811,6 +1830,26 @@ class Player(pygame.sprite.Sprite):
         else:
             # No enemies available, use random as fallback
             self.target = random.choice(self.enemy)
+    def face_selective_target(self):
+        '''Pls call self.single_target() to update the self.target.
+        
+        Returns the targett and the detected target, store it to variable.'''
+        # one liner is getting hard, took codes from bot_ai
+        self.enemy_on_right = self.x_pos < (self.target.x_pos)
+        self.enemy_on_left = self.x_pos > (self.target.x_pos)
+        enemy_pos = (self.target.x_pos)
+        target_detected = False
+        if self.enemy_on_right and self.facing_right:
+            target = enemy_pos
+            target_detected = True
+        elif self.enemy_on_right and not self.facing_right:
+            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+        elif self.enemy_on_left and not self.facing_right:
+            target = enemy_pos
+            target_detected = True
+        else:
+            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+        return target, target_detected
 
     # Handles input for all heroes
     def inputs(self,):

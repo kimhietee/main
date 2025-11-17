@@ -24,28 +24,29 @@ import global_vars
 import pygame
 # Animation Counts
 # WATER_PRINCESS_BASIC_COUNT = 
-WATER_PRINCESS_JUMP_COUNT = 6
-WATER_PRINCESS_RUN_COUNT = 10
-WATER_PRINCESS_IDLE_COUNT = 8
-WATER_PRINCESS_ATK1_COUNT = 7
-WATER_PRINCESS_ATK2_COUNT = 27
-WATER_PRINCESS_ATK3_COUNT = 12
-WATER_PRINCESS_SP_COUNT = 32
-WATER_PRINCESS_DEATH_COUNT = 16
 
-WATER_PRINCESS_SURF_COUNT = 8
+# WATER_PRINCESS_JUMP_COUNT = 6
+# WATER_PRINCESS_RUN_COUNT = 10
+# WATER_PRINCESS_IDLE_COUNT = 8
+# WATER_PRINCESS_ATK1_COUNT = 7
+# WATER_PRINCESS_ATK2_COUNT = 27
+# WATER_PRINCESS_ATK3_COUNT = 12
+# WATER_PRINCESS_SP_COUNT = 32
+# WATER_PRINCESS_DEATH_COUNT = 16
 
-# WATER_PRINCESS_ATK1 = 0
-# WATER_PRINCESS_ATK2 = 0
-# WATER_PRINCESS_ATK3 = 0
-# WATER_PRINCESS_SP = 0
-# ---------------------
-# print((WATER_PRINCESS_ATK2 * 0.01) * 4 * 5)
+# WATER_PRINCESS_SURF_COUNT = 8
 
-WATER_PRINCESS_ATK1_SIZE = 2
-WATER_PRINCESS_ATK2_SIZE = 2
-WATER_PRINCESS_ATK3_SIZE = 1
-WATER_PRINCESS_SP_SIZE = 4  
+# # WATER_PRINCESS_ATK1 = 0
+# # WATER_PRINCESS_ATK2 = 0
+# # WATER_PRINCESS_ATK3 = 0
+# # WATER_PRINCESS_SP = 0
+# # ---------------------
+# # print((WATER_PRINCESS_ATK2 * 0.01) * 4 * 5)
+
+# WATER_PRINCESS_ATK1_SIZE = 2
+# WATER_PRINCESS_ATK2_SIZE = 2
+# WATER_PRINCESS_ATK3_SIZE = 1
+# WATER_PRINCESS_SP_SIZE = 4  
 
 # STILL IN PROGRESS: 11/16/26 6:07PM
 class Soul_Destroyer(Player):
@@ -56,7 +57,7 @@ class Soul_Destroyer(Player):
         self.player_type = player_type
         self.name = "Soul Destroyer"
 
-        self.hitbox_rect = pygame.Rect(0, 0, 100, 140)
+        self.hitbox_rect = pygame.Rect(0, 0, 80, 115)
 
         # stat
         self.strength = 40
@@ -64,7 +65,9 @@ class Soul_Destroyer(Player):
         self.agility = 35 # real agility = 20
 
         # trait: Increased str potency
-        self.str_mult += 1
+        rate = 1.5
+        self.str_mult += 0.5
+        self.int_mult += 0.5
         self.agi_mult += 0.05
 
         # Base Stats
@@ -94,36 +97,38 @@ class Soul_Destroyer(Player):
 
             # mana reduce 20% if special active
 
-
-
-        self.atk1_mana_cost = 10
-        self.atk2_mana_cost = 16
-        self.atk3_mana_cost = 20
-        self.sp_mana_cost = 24
+        self.atk1_mana_cost = 50
+        self.atk2_mana_cost = 80
+        self.atk3_mana_cost = 80
+        self.sp_mana_cost = 200
 
         #go to attacks section to calculate mana
 
-        self.atk1_cooldown = 150
-        self.atk2_cooldown = 260
-        self.atk3_cooldown = 400
-        self.sp_cooldown = 650
+        self.atk1_cooldown = 10000 + 10000
+        self.atk2_cooldown = 20000
+        self.atk3_cooldown = 25000
+        self.sp_cooldown = 80000
 
-        self.atk1_damage = (5/40, 0)
-        self.atk1_damage_2nd = 20 #-----
-        self.atk2_damage = (12.5/40, 0) # total dmg 40 #rain
-        self.atk2_damage_2nd = (3/40, 5) #circling
-        self.atk3_damage = (15/25, 0) 
-        self.atk3_damage_2nd = 20 #-----
+        # self.atk1_damage = (5/40, 0)
+        # self.atk1_damage_2nd = 20 #-----
 
-        self.sp_damage = (20/35, 0) 
-        self.sp_damage_2nd = (10/42, 20) 
-        self.sp_damage_3rd = (10/15, 0) #-----
+        self.atk2_damage = (15/55, 0) # ATK 2
 
-        self.sp_atk1_damage = 0.2 # (5/25, 0) #-----
-        self.sp_atk2_damage = 0.3#(totaldmg 9*2=18) # =0.4166 (12.5/30, 0) # rain #-----
-        self.sp_atk2_damage_2nd = (5/30, 2) #(*5) #circling #------
-        self.sp_atk2_damage_3rd = (2/15, 5) #(*10) #watershot #-----
-        self.sp_atk3_damage = (15/20, 0) #10+(15*2)= #-----
+        self.atk2_damage_2nd = (1/40, 5) #ATK 3 POISION LEAVE
+        self.atk3_damage = (10/20, 0) #ATK  POISON FOLLOW
+
+        # self.atk3_damage_2nd = 20 #-----
+
+        self.sp_damage = (20/35, 0) #charge (self dmg)
+        self.sp_damage_2nd = (30,0) #(30/15, 0) # explosion 
+        self.sp_damage_3rd = (25/25, 0) # explosion up
+        self.sp_atk1_damage = (20/10, 5) # explosion real
+        # TOTAL: 80
+
+        # self.sp_atk2_damage = 0.3#(totaldmg 9*2=18) # =0.4166 (12.5/30, 0) # rain #-----
+        # self.sp_atk2_damage_2nd = (5/30, 2) #(*5) #circling #------
+        # self.sp_atk2_damage_3rd = (2/15, 5) #(*10) #watershot #-----
+        # self.sp_atk3_damage = (15/20, 0) #10+(15*2)= #-----
         # sp_atk3 heal = 20/2:instant=10, 
         # dmg_mult = 0
         # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -209,81 +214,104 @@ class Soul_Destroyer(Player):
             self.skill_4_rect = skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
 
         # Player Attack Animations Load
-        self.atk1 = load_attack( # rain
-        filepath=r"assets\attacks\water princess\1.PNG",
-        frame_width=100, 
-        frame_height=100, 
-        rows=8, 
-        columns=5, 
-        scale=WATER_PRINCESS_ATK1_SIZE, 
-        rotation=0,
-    )
+    #     self.atk1 = load_attack( # rain
+    #     filepath=r"assets\attacks\water princess\1.PNG",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=8, 
+    #     columns=5, 
+    #     scale=WATER_PRINCESS_ATK1_SIZE, 
+    #     rotation=0,
+    # )
         self.atk2 = load_attack( #circling water
-        filepath=r"assets\attacks\water princess\2.PNG",
+        filepath=r"assets\attacks\soul destroyer\atk2\slow.PNG",
         frame_width=100, 
         frame_height=100, 
-        rows=8, 
+        rows=11, 
         columns=5, 
-        scale=WATER_PRINCESS_ATK2_SIZE, 
+        scale=1, 
         rotation=0,
     )
         
-        self.atk3 = load_attack( # healing frames
-        filepath=r"assets\attacks\water princess\3.PNG",
-        frame_width=100, 
-        frame_height=100, 
-        rows=5, 
-        columns=5, 
-        scale=WATER_PRINCESS_ATK3_SIZE, 
-        rotation=0,
-    )
-        
-        self.sp = load_attack( # bubbles
-        filepath=r"assets\attacks\water princess\4.PNG",
-        frame_width=100, 
-        frame_height=100, 
-        rows=7, 
-        columns=5, 
-        scale=WATER_PRINCESS_SP_SIZE, 
-        rotation=0,
-    )
-        
-        self.sp_atk1 = load_attack(
-        filepath=r"assets\attacks\water princess\sp_atk1.PNG",
-        frame_width=100, 
-        frame_height=100, 
-        rows=5, 
-        columns=5, 
-        scale=1.5, 
-        rotation=0,
-    )
-        self.sp_atk2 = load_attack(
-        filepath=r"assets\attacks\water princess\sp_atk2.PNG",
-        frame_width=100, 
-        frame_height=100, 
-        rows=6, 
-        columns=5, 
-        scale=2, 
-        rotation=0,
-    )
-        self.sp_atk3 = load_attack(
-        filepath=r"assets\attacks\water princess\sp_atk3.PNG",
+        self.atk3 = load_attack( # silence smoke
+        filepath=r"assets\attacks\soul destroyer\atk3\silence.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=4, 
         columns=5, 
-        scale=1.2, 
+        scale=3, 
         rotation=0,
     )
-        self.sp_atk4 = load_attack(
-        filepath=r"assets\attacks\water princess\sp_atk4.PNG",
+        
+        self.sp = load_attack( # charge
+        filepath=r"assets\attacks\soul destroyer\atk4\charge.PNG",
         frame_width=100, 
         frame_height=100, 
         rows=7, 
         columns=5, 
+        scale=3, 
+        rotation=0,
+    )
+        self.sp1 = load_attack( # explode
+        filepath=r"assets\attacks\soul destroyer\atk4\explode.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=3, 
+        columns=5, 
         scale=4, 
         rotation=0,
     )
+        self.sp2 = load_attack( # explode up
+        filepath=r"assets\attacks\soul destroyer\atk4\explode2.PNG",
+        frame_width=100, 
+        frame_height=100, 
+        rows=5, 
+        columns=5, 
+        scale=4, 
+        rotation=0,
+    )
+        self.sp3 = self.load_img_frames(
+            folder=r'assets\attacks\soul destroyer\atk4\Explosion_gas_circle\Explosion_gas_circle', 
+            count=10,
+            size=4
+        )
+        
+    #     self.sp_atk1 = load_attack(
+    #     filepath=r"assets\attacks\water princess\sp_atk1.PNG",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=5, 
+    #     columns=5, 
+    #     scale=1.5, 
+    #     rotation=0,
+    # )
+    #     self.sp_atk2 = load_attack(
+    #     filepath=r"assets\attacks\water princess\sp_atk2.PNG",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=6, 
+    #     columns=5, 
+    #     scale=2, 
+    #     rotation=0,
+    # )
+    #     self.sp_atk3 = load_attack(
+    #     filepath=r"assets\attacks\water princess\sp_atk3.PNG",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=4, 
+    #     columns=5, 
+    #     scale=1.2, 
+    #     rotation=0,
+    # )
+    #     self.sp_atk4 = load_attack(
+    #     filepath=r"assets\attacks\water princess\sp_atk4.PNG",
+    #     frame_width=100, 
+    #     frame_height=100, 
+    #     rows=7, 
+    #     columns=5, 
+    #     scale=4, 
+    #     rotation=0,
+    # )
         
         self.blank_frame = [
             pygame.transform.rotozoom(
@@ -293,30 +321,30 @@ class Soul_Destroyer(Player):
     
         # assets\attacks\water princess\basic_atk1\water60000
         # assets\attacks\water princess\atk4\splash big\water400
-        self.sp1 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\atk4\spiral\water900", 42, starts_at_zero=True,
-        size=0.2)
+        # self.sp1 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\atk4\spiral\water900", 42, starts_at_zero=True,
+        # size=0.2)
 
-        self.sp2 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\atk4\splash big\water400", 16, starts_at_zero=True,
-        size=0.3)
+        # self.sp2 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\atk4\splash big\water400", 16, starts_at_zero=True,
+        # size=0.3)
 
-        self.basic_atk1 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk1\water600", 12, starts_at_zero=True,
-        rotate=90, size=0.15)
+        # self.basic_atk1 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk1\water600", 12, starts_at_zero=True,
+        # rotate=90, size=0.15)
 
-        self.basic_atk1_flipped = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk1\water600", 12, starts_at_zero=True,
-        rotate=-90, flip=True, size=0.15)
+        # self.basic_atk1_flipped = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk1\water600", 12, starts_at_zero=True,
+        # rotate=-90, flip=True, size=0.15)
 
-        self.basic_atk2 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk2\water5_", 31, starts_at_zero=True,
-        size=0.5, flip=True)
+        # self.basic_atk2 = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk2\water5_", 31, starts_at_zero=True,
+        # size=0.5, flip=True)
 
-        self.basic_atk2_flipped = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk2\water5_", 31, starts_at_zero=True,
-        size=0.6)
+        # self.basic_atk2_flipped = self.load_img_frames_numbering_method_simple(r"assets\attacks\water princess\basic_atk2\water5_", 31, starts_at_zero=True,
+        # size=0.6)
 # (fr'{folder}{str(frame_number).zfill(2)}.png')
 
         
     
 
         # Player Animations Load
-        inc = 1.3
+        inc = 1
         self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], DEFAULT_CHAR_SIZE_2*inc)
         self.player_basic_flipped = self.load_img_frames_flipped(basic_ani[0], basic_ani[1], basic_ani[2], DEFAULT_CHAR_SIZE_2*inc)
 
@@ -392,7 +420,7 @@ class Soul_Destroyer(Player):
 
         self.attacks.append(
             Attacks(
-                mana_cost=5,
+                mana_cost=0,
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
@@ -468,6 +496,10 @@ class Soul_Destroyer(Player):
 
         self.flying = False
         self.flying_duration = 0
+
+        self.using_sp = False
+        self.using_sp_duration = 0
+        self.hp_cost = 1.0
         # self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
         # self.default_atk_speed = self.basic_attack_animation_speed
 
@@ -528,7 +560,10 @@ class Soul_Destroyer(Player):
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            # If can't cast skills, still allow basic attacks
+            # If can't cast skills, still allow basic attacks only when silenced (not frozen)
+            # If frozen, block everything immediately
+            if getattr(self, 'frozen', False):
+                return
             if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
                 return
         if not self.special_active:
@@ -555,6 +590,23 @@ class Soul_Destroyer(Player):
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
+                        self.single_target()
+                        target, target_detected = self.face_selective_target()
+                        attack = Attack_Display(
+                            x=target,
+                            y=self.target.rect.centery + 15,
+                            frames=self.atk2,
+                            frame_duration=72.72, # 55 frames, 4 seconds
+                            repeat_animation=1,
+                            dmg=self.atk2_damage[0],
+                            final_dmg=self.atk2_damage[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk3_sound , None, None),
+                            stop_movement=(True, 3, 2, 0.3),
+                            follow=(False, target_detected)
+                            )
+                        attack_display.add(attack)
                         
                         self.mana -= self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
@@ -572,12 +624,12 @@ class Soul_Destroyer(Player):
                     if self.mana >= self.attacks[2].mana_cost and self.attacks[2].is_ready():
                         attack = Attack_Display(
                                 x=self.rect.centerx,
-                                y=self.rect.centery + 100,
+                                y=self.rect.centery + 10,
                                 frames=self.atk3,
-                                frame_duration=100,
-                                repeat_animation=1,
+                                frame_duration=125, # 5 second silence total =+ ?? 3s for spawned
+                                repeat_animation=2,
                                 speed=0,
-                                dmg=self.atk3_damage_2nd,
+                                dmg=self.atk3_damage[0],
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
@@ -585,40 +637,35 @@ class Soul_Destroyer(Player):
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
                                 follow=(False, True), # some bug happended while i code the attack
-                                heal=True,
-                                self_moving=True,
-                                self_kill_collide=True,
-                                follow_offset=(0, 70)
+                                follow_offset=(0, 70),
+                                stop_movement=(True, 4, 1),
+                                periodic_spawn={
+                                                'attack_kwargs': {
+                                                    # 'x': width+100,
+                                                    # 'y': self.rect.centery + 10,
+                                                    'frames': self.atk3,
+                                                    'frame_duration': 150,
+                                                    'repeat_animation': 1,
+                                                    # 'speed': -7 if self.facing_right else 7,
+                                                    'dmg': self.atk2_damage_2nd[0],
+                                                    'final_dmg': 0,
+                                                    'who_attacks': self,
+                                                    'who_attacked': self.enemy,
+                                                    'sound': (False, self.atk1_sound, None, None),
+                                                    'stop_movement': (True, 4, 1)
+                                                    # 'delay': (True, 300),
+                                                },
+                                                'interval': 500,
+                                                'repeat_count': 10, # 20 total smoke
+                                                'use_attack_pos': True,
+                                            }
                                 )
                         attack_display.add(attack)
-
-                        # attack2 = Attack_Display(
-                        #         x=self.rect.centerx,
-                        #         y=self.rect.centery + 100,
-                        #         frames=self.atk3,
-                        #         frame_duration=100,
-                        #         repeat_animation=1,
-                        #         speed=0,
-                        #         dmg=self.atk3_damage[0],
-                        #         final_dmg=self.atk3_damage[1],
-                        #         who_attacks=self,
-                        #         who_attacked=self.enemy,
-                        #         delay=(True, 400),
-                        #         sound=(True, self.atk3_sound , None, None),
-                        #         follow_self=True,
-                        #         follow=(False, True),
-                        #         heal=True,
-                        #         self_moving=False,
-                        #         self_kill_collide=False,
-                        #         follow_offset=(0, 70),
-                        #         consume_mana=[True, self.atk3_mana_consume]
-                        #         )
-                        # attack_display.add(attack2)
                         
                         self.mana -= self.attacks[2].mana_cost
                         self.attacks[2].last_used_time = current_time
                         # self.running = False
-                        self.attacking3 = True
+                        # self.attacking3 = True
                         # self.player_atk3_index = 0
                         # self.player_atk3_index_flipped = 0
 
@@ -632,34 +679,42 @@ class Soul_Destroyer(Player):
                     if self.mana >=  self.attacks[3].mana_cost and self.attacks[3].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                #         for i in [
-                # #    0-frame  1-dur   2-pos      3-stun     4-delay     5-hitbox scale  6-cnsm mana 7-dmg/fnldmg
-                #      (self.sp, 100, (130, -100), (False, 0), (True, 200), (0.55, 0.5), True, self.sp_damage),#bubble
-                #      (self.sp1, 40, (120, 60), (True, 60), (True, 50), (0.3, 0.5), False, self.sp_damage_2nd),#spiral
-                #      (self.sp2, 80, (120, 60), (True, 5), (True, 1500), (0.3, 0.5), False, self.sp_damage_3rd)#splash
-                #         ]:
-                #             attack = Attack_Display(
-                #                 x=self.rect.centerx + i[2][0] if self.facing_right else self.rect.centerx - i[2][0], # in front of him
-                #                 y=self.rect.centery + i[2][1],
-                #                 frames=i[0],
-                #                 frame_duration=i[1],
-                #                 repeat_animation=1,
-                #                 speed=5 if self.facing_right else -5,
-                #                 dmg=i[7][0],
-                #                 final_dmg=i[7][1],
-                #                 who_attacks=self,
-                #                 who_attacked=self.enemy,
-                #                 sound=(True, self.sp_sound, None, None),
-                #                 stun=(i[3][0], i[3][1]),
-                #                 delay=(i[4][0], i[4][1]),
-                #                 hitbox_scale_x=i[5][0],
-                #                 hitbox_scale_y=i[5][1], 
-                #                 consume_mana=[i[6], self.atk4_mana_consume],
-                #                 stop_movement=(True, 1, 2)
+                        # using_sp = True
+                        self.using_sp = True
+                        self.using_sp_duration = pygame.time.get_ticks() + 1
+                        self.lifesteal -= self.hp_cost
+                        for i in [
+                #    0-frame  1-dur   2-pos      3-stun     4-delay     5-hitbox scale  6-trgt&mvng 7-dmg/fnldmg
+                    (self.sp, 30, (0, 10), (False, 0), (False, 0), (0.55, 0.5), True, self.sp_damage),#charge 1 
+                    (self.sp3, 120, (0, 10), (False, 0), (True, 700), (0.4, 0.4), None, self.sp_atk1_damage),#explode real 4
+                    (self.sp1, 50, (0, 10), (False, 0), (True, 1050-270), (0.4, 0.5), 'hit', self.sp_damage_2nd),#explode 2
+                    (self.sp2, 80, (0, -80), (False, 0), (True, 1050-270+200), (0.4, 0.6), None, self.sp_damage_3rd),#explode up 3
+                    
+                        ]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + i[2][0] if self.facing_right else self.rect.centerx - i[2][0], # in front of him
+                                y=self.rect.centery + i[2][1],
+                                frames=i[0],
+                                frame_duration=i[1],
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=i[7][0],
+                                final_dmg=i[7][1],
+                                who_attacks=self,
+                                who_attacked=self.enemy if i[6] != True else self,
+                                moving=False if i[6] != 'hit' else True,
+                                sound=(True, self.sp_sound, None, None),
+                                stun=(i[3][0], i[3][1]),
+                                delay=(i[4][0], i[4][1]),
+                                hitbox_scale_x=i[5][0],
+                                hitbox_scale_y=i[5][1], 
+                                # consume_mana=[i[6], self.atk4_mana_consume],
+                                stop_movement=(False, 1, 2)
                                 
-                #                 ) # Replace with the target
-                #             attack_display.add(attack)
+                                ) # Replace with the target
+                            attack_display.add(attack)
 
+                        # self.lifesteal += 0.5
 
                         self.mana -=  self.attacks[3].mana_cost
                         self.attacks[3].last_used_time = current_time
@@ -677,31 +732,6 @@ class Soul_Destroyer(Player):
             if not self.is_dead():
                 if basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks[4].is_ready():
-                        # for i in [
-                        #     (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5),
-                        #     (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage),
-                        #     (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5)
-                            
-                        #     ]:
-                        #     attack = Attack_Display(
-                        #         x=self.rect.centerx + i[4][0] if self.facing_right else self.rect.centerx - i[4][0],
-                        #         y=self.rect.centery + i[4][1],
-                        #         frames=i[1] if self.facing_right else i[2],
-                        #         frame_duration=i[3],
-                        #         repeat_animation=1,
-                        #         speed=0,
-                        #         dmg=i[5],
-                        #         final_dmg=0,
-                        #         who_attacks=self,
-                        #         who_attacked=self.enemy,
-
-                        #         sound=(True, self.basic_sound, None, None),
-                        #         delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
-                        #         moving=True,
-                        #         hitbox_scale_x=i[4][2],
-                        #         hitbox_scale_y=i[4][3]
-                        #         )
-                        #     attack_display.add(attack)
                         attack = Attack_Display(
                                 x=self.rect.centerx + 110 if self.facing_right else self.rect.centerx - 110,
                                 y=self.rect.centery + 10,
@@ -755,40 +785,7 @@ class Soul_Destroyer(Player):
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
-                        # for i in [
-                        #     (80, 40, 100, self.sp_atk1_damage, 0, self.atk1_sound, False, 0.2, 0.4, False, False, True, True, (self.sp_atk1, self.sp_atk1)),
-                        #     (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 1.2, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
-                        # ]:
-                        #     attack = Attack_Display(
-                        #         x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
-                        #         y=self.rect.centery + i[1],
-                        #         frames=i[13][0] if self.facing_right else i[13][1],
-                        #         frame_duration=i[2],
-                        #         repeat_animation=1,
-                        #         speed=0,
-                        #         dmg=i[3],
-                        #         final_dmg=i[4],
-                        #         who_attacks=self,
-                        #         who_attacked=self.enemy,
-                        #         delay=(True, 300),
-                        #         sound=(True, i[5], None, None),
-
-                        #         moving=i[6],
-                        #         hitbox_scale_x=i[7],
-                        #         hitbox_scale_y=i[8],
-
-                        #         heal=i[9],
-                        #         heal_enemy=i[10],
-
-                        #         continuous_dmg=i[11],
-                        #         stun=(i[11], 40),
-
-                        #         consume_mana=[i[12], self.atk1_special_mana_consume],
-
-                        #         stop_movement=(True, 1, 2)
-
-                        #     )
-                        #     attack_display.add(attack)
+                        
 
                         # # self.mana -= self.attacks[0].mana_cost
                         # self.attacks_special[0].last_used_time = current_time
@@ -813,92 +810,26 @@ class Soul_Destroyer(Player):
                     if self.mana >= self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [(300,True), (1000,False)]: # WATER RAIN
-                            attack = Attack_Display(
-                                x=self.rect.centerx + 350 if self.facing_right else self.rect.centerx -350,
-                                y=self.rect.centery,
-                                frames=self.atk2_rain if self.facing_right else self.atk2_rain_flipped,
-                                frame_duration=80,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.sp_atk2_damage,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=False,
-                                delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
-                                hitbox_scale_x=0.4
-                                ,hitbox_scale_y=0.4,
-                                consume_mana=[i[1], self.atk2_special_mana_consume]
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
-                        for i in [(300,170), (800, 340), (1300,0), (1800, 680), (2300, 510)]:
-                            attack = Attack_Display( # CIRCLING WATERS
-                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
-                                y=self.rect.centery + 50,
-                                frames=self.sp_atk2,
-                                frame_duration=80,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.sp_atk2_damage_2nd[0],
-                                final_dmg=self.sp_atk2_damage_2nd[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=False,
-                                delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
-                                hitbox_scale_x=0.4
-                                ,hitbox_scale_y=0.4,
-                                stop_movement=(True, 1, 1)
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
-                        for i in [(300,510), (1300, 680), (1800,0), (2300, 340), (2800, 170)]:
-                            attack = Attack_Display( # WATER SHOT
-                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
-                                y=self.rect.centery + 50,
-                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
-                                frame_duration=50,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.sp_atk2_damage_3rd[0],
-                                final_dmg=self.sp_atk2_damage_3rd[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=False,
-                                delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
-                                hitbox_scale_x=0.7
-                                ,hitbox_scale_y=0.7,
-                                stop_movement=(True, 1, 1)
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
-                        for i in [(600,680), (1600, 510), (1900,0), (2200, 170), (2500, 340)]:
-                            attack = Attack_Display( # WATER SHOT
-                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
-                                y=self.rect.centery + 50,
-                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
-                                frame_duration=50,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.sp_atk2_damage_3rd[0],
-                                final_dmg=self.sp_atk2_damage_3rd[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=False,
-                                delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
-                                hitbox_scale_x=0.7
-                                ,hitbox_scale_y=0.7,
-                                stop_movement=(True, 1, 1)
-                                ) # Replace with the target
-                            attack_display.add(attack)
+                        self.single_target()
+                        target, target_detected = self.face_selective_target()
+                        attack = Attack_Display(
+                            x=target,
+                            y=self.target.rect.centery + 15,
+                            frames=self.atk2,
+                            frame_duration=109.09, # 55 frames, 6 seconds
+                            repeat_animation=1,
+                            dmg=self.atk2_damage[0]*1.2,
+                            final_dmg=self.atk2_damage[1]*1.2,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            sound=(True, self.atk3_sound , None, None),
+                            stop_movement=(True, 3, 2, 0.3),
+                            follow=(False, target_detected)
+                            )
+                        attack_display.add(attack)
 
                         
-                        # self.mana -= self.attacks[1].mana_cost
+                        self.mana -= self.attacks[1].mana_cost
                         self.attacks_special[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
@@ -914,12 +845,12 @@ class Soul_Destroyer(Player):
                     if self.mana >= self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
                         attack = Attack_Display(
                                 x=self.rect.centerx,
-                                y=self.rect.centery + 100,
+                                y=self.rect.centery + 10,
                                 frames=self.atk3,
-                                frame_duration=100,
-                                repeat_animation=1,
+                                frame_duration=125, # 20frames, 10 second silence total =+ ?? 3s for spawned
+                                repeat_animation=3,
                                 speed=0,
-                                dmg=self.atk3_damage_2nd/2,
+                                dmg=self.atk3_damage[0],
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
@@ -927,65 +858,37 @@ class Soul_Destroyer(Player):
                                 sound=(True, self.atk3_sound , None, None),
                                 follow_self=True,
                                 follow=(False, True), # some bug happended while i code the attack
-                                heal=True,
-                                self_moving=True,
-                                self_kill_collide=True,
-                                follow_offset=(0, 70)
+                                follow_offset=(0, 70),
+                                stop_movement=(True, 4, 1),
+                                periodic_spawn={
+                                                'attack_kwargs': {
+                                                    # 'x': width+100,
+                                                    # 'y': self.rect.centery + 10,
+                                                    'frames': self.atk3,
+                                                    'frame_duration': 150,
+                                                    'repeat_animation': 1,
+                                                    # 'speed': -7 if self.facing_right else 7,
+                                                    'dmg': self.atk2_damage_2nd[0],
+                                                    'final_dmg': 0,
+                                                    'who_attacks': self,
+                                                    'who_attacked': self.enemy,
+                                                    'sound': (False, self.atk1_sound, None, None),
+                                                    'stop_movement': (True, 4, 1)
+                                                    # 'delay': (True, 300),
+                                                },
+                                                'interval': 500,
+                                                'repeat_count': 20, # 40 total smoke
+                                                'use_attack_pos': True,
+                                            }
                                 )
                         attack_display.add(attack)
-
-                        attack2 = Attack_Display(
-                                x=self.rect.centerx,
-                                y=self.rect.centery + 100,
-                                frames=self.atk3,
-                                frame_duration=100,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=0,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
-                                follow_self=True,
-                                follow=(False, True),
-                                heal=True,
-                                self_moving=False,
-                                self_kill_collide=False,
-                                follow_offset=(0, 70),
-                                consume_mana=[True, self.atk3_special_mana_consume]
-                                )
-                        attack_display.add(attack2)
-
-                        attack3 = Attack_Display(
-                                x=self.rect.centerx,
-                                y=self.rect.centery + 100,
-                                frames=self.sp_atk3,
-                                frame_duration=120,
-                                repeat_animation=2,
-                                speed=0,
-                                dmg=self.sp_atk3_damage[0],
-                                final_dmg=self.sp_atk3_damage[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
-                                follow_self=True,
-                                follow=(False, True),
-                                heal=True,
-                                self_moving=False,
-                                self_kill_collide=False,
-                                follow_offset=(0, 70),
-                                consume_mana=[False, self.atk3_mana_consume]
-                                )
-                        attack_display.add(attack3)
                         
-                        # self.mana -= self.attacks[2].mana_cost
+                        self.mana -= self.attacks[2].mana_cost
                         self.attacks_special[2].last_used_time = current_time
-                        self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                        # self.running = False
+                        # self.attacking3 = True
+                        # self.player_atk3_index = 0
+                        # self.player_atk3_index_flipped = 0
                         
                         # print("Attack executed")
                     else:
@@ -996,13 +899,17 @@ class Soul_Destroyer(Player):
                     if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
                         # Create an attack
                         # print("Z key pressed")
+                        # using_sp = True
+                        # self.using_sp = True
+                        # self.using_sp_duration = pygame.time.get_ticks() + 1
+                        # self.lifesteal -= self.hp_cost
                         for i in [
-                #    0-frame  1-dur   2-pos      3-stun     4-delay     5-hitbox scale  6-cnsm mana 7-dmg/fnldmg 8-moving
-                     (self.sp, 100, (130, -100), (False, 0), (True, 200), (0.55, 0.5), True, self.sp_damage, (False,0)),#bubble
-                     (self.sp_atk4, 50, (130, -100), (False, 0), (True, 200), (0.55, 0.5), True, self.sp_damage, (False,0)),#bubble2ndfront
-                     (self.sp_atk4,50,(550, -100),(False, 0),(True, 1600), (0.55, 0.5), False, self.sp_damage, (False,0)),#bubble2ndend
-                     (self.sp1, 40, (120, 60), (True, 60), (True, 50), (0.3, 0.5), False, self.sp_damage_2nd, (True, 4.5)),#spiral
-                     (self.sp2, 80, (550, 60), (True, 5), (True, 1500), (0.3, 0.5), False, self.sp_damage_3rd, (False,0))#splash
+                #    0-frame  1-dur   2-pos      3-stun     4-delay     5-hitbox scale  6-trgt&mvng 7-dmg/fnldmg
+                    (self.sp, 30, (0, 10), (False, 0), (False, 0), (0.55, 0.5), True, self.sp_damage),#charge 1 
+                    (self.sp3, 120, (0, 10), (False, 0), (True, 700), (0.4, 0.4), None, self.sp_atk1_damage),#explode real 4
+                    (self.sp1, 50, (0, 10), (False, 0), (True, 1050-270), (0.4, 0.5), 'hit', self.sp_damage_2nd),#explode 2
+                    (self.sp2, 80, (0, -80), (False, 0), (True, 1050-270+200), (0.4, 0.6), None, self.sp_damage_3rd),#explode up 3
+                    
                         ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[2][0] if self.facing_right else self.rect.centerx - i[2][0], # in front of him
@@ -1010,39 +917,20 @@ class Soul_Destroyer(Player):
                                 frames=i[0],
                                 frame_duration=i[1],
                                 repeat_animation=1,
-                                speed=i[8][1] if self.facing_right else -i[8][1],
+                                speed=0,
                                 dmg=i[7][0],
                                 final_dmg=i[7][1],
                                 who_attacks=self,
-                                who_attacked=self.enemy,
+                                who_attacked=self.enemy if i[6] != True else self,
+                                moving=False if i[6] != 'hit' else True,
                                 sound=(True, self.sp_sound, None, None),
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
                                 hitbox_scale_x=i[5][0],
-                                hitbox_scale_y=i[5][1],
-                                consume_mana=[i[6], self.atk4_special_mana_consume/2],
-                                moving=i[8][0],
-                                stop_movement=(True, 1, 2)
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
-                        for i in [(100,130*1.23), (300, 191.1*1.23), (700,275*1.23), (1100, 369.5*1.23), (1500, 550*1.23)]:
-                            attack = Attack_Display( # WATER SHOT
-                                x=self.rect.centerx + i[1] if self.facing_right else self.rect.centerx -i[1],
-                                y=self.rect.centery + 30,
-                                frames=self.watershot if not self.facing_right else self.watershot_flipped,
-                                frame_duration=40,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.sp_atk2_damage_3rd[1],
-                                final_dmg=self.sp_atk2_damage_3rd[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=True,
-                                delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
-                                hitbox_scale_x=0.7
-                                ,hitbox_scale_y=0.7
+                                hitbox_scale_y=i[5][1], 
+                                # consume_mana=[i[6], self.atk4_mana_consume],
+                                stop_movement=(False, 1, 2)
+                                
                                 ) # Replace with the target
                             attack_display.add(attack)
 
@@ -1061,32 +949,26 @@ class Soul_Destroyer(Player):
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
-                        for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5,(False, 1, 1)),
-                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage,(False, 1, 1)),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5,(True, 1, 1))
-                            
-                            ]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + i[4][0] if self.facing_right else self.rect.centerx - i[4][0],
-                                y=self.rect.centery + i[4][1],
-                                frames=i[1] if self.facing_right else i[2],
-                                frame_duration=i[3],
+                        attack = Attack_Display(
+                                x=self.rect.centerx + 110 if self.facing_right else self.rect.centerx - 110,
+                                y=self.rect.centery + 10,
+                                frames=self.blank_frame,
+                                frame_duration=600,
                                 repeat_animation=1,
                                 speed=0,
-                                dmg=i[5],
+                                dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
 
                                 sound=(True, self.basic_sound, None, None),
-                                delay=(True, self.basic_attack_animation_speed * (i[0] / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                                delay=(True, self.basic_attack_animation_speed * (300    / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
                                 moving=True,
-                                hitbox_scale_x=i[4][2],
-                                hitbox_scale_y=i[4][3],
-                                stop_movement=i[6]
+                                hitbox_scale_x=0.26,
+                                hitbox_scale_y=0.6,
+                                is_basic_attack=True
                                 )
-                            attack_display.add(attack)
+                        attack_display.add(attack)
                         self.mana -= 0
                         self.attacks[4].last_used_time = current_time
                         self.running = False
@@ -1133,7 +1015,7 @@ class Soul_Destroyer(Player):
             # pass
             # self.atk3_animation()
         elif self.sp_attacking:
-            self.sp_animation()
+            self.sp_animation(-5)
         elif self.basic_attacking:
             self.basic_animation()
         else:
@@ -1156,7 +1038,7 @@ class Soul_Destroyer(Player):
         self.rect.midbottom = (self.x_pos, self.y_pos)
         # shift pos
         self.rect.y += self.y_visual_offset
-        self.hitbox_rect.y -= self.y_visual_offset*2
+        self.hitbox_rect.y -= self.y_visual_offset*1.4
 
         if not self.is_dead():
             if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
@@ -1188,7 +1070,7 @@ class Soul_Destroyer(Player):
         else:
             self.health = 0
 
-        if not DISABLE_SPECIAL_REDUCE:
+        if not global_vars.DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
@@ -1204,9 +1086,12 @@ class Soul_Destroyer(Player):
 
 
         if self.flying:
-            # self.basic_attack_animation_speed = self.haste_atk(self.get_current_atk_speed, self.haste_value)
             if pygame.time.get_ticks() >= self.flying_duration:
                 self.flying = False
-                # self.basic_attack_animation_speed = self.get_current_atk_speed
+        if self.using_sp:
+            if pygame.time.get_ticks() >= self.using_sp_duration:
+                self.lifesteal += self.hp_cost
+                self.using_sp = False
+                
         
         super().update()

@@ -462,7 +462,10 @@ class Fire_Wizard(Player):
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            # If can't cast skills, still allow basic attacks
+            # If can't cast skills, still allow basic attacks only when silenced (not frozen)
+            # If frozen, block everything immediately
+            if getattr(self, 'frozen', False):
+                return
             if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
                 return
         
@@ -520,7 +523,7 @@ class Fire_Wizard(Player):
                             who_attacked=self.enemy,
                             delay=(True, 800),
                             sound=(True, self.atk2_sound, None, None),
-                            stop_movement=(True,4,1)
+                            # stop_movement=(True,4,1)
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
@@ -922,7 +925,7 @@ class Fire_Wizard(Player):
         else:
             self.health = 0
 
-        if not DISABLE_SPECIAL_REDUCE:
+        if not global_vars.DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:

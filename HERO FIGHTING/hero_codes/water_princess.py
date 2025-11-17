@@ -557,7 +557,10 @@ class Water_Princess(Player):
                     self.last_atk_time = current_time  # Update the last jump time
             
         if not self.can_cast():
-            # If can't cast skills, still allow basic attacks
+            # If can't cast skills, still allow basic attacks only when silenced (not frozen)
+            # If frozen, block everything immediately
+            if getattr(self, 'frozen', False):
+                return
             if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
                 return
         if not self.special_active:
@@ -1299,7 +1302,7 @@ class Water_Princess(Player):
         else:
             self.health = 0
 
-        if not DISABLE_SPECIAL_REDUCE:
+        if not global_vars.DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:

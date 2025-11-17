@@ -1636,7 +1636,205 @@ def create_bot(selected_hero, player_type, enemy):
                         'atk_range': 70,
                         'min_cast_range': 30
                     }
+                },
+
+                'Soul_Destroyer': {
+                    'default_timer': 1,
+                    'timer_slow_decrease': 2,
+
+                    'cast_special_threshold': self.get_special_threshold,
+                    'special_if_sp_skill_ready': False,
+                    'special_conditions': [False, 0],
+
+                    'special_threshold': {
+                        'health_high_prio': self.max_health * 0.4,
+                        'low_prio': 0.01,
+                        'high_prio': 0.01
+                    },
+
+                    'stuck_logic': {
+                        'threshold': 100,
+                        'detect': 200,
+                        'duration': 0
+                    },
+
+                    'edge_escape_logic': {
+                        'duration': 1.5,
+                        'distance': 225
+                    },
+
+                    'took_alot_dmg': {
+                        'damage_interval': 0.3,
+                        'damage_threshold': 300.5,
+                        'damage_taken_logic': 1,
+                    },
+                    
+                    'panic_logic': {
+                        'threshold': 0.01,
+                        'cooldown': 4
+                    },
+
+                    'cast_special_threshold_distance': 500,
+
+                    'random_unstuck': 0.0001,
+                    'random_edge_escape': 0.000001,
+
+                    'decide_logic': {
+                        'chase_distance': 800,
+                        'panic_chase_distance': 100,
+                        'escape_distance': 300
+                    },
+                    
+                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
+                        'skill_1': {
+                            'cast_range': 500,
+                            'min_cast_range': 10,
+                            'require_all': False,
+                            'conditions': [
+                                # Casual buff
+                                lambda bot: (not bot.special_active and
+                                    not bot.flying
+                                    )
+                            ]
+                        },
+                            
+                        'skill_2': {
+                            'cast_range': 1050,
+                            'min_cast_range': 50,
+                            'require_all': False,
+                            'conditions': [
+                                # Trick skill while buffed
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    not bot.player.sp_attacking
+                                ),
+                                # Prefer not to buff
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance <= 500 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(70)
+                                ),
+                                # If far, try to shoot, and if enemy is casting
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 500 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(90)
+                                ),
+                                # Shoot if possible and enemy is while attacking
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.enemy_distance >= 100 and
+                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3) and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(90)
+                                ),
+
+                                #sp
+                                # Trick skill while buffed
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 100
+                                ),
+                                # Casual skill
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance >= 100 and
+                                    bot.is_facing_from_enemy() and
+                                    botchance.update(80)
+                                ),
+                                # Very casual skill, if enemy is casting
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.is_facing_from_enemy()
+                                ),
+
+                                
+                            ]
+                        },
+                            
+                        'skill_3': {
+                            'cast_range': 400,
+                            'min_cast_range': 100,
+                            'not_require_facing_enemy': True,
+                            'require_all': False,
+                            'conditions': [
+                                # Try to hit enemy
+                               lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.enemy_distance <= 300 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(80)
+                                ),
+                                # Slightly far, will try to hit
+                                lambda bot: (not bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    bot.enemy_distance <= 5000 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(90)
+                                ),
+
+                                #sp
+                                # Cast before enemy go past through back
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(80)
+                                ),
+                                # Not preferably far but possible
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() >= 50 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(60)
+                                ),
+                                # Will cast anyways
+                                lambda bot: (bot.special_active and
+                                    bot.bot_hp_percent() < 50 and
+                                    not bot.player.sp_attacking and
+                                    bot.is_facing_from_enemy()
+                                ),
+                                
+                            ]
+                        },
+                        'skill_4': {
+                            'cast_range': 20,
+                            'min_cast_range': 2,
+                            'require_all': False,
+                            'conditions': [
+                                True
+                                # Casual skill, casts if enemy is using skill (can't be avoided)
+                                # lambda bot: (not bot.special_active and
+                                #     (bot.bot_hp_percent() < 50) or
+                                #      bot.bot_hp_percent() < 20
+                                # ),
+                                # lambda bot: (not bot.special_active and
+                                #     bot.bot_hp_percent() < 20
+                                # ),
+                                # lambda bot: (not bot.special_active and
+                                #     botchance.update(60)
+                                # ),
+                                # #sp logic
+                                # # Enemy is gone
+                                # lambda bot: (bot.special_active and
+                                #     bot.enemy_distance >= 100
+                                # ),
+                            ]
+                        }
+                    },
+                    'basic_attack': {
+                        'atk_range': 120,
+                        'min_cast_range': 30
+                    }
                 }
+            
             }
 
             if selected_hero.__name__ == 'Fire_Wizard' and 'Fire_Wizard' in self.hero_data:
@@ -1653,6 +1851,8 @@ def create_bot(selected_hero, player_type, enemy):
                 self.hero_bot = 'Forest_Ranger'
             elif selected_hero.__name__ == 'Onre' and 'Onre' in self.hero_data:
                 self.hero_bot = 'Onre'
+            elif selected_hero.__name__ == 'Soul_Destroyer' and 'Soul_Destroyer' in self.hero_data:
+                self.hero_bot = 'Soul_Destroyer'
             else:
                 # self.hero.bot = selected_hero.__name__
                 self.hero_bot = 'Fire_Wizard' # default

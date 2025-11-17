@@ -614,12 +614,12 @@ def game(bg=None):
                 
 
             if keys[main.pygame.K_4] and not keys[main.pygame.K_LALT]: # disable special
-                main.DISABLE_SPECIAL_REDUCE = False
+                global_vars.DISABLE_SPECIAL_REDUCE = False
             elif keys[main.pygame.K_4] and keys[main.pygame.K_LALT]: # special on (alt)
-                main.DISABLE_SPECIAL_REDUCE = True
+                global_vars.DISABLE_SPECIAL_REDUCE = True
 
             if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT]:
-                main.DISABLE_SPECIAL_REDUCE = True
+                global_vars.DISABLE_SPECIAL_REDUCE = True
                 main.hero1.special = 0.01
                 main.hero2.special = 0.01
 
@@ -630,11 +630,11 @@ def game(bg=None):
                 
             '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
-            if FREEZE_SPECIAL: 
-                main.hero1.special_active = True
-                main.hero2.special_active = True
-                main.hero1.special += 0.001
-                main.hero2.special += 0.001
+            # if FREEZE_SPECIAL: 
+            #     main.hero1.special_active = True
+            #     main.hero2.special_active = True
+            #     main.hero1.special += 0.001
+            #     main.hero2.special += 0.001
             # elsed:
             #     pass
 

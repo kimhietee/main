@@ -673,6 +673,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     'damaged': False,
                     'following': False
                 }
+        # Track which enemies this attack actually affected (for symmetric removal)
+        self.affected_enemies = set()
         self.moving = moving
         self.heal = heal
         self.continuous_dmg = continuous_dmg
@@ -763,13 +765,19 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # remove only this attack's status from all affected enemies
         if self.stop_movement[0]:
             status_type = self.stop_movement[1]
-            # remove only this source from all enemies
-            # who_attacked is a single enemy, not a list
-            if self.who_attacked is not None:
+            # iterate the set of enemies this attack applied the status to
+            for enemy in list(getattr(self, 'affected_enemies', set())):
+                if enemy is None:
+                    continue
                 try:
-                    self.who_attacked.remove_movement_status(status_type, source=self)
-                except:
+                    enemy.remove_movement_status(status_type, source=self)
+                except Exception:
                     pass  # Enemy might have already been removed
+            # clear the set to avoid double removal
+            try:
+                self.affected_enemies.clear()
+            except Exception:
+                pass
         # finally kill the sprite
         self.kill()
 
@@ -913,8 +921,26 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         attack_display.add(new)
                 else:
                     ak = spec.get('attack_kwargs', {}).copy()
+                    # pick the first actual colliding enemy (the one that triggered the spawn)
+                    collided_enemy = colliding_enemies[0] if len(colliding_enemies) > 0 else None
                     if spec.get('use_attack_onhit_pos', True):
                         ak['x'], ak['y'] = self.rect.center
+                    # If we have an actual collided enemy, ensure the spawned attack targets that enemy
+                    if collided_enemy is not None:
+                        try:
+                            ak['who_attacked'] = collided_enemy
+                        except Exception:
+                            pass
+                        # If follow_offset exists, adjust its vertical component to use the collided enemy's hitbox
+                        fo = ak.get('follow_offset', None)
+                        if fo and isinstance(fo, (tuple, list)) and len(fo) >= 2:
+                            try:
+                                fx = fo[0]
+                                max_h = collided_enemy.hitbox_rect.height
+                                fy = random.randint(40, max_h) if max_h > 40 else fo[1]
+                                ak['follow_offset'] = (fx, fy)
+                            except Exception:
+                                pass
                     attack_display.add(Attack_Display(**ak))
                 self._has_spawned_on_collide = True
 
@@ -944,6 +970,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     if enemy is not None:
                         try:
                             enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
+                            try:
+                                self.affected_enemies.add(enemy)
+                            except Exception:
+                                pass
                         except:
                             pass
                 self.status_applied = True
@@ -1115,15 +1145,23 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                         if self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
                             if self.heal_enemy:
                                 # Heal all colliding enemies
-                                for enemy in colliding_enemies:
-                                    if enemy is None or enemy not in self.enemy_states:
-                                        continue
-                                    enemy_state = self.enemy_states[enemy]
-                                    if not enemy_state['damaged']:
+                                if self.continuous_dmg:
+                                    for enemy in colliding_enemies:
+                                        if enemy is None or enemy not in self.enemy_states:
+                                            continue
                                         self._check_and_set_follow(enemy)
                                         enemy.take_heal(self.dmg)
                                         self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-                                        enemy_state['damaged'] = True
+                                else:
+                                    for enemy in colliding_enemies:
+                                        if enemy is None or enemy not in self.enemy_states:
+                                            continue
+                                        enemy_state = self.enemy_states[enemy]
+                                        if not enemy_state['damaged']:
+                                            self._check_and_set_follow(enemy)
+                                            enemy.take_heal(self.dmg)
+                                            self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                            enemy_state['damaged'] = True
                             else:
                                 if not self.damaged:
                                     self._check_and_set_follow(self.who_attacks) if self.who_attacks in self.enemy_states else None
@@ -1133,15 +1171,23 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     else:#normal stuff
                         if self.heal_enemy:
                             # Heal all colliding enemies
-                            for enemy in colliding_enemies:
-                                if enemy is None or enemy not in self.enemy_states:
-                                    continue
-                                enemy_state = self.enemy_states[enemy]
-                                if not enemy_state['damaged']:
+                            if self.continuous_dmg:
+                                for enemy in colliding_enemies:
+                                    if enemy is None or enemy not in self.enemy_states:
+                                        continue
                                     self._check_and_set_follow(enemy)
                                     enemy.take_heal(self.dmg)
                                     self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
-                                    enemy_state['damaged'] = True
+                            else:
+                                for enemy in colliding_enemies:
+                                    if enemy is None or enemy not in self.enemy_states:
+                                        continue
+                                    enemy_state = self.enemy_states[enemy]
+                                    if not enemy_state['damaged']:
+                                        self._check_and_set_follow(enemy)
+                                        enemy.take_heal(self.dmg)
+                                        self.who_attacks.take_special(self.dmg * SPECIAL_MULTIPLIER)
+                                        enemy_state['damaged'] = True
                         else:
                             if not self.damaged and self.hitbox_rect.colliderect(self.who_attacks.hitbox_rect):
                                 self._check_and_set_follow(self.who_attacks) if self.who_attacks in self.enemy_states else None
@@ -1213,13 +1259,19 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             continue
                         try:
                             enemy.movement_status(self.stop_movement[1], source=self, slow_rate=self.stop_movement[3])
-                        except:
+                            # record that this attack affected that enemy so we can remove symmetrically
+                            try:
+                                self.affected_enemies.add(enemy)
+                            except Exception:
+                                pass
+                        except Exception:
                             pass
                     # type 1 
                     # run code below if type == 1
                     if self.stop_movement[2] == 1:
                         # removes status from enemies that are no longer colliding
-                        for enemy in self.who_attacked:
+                        # iterate over the enemies we actually applied the status to
+                        for enemy in list(getattr(self, 'affected_enemies', set())):
                             if enemy is None:
                                 continue
                             if enemy not in colliding_enemies and enemy in self.enemy_states:
@@ -1227,18 +1279,29 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                                     enemy.remove_movement_status(self.stop_movement[1], source=self)
                                 except:
                                     pass
+                                # forget that we applied to this enemy
+                                try:
+                                    self.affected_enemies.discard(enemy)
+                                except:
+                                    pass
 
             if self.current_repeat >= self.repeat_animation:
                 if self.stop_movement[0]:
                     status_type = self.stop_movement[1]
                     mode = self.stop_movement[2]
-                    if mode in (1, 2, 3):  # remove if type 2 or 3, added type 1 just in case type 1 status removal didn't work.
-                        for enemy in self.who_attacked:
-                            if enemy is not None:
-                                try:
-                                    enemy.remove_movement_status(status_type, source=self)
-                                except:
-                                    pass
+                    if mode in (1, 2, 3):  # remove for modes that persist until attack end
+                        # remove status only from enemies this attack actually affected
+                        for enemy in list(getattr(self, 'affected_enemies', set())):
+                            if enemy is None:
+                                continue
+                            try:
+                                enemy.remove_movement_status(status_type, source=self)
+                            except Exception:
+                                pass
+                        try:
+                            self.affected_enemies.clear()
+                        except Exception:
+                            pass
 
             
             
@@ -1570,7 +1633,8 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 30% atk speed, 200%+ mana refund",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce"
+    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce",
+    "Soul Destroyer": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
 }
 
 
@@ -2173,7 +2237,7 @@ def player_selection():
                     heroes = (Fire_Wizard, Wanderer_Magician,
                               Fire_Knight, Wind_Hashashin,
                               Water_Princess, Forest_Ranger,
-                              Yurei)
+                              Yurei, Soul_Destroyer)
                     # Player type seems to be phased out but is still being used
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2)  if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2) #not live
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)  if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)

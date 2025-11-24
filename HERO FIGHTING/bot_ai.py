@@ -1528,6 +1528,14 @@ def create_bot(selected_hero, player_type, enemy):
                                     not bot.player.sp_attacking and
                                     botchance.update(90)
                                 ),
+                                # Punish enemy when they are casting/attacking: high priority
+                                lambda bot: (not bot.special_active and
+                                    (bot.player.sp_attacking or bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.basic_attacking) and
+                                    bot.enemy_distance >= 100 and
+                                    bot.is_facing_from_enemy() and
+                                    not bot.player.sp_attacking and
+                                    botchance.update(95)
+                                ),
                                 # Shoot if possible and enemy is while attacking
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 50 and
@@ -1574,6 +1582,12 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.is_facing_from_enemy() and
                                     not bot.player.sp_attacking and
                                     botchance.update(80)
+                                ),
+                                # Interrupt enemy casting / special – use silence when enemy is attacking
+                                lambda bot: (not bot.special_active and
+                                    (bot.player.sp_attacking or bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.basic_attacking) and
+                                    bot.enemy_distance <= 350 and
+                                    botchance.update(95)
                                 ),
                                 # Slightly far, will try to hit
                                 lambda bot: (not bot.special_active and
@@ -1805,11 +1819,26 @@ def create_bot(selected_hero, player_type, enemy):
                             ]
                         },
                         'skill_4': {
-                            'cast_range': 20,
+                            'cast_range': 50,
                             'min_cast_range': 2,
                             'require_all': False,
                             'conditions': [
-                                True
+                                # True,
+                                # Prefer to use ultimate-like skill when special is ready and enemy is low
+                                lambda bot: (not bot.special_active and
+                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    botchance.update(95)
+                                ),
+                                lambda bot: (bot.special_ready() and
+                                    bot.enemy_hp_percent() <= 50 and
+                                    bot.enemy_distance <= 80 and
+                                    botchance.update(90)
+                                ),
+                                # If special active, try quick follow-up
+                                lambda bot: (bot.special_active and
+                                    bot.enemy_distance <= 250 and
+                                    botchance.update(80)
+                                )
                                 # Casual skill, casts if enemy is using skill (can't be avoided)
                                 # lambda bot: (not bot.special_active and
                                 #     (bot.bot_hp_percent() < 50) or

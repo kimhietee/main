@@ -669,18 +669,18 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, random.randint(40, self.target.hitbox_rect.height-30)),
+                                'follow_offset': (-30 if self.facing_right else 30, random.randint(10, self.target.hitbox_rect.height-80)),
                                 'add_mana': True,
                                 'mana_mult': self.atk2_mana_refund,
-                                'hitbox_scale_x': 0.1,
-                                'hitbox_scale_y': 0.1,
+                                'hitbox_scale_x': 0.3,
+                                'hitbox_scale_y': 0.3,
 
                                 # leave arrow bullets
                                 'spawn_attack':  {
 
                                     'attack_kwargs': {
                                         'x': self.target.x_pos,
-                                        'y': self.target.y_pos + (random.randint(-40, 40)),
+                                        'y': self.target.y_pos + (random.randint(-40, 3)),
                                         'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                         'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                         'repeat_animation': 1,
@@ -694,7 +694,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'delay': (False, 0),
                                         'stop_movement': (False, 3, 2, 0.2),
                                         'follow': (False, True),
-                                        'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                        'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                         'add_mana': True,
                                         # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
@@ -852,7 +852,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 40)),
+                                    'y': self.target.y_pos + (random.randint(-40, 3)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -866,7 +866,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1016,11 +1016,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 3, 2, 0.2),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(40, self.target.hitbox_rect.height-30)),),
+                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(10, self.target.hitbox_rect.height-80)),),
                                 'add_mana': True,
                                 'mana_mult': self.sp_atk2_mana_refund_2nd,
-                                'hitbox_scale_x': 0.1,
-                                'hitbox_scale_y': 0.1,
+                                'hitbox_scale_x': 0.3,
+                                'hitbox_scale_y': 0.3,
                                 'spawn_attack': {
                                                 'use_attack_onhit_pos': True,
 
@@ -1037,7 +1037,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'delay': (True, 1050),
                                                     'stop_movement': (True, 3, 2, 0.5),
                                                     'follow': (False, True),
-                                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                                    'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                                     'add_mana': True,
                                                     'mana_mult': self.atk2_mana_refund_2nd,
                                                     'hitbox_scale_x': 0.3,
@@ -1048,7 +1048,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                                         'attack_kwargs': {
                                                             'x': self.target.x_pos,
-                                                            'y': self.target.y_pos + (random.randint(-40, 40)),
+                                                            'y': self.target.y_pos + (random.randint(-40, 3)),
                                                             'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                                             'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                                             'repeat_animation': 1,
@@ -1141,7 +1141,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1250,7 +1250,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 40)),
+                                    'y': self.target.y_pos + (random.randint(-40, 3)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1264,7 +1264,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1465,7 +1465,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             spawn_attack= {
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 40)),
+                                    'y': self.target.y_pos + (random.randint(-40, 3)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1479,7 +1479,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height-30))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(10, self.target.hitbox_rect.height-80))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,

@@ -1577,6 +1577,9 @@ class Item:
 # improved crystals by 5% (2% for spell dmg)
 # princess necklace mana reduce 5% -> 10%
 
+#update 
+# error war helmet was only at 1 str bug
+
 items = [
     # stats
     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.08]),  
@@ -2112,12 +2115,43 @@ def player_selection():
                     # Draw item selection
                     for item in p1_items:
                         item.update(mouse_pos, mouse_press, p1_items, max_selected=MAX_ITEM)
+                        # item.selected = True
                     for item in p1_items:
                         item.draw()
-                        
+
+
                     for item in p1_items:
                         if item.hovered:
                             item.class_item.update((width + (width * 0.322), height - 500))
+
+
+
+
+
+                    # randoms = [1,5,7,8]
+                    # p1_items[randoms[0]].selected = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     # hero1 bot Option (has all_items) draws hard mode option
                     toggle_bot_button.update(mouse_pos, global_vars.HERO1_BOT)

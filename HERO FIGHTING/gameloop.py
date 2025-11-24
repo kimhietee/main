@@ -1429,7 +1429,6 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
         # print(type(keys))
             
-            
             if any(detect):
                 key_store = [x[1].upper() for x in new_key]
                 for key_index in (key.status):
@@ -1439,7 +1438,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                         if key_name == "UP":
                                 key_name = "^"
                         elif key_name == "DOWN":
-                                key_name = "\/"
+                                key_name = r"\/"
                         elif key_name  == "LEFT":
                                 key_name = "<"
                         elif key_name == "RIGHT":
@@ -1845,13 +1844,51 @@ def reset_all():
     if hasattr(main, 'hero3') and main.hero3 is not None:
         heroes_to_reset.append(main.hero3)
     for hero in heroes_to_reset:
+        # clear public-style source sets (older code may use these)
         hero.freeze_sources = set()
         hero.root_sources = set()
+        # clear internal status source lists used by `Player` methods
+        try:
+            hero._freeze_sources = []
+        except Exception:
+            pass
+        try:
+            hero._root_sources = []
+        except Exception:
+            pass
+        try:
+            hero._slow_sources = []
+        except Exception:
+            pass
+        try:
+            hero._silence_sources = []
+        except Exception:
+            pass
+
+        # clear status flags; we will also call remove_movement_status to trigger any cleanup logic
         hero.frozen = False
         hero.rooted = False
         hero.stunned = False
         hero.slowed = False
         hero.silenced = False
+
+        # Ensure symmetric removal (this clears derived state like speed_multiplier, atk_hasted, etc.)
+        try:
+            hero.remove_movement_status(1, source=None)
+        except Exception:
+            pass
+        try:
+            hero.remove_movement_status(2, source=None)
+        except Exception:
+            pass
+        try:
+            hero.remove_movement_status(3, source=None)
+        except Exception:
+            pass
+        try:
+            hero.remove_movement_status(4, source=None)
+        except Exception:
+            pass
         if hasattr(hero, 'atk_hasted'):
             # print('ahah')
             default_atk_speed_with_bonus = hero.get_atk_speed()

@@ -709,6 +709,12 @@ class Player(pygame.sprite.Sprite):
                     self.max_mana += self.max_mana * bonus_value
                 if bonus_type == 'atk':
                     self.basic_attack_damage += self.basic_attack_damage * bonus_value
+
+
+                # will apply unique bonuses
+                if hasattr(self, 'arrow_stuck_damage'):
+                    # reapply bonus
+                    self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
                 
 
         # get final attack speed with bonuses

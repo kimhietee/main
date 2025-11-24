@@ -99,18 +99,18 @@ class Soul_Destroyer(Player):
 
         self.atk1_mana_cost = 50
         self.atk2_mana_cost = 80
-        self.atk3_mana_cost = 80
+        self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
 
         #go to attacks section to calculate mana
 
         self.atk1_cooldown = 10000 + 10000
         self.atk2_cooldown = 20000
-        self.atk3_cooldown = 25000
-        self.sp_cooldown = 80000
+        self.atk3_cooldown = 30000
+        self.sp_cooldown = 75000
 
         # self.atk1_damage = (5/40, 0)
-        # self.atk1_damage_2nd = 20 #-----
+        self.atk1_damage_2nd = 10 #----- 2ND SKILL SP ONLY MOVING
 
         self.atk2_damage = (15/55, 0) # ATK 2
 
@@ -119,11 +119,11 @@ class Soul_Destroyer(Player):
 
         # self.atk3_damage_2nd = 20 #-----
 
-        self.sp_damage = (20/35, 0) #charge (self dmg)
-        self.sp_damage_2nd = (30,0) #(30/15, 0) # explosion 
-        self.sp_damage_3rd = (25/25, 0) # explosion up
-        self.sp_atk1_damage = (20/10, 5) # explosion real
-        # TOTAL: 80
+        self.sp_damage = (25/35, 0) #charge (self dmg)
+        self.sp_damage_2nd = (20,0) #(30/15, 0) # explosion 
+        self.sp_damage_3rd = (20/25, 0) # explosion up
+        self.sp_atk1_damage = (20/10, 0) # explosion real
+        # TOTAL: 60
 
         # self.sp_atk2_damage = 0.3#(totaldmg 9*2=18) # =0.4166 (12.5/30, 0) # rain #-----
         # self.sp_atk2_damage_2nd = (5/30, 2) #(*5) #circling #------
@@ -175,16 +175,16 @@ class Soul_Destroyer(Player):
         # sp = [r'HERO FIGHTING\assets\attacks\fire knight\sp atk', WATER_PRINCESS_SP, 1]
 
         # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\472234276_8613137162147060_446401069957588690_n.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\tumblr_8ca04de6143efee03f34ea8c32aca437_a117ed18_1280.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Screenshot 2025-01-26 221227.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\placeholder.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_1 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk1.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk3.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk4_2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\472234276_8613137162147060_446401069957588690_n.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\tumblr_8ca04de6143efee03f34ea8c32aca437_a117ed18_1280.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Screenshot 2025-01-26 221227.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        # special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\472234276_8613137162147060_446401069957588690_n.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        # special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\tumblr_8ca04de6143efee03f34ea8c32aca437_a117ed18_1280.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk3_2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk4.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # Player Icon Rects
         if self.player_type == 1:
@@ -195,16 +195,16 @@ class Soul_Destroyer(Player):
 
             self.special_rect = special_icon.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 4 + 50, SKILL_Y_OFFSET))
 
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
-            self.special_skill_2_rect = special_skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
+            self.special_skill_1_rect = skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
+            self.special_skill_2_rect = skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
             self.special_skill_3_rect = special_skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
             self.special_skill_4_rect = special_skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
 
         elif self.player_type == 2:
             self.special_rect = special_icon.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 4 - 50, SKILL_Y_OFFSET))
 
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
-            self.special_skill_2_rect = special_skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
+            self.special_skill_1_rect = skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
+            self.special_skill_2_rect = skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
             self.special_skill_3_rect = special_skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
             self.special_skill_4_rect = special_skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
 
@@ -447,7 +447,7 @@ class Soul_Destroyer(Player):
             Attacks(
                 mana_cost=self.mana_cost_list[0],
                 skill_rect=self.special_skill_1_rect,
-                skill_img=special_skill_1,
+                skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
                 mana=self.mana
             ),
@@ -455,7 +455,7 @@ class Soul_Destroyer(Player):
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.special_skill_2_rect,
                 skill_img=skill_2,
-                cooldown=self.atk2_cooldown,
+                cooldown=self.atk2_cooldown,    
                 mana=self.mana
             ),
             Attacks(
@@ -810,25 +810,66 @@ class Soul_Destroyer(Player):
                     if self.mana >= self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        self.single_target()
-                        target, target_detected = self.face_selective_target()
+                        # self.single_target()
+                        # target, target_detected = self.face_selective_target()
+                        # attack1 = Attack_Display(
+                        #     x=target,
+                        #     y=self.target.rect.centery + 15,
+                        #     frames=self.atk2,
+                        #     frame_duration=109.09, # 55 frames, 6 seconds
+                        #     repeat_animation=1,
+                        #     dmg=self.atk2_damage[0]*1.2,
+                        #     final_dmg=self.atk2_damage[1]*1.2,
+                        #     who_attacks=self,
+                        #     who_attacked=self.enemy,
+                        #     sound=(True, self.atk3_sound , None, None),
+                        #     stop_movement=(True, 3, 2, 0.3),
+                        #     follow=(False, target_detected)
+                        #     )
+                        # attack_display.add(attack1)
+
                         attack = Attack_Display(
-                            x=target,
-                            y=self.target.rect.centery + 15,
-                            frames=self.atk2,
-                            frame_duration=109.09, # 55 frames, 6 seconds
-                            repeat_animation=1,
-                            dmg=self.atk2_damage[0]*1.2,
-                            final_dmg=self.atk2_damage[1]*1.2,
+                            x=self.rect.centerx,
+                            y=self.rect.centery + 10,
+                            frames=self.blank_frame,
+                            frame_duration=100, # 4 s
+                            repeat_animation=40,
+                            speed=20 if self.facing_right else -20,
+                            dmg=self.atk1_damage_2nd,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            sound=(True, self.atk3_sound , None, None),
-                            stop_movement=(True, 3, 2, 0.3),
-                            follow=(False, target_detected)
-                            )
-                        attack_display.add(attack)
+                            delay=(True, 400),
+                            sound=(True, self.atk2_sound , None, None),
+                            moving=True,
+                            # follow_self=True,
+                            follow=(False, False), # some bug happended while i code the attack
+                            # follow_offset=(0, 70),
+                            hitbox_offset_x=0.1,
+                            stop_movement=(False, 3, 3, 0.3),
+                            periodic_spawn={
+                                            'attack_kwargs': {
+                                                # 'x': width+100,
+                                                # 'y': self.rect.centery + 10,
+                                                'frames': self.atk2, 
+                                                'frame_duration': 109.09,  # 6 sec
+                                                'repeat_animation': 1,
+                                                # 'speed': -7 if self.facing_right else 7,
+                                                'dmg': self.atk2_damage[0]/2,
+                                                'final_dmg': 0,
+                                                'who_attacks': self,
+                                                'who_attacked': self.enemy,
+                                                'sound': (False, self.atk1_sound, None, None),
+                                                'stop_movement': (True, 3, 1, 0.3)
+                                                # 'delay': (True, 300),
+                                            },
+                                            'interval': 50,
+                                            'repeat_count': 20, 
+                                            'use_attack_pos': True,
+                                        }
+                                )
 
-                        
+                        attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
                         self.attacks_special[1].last_used_time = current_time
                         self.running = False
@@ -847,8 +888,8 @@ class Soul_Destroyer(Player):
                                 x=self.rect.centerx,
                                 y=self.rect.centery + 10,
                                 frames=self.atk3,
-                                frame_duration=125, # 20frames, 10 second silence total =+ ?? 3s for spawned
-                                repeat_animation=3,
+                                frame_duration=125, # 20frames, 7.5? second silence total =+ ?? 3s for spawned
+                                repeat_animation=2,
                                 speed=0,
                                 dmg=self.atk3_damage[0],
                                 final_dmg=0,
@@ -876,7 +917,7 @@ class Soul_Destroyer(Player):
                                                     'stop_movement': (True, 4, 1)
                                                     # 'delay': (True, 300),
                                                 },
-                                                'interval': 500,
+                                                'interval': 300,
                                                 'repeat_count': 20, # 40 total smoke
                                                 'use_attack_pos': True,
                                             }
@@ -934,7 +975,7 @@ class Soul_Destroyer(Player):
                                 ) # Replace with the target
                             attack_display.add(attack)
 
-                        # self.mana -=  self.attacks[3].mana_cost
+                        self.mana -=  self.attacks[3].mana_cost
                         self.attacks_special[3].last_used_time = current_time
                         self.running = False
                         self.sp_attacking = True

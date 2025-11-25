@@ -1058,7 +1058,7 @@ class Soul_Destroyer(Player):
         elif self.sp_attacking:
             self.sp_animation(-5)
         elif self.basic_attacking:
-            self.basic_animation()
+            self.basic_animation(-2)
         else:
             self.simple_idle_animation(RUNNING_ANIMATION_SPEED)
 

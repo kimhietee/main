@@ -685,7 +685,7 @@ class Yurei(Player):
                             spawn_attack= {
                                 'use_attack_onhit_pos': True,
 
-                                'attack_kwargs': {
+                                    'attack_kwargs': {
                                     'frames': self.atk2,
                                     'frame_duration': 66.667, # freeze for 1s (second / frames) 15 frames
                                     'repeat_animation': 1,
@@ -693,7 +693,7 @@ class Yurei(Player):
                                     'dmg': self.atk2_damage[0],
                                     'final_dmg': self.atk2_damage[1],
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    # defer who_attacked to collision time
                                     'moving': False,
                                     'sound': (True, self.atk2_sound, None, None),
                                     'delay': (False, 0),
@@ -878,7 +878,7 @@ class Yurei(Player):
                                 spawn_attack= {
                                     'use_attack_onhit_pos': True,
 
-                                    'attack_kwargs': {
+                                        'attack_kwargs': {
                                         'frames': self.atk2,
                                         'frame_duration': 133.33, # freeze for 2s (second / frames) 15 frames
                                         'repeat_animation': 1,
@@ -886,7 +886,7 @@ class Yurei(Player):
                                         'dmg': self.atk2_damage[0],
                                         'final_dmg': self.atk2_damage[1],
                                         'who_attacks': self,
-                                        'who_attacked': self.enemy,
+                                        # defer who_attacked to collision time
                                         'moving': False,
                                         'sound': (True, self.atk2_sound, None, None),
                                         'delay': (False, 0),
@@ -971,7 +971,7 @@ class Yurei(Player):
                                     'dmg': self.atk2_damage[0]*1.25,
                                     'final_dmg': self.atk2_damage[1],
                                     'who_attacks': self,
-                                    'who_attacked': self.enemy,
+                                    # defer who_attacked to collision time
                                     'moving': False,
                                     'sound': (True, self.atk2_sound, None, None),
                                     'delay': (False, 0),

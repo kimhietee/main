@@ -669,7 +669,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, random.randint(2, int(self.target.hitbox_rect.height*0.2))),
+                                'follow_offset': (-30 if self.facing_right else 30, random.randint(-10, 10)),
                                 'add_mana': True,
                                 'mana_mult': self.atk2_mana_refund,
                                 'hitbox_scale_x': 0.3,
@@ -694,7 +694,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'delay': (False, 0),
                                         'stop_movement': (False, 3, 2, 0.2),
                                         'follow': (False, True),
-                                        'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                                    'follow_offset': (random.randint(-30, 30), random.randint(-10, 10)),
                                         'add_mana': True,
                                         # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
@@ -866,7 +866,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                    'follow_offset': (random.randint(-30, 30), random.randint(-10, 10)),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1010,13 +1010,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'dmg': self.sp_atk2_damage_2nd[0],
                                 'final_dmg': self.sp_atk2_damage_2nd[1],
                                 'who_attacks': self,
-                                'who_attacked': self.enemy,
+                                # Do NOT preassign who_attacked here; let the spawned attack resolve the actual collided enemy.
                                 'moving': False,
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
                                 'stop_movement': (True, 3, 2, 0.2),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(2, int(self.target.hitbox_rect.height*0.2))),),
+                                # Use a conservative follow vertical offset; avoid sampling target hitbox at cast time
+                                'follow_offset': (-30 if self.facing_right else 30, 0),
                                 'add_mana': True,
                                 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                 'hitbox_scale_x': 0.3,
@@ -1032,12 +1033,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'dmg': self.atk2_damage_2nd[0],
                                                     'final_dmg': self.atk2_damage_2nd[1],
                                                     'who_attacks': self,
-                                                    'who_attacked': self.enemy,
+                                                    # Defer who_attacked resolution to collision time
                                                     'sound': (True, self.atk2_sound, None, None),
                                                     'delay': (True, 1050),
                                                     'stop_movement': (True, 3, 2, 0.5),
                                                     'follow': (False, True),
-                                                    'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                                    # Avoid using target hitbox at cast; keep vertical small
+                                                    'follow_offset': (0, 0),
                                                     'add_mana': True,
                                                     'mana_mult': self.atk2_mana_refund_2nd,
                                                     'hitbox_scale_x': 0.3,
@@ -1047,8 +1049,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'spawn_attack': {
 
                                                         'attack_kwargs': {
-                                                            'x': self.target.x_pos,
-                                                            'y': self.target.y_pos + (random.randint(-40, 3)),
+                                                            # Do not hardcode x/y to the preselected target; spawn at collision point instead
                                                             'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                                             'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                                             'repeat_animation': 1,
@@ -1056,7 +1057,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'dmg': 0,
                                                             'final_dmg': self.arrow_stuck_damage,
                                                             'who_attacks': self,
-                                                            'who_attacked': self.target,
+                                                            # who_attacked deliberately omitted so Attack_Display will assign collided enemy
                                                             'moving': False,
                                                             'sound': (False, self.atk2_sound, None, None),
                                                             'delay': (False, 0),

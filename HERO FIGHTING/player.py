@@ -18,7 +18,6 @@ import global_vars
 import key
 
 #AS OF 4/23/25 (12:15 AM)
-print('pls don\'t pause if you have active buff :)')
 '''SPECIAL LASTS 16-17 SECONDS
  if you don't do anything :))'''
 '''
@@ -355,7 +354,7 @@ class Player(pygame.sprite.Sprite):
         # self.just_spawned = True
         self.damage_numbers = []
 
-        self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
+        self.damage_font = global_vars.get_font(30)  # preload font
 
 
         # for reset_all() function
@@ -419,7 +418,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 size = size or int(20 + damage * 3)  # Small damage gets boosted 
 
-        font = pygame.font.Font('assets/font/slkscr.ttf', size)
+        font = global_vars.get_font(size)
 
         # Format floating numbers cleanly
         if isinstance(damage, float):
@@ -502,9 +501,7 @@ class Player(pygame.sprite.Sprite):
 
 
     def apply_item_bonuses(self):
-        # print(self.basic_attack_animation_speed)
-        #misc
-        print(self.basic_attack_animation_speed) # NOTE, BONUSES ARE NOT CENTRALIZED, each bonus is applied 1 by 1
+        # misc - apply item bonuses (avoid noisy prints for performance)
         for item in self.items: # self.items is a list of item classes
             for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
                 if bonus_type == 'move speed':
@@ -1219,7 +1216,7 @@ class Player(pygame.sprite.Sprite):
                           (bar_x, bar_y, gold_width, bar_height))
 
     def player_status(self, health, mana, special):
-        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
+        font = global_vars.get_font(20)
         p1_x = self.player_1_x
         p1_y = self.player_1_y
         p2_x = self.player_2_x
@@ -1577,7 +1574,7 @@ class Player(pygame.sprite.Sprite):
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
         # Accept either a single enemy object or a list of enemies
-        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
+        font = global_vars.get_font(20)
         target = None
         # If a list was passed, pick the nearest valid enemy
         if isinstance(enemy, (list, tuple)):

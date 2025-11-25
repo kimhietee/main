@@ -235,13 +235,14 @@ settings_button = ImageButton(
 )
 
 has_changes = False
-def show_confirmation_modals(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
-    
+def show_confirmation_modals(font=None):
+    # Use cached font if not provided
+    if font is None:
+        font = global_vars.get_font(60)
+
     if no_swap:
-        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
         create_title('(The existing key will be leave empty)', font, 0.5, height * 0.5)
     else:
-        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
         create_title('(The existing key will be swapped)', font, 0.5, height * 0.5)
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,150,150))
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,10,10))
@@ -249,20 +250,22 @@ def show_confirmation_modals(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 6
     
     create_title('Key already in use', font, 1, height * 0.40, color)
         
-def save_before_exiting_modal(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
-    
+def save_before_exiting_modal(font=None):
+    if font is None:
+        font = global_vars.get_font(60)
     create_title('Save before exiting!', font, 0.5, height * 0.95, x_offset=width*0.35)
    
     
 
 
 
-def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
+def show_controls(font=None):
     # Display controls title
     draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
     draw_black_screen(0.2,size=(width*0.45 + width*0.05, height * 0.2,  width*0.44, height*0.65))
-
-    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.1)
+    if font is None:
+        font = global_vars.get_font(40)
+    create_title('CONTROLS', global_vars.get_font(60), 1, height * 0.1)
     
     # Player 1 Controls
     create_title('Player 1:', font, 1, height * 0.25, angle=0, x_offset=width *0.33)
@@ -369,7 +372,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
     cell_width = width // grid_size
     cell_height = height // grid_size
 
-    font = pygame.font.Font(None, 20)
+    font = global_vars.get_font(20)
 
     for i in range(grid_size + 1):
         # Vertical lines
@@ -455,7 +458,7 @@ def game(bg=None):
     ground = pygame.Rect(0, main.DEFAULT_Y_POS, 2121, 1111)
     
     start_time = pygame.time.get_ticks()
-    timer_font = pygame.font.Font(r'assets\font\slkscr.ttf', 50)  # Timer font
+    timer_font = global_vars.get_font(50)  # Timer font
 
     cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
     cube_sound.set_volume(0.8 * global_vars.MAIN_VOLUME) 
@@ -929,8 +932,10 @@ in_game_settings_button = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
-def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
+    if font is None:
+        font = global_vars.get_font(100)
     if winner is not None:
         if winner == 'hero1':
             create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.40)
@@ -950,8 +955,10 @@ def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slks
             fade(loading_screen_bg, game)
             return
 
-def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
+    if font is None:
+        font = global_vars.get_font(100)
     if paused:
         create_title('PAUSED', font, default_size - 0.55, height * 0.40)
     
@@ -999,7 +1006,7 @@ def menu():
     # background = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
 
-    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
+    font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -1796,7 +1803,7 @@ def main_menu():
     # background = main.pygame.transform.scale(
         # pygame.image.load(r'assets\backgrounds\8.png').convert(), (main.width, main.height))
 
-    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
+    font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -1976,13 +1983,13 @@ from button import RectButton
 def settings(in_game=False):
     global paused
     
-    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
+    font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
     # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
 
     
     # current_volume = global_vars.MAIN_VOLUME*100
-    setting_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
+    setting_font = global_vars.get_font(int(height * 0.025))
     
     # true
     
@@ -2144,7 +2151,7 @@ def settings(in_game=False):
         vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max']-volume_limit['min']) + 30, volume_bar_y-5, 60, 30)
         pygame.draw.rect(screen, black, vol_num_rect)
         vol_num = int(global_vars.MAIN_VOLUME * 100) if not mute_clicked else 0
-        vol_num_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
+        vol_num_font = global_vars.get_font(int(height * 0.025))
         vol_num_text = vol_num_font.render(f'{vol_num}%', global_vars.TEXT_ANTI_ALIASING, white)
         vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
         screen.blit(vol_num_text, vol_num_text_rect)

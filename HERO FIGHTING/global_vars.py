@@ -32,7 +32,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 HERO1_BOT = False
 all_items = False #equip bot with all items
@@ -226,6 +226,22 @@ scale = 1
 center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14
+
+# Font cache to avoid repeated font creation (expensive)
+FONT_PATH = r'assets\\font\\slkscr.ttf'
+_FONT_CACHE = {}
+
+def get_font(size):
+        """Return a cached pygame Font object for the given size."""
+        try:
+                size = int(size)
+        except Exception:
+                size = 16
+        font = _FONT_CACHE.get(size)
+        if font is None:
+                font = pygame.font.Font(FONT_PATH, size)
+                _FONT_CACHE[size] = font
+        return font
 
 SHOW_MINI_HEALTH_BAR = False
 SHOW_MINI_MANA_BAR = False

@@ -251,7 +251,7 @@ pygame.display.set_caption("HERO FIGHTING")
 #     botchance.update(50)
 #=-------------------
 # Font Sizes
-FONT = pygame.font.Font(fr'assets\font\slkscr.ttf', 30)
+FONT = global_vars.get_font(30)
 
 # Icons
 #positions, formula : spec_pos/size, eg 50/720 = 0.0695
@@ -409,7 +409,7 @@ class Attacks:
                 
                 # Draw red X to indicate skill is disabled (only for skills, not for basic attacks when just silenced)
                 if not (is_basic_attack and is_silenced and not is_frozen):  # Allow basic when just silenced
-                    x_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
+                    x_font = global_vars.get_font(self.cooldown_font_size)
                     x_text = x_font.render('X', global_vars.TEXT_ANTI_ALIASING, (255, 0, 0))
                     screen.blit(x_text, (
                         self.skill_rect.centerx - x_text.get_width() // 2,
@@ -423,7 +423,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Draw scaled cooldown text
-                font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.cooldown_font_size)
+                font = global_vars.get_font(self.cooldown_font_size)
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
                 remaining_ms = max(0, self.cooldown - self.time_since_use())
                 cooldown_time = max(0, remaining_ms // 1000)
@@ -441,7 +441,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Mana cost when not enough mana
-                mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
+                mana_font = global_vars.get_font(self.mana_font_size)
                 self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(self.atk_mana_cost, (
                     self.skill_rect.centerx - self.atk_mana_cost.get_width() // 2,
@@ -463,7 +463,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
                 
                 # Draw red X
-                x_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
+                x_font = global_vars.get_font(self.special_font_size)
                 x_text = x_font.render('X', global_vars.TEXT_ANTI_ALIASING, (255, 0, 0))
                 screen.blit(x_text, (
                     self.skill_rect.centerx - x_text.get_width() // 2,
@@ -476,14 +476,14 @@ class Attacks:
                 screen.blit(self.skill_img, self.skill_rect)
                 screen.blit(dark_overlay, self.skill_rect)
 
-                special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
+                special_font = global_vars.get_font(self.special_font_size)
                 self.atk_special_cost = special_font.render(f'[{max_special}]', global_vars.TEXT_ANTI_ALIASING, 'azure3')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
                     self.skill_rect.top - self.special_y_offset
                 ))
             else:
-                special_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.special_font_size)
+                special_font = global_vars.get_font(self.special_font_size)
                 self.atk_special_cost = special_font.render(f'[{max_special}]', global_vars.TEXT_ANTI_ALIASING, 'yellow')
                 screen.blit(self.atk_special_cost, (
                     self.skill_rect.centerx - self.atk_special_cost.get_width() // 2,
@@ -492,7 +492,7 @@ class Attacks:
                 screen.blit(self.skill_img, self.skill_rect)
 
         # Draw the key text below the skill icon
-        key_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
+        key_font = global_vars.get_font(self.mana_font_size)
         button_icon = pygame.transform.scale(self.button_icon, (90, 70))
         # button_icon_rect = button_icon.get_rect(topleft=(key_pos_x - 10, key_pos_y - 5))
 
@@ -513,7 +513,7 @@ class Attacks:
 
     def draw_mana_cost(self, screen, mana):
         if not self.special_skill:
-            mana_font = pygame.font.Font(fr'assets\font\slkscr.ttf', self.mana_font_size)
+            mana_font = global_vars.get_font(self.mana_font_size)
             color = 'Cyan2' if mana >= self.mana_cost else 'Red'
             self.atk_mana_cost = mana_font.render(f'[{self.mana_cost}]', global_vars.TEXT_ANTI_ALIASING, color)
 
@@ -928,16 +928,22 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     # If we have an actual collided enemy, ensure the spawned attack targets that enemy
                     if collided_enemy is not None:
                         try:
+                            # ensure who_attacked is set to the collided enemy (Attack_Display accepts single or list)
                             ak['who_attacked'] = collided_enemy
                         except Exception:
                             pass
-                        # If follow_offset exists, adjust its vertical component to use the collided enemy's hitbox
+                        # If follow_offset exists, avoid picking a large random positive vertical offset
+                        # which can push the spawned attack below ground. Respect the provided offset
+                        # but clamp it relative to the target hitbox size.
                         fo = ak.get('follow_offset', None)
                         if fo and isinstance(fo, (tuple, list)) and len(fo) >= 2:
                             try:
-                                fx = fo[0]
-                                max_h = collided_enemy.hitbox_rect.height
-                                fy = random.randint(40, max_h) if max_h > 40 else fo[1]
+                                fx, fy = fo[0], fo[1]
+                                max_h = max(1, collided_enemy.hitbox_rect.height)
+                                # Limit the vertical offset to half the target hitbox height in magnitude
+                                limit = max_h // 2
+                                if abs(fy) > limit:
+                                    fy = limit if fy > 0 else -limit
                                 ak['follow_offset'] = (fx, fy)
                             except Exception:
                                 pass
@@ -1234,6 +1240,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 if followed_enemy is not None:
                     self.rect.centerx = followed_enemy.rect.centerx + self.follow_offset[0]
                     self.rect.centery = followed_enemy.rect.centery + self.follow_offset[1]
+                    # Prevent followed attacks from going below ground level
+                    try:
+                        if self.rect.centery > global_vars.DEFAULT_Y_POS:
+                            self.rect.centery = int(global_vars.DEFAULT_Y_POS) - 2
+                    except Exception:
+                        pass
 
             else:
                 if self.follow[1]: # FOLLOW SELF
@@ -1242,6 +1254,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 elif self.follow[0] and self.following_target:
                     self.rect.centerx = self.who_attacks.rect.centerx + self.follow_offset[0]
                     self.rect.centery = self.who_attacks.rect.centery + self.follow_offset[1]
+                    # Clamp to ground so attacks following the caster don't sink below the floor
+                    try:
+                        if self.rect.centery > global_vars.DEFAULT_Y_POS:
+                            self.rect.centery = int(global_vars.DEFAULT_Y_POS) - 2
+                    except Exception:
+                        pass
 
             # print(self.follow_self)
 
@@ -1782,7 +1800,7 @@ class ImageBro:
         self.rect = self.image.get_rect(center=pos)
         # Text
         self.text = text
-        self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
+        self.font = global_vars.get_font(int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
     
         self.hovered = False
@@ -1870,7 +1888,7 @@ def player_selection():
     background = pygame.transform.scale(
         pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
-    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 50)
+    font = global_vars.get_font(50)
     default_size = (((width*0.2) * DEFAULT_HEIGHT) / ((height*0.2) * DEFAULT_WIDTH))
 
     #upper position PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)

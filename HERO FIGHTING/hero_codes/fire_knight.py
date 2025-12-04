@@ -81,7 +81,7 @@ class Display_Text: # display damage taken text previously (not working for now)
 class Fire_Knight(Player):
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
-        self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
+        # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
         self.player_type = player_type
         self.name = "Fire Knight"
@@ -955,7 +955,7 @@ class Fire_Knight(Player):
             
 
     def update(self):
-        self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
+        # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
         if global_vars.DRAW_DISTANCE:
             self.draw_distance(self.enemy)
         if global_vars.SHOW_HITBOX:

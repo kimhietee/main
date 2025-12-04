@@ -116,7 +116,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 7000 + 5000 # 12 seconds
+        self.atk1_cooldown = 10000 + 5000 # 12 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
@@ -669,7 +669,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, random.randint(-10, 10)),
+                                'follow_offset': (-30 if self.facing_right else 30, random.randint(30, 45)),
                                 'add_mana': True,
                                 'mana_mult': self.atk2_mana_refund,
                                 'hitbox_scale_x': 0.3,
@@ -694,7 +694,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'delay': (False, 0),
                                         'stop_movement': (False, 3, 2, 0.2),
                                         'follow': (False, True),
-                                                    'follow_offset': (random.randint(-30, 30), random.randint(-10, 10)),
+                                        'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                         'add_mana': True,
                                         # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
@@ -866,7 +866,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), random.randint(-10, 10)),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1017,7 +1017,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'stop_movement': (True, 3, 2, 0.2),
                                 'follow': (True, False),
                                 # Use a conservative follow vertical offset; avoid sampling target hitbox at cast time
-                                'follow_offset': (-30 if self.facing_right else 30, 0),
+                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(30, 45))),
                                 'add_mana': True,
                                 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                 'hitbox_scale_x': 0.3,
@@ -1039,7 +1039,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'stop_movement': (True, 3, 2, 0.5),
                                                     'follow': (False, True),
                                                     # Avoid using target hitbox at cast; keep vertical small
-                                                    'follow_offset': (0, 0),
+                                                    'follow_offset': (0, (random.randint(30, 45))),
                                                     'add_mana': True,
                                                     'mana_mult': self.atk2_mana_refund_2nd,
                                                     'hitbox_scale_x': 0.3,
@@ -1096,11 +1096,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
                         self.single_target()
-                        enemy_posx = (self.target.x_pos)
-                        enemy_posy = (self.target.rect.centery)
+                        # enemy_posx = (self.target.x_pos)
+                        # enemy_posy = (self.target.rect.centery)
                         # one liner is getting hard, took codes from bot_ai
-                        self.enemy_on_right = self.x_pos < (self.target.x_pos)
-                        self.enemy_on_left = self.x_pos > (self.target.x_pos)
+                        # self.enemy_on_right = self.x_pos < (self.target.x_pos)
+                        # self.enemy_on_left = self.x_pos > (self.target.x_pos)
                         target, target_detected = self.face_selective_target()
 
                         attack = Attack_Display(
@@ -1127,8 +1127,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             spawn_attack= {
 
                                 'attack_kwargs': {
-                                    'x': enemy_posx,
-                                    'y': enemy_posy + (random.randint(-40, 40)),
+                                    'x': self.target.x_pos,
+                                    'y': self.target.y_pos + (random.randint(-40, 3)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1142,7 +1142,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1265,7 +1265,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1480,7 +1480,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(2, int(self.target.hitbox_rect.height*0.2)))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,

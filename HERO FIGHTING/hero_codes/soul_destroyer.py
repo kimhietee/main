@@ -114,7 +114,7 @@ class Soul_Destroyer(Player):
 
         self.atk2_damage = (15/55, 0) # ATK 2
 
-        self.atk2_damage_2nd = (1/40, 5) #ATK 3 POISION LEAVE
+        self.atk2_damage_2nd = (2/40, 5) #ATK 3 POISION LEAVE
         self.atk3_damage = (10/20, 0) #ATK  POISON FOLLOW
 
         # self.atk3_damage_2nd = 20 #-----
@@ -959,8 +959,8 @@ class Soul_Destroyer(Player):
                                 frame_duration=i[1],
                                 repeat_animation=1,
                                 speed=0,
-                                dmg=i[7][0],
-                                final_dmg=i[7][1],
+                                dmg=i[7][0]*1.2,
+                                final_dmg=i[7][1]*1.2,
                                 who_attacks=self,
                                 who_attacked=self.enemy if i[6] != True else self,
                                 moving=False if i[6] != 'hit' else True,
@@ -1058,7 +1058,7 @@ class Soul_Destroyer(Player):
         elif self.sp_attacking:
             self.sp_animation(-5)
         elif self.basic_attacking:
-            self.basic_animation(-2)
+            self.basic_animation()
         else:
             self.simple_idle_animation(RUNNING_ANIMATION_SPEED)
 

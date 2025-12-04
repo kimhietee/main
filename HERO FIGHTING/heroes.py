@@ -932,47 +932,21 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                             ak['who_attacked'] = collided_enemy
                         except Exception:
                             pass
-                        # sanitize nested spawn kwargs so they don't carry preselected who_attacked/x/y
-                        def sanitize_kwargs(d):
-                            if not isinstance(d, dict):
-                                return
-                            # If this dict looks like attack kwargs, remove explicit positional/target bindings
-                            for key in ('who_attacked', 'x', 'y'):
-                                if key in d:
-                                    try:
-                                        del d[key]
-                                    except Exception:
-                                        pass
-                            # clamp follow_offset vertical component if present
-                            fo = d.get('follow_offset')
-                            if fo and isinstance(fo, (tuple, list)) and len(fo) >= 2:
-                                try:
-                                    fx, fy = fo[0], fo[1]
-                                    # Use a conservative clamp to avoid large positive offsets
-                                    if isinstance(fy, (int, float)):
-                                        if fy > 200:
-                                            fy = 200
-                                        if fy < -200:
-                                            fy = -200
-                                        d['follow_offset'] = (fx, fy)
-                                except Exception:
-                                    pass
-                            # recurse into nested spawn_attack
-                            sa = d.get('spawn_attack')
-                            if isinstance(sa, dict):
-                                # if spawn_attack is a mapping with nested attack_kwargs
-                                inner = sa.get('attack_kwargs') or sa.get('attack_kwargs', {})
-                                if isinstance(inner, dict):
-                                    sanitize_kwargs(inner)
-                                # also sanitize any nested dicts directly under spawn_attack
-                                for v in sa.values():
-                                    if isinstance(v, dict):
-                                        sanitize_kwargs(v)
-
-                        try:
-                            sanitize_kwargs(ak)
-                        except Exception:
-                            pass
+                        # If follow_offset exists, avoid picking a large random positive vertical offset
+                        # which can push the spawned attack below ground. Respect the provided offset
+                        # but clamp it relative to the target hitbox size.
+                        fo = ak.get('follow_offset', None)
+                        if fo and isinstance(fo, (tuple, list)) and len(fo) >= 2:
+                            try:
+                                fx, fy = fo[0], fo[1]
+                                max_h = max(1, collided_enemy.hitbox_rect.height)
+                                # Limit the vertical offset to half the target hitbox height in magnitude
+                                limit = max_h // 2
+                                if abs(fy) > limit:
+                                    fy = limit if fy > 0 else -limit
+                                ak['follow_offset'] = (fx, fy)
+                            except Exception:
+                                pass
                     attack_display.add(Attack_Display(**ak))
                 self._has_spawned_on_collide = True
 

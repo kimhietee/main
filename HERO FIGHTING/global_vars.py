@@ -6,7 +6,7 @@ height = 720
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
-icon = pygame.image.load(r'assets\icons\miku.png')
+icon = pygame.image.load(r'assets\icons\miku.png')      
 FPS = 60
 clock = pygame.time.Clock()
 # screen = pygame.display.set_mode((width, height))
@@ -204,6 +204,7 @@ wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
 water_princess_icon = r'assets\hero profiles\water character profile.png'
 forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
 yurei_icon = r'assets\skill icons\onre\Yuriei.jpg'
+chthulu_icon = r'assets\hero profiles\chthulu profile.png'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'

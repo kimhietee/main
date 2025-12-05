@@ -49,13 +49,13 @@ import pygame
 # WATER_PRINCESS_SP_SIZE = 4  
 
 # STILL IN PROGRESS: 11/16/26 6:07PM
-class Soul_Destroyer(Player):
+class Chthulu(Player):
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
         self.player_type = player_type
-        self.name = "Soul Destroyer"
+        self.name = "Chthulu"
 
         self.hitbox_rect = pygame.Rect(0, 0, 80, 115)
 

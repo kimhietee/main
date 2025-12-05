@@ -206,7 +206,7 @@ import time
 import math
 import pygame.sprite
 from global_vars import (IMMEDIATE_RUN,
-    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon, yurei_icon,
+    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon, yurei_icon, chthulu_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
     waterfall_icon, lava_icon, dark_forest_icon, trees_icon, 
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, BASIC_ATK_COOLDOWN, BASIC_FRAME_DURATION, BASIC_ATK_DAMAGE, BASIC_ATK_DAMAGE2, BASIC_ATK_DAMAGE3, BASIC_ATK_DAMAGE4,
@@ -1444,8 +1444,8 @@ Yurei = yurei.Yurei
 
 
 
-import hero_codes.soul_destroyer as soul_destroyer
-Soul_Destroyer = soul_destroyer.Soul_Destroyer
+import hero_codes.chthulu as chthulu
+Chthulu = chthulu.Chthulu
 
 
 
@@ -1655,7 +1655,7 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 30% atk speed, 200%+ mana refund",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce",
-    "Soul Destroyer": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
+    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
 }
 
 
@@ -1913,15 +1913,15 @@ def player_selection():
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
-        PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
-        PlayerSelector(temp_icon, (xpos5, height - yposlower), Soul_Destroyer),
+        # PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(chthulu_icon, (xpos5, height - yposlower), Chthulu),
 
         #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
-        PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
+        # PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
 
     p2_select = [
@@ -1929,15 +1929,15 @@ def player_selection():
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
-        PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
-        PlayerSelector(temp_icon, (xpos5, height - yposlower), Soul_Destroyer),
+        # PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
+        PlayerSelector(chthulu_icon, (xpos5, height - yposlower), Chthulu),
 
         #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
-        PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
+        # PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
     upper=550
     lower=450
@@ -2048,7 +2048,7 @@ def player_selection():
             return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Soul_Destroyer
+            PLAYER_1_SELECTED_HERO = Chthulu
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
@@ -2289,7 +2289,7 @@ def player_selection():
                     heroes = (Fire_Wizard, Wanderer_Magician,
                               Fire_Knight, Wind_Hashashin,
                               Water_Princess, Forest_Ranger,
-                              Yurei, Soul_Destroyer)
+                              Yurei, Chthulu)
                     # Player type seems to be phased out but is still being used
                     hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2)  if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2) #not live
                     hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)  if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)

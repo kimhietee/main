@@ -56,6 +56,16 @@ def create_bot(selected_hero, player_type, enemy):
 
             self.bot_default_font = pygame.font.SysFont('Serif', 30)
 
+            # Retargeting config: policy can be 'closest', 'random' or 'focus'
+            # You can set `global_vars.BOT_RETARGET_POLICY = 'closest'` to change default.
+            self.retarget_policy = getattr(global_vars, 'BOT_RETARGET_POLICY', 'closest')
+            self.preferred_target = None
+            # initial target (will be validated by ensure_target_alive when update runs)
+            try:
+                self.target = self.enemy[0] if type(self.enemy) is list and len(self.enemy) > 0 else (self.enemy if self.enemy else None)
+            except Exception:
+                self.target = None
+
             self.hero_data = {
                 'Fire_Wizard': {
                     'default_timer': 1,
@@ -153,13 +163,13 @@ def create_bot(selected_hero, player_type, enemy):
                             ]
                         },
                         'skill_2': {
-                            'cast_range': 120,
-                            'min_cast_range': 100,
+                            'cast_range': 250,
+                            'min_cast_range': 200,
                             'require_all': False,
                             'conditions': [
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() >= 70 and
-                                    self.mana >= self.attacks[1].mana_cost * 3 and
+                                    self.mana >= self.attacks[1].mana_cost * 1.333 and
                                     not bot.player.sp_attacking and
                                     botchance.update(80)
                                 ),
@@ -2031,11 +2041,24 @@ def create_bot(selected_hero, player_type, enemy):
             # print(self.max_mana / self.attacks[3].mana_cost <= 1)
             # print(self.max_mana / self.attacks[3].mana_cost <= 1)
             # print(0 if self.mana / self.attacks[3].mana_cost >= 1 else 1)
-            self.enemy_on_right = self.x_pos < self.player.x_pos
-            self.enemy_on_left = self.x_pos > self.player.x_pos
-            self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
+            # Ensure bot always has a valid target
+            self.ensure_target()
+            target = self.target
 
-            self.left_edge = self.x_pos - self.edge_distance <= (self.hitbox_rect.width)
+            if target is None:
+                # No target available; skip updating enemy info
+                self.enemy_on_right = False
+                self.enemy_on_left = False
+                self.enemy_distance = 0
+                return
+
+            # Update position & distance relative to target
+            self.enemy_on_right = self.x_pos < target.x_pos
+            self.enemy_on_left = self.x_pos > target.x_pos
+            self.enemy_distance = int(abs(target.x_pos - self.x_pos))
+
+            # Edge detection
+            self.left_edge = self.x_pos - self.edge_distance <= self.hitbox_rect.width
             self.right_edge = self.x_pos + self.edge_distance >= (TOTAL_WIDTH - self.hitbox_rect.width)
 
             # Stuck detection
@@ -2046,14 +2069,14 @@ def create_bot(selected_hero, player_type, enemy):
 
             self.prev_x_pos = self.x_pos
 
-            # Every interval, check if damage was received while standing still
+            # Check stationary damage over interval
             self.hp_check_timer += self.default_timer
             if self.hp_check_timer >= self.hp_check_interval:
                 is_still = abs(self.prev_x_pos - self.x_pos) < self.detect_pos and self.state in ['idle', 'basic attack', 'chase']
                 hp_lost = self.last_hp - self.health
 
                 if is_still and hp_lost >= self.hp_damage_threshold:
-                    # Trigger escape
+                    # Trigger escape due to damage while standing
                     self.unstuck_mode = True
                     self.unstuck_timer = 0
                     self.random_unstuck_direction = random.choice([-1, 1])
@@ -2061,22 +2084,13 @@ def create_bot(selected_hero, player_type, enemy):
                 self.last_hp = self.health
                 self.hp_check_timer = 0
 
-                
-
-            # This checks for stationary damage like standing on fire.
-            # You can tweak:
-            # hp_check_interval for how often to check.
-            # hp_damage_threshold for how much damage must happen before escape.
-            # If your bot can be hit by multiple sources rapidly, consider averaging or accumulating damage over a longer time window.
-
-
             # Activate unstuck if stuck long enough
-            if not self.unstuck_mode and self.stuck_timer > self.stuck_threshold and not self.state in ['basicattack']:
+            if not self.unstuck_mode and self.stuck_timer > self.stuck_threshold and self.state != 'basicattack':
                 self.random_unstuck_direction = random.choice([-1, 1])
                 self.unstuck_mode = True
                 self.unstuck_timer = 0
 
-            # Activate edge escape if too close to edge and enemy
+            # Activate edge escape if too close to edge
             if not self.edge_escape_mode and (self.left_edge or self.right_edge):
                 self.edge_escape_mode = True
                 self.edge_escape_timer = 0
@@ -2495,6 +2509,7 @@ def create_bot(selected_hero, player_type, enemy):
         
         def update(self):
             super().update()
+            self.ensure_target()
             self.bot_logic()
 
             
@@ -2634,8 +2649,63 @@ def create_bot(selected_hero, player_type, enemy):
 
         def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
             super().input(hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey)
+    
+
+        # --- Attach retargeting utilities to Bot before returning ---
+    def bot_select_target(self, policy=None):
+        policy = policy or getattr(self, 'retarget_policy', 'closest')
+
+        enemies = self.enemy if isinstance(self.enemy, list) else [self.enemy]
+        enemies = [e for e in enemies if e is not None and not e.is_dead()]
+
+        if not enemies:
+            self.target = None
+            return None
+
+        if len(enemies) == 1:
+            self.target = enemies[0]
+            return enemies[0]
+
+        if policy == "focus":
+            if getattr(self, "target", None) in enemies:
+                return self.target
+            self.target = enemies[0]
+            return self.target
+
+        if policy == "random":
+            self.target = random.choice(enemies)
+            return self.target
+
+        # nearest
+        sx, sy = self.rect.center
+        self.target = min(
+            enemies,
+            key=lambda e: (e.rect.centerx - sx)**2 + (e.rect.centery - sy)**2
+        )
+        return self.target
+
+
+    # def bot_ensure_target(self):
+    #     if not hasattr(self, "target") or self.target is None or self.target.is_dead():
+    #         bot_select_target(self)
+
+
+    def bot_ensure_target(self):
+        """Ensure the bot always has a valid target."""
+        if not hasattr(self, "target") or self.target is None or self.target.is_dead():
+            bot_select_target(self)
+
+        
+    Bot.select_target = bot_select_target
+    Bot.ensure_target = bot_ensure_target
+
     return Bot
 
+# Change bot policy: (what bot will targets)
+#bot.retarget_policy = "focus"
+
+#bot.retarget_policy = "nearest"
+#bot.retarget_policy = "random"
 
 #sample usage
 # BotClass = create_bot_class(PLAYER_2_SELECTED_HERO)

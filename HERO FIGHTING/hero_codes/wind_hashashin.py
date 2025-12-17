@@ -1038,8 +1038,14 @@ class Wind_Hashashin(Player):
             self.atk3_animation(2) #animation speed increase
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
         elif self.sp_attacking:
-            self.x_pos = self.target.x_pos
-            self.y_pos = self.target.y_pos
+            # Ensure the target is valid before accessing its attributes
+            if self.target is not None and not self.target.is_dead():
+                self.x_pos = self.target.x_pos
+                self.y_pos = self.target.y_pos
+            else:
+                # Reset the target and stop the special attack if the target is invalid
+                self.target = None
+                self.sp_attacking = False
             self.sp_animation()
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 

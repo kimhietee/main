@@ -296,14 +296,17 @@ empty_frame = None
 
 class Attacks:
     '''
-    This class represents the attack and its properties.
-    It contains the attack's damage, animation frames, and other attributes.
-    It also handles the attack's cooldown and mana cost.
-    The class is designed to be used with Pygame and integrates with the Pygame sprite system.
+    Core skill class used by heroes, which is used by the hero skill inputs.
+    
+    Displays the skill on the UI and updates the current state of the skill.
+    
+    
+    Contains skill image, mana_cost, cooldown, and hero's current mana.
+    
     '''
     
 
-    def __init__(self, mana_cost, skill_rect, skill_img, cooldown, mana, special_skill=False):
+    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', special_skill=False):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
@@ -1546,7 +1549,10 @@ class Item:
         # self.decor_rect = pygame.Rect(self.rect.centerx - 30, self.rect.centery - 30, 60, 60)
     
     def update(self, position):
-        stats = ',-> '.join(f"{key}: {'' if val < 0 else '+'}{val * (100 if type(val) == float else 1):.0f}{('%' if type(val) == float else '')}" for key, val in self.info.items()) if '@' not in [v for k, v in self.info.items()] else 'haha'
+        if type(self.info.keys()) != str:
+            stats = ',-> '.join(f"{key}: {'' if val < 0 else '+'}{val * (100 if type(val) == float else 1):.0f}{('%' if type(val) == float else '')}" for key, val in self.info.items()) if '@' not in [v for k, v in self.info.items()] else 'haha'
+        else:
+            stats = ',-> '.join(f"{key}: {val}" for key, val in self.info.items()) 
         arh = (f"{self.name} ,-> {stats}")
         
             
@@ -1598,6 +1604,9 @@ class Item:
 #update 
 # error war helmet was only at 1 str bug
 
+# Update:
+# modified all crystals to have 15%/5% value
+
 items = [
     # stats
     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.08]),  
@@ -1614,10 +1623,10 @@ items = [
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana refund'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.15, 0.1, 0.1]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.20, 0.10, 0.05]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.20, 0.1, 0.05]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.10, 0.05]),
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.15, 0.05, 0.05]),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.05, 0.05]),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.05, 0.05]),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.05, 0.05]),
     Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.25]),
     Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.08]), 
 
@@ -1629,6 +1638,7 @@ items = [
     Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit chance", "crit dmg"], [0.3, 0.8]),
 
     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg return'], [0.20]),
+    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['dmg return', 'Revive'], [0.1, '+50 hp if HP < 10%']),
     
 
 ]
@@ -1653,7 +1663,7 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 30% atk speed, 200%+ mana refund",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
 }
@@ -1975,7 +1985,9 @@ def player_selection():
         PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
 
         PlayerSelector(items[24].image, (75, height - lower4), items[24], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-    ]
+        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+
+        ]
 
     p2_items = [
         PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
@@ -2314,7 +2326,7 @@ def player_selection():
                             hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
                             hero3.y_pos = DEFAULT_Y_POS
                             hero3.player_1_y += 150
-                            hero3.player_2_y += 150
+                            hero3.player_2_y += 150 
                             
 
                         if global_vars.HERO1_BOT:
@@ -2366,11 +2378,101 @@ def player_selection():
 
                     hero2_group = pygame.sprite.Group()
                     hero2_group.add(hero2)
-                    
-                    # In single player mode, add hero3 to hero2_group as another enemy
+
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.toggle_hero3:
                             hero2_group.add(hero3)
+
+                    # ------------------------------
+                    # --- Create bots for both teams ---
+                    # hero1_group.add(
+                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
+                    # )
+                    # hero1_group.add(
+                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
+                    # )
+                    # hero1_group.add(
+                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
+                    # )
+
+                    # hero2_group.add(
+                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
+                    # )
+                    # hero2_group.add(
+                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
+                    # )
+                    # hero2_group.add(
+                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
+                    # )
+
+                   
+
+                    # --- Assign enemies ---
+                    for h in hero1_group:
+                        h.enemy = list(hero2_group)
+
+                    for h in hero2_group:
+                        h.enemy = list(hero1_group)
+
+                    # --- Apply items to team 1 ---
+                    for h in hero1_group:
+                        h.items = []
+
+                    for item in p1_items:
+                        if item.is_selected():
+                            for h in hero1_group:
+                                h.items.append(item.associate_value())
+
+                    for h in hero1_group:
+                        h.apply_item_bonuses()
+
+                    # --- Apply items to team 2 ---
+                    for h in hero2_group:
+                        h.items = []
+
+                    for item in p2_items:
+                        if item.is_selected():
+                            for h in hero2_group:
+                                h.items.append(item.associate_value())
+
+                    for h in hero2_group:
+                        h.apply_item_bonuses()
+
+                    # hero1_group.add(
+                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1),
+                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1),
+                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1)
+                    # )
+
+                    # hero2_group.add(
+                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2),
+                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2),
+                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2)
+                    # )
+                    
+                    # for item in p2_items:
+                    #     if item.is_selected():
+                    #         for i in hero2_group:
+                    #             i.items.append(item.associate_value())
+                    # for i in hero2_group:
+                    #     i.apply_item_bonuses()
+                    #     # i.enemy = [hero1]
+                    #     for x in hero1_group:
+                    #         x.enemy.append(i)
+
+                    # for item in p1_items:
+                    #     if item.is_selected():
+                    #         for i in hero1_group:
+                    #             i.items.append(item.associate_value())
+                    # for i in hero1_group:
+                    #     i.apply_item_bonuses()
+                    #     # i.enemy = [hero2]
+                    #     for x in hero2_group:
+                    #         x.enemy.append(i)
+
+                    
+                    # In single player mode, add hero3 to hero2_group as another enemy
+                   
                     
                     # hero3_group = pygame.sprite.Group()
                     # hero3_group.add(hero3)

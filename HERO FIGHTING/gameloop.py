@@ -1166,7 +1166,7 @@ swapconfirm_no = ImageButton(
     scale=0.8,
     text='Back',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
+    font_size=font_size,  # dynamic size ~29 at 720p,
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
@@ -1847,7 +1847,7 @@ def reset_all():
     global_vars.PAUSED_TOTAL_DURATION = 0
     global_vars.PAUSED_START = None
     # reset hero states
-    heroes_to_reset = [main.hero1, main.hero2]
+    heroes_to_reset = [x for x in main.hero1_group] + [x for x in main.hero2_group]
     if hasattr(main, 'hero3') and main.hero3 is not None:
         heroes_to_reset.append(main.hero3)
     for hero in heroes_to_reset:
@@ -1905,6 +1905,9 @@ def reset_all():
             hero.invisible = False
             hero.casting_invisible = False
             hero.invisible_duration = 0
+        if hasattr(hero, 'flying'):
+            hero.flying = False
+            hero.flying_duration = 0
         hero.y_velocity = 0
         hero.x_velocity = 0
         hero.running = False
@@ -1913,64 +1916,89 @@ def reset_all():
         hero.special_active = False
         hero.animation_done = False
 
-    # reset cd
-    for attack in main.hero1.attacks:
-        attack.reduce_cd(True)
-    for attack in main.hero2.attacks:
-        attack.reduce_cd(True)
-    if hasattr(main, 'hero3') and main.hero3 is not None:
-        for attack in main.hero3.attacks:
+        for attack in hero.attacks:
             attack.reduce_cd(True)
-
-    for attack in main.hero1.attacks_special:
-        attack.reduce_cd(True)
-    for attack in main.hero2.attacks_special :
-        attack.reduce_cd(True)
-    if hasattr(main, 'hero3') and main.hero3 is not None:
-        for attack in main.hero3.attacks_special:
+        for attack in hero.attacks_special:
             attack.reduce_cd(True)
+        
+        hero.health = hero.max_health
+        hero.mana = hero.max_mana
+        hero.special = 0
+        if hasattr(hero, 'white_health_p1'):
+            hero.white_health_p1 = hero.max_health
+        if hasattr(hero, 'white_health_p2'):
+            hero.white_health_p2 = hero.max_health
 
-    #reset health
-    main.hero1.health = main.hero1.max_health
-    main.hero2.health = main.hero2.max_health
-    main.hero1.mana = main.hero1.max_mana
-    main.hero2.mana = main.hero2.max_mana
-    main.hero1.special = 0
-    main.hero2.special = 0
-    if hasattr(main, 'hero3') and main.hero3 is not None:
-        main.hero3.health = main.hero3.max_health
-        main.hero3.mana = main.hero3.max_mana
-        main.hero3.special = 0
-        main.hero3.white_health_p2 = main.hero3.max_health
-        main.hero3.white_mana_p2 = main.hero3.max_mana
-        main.hero3.damage_numbers.clear()
+        if hasattr(hero, 'white_mana_p1'):
+            hero.white_mana_p1 = hero.max_mana
+        if hasattr(hero, 'white_mana_p2'):
+            hero.white_mana_p2 = hero.max_mana
 
-    main.hero1.white_health_p1 = main.hero1.max_health
-    main.hero2.white_health_p2 = main.hero2.max_health
-    main.hero1.white_mana_p1 = main.hero1.max_mana
-    main.hero2.white_mana_p2 = main.hero2.max_mana
+        hero.damage_numbers.clear()
 
-    main.hero1.damage_numbers.clear()
-    main.hero2.damage_numbers.clear()
-
-    # reset pos
-    main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
-    main.hero1.y_pos = global_vars.DEFAULT_Y_POS
-    main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
-    main.hero2.y_pos = global_vars.DEFAULT_Y_POS
-    if hasattr(main, 'hero3') and main.hero3 is not None:
-        from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
-        main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
-        main.hero3.y_pos = DEFAULT_Y_POS
-
-    # fade_overlay = pygame.Surface((width, height))
-    # fade_overlay.fill((0, 0, 0))
-    # fade_alpha = 0
-    # fading = True
-    # fade_start_time = pygame.time.get_ticks()
-
+        hero.x_pos = global_vars.X_POS_SPACING + random.randint(-20, 20) if hero.player_type == 1 else global_vars.DEFAULT_X_POS
+        hero.y_pos = global_vars.DEFAULT_Y_POS
+        
     attack_display.empty()
-    # Reset paused tracking so timers/cooldowns start fresh
+
+    # # reset cd
+    # for attack in main.hero1.attacks:
+    #     attack.reduce_cd(True)
+    # for attack in main.hero2.attacks:
+    #     attack.reduce_cd(True)
+    # if hasattr(main, 'hero3') and main.hero3 is not None:
+    #     for attack in main.hero3.attacks:
+    #         attack.reduce_cd(True)
+
+    # for attack in main.hero1.attacks_special:
+    #     attack.reduce_cd(True)
+    # for attack in main.hero2.attacks_special :
+    #     attack.reduce_cd(True)
+    # if hasattr(main, 'hero3') and main.hero3 is not None:
+    #     for attack in main.hero3.attacks_special:
+    #         attack.reduce_cd(True)
+
+    # #reset health
+    # main.hero1.health = main.hero1.max_health
+    # main.hero2.health = main.hero2.max_health
+    # main.hero1.mana = main.hero1.max_mana
+    # main.hero2.mana = main.hero2.max_mana
+    # main.hero1.special = 0
+    # main.hero2.special = 0
+    # if hasattr(main, 'hero3') and main.hero3 is not None:
+    #     main.hero3.health = main.hero3.max_health
+    #     main.hero3.mana = main.hero3.max_mana
+    #     main.hero3.special = 0
+    #     main.hero3.white_health_p2 = main.hero3.max_health
+    #     main.hero3.white_mana_p2 = main.hero3.max_mana
+    #     main.hero3.damage_numbers.clear()
+
+    # main.hero1.white_health_p1 = main.hero1.max_health
+    # main.hero2.white_health_p2 = main.hero2.max_health
+    # main.hero1.white_mana_p1 = main.hero1.max_mana
+    # main.hero2.white_mana_p2 = main.hero2.max_mana
+
+    # main.hero1.damage_numbers.clear()
+    # main.hero2.damage_numbers.clear()
+
+    # # reset pos
+    # main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
+    # main.hero1.y_pos = global_vars.DEFAULT_Y_POS
+    # main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
+    # main.hero2.y_pos = global_vars.DEFAULT_Y_POS
+    # if hasattr(main, 'hero3') and main.hero3 is not None:
+    #     from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
+    #     main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
+    #     main.hero3.y_pos = DEFAULT_Y_POS
+
+    # # fade_overlay = pygame.Surface((width, height))
+    # # fade_overlay.fill((0, 0, 0))
+    # # fade_alpha = 0
+    # # fading = True
+    # # fade_start_time = pygame.time.get_ticks()
+
+    # attack_display.empty()
+    # # Reset paused tracking so timers/cooldowns start fresh
     
 
 volume_limit = {'min':100, 'max':300}
@@ -2184,5 +2212,99 @@ def settings(in_game=False):
 
 if __name__ == '__main__':
     main_menu()
+
+import math
+
+class AnimationUtils:
+    @staticmethod
+    def shake(element, strength, duration, clock):
+        """
+        Shake an element (e.g., button or image) with configurable strength and duration.
+
+        Args:
+            element: The element to shake (must have a `rect` attribute).
+            strength: The maximum offset for the shake.
+            duration: The duration of the shake in milliseconds.
+            clock: The pygame clock to manage time.
+        """
+        start_time = pygame.time.get_ticks()
+        original_pos = element.rect.topleft
+
+        while pygame.time.get_ticks() - start_time < duration:
+            offset_x = random.randint(-strength, strength)
+            offset_y = random.randint(-strength, strength)
+            element.rect.topleft = (original_pos[0] + offset_x, original_pos[1] + offset_y)
+            yield
+            element.rect.topleft = original_pos
+
+    @staticmethod
+    def sine_wave_animation(start, end, speed, time):
+        """
+        Create a sine wave animation for smooth oscillation.
+
+        Args:
+            start: The starting value.
+            end: The ending value.
+            speed: The speed of the oscillation.
+            time: The current time (e.g., pygame.time.get_ticks()).
+
+        Returns:
+            The current value based on the sine wave.
+        """
+        amplitude = (end - start) / 2
+        midpoint = (end + start) / 2
+        return midpoint + amplitude * math.sin(speed * time)
+
+# Example usage of animations in the menu
+def animate_button_hover(button, mouse_pos):
+    """
+    Animate button hover effect (e.g., scaling).
+
+    Args:
+        button: The button to animate.
+        mouse_pos: The current mouse position.
+    """
+    if button.is_hovered(mouse_pos):
+        button.scale = AnimationUtils.sine_wave_animation(0.8, 1.0, 0.005, pygame.time.get_ticks())
+    else:
+        button.scale = 0.8
+
+# Add support for textured backgrounds
+def set_background_texture(screen, texture_path):
+    """
+    Set a textured background for the game screen.
+
+    Args:
+        screen: The pygame screen object.
+        texture_path: The file path to the texture image.
+    """
+    texture = pygame.image.load(texture_path)
+    texture = pygame.transform.scale(texture, screen.get_size())
+    screen.blit(texture, (0, 0))
+
+# Example usage in the game loop
+# Replace the plain color background with a texture
+background_texture_path = r'assets/black sand.jpg'  # Replace with your texture file
+set_background_texture(screen, background_texture_path)
+
+# Add animations for elements entering the screen
+def animate_element_entry(element, start_pos, end_pos, speed):
+    """
+    Animate an element entering the screen from a start position to an end position.
+
+    Args:
+        element: The element to animate (must have a `rect` attribute).
+        start_pos: The starting position (x, y).
+        end_pos: The ending position (x, y).
+        speed: The speed of the animation.
+    """
+    element.rect.topleft = start_pos
+    while element.rect.topleft != end_pos:
+        current_x, current_y = element.rect.topleft
+        target_x, target_y = end_pos
+        new_x = current_x + (target_x - current_x) * speed
+        new_y = current_y + (target_y - current_y) * speed
+        element.rect.topleft = (int(new_x), int(new_y))
+        yield
 
 

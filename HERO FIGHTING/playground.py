@@ -108,15 +108,20 @@ v = 0.5 #value
 
 hahh = True
 
-if hahh:
-    print('once', hahh)
-    print('twice', hahh)
-    hahh = False
-    print('thrice', hahh)
-    for i in range(5):
-        print(f'still running even {hahh} is False.')
+# if hahh:
+#     print('once', hahh)
+#     print('twice', hahh)
+#     hahh = False
+#     print('thrice', hahh)
+#     for i in range(5):
+#         print(f'still running even {hahh} is False.')
 
 
+
+list1 = ['a', 'b', 'c', 'd']
+list2 = ['e', 'f', 'g', 'h']
+
+print([x for x in list1] + [x for x in list2])
 
 # print(items*2)
 # print(solve(add=True))

@@ -179,7 +179,7 @@ class Chthulu(Player):
         skill_2 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         skill_3 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk3.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         skill_4 = pygame.transform.scale(pygame.image.load(r'assets/skill icons/soul_destroyer/sk4_2.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\Untitled (1 x 1 in).png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\soul_destroyer\sp_icon.jpg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
 
         # special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\472234276_8613137162147060_446401069957588690_n.jpeg').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
         # special_skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\water_princess\tumblr_8ca04de6143efee03f34ea8c32aca437_a117ed18_1280.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
@@ -588,33 +588,33 @@ class Chthulu(Player):
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
                         self.single_target()
                         target, target_detected = self.face_selective_target()
+                        if not target_detected:
+                            target = self.rect.centerx + (150 if self.facing_right else -150)  # Default to casting in front
+
                         attack = Attack_Display(
                             x=target,
-                            y=self.target.rect.centery + 15,
+                            y=self.rect.centery + 15,
                             frames=self.atk2,
-                            frame_duration=72.72, # 55 frames, 4 seconds
+                            frame_duration=72.72,
                             repeat_animation=1,
                             dmg=self.atk2_damage[0],
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            sound=(True, self.atk3_sound , None, None),
+                            sound=(True, self.atk3_sound, None, None),
                             stop_movement=(True, 3, 2, 0.3),
-                            follow=(False, target_detected)
-                            )
+                            follow=(False, target_detected),
+                        )
                         attack_display.add(attack)
-                        
+
                         self.mana -= self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
                         self.player_atk2_index = 0
                         self.player_atk2_index_flipped = 0
-                        # print("Attack executed")
                     else:
                         pass
                         # print(f"Attack did not execute: {self.mana}:")               

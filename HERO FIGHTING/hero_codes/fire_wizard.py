@@ -18,6 +18,7 @@ from global_vars import (IMMEDIATE_RUN,
     ZERO_WIDTH, TOTAL_WIDTH
 )
 from heroes import Attacks, Attack_Display
+import heroes
 from player import Player
 import global_vars
 import pygame
@@ -187,23 +188,28 @@ class Fire_Wizard(Player):
         # arrow_stuck_damage: (self.basic_attack_damage * 0.3) - 0.05 = 1 ->  (self.basic_attack_damage * 0.5) - 0.25 = 1.5
         # dash speed: 4 -> 5
 
+        # fire wizard update 12/9/25
+        # trait: dmg_mult 20% -> 10% (20% is not actually implemented, too OP)
+        # Skill 2: reverted back to original version with rework
+
+
         #mana cost
         self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 15
+        self.atk2_mana_cost = 75
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         self.atk2_mana_cost_sp = 80
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
-        self.atk2_cooldown = 1000
+        self.atk2_cooldown = 10000
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
         self.atk2_cooldown_sp = 5000 + 13000
         #FORMULA = DESIRED DMG / TOTAL FRAME EX. dmg=25/34 == 0.6944
         self.damage_list = [
             (13, 0),
-            (10/53, 0), #total damage=60
+            (20/53, 0), #total damage=130
             (40/34, 0),
             (50/28, 10)
         ]
@@ -510,22 +516,41 @@ class Fire_Wizard(Player):
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
-                            y=self.rect.centery + 30,
-                            frames=self.atk2,
-                            frame_duration=62.893, # 20seconds total #3.33 seconds each
-                            repeat_animation=6,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk2_damage[0],
-                            final_dmg=self.atk2_damage[1],
-                            who_attacks=self,
-                            who_attacked=self.enemy,
-                            delay=(True, 800),
-                            sound=(True, self.atk2_sound, None, None),
-                            # stop_movement=(True,4,1)
-                            ) # Replace with the target
-                        attack_display.add(attack)
+                        # for i in [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]:
+                        #     attack = Attack_Display(
+                        #         x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
+                        #         y=self.rect.centery + 30,
+                        #         frames=self.atk2,
+                        #         frame_duration=62.893, # 20seconds total #3.33 seconds each
+                        #         repeat_animation=6,
+                        #         speed=5 if self.facing_right else -5,
+                        #         dmg=self.atk2_damage[0],
+                        #         final_dmg=self.atk2_damage[1],
+                        #         who_attacks=self,
+                        #         who_attacked=self.enemy,
+                        #         delay=(True, 800),
+                        #         sound=(True, self.atk2_sound, None, None),
+                        #         # stop_movement=(True,4,1)
+                        #         ) # Replace with the target
+                        #     attack_display.add(attack)
+
+                        for i in [60*2, 120*2, 180*2]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
+                                y=self.rect.centery + 30,
+                                frames=self.atk2,
+                                frame_duration=62.893, # 20seconds total #3.33 seconds each
+                                repeat_animation=6,
+                                speed=5 if self.facing_right else -5,
+                                dmg=self.atk2_damage[0],
+                                final_dmg=self.atk2_damage[1],
+                                who_attacks=self,
+                                who_attacked=self.enemy,
+                                delay=(True, 800),
+                                sound=(True, self.atk2_sound, None, None)
+                                ) # Replace with the target
+                            attack_display.add(attack)
+
                         self.mana -= self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
                         self.running = False
@@ -537,6 +562,14 @@ class Fire_Wizard(Player):
 
                         # summon = create_summon_bot(Skeleton, self.player_type, self.enemy)
                         # global_vars.summon_display.add(summon)
+
+                        
+                        # global_vars.assign_summon_enemy(self.player_type)
+                        # for hero in (hero1_group if self.player_type == 2 else hero2_group):
+                        #     hero.enemy = list(global_vars.summon_display)
+
+                        # for h in hero1_group:
+                        # h.enemy = list(hero2_group)
 
                     else:
                         pass
@@ -718,11 +751,11 @@ class Fire_Wizard(Player):
                                 x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
                                 y=self.rect.centery + 30,
                                 frames=self.atk2,
-                                frame_duration=50,
-                                repeat_animation=4,
+                                frame_duration=47.16, # 15 seconds = damage / 2
+                                repeat_animation=6,
                                 speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0],
-                                final_dmg=self.atk2_damage[1],
+                                dmg=self.atk2_damage[0]/2,
+                                final_dmg=self.atk2_damage[1]/2,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                             delay=(True, 800)) # Replace with the target

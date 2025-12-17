@@ -148,14 +148,23 @@ class Water_Princess(Player):
         death_ani = [r'assets\characters\Water princess\png\14_death\death_', WATER_PRINCESS_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\ult.mp3')
-        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.1 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-short.mp3') # hit water
+        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\water-flowing-sound-.mp3') # flowing water
+        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\drop splash water.mp3') # bubbles
+        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\ice-freezing-sequences-02-116786.mp3') #freeze
+
+        self.sound_1 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-deep.mp3') # splash deep
+        self.sound_2 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-stream.mp3') # stream
+        self.sound_3 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-02-352021.mp3') # splash flowing deep
+
+        self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.7 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.9 * global_vars.MAIN_VOLUME)
+        
+        self.sound_1.set_volume(0.7 * global_vars.MAIN_VOLUME)
+        self.sound_2.set_volume(0.7 * global_vars.MAIN_VOLUME)
+        self.sound_2.set_volume(0.6 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source
         # atk1 = [r'', WATER_PRINCESS_ATK1, 1]
@@ -569,7 +578,7 @@ class Water_Princess(Player):
                     if self.mana >= self.attacks[0].mana_cost and self.attacks[0].is_ready():
                         for i in [
                             (80, 40, 100, self.atk1_damage[0], self.atk1_damage[1], self.atk1_sound, False, 0.4, 0.4, True, True, True, True, (self.atk1, self.atk1)),
-                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 0.6, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
+                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk2_sound, True, 0.7, 0.6, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
                         ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
@@ -632,7 +641,7 @@ class Water_Princess(Player):
                                 who_attacked=self.enemy,
                                 moving=False,
                                 delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
+                                sound=(i[1], self.atk2_sound, self.sound_2, None),
                                 hitbox_scale_x=0.4
                                 ,hitbox_scale_y=0.4,
                                 consume_mana=[i[1], self.atk2_mana_consume]
@@ -684,7 +693,7 @@ class Water_Princess(Player):
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
+                                sound=(True, self.sound_3 , None, None),
                                 follow_self=True,
                                 follow=(False, True), # some bug happended while i code the attack
                                 heal=True,
@@ -706,7 +715,7 @@ class Water_Princess(Player):
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
+                                sound=(True, self.atk2_sound , None, None),
                                 follow_self=True,
                                 follow=(False, True),
                                 heal=True,
@@ -751,7 +760,7 @@ class Water_Princess(Player):
                                 final_dmg=i[7][1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
-                                sound=(True, self.sp_sound, None, None),
+                                sound=(True if i[4][1]  <= 50 else False, self.sound_2, self.sound_1, self.sound_3),
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
                                 hitbox_scale_x=i[5][0],
@@ -838,7 +847,7 @@ class Water_Princess(Player):
                     if self.mana >= self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
                         for i in [
                             (80, 40, 100, self.sp_atk1_damage, 0, self.atk1_sound, False, 0.2, 0.4, False, False, True, True, (self.sp_atk1, self.sp_atk1)),
-                            (70, 80, 100, self.atk1_damage_2nd, 0, self.atk1_sound, True, 0.7, 1.2, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
+                            (70, 80, 100, self.atk1_damage_2nd, 0, self.sp_sound, True, 0.7, 1.2, False, False, False, False, (self.basic_slash, self.basic_slash_flipped)) # this is so inefficient
                         ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx -i[0],
@@ -902,7 +911,7 @@ class Water_Princess(Player):
                                 who_attacked=self.enemy,
                                 moving=False,
                                 delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
+                                sound=(True, self.atk2_sound, self.sound_2, self.atk3_sound),
                                 hitbox_scale_x=0.4
                                 ,hitbox_scale_y=0.4,
                                 consume_mana=[i[1], self.atk2_special_mana_consume]
@@ -965,7 +974,7 @@ class Water_Princess(Player):
                                 who_attacked=self.enemy,
                                 moving=False,
                                 delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
+                                sound=(False, None, None, None),
                                 hitbox_scale_x=0.7
                                 ,hitbox_scale_y=0.7,
                                 stop_movement=(True, 1, 1)
@@ -999,7 +1008,7 @@ class Water_Princess(Player):
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
+                                sound=(True, self.atk2_sound , None, None),
                                 follow_self=True,
                                 follow=(False, True), # some bug happended while i code the attack
                                 heal=True,
@@ -1021,7 +1030,7 @@ class Water_Princess(Player):
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
+                                sound=(True, self.sound_3 , None, None),
                                 follow_self=True,
                                 follow=(False, True),
                                 heal=True,
@@ -1044,7 +1053,7 @@ class Water_Princess(Player):
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 delay=(True, 400),
-                                sound=(True, self.atk3_sound , None, None),
+                                sound=(True, self.sp_sound , None, None),
                                 follow_self=True,
                                 follow=(False, True),
                                 heal=True,
@@ -1090,7 +1099,7 @@ class Water_Princess(Player):
                                 final_dmg=i[7][1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
-                                sound=(True, self.sp_sound, None, None),
+                                sound=(True if i[4][1] <= 50 else False, self.atk3_sound, self.atk2_sound, self.sound_2),
                                 stun=(i[3][0], i[3][1]),
                                 delay=(i[4][0], i[4][1]),
                                 hitbox_scale_x=i[5][0],
@@ -1115,7 +1124,7 @@ class Water_Princess(Player):
                                 who_attacked=self.enemy,
                                 moving=True,
                                 delay=(True, i[0]),
-                                sound=(True, self.atk1_sound, None, None),
+                                sound=(True if i[0] <= 100 else False, self.sound_2, self.sound_1, self.sound_3),
                                 hitbox_scale_x=0.7
                                 ,hitbox_scale_y=0.7
                                 ) # Replace with the target

@@ -80,6 +80,7 @@ DISABLE_MANA_REGEN = False
 DEFAULT_HEALTH_REGENERATION = 0.02
 DEFAULT_MANA_REGENERATION = 0.1
 DEFAULT_BASIC_ATK_DMG_BONUS = 1.2
+DEFAULT_SPECIAL_SKILL_COOLDOWN = 2000 #120000
 
 LOW_HP = 20
 LITERAL_HEALTH_DEAD = 0
@@ -254,6 +255,11 @@ summon_display = pygame.sprite.Group()
 
 
 no_swap = False
+
+# import heroes as main
+# def assign_summon_enemy(player_type):
+#         for hero in (main.hero1_group if player_type == 2 else main.hero2_group):
+#                 hero.enemy += list(summon_display)
 
 
 

@@ -148,6 +148,10 @@ class Summon(Player):
         self.move_towards_enemy()
         if not self.running:
             self.attack_if_ready()
+
+        self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
+        self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
+        self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
         
         # Physics (same)
         self.y_velocity += DEFAULT_GRAVITY

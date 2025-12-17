@@ -109,7 +109,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         # real mana cost is commented
-        self.atk1_mana_cost = 100 #100
+        self.atk1_mana_cost = 120 #100
         self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
         self.sp_mana_cost = 220 #120
@@ -348,7 +348,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             ]
 
         # Modify
-        self.lowest_mana_cost = self.mana_cost_list[0]
+        self.lowest_mana_cost = self.mana_cost_list[1]
 
         # Skills
         self.attacks = [
@@ -456,7 +456,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
 
         # Trait: + 20% attack speed
-        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.3)
+        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
         # Trait: + 15% lifesteal
         self.lifesteal = 0.1
         # Trait : + (some values)% mana refund if hits enemy
@@ -1096,33 +1096,30 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
                         self.single_target()
-                        # enemy_posx = (self.target.x_pos)
-                        # enemy_posy = (self.target.rect.centery)
-                        # one liner is getting hard, took codes from bot_ai
-                        # self.enemy_on_right = self.x_pos < (self.target.x_pos)
-                        # self.enemy_on_left = self.x_pos > (self.target.x_pos)
                         target, target_detected = self.face_selective_target()
+                        if not target_detected:
+                            target = self.rect.centerx + (200 if self.facing_right else -200)  # Default to casting in front
 
                         attack = Attack_Display(
                             x=target,
-                            y=DEFAULT_Y_POS-100, #perfect for old hero, use this: -130
-                            frames=self.sp_atk3, 
-                            frame_duration=111.111, # (2000 / 18) 2s root
+                            y=DEFAULT_Y_POS - 100,
+                            frames=self.sp_atk3,
+                            frame_duration=111.111,
                             repeat_animation=1,
                             dmg=self.sp_atk3_damage[0],
                             final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            sound=(True, self.atk3_sound , None, None),
+                            sound=(True, self.atk3_sound, None, None),
                             delay=(True, 1750),
                             follow=(False, target_detected),
-                            follow_offset= (0, -50),
+                            follow_offset=(0, -50),
                             stop_movement=(True, 2, 2),
                             hitbox_scale_x=0.35,
                             hitbox_scale_y=1,
                             add_mana=True,
                             mana_mult=self.sp_atk3_mana_refund,
-                            
+                                                        
                             # leave arrow bullets
                             spawn_attack= {
 
@@ -1149,9 +1146,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'hitbox_scale_y': 0.1,
                                     }
                                 }
+
                         )
                         attack_display.add(attack)
-                        self.mana -=  self.attacks_special[2].mana_cost
+                        self.mana -= self.attacks_special[2].mana_cost
                         self.attacks_special[2].last_used_time = current_time
                         self.running = False
                         self.attacking3 = True

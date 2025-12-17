@@ -728,7 +728,80 @@ class Player(pygame.sprite.Sprite):
         # self.mana = self.max_mana
         # self.basic_attack_damage = self.agility * self.agi_mult
 
-    
+    # def apply_item_bonuses(self):
+    #     for item in self.items:
+    #         for bonus_type, bonus_value in zip(item.bonus_type, item.bonus_value):
+    #             if bonus_type == "hp":  # Percentage-based health bonus
+    #                 self.max_health += self.max_health * bonus_value
+    #                 self.health = self.max_health  # Update current health to match max health
+    #             elif bonus_type == "hp_flat":  # Flat health bonus
+    #                 self.max_health += bonus_value
+    #                 self.health = self.max_health
+    #             elif bonus_type == "mana":  # Percentage-based mana bonus
+    #                 self.max_mana += self.max_mana * bonus_value
+    #                 self.mana = self.max_mana  # Update current mana to match max mana
+    #             elif bonus_type == "mana_flat":  # Flat mana bonus
+    #                 self.max_mana += bonus_value
+    #                 self.mana = self.max_mana
+    #             elif bonus_type == "atk":  # Percentage-based attack bonus
+    #                 self.basic_attack_damage += self.basic_attack_damage * bonus_value
+    #             elif bonus_type == "atk_flat":  # Flat attack bonus
+    #                 self.basic_attack_damage += bonus_value
+
+    # Documentation
+
+        # # First, gather primary stat bonuses
+        # str_bonus = 0
+        # int_bonus = 0
+        # agi_bonus = 0
+
+        # # First pass: apply percentage and flat bonuses to primary stats
+        # for item in self.items:
+        #     for bonus_type, bonus_value in zip(item.bonus_type, item.bonus_value):
+        #         if bonus_type == "str":
+        #             str_bonus += self.strength * bonus_value
+        #         elif bonus_type == "str_flat":
+        #             str_bonus += bonus_value
+        #         elif bonus_type == "int":
+        #             int_bonus += self.intelligence * bonus_value
+        #         elif bonus_type == "int_flat":
+        #             int_bonus += bonus_value
+        #         elif bonus_type == "agi":
+        #             agi_bonus += self.agility * bonus_value
+        #         elif bonus_type == "agi_flat":
+        #             agi_bonus += bonus_value
+
+        # # Apply stat bonuses
+        # self.strength += str_bonus
+        # self.intelligence += int_bonus
+        # self.agility += agi_bonus
+
+        # # Recalculate derived stats based on new primary stats
+        # self.max_health = self.strength * self.str_mult
+        # self.max_mana = self.intelligence * self.int_mult
+        # self.basic_attack_damage = self.agility * self.agi_mult
+        # self.health = self.max_health
+        # self.mana = self.max_mana
+
+        # # Second pass: apply derived stat bonuses
+        # for item in self.items:
+        #     for bonus_type, bonus_value in zip(item.bonus_type, item.bonus_value):
+        #         if bonus_type == "hp":
+        #             self.max_health += self.max_health * bonus_value
+        #             self.health = self.max_health
+        #         elif bonus_type == "hp_flat":
+        #             self.max_health += bonus_value
+        #             self.health = self.max_health
+        #         elif bonus_type == "mana":
+        #             self.max_mana += self.max_mana * bonus_value
+        #             self.mana = self.max_mana
+        #         elif bonus_type == "mana_flat":
+        #             self.max_mana += bonus_value
+        #             self.mana = self.max_mana
+        #         elif bonus_type == "atk":
+        #             self.basic_attack_damage += self.basic_attack_damage * bonus_value
+        #         elif bonus_type == "atk_flat":
+        #             self.basic_attack_damage += bonus_value
 
     '''
     Image Loading Function Reference
@@ -807,15 +880,7 @@ class Player(pygame.sprite.Sprite):
 
     '''
 
-    def load_img_scaled(self, path, size):
-        """Main purpose: Load image for skill icons
-        - Load images and scale them"""
-        return pygame.transform.scale(pygame.image.load(path).convert_alpha(), size)
-    
-    def load_sound(self, path):
-        """Main purpose: Load sound effect for attacks
-        - Load sound"""
-        return pygame.mixer.Sound(path)
+
 
     def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
         '''
@@ -1092,61 +1157,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     # Display the last frame of the flipped death animation
                     self.image = self.player_death_flipped[-1]
-
-    def setup_skill_icon_rects(
-        self,
-        skill_icons,
-        special_icon,
-        special_skill_icons,
-    ):
-        """
-        skill_icons: list of 4 pygame.Surface (skill 1–4)
-        special_icon: pygame.Surface
-        special_skill_icons: list of 4 pygame.Surface
-        """
-
-        # Direction setup
-        if self.player_type == 1:
-            base_x = X_POS_SPACING + START_OFFSET_X
-            direction = 1
-            special_offset = 50
-        else:
-            base_x = DEFAULT_X_POS - START_OFFSET_X
-            direction = -1
-            special_offset = -50
-
-        # ---- Normal Skills ----
-        self.skill_1_rect = skill_icons[0].get_rect(
-            center=(base_x + direction * SPACING_X * 0, SKILL_Y_OFFSET)
-        )
-        self.skill_2_rect = skill_icons[1].get_rect(
-            center=(base_x + direction * SPACING_X * 1, SKILL_Y_OFFSET)
-        )
-        self.skill_3_rect = skill_icons[2].get_rect(
-            center=(base_x + direction * SPACING_X * 2, SKILL_Y_OFFSET)
-        )
-        self.skill_4_rect = skill_icons[3].get_rect(
-            center=(base_x + direction * SPACING_X * 3, SKILL_Y_OFFSET)
-        )
-
-        # ---- Special Button ----
-        self.special_rect = special_icon.get_rect(
-            center=(base_x + direction * (SPACING_X * 4 + abs(special_offset)), SKILL_Y_OFFSET)
-        )
-
-        # ---- Special Skills ----
-        self.special_skill_1_rect = special_skill_icons[0].get_rect(
-            center=(base_x + direction * SPACING_X * 0, SKILL_Y_OFFSET)
-        )
-        self.special_skill_2_rect = special_skill_icons[1].get_rect(
-            center=(base_x + direction * SPACING_X * 1, SKILL_Y_OFFSET)
-        )
-        self.special_skill_3_rect = special_skill_icons[2].get_rect(
-            center=(base_x + direction * SPACING_X * 2, SKILL_Y_OFFSET)
-        )
-        self.special_skill_4_rect = special_skill_icons[3].get_rect(
-            center=(base_x + direction * SPACING_X * 3, SKILL_Y_OFFSET)
-        )            
+                    
 
     def draw_health_bar(self, screen):
         """Draws a small health bar 10px above the player's hitbox."""
@@ -1774,6 +1785,12 @@ class Player(pygame.sprite.Sprite):
         # Optional: Draw hitbox outline (for debugging)
         # pygame.draw.rect(screen, (0, 255, 0), self.hitbox_rect, 2)
 
+    def handle_speed(self):
+        if self.slowed:
+            self.speed = self.slow_speed
+        else:
+            self.speed = self.default_speed
+            
     # HELPERS
     def is_busy_attacking(self):
         """Returns True if the player is currently performing any attack."""
@@ -1787,59 +1804,17 @@ class Player(pygame.sprite.Sprite):
         '''return true if slowed'''
         return (self.is_dead() or self.slowed)
 
-    def handle_speed(self):
-        if self.slowed:
-            self.speed = self.slow_speed
-        else:
-            self.speed = self.default_speed
+    
     def can_move(self):
-        """Can move.
-
-        Return True if the player can move (not frozen or rooted or dead)."""
+        """Return True if the player can move (not frozen or rooted or dead)."""
         return not (self.is_dead() or self.frozen or self.rooted)
 
     def can_cast(self):
-        """Can attack and use skills.
-
-        Return True if the player can use skills (not frozen/silence or dead)."""
+        """Return True if the player can use skills (not frozen or dead)."""
         return not (self.is_dead() or self.frozen or self.silenced)
-
-    def cannot_cast(self):
-        """Cannot do anything.
-
-        Return True if the player can't use skills (frozen/silence or dead)."""
-        return (self.is_dead() or self.frozen or self.silenced)
     
-    def is_frozen(self):
-        """Cannot do anything.
-
-        Return True if player is frozen."""
-        return self.frozen
-
-    def is_silenced(self):
-        """Can only do basic attack.
-
-        Return True if player is silenced."""
-        return self.silenced
-    
-    def is_rooted(self):
-        """Return True if player is rooted."""
-        return self.rooted
-    
-    def is_slowed(self):
-        """Return True if player is slowed."""
-        return self.slowed
-    
-    
-    def is_in_basic_mode(self):
-        return not self.special_active
-    
-    def is_in_special_mode(self):
-        return self.special_active
-
-    def is_pressing(self, hotkey):
-        """Returns True if the hotkey provided is being pressed."""
-        return hotkey
+    def draw_hp(self):
+        pass
 
     def is_using_skill_1(self):
         """Returns True if the player is currently performing skill 1."""
@@ -1852,21 +1827,21 @@ class Player(pygame.sprite.Sprite):
     def is_using_skill_3(self):
         """Returns True if the player is currently performing skill 3."""
         return self.attacking3
-
+    
+    def is_using_skill_4(self):
+            """Returns True if the player is performing the special attack."""
+            return self.sp_attacking
+    
     def is_using_basic_attack(self):
         """Returns True if the player is performing a basic attack."""
         return self.basic_attacking
-
-    def is_using_special_attack(self):
-        """Returns True if the player is performing the special attack."""
-        return self.sp_attacking
 
     def can_cast_skill(self):
         """
         Returns True if the player is able to cast a skill.
         Handles silenced/frozen states automatically.
         """
-        if getattr(self, "frozen", False):
+        if self.frozen or self.silenced:
             return False
         return True
 
@@ -1878,21 +1853,54 @@ class Player(pygame.sprite.Sprite):
         """Returns True if the player is in special mode."""
         return self.special_active
 
-    def is_jumping(self):
-        """Returns True if player is jumping."""
-        return self.jumping
+    def is_jumping_or_dead(self):
+        """Returns True if player is jumping or dead."""
+        return self.jumping or self.is_dead()
 
-    def is_running(self):
+    def is_moving(self):
         """Returns True if player is currently moving horizontally."""
         return self.running
 
     def is_facing_right(self):
         """Returns True if player is currently facing right."""
         return self.facing_right
-    
-    def is_facing_left(self):
-        """Returns True if player is currently facing left."""
-        return not self.facing_right
+
+    def attack_frames(self, default:pygame.Surface| list, flipped:pygame.Surface | list=None):
+        """Returns the default frames when player is facing right, otherwise returns the flipped frames, as long as the flipped is provided.
+        \nWhen only default is provided, always returns the default value. \n\nAccepts a list of attack frames.
+        - default = surface list
+        - flipped (optional) = flipped surface list"""
+        return default if self.facing_right else flipped if flipped is not None else None
+        
+    def attack_position(self, target, require_facing, offset, axis, get_pos_type='default'):
+        active_axis = self.rect.centerx if axis == 'x' else self.rect.centery
+        if target == self.rect:
+            if get_pos_type == 'default':
+                if require_facing:
+                        return active_axis + offset if self.facing_right else active_axis - offset
+                else:
+                    return active_axis + offset
+            else:
+                return 0
+        elif target == self.target:
+            if get_pos_type == 'default':
+                if require_facing:
+                        return active_axis + offset if self.facing_right else active_axis - offset
+                else:
+                    return active_axis + offset
+            else:
+                return 0
+            
+    def target_enemy(self, position_fallback:int=150):
+        """Returns a tuple (target, target_detected) store to variable depends on u.
+        \n[0] - Returns the closest enemy position detected when facing the enemy in x-axis -> int.
+        \n[1] - Returns if enemy is detected -> bool
+        \nIf facing away from enemy/enemy not detected, targets the ground at provided position in x-axis."""
+        self.single_target()
+        target, target_detected = self.face_selective_target()
+        if not target_detected:
+            target = self.rect.centerx + (position_fallback if self.facing_right else -position_fallback)  # Default to casting in front
+        return target, target_detected
 
     def die(self):
         if not self.is_dead():  # Check if the player is already dead
@@ -1906,52 +1914,42 @@ class Player(pygame.sprite.Sprite):
         if self.x_pos < 0:
             self.x_pos += 3
 
-    def get_closest_enemy(self):
-        if not self.enemy:
-            return None
-        return min(self.enemy, key=lambda e: abs(self.rect.centerx - e.rect.centerx))
-
     def single_target(self): # for single target spells, updates self.target when called.
-        """For single-target spells.
-        Updates self.target to the closest enemy (by X distance)."""
-
-        if not self.enemy:
-            self.target = None
-            return
-
         if len(self.enemy) == 1:
             self.target = self.enemy[0]
-            return
-
-        # Find closest enemy
-        self.target = min(
-            self.enemy,
-            key=lambda e: abs(self.rect.centerx - e.rect.centerx)
-        )
+        elif len(self.enemy) > 1:
+            # Find closest enemy
+            closest_enemy = None
+            closest_distance = float('inf')
+            for enemy in self.enemy:
+                distance = abs(self.rect.centerx - enemy.rect.centerx)
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_enemy = enemy
+            self.target = closest_enemy if closest_enemy else random.choice(self.enemy)
+        else:
+            # No enemies available, use random as fallback
+            self.target = random.choice(self.enemy)
     def face_selective_target(self):
         '''Pls call self.single_target() to update the self.target.
         
         Returns the targett and the detected target, store it to variable.'''
-        if not self.target:
-            return (
-                self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300,
-                False
-            )
-
-        enemy_x = self.target.rect.centerx
-
-        enemy_on_right = self.rect.centerx < enemy_x
-        enemy_on_left = self.rect.centerx > enemy_x
-
-        if enemy_on_right and self.facing_right:
-            return enemy_x, True
-
-        if enemy_on_left and not self.facing_right:
-            return enemy_x, True
-
-        # Enemy exists but not facing it
-        fallback_x = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
-        return fallback_x, False
+        # one liner is getting hard, took codes from bot_ai
+        self.enemy_on_right = self.x_pos < (self.target.x_pos)
+        self.enemy_on_left = self.x_pos > (self.target.x_pos)
+        enemy_pos = (self.target.x_pos)
+        target_detected = False
+        if self.enemy_on_right and self.facing_right:
+            target = enemy_pos
+            target_detected = True
+        elif self.enemy_on_right and not self.facing_right:
+            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+        elif self.enemy_on_left and not self.facing_right:
+            target = enemy_pos
+            target_detected = True
+        else:
+            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+        return target, target_detected
 
     # Handles input for all heroes
     def inputs(self,):

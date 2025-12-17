@@ -588,11 +588,7 @@ class Chthulu(Player):
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
-                        self.single_target()
-                        target, target_detected = self.face_selective_target()
-                        if not target_detected:
-                            target = self.rect.centerx + (150 if self.facing_right else -150)  # Default to casting in front
-
+                        target, target_detected = self.target_enemy(200)
                         attack = Attack_Display(
                             x=target,
                             y=self.rect.centery + 15,

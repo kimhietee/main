@@ -388,13 +388,14 @@ class Phantom_Assasin(Player):
         
         if not self.is_jumping():
             if self.is_pressing(hotkey1) and not self.is_busy_attacking():
-                if self.is_skill_ready(self.mana, self.skill_1):
-                    if self.is_in_basic_mode():
+                if self.is_in_basic_mode():
+                    if self.is_skill_ready(self.mana, self.skill_1):
+                        
 
                         attack = Attack_Display(
                             x=self.rect.centerx - 20 if self.facing_right else self.rect.centerx + 20,
                             y=self.rect.centery + 30,
-                            frames=self.atk1 if self.facing_right else self.atk1_flipped,
+                            frames=self.attack_frames(self.atk1, self.atk1_flipped),
                             frame_duration=100,
                             repeat_animation=1,
                             speed=6 if self.facing_right else -6,
@@ -410,8 +411,9 @@ class Phantom_Assasin(Player):
                             hitbox_scale_y=0.4
                             )
                         
-                    elif self.is_in_special_mode():
-                        pass
+                elif self.is_in_special_mode():
+                    if self.is_skill_ready(self.mana, self.special_skill_1):
+                    
 
             
         

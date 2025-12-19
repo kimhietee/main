@@ -135,7 +135,14 @@ class Player(pygame.sprite.Sprite):
         # # self.item_info_dict = {}   
         # self.item_info_dict.update(self.player_instance.bonus_type, self.player_instance.bonus_value)  
 
-
+        # Attack Speed Calculation
+        self.base_as = global_vars.BASE_ATTACK_SPEED
+        self.base_bat = global_vars.BASE_BAT  # ms; heroes can override
+        self.flat_as_bonus = 0
+        self.percent_as_bonus = 0.0
+        self.flat_as_reduction = 0
+        self.percent_as_reduction = 0.0
+        self.last_basic_attack_time = -BASIC_ATK_COOLDOWN  # Ready initially (use your existing BASIC_ATK_COOLDOWN as fallback)
 
         # Player Position
         self.x = 0
@@ -1813,6 +1820,48 @@ class Player(pygame.sprite.Sprite):
             self.x_pos -= 3
         if self.x_pos < 0:
             self.x_pos += 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def calculate_effective_as(self):
+        """Effective Attack Speed."""
+        as_from_agility = self.agility * global_vars.AGILITY_AS_BONUS
+        base_with_agility = self.base_as + as_from_agility
+        effective_as = base_with_agility + self.flat_as_bonus - self.flat_as_reduction
+        total_percent = 1 + self.percent_as_bonus - self.percent_as_reduction
+        effective_as *= max(0.0, total_percent)
+        return max(global_vars.MIN_ATTACK_SPEED, min(global_vars.MAX_ATTACK_SPEED, effective_as))
+
+    def calculate_basic_attack_interval(self):
+        """Interval in ms: BAT / (AS / 100)."""
+        effective_as = self.calculate_effective_as()
+        return self.base_bat / (effective_as / 100)
+
+    def can_basic_attack(self):
+        """Check if interval has passed."""
+        current_time = pygame.time.get_ticks()
+        return current_time - self.last_basic_attack_time >= self.calculate_basic_attack_interval()
+
+
+
+
+
+
+
+
+
+
+
             
     # ------------------------ HELPERS ------------------------
     def is_busy_attacking(self):
@@ -1932,37 +1981,82 @@ class Player(pygame.sprite.Sprite):
         return final_position
     
 
-    def skill_duration(self, set_mode:tuple[str, int | float], frame_count:int, set_max_frame_duration:int=100, repeat_animation:int=1, print_values:bool=False) -> tuple[float, int]:
+    def skill_duration(
+        self,
+        set_mode: tuple[str, int | float],
+        frame_count: int = None,
+        repeat_animation: int = 1,
+        frame_divisor: int = 1,
+        set_max_frame_duration: int = 100,
+        print_values: bool = False
+    ) -> tuple[float, int]:
         """
-    In milliseconds.
+        Calculate animation frame duration and repeat count.
 
-    set_mode options:
-        ('seconds', milliseconds)
-            - 'seconds': set the mode to seconds
-            - milliseconds: total attack duration in ms
+        set_mode:
+            ('seconds', total_ms)
+                - total_ms: total animation duration in milliseconds
+                - requires frame_count
 
-        ('frames', frame duration)
-            - 'frames': set the mode to frames
-            - frame duration: how long each frame is displayed
-    """
-        if frame_count <= 0:
-            raise ValueError("frame_count cannot be 0.")
+            ('frames', frame_duration)
+                - frame_duration: duration of each frame in milliseconds
+
+        frame_count:
+            - Number of animation frames (used only in 'seconds' mode)
+
+        repeat_animation:
+            - How many times the animation repeats
+
+        frame_divisor:
+            - Divides frame duration and multiplies repeat count
+            - Example: 2 = faster frames, more repeats
+
+        set_max_frame_duration:
+            - Maximum allowed duration per frame (ms)
+            - Auto-increases repeat_animation if exceeded
+
+        Returns:
+            (frame_duration, repeat_animation)
+        """
+
+
+        if frame_divisor <= 0:
+            raise ValueError("frame_divisor must be greater than 0")
+
         if set_mode[0] == 'seconds':
-            frame_duration = set_mode[1] / frame_count
+            if frame_count is None or frame_count <= 0:
+                raise ValueError("frame_count must be greater than 0 when using 'seconds' mode")
+
+            total_ms = set_mode[1]
+
+            frame_duration = total_ms / frame_count
+
+            # Manual divisor
+            frame_duration /= frame_divisor
+            repeat_animation *= frame_divisor
+
+            # Auto-adjust if too slow
+            safety = 0
+            while frame_duration > set_max_frame_duration and safety < 10:
+                repeat_animation += 1
+                frame_duration = total_ms / (frame_count * repeat_animation)
+                safety += 1
+
         elif set_mode[0] == 'frames':
             frame_duration = set_mode[1]
+
         else:
             raise ValueError("set_mode[0] must be 'seconds' or 'frames'")
-        
-        if frame_duration > set_max_frame_duration:
-            repeat_animation += 1
-            frame_duration /= 2
 
         frame_duration = round(frame_duration, 2)
 
         if print_values:
-            print(f'frame_duration = {frame_duration}, frame_count = {frame_count}, repeat_animation = {repeat_animation}')
-            
+            print(
+                f"frame_duration={frame_duration}, "
+                f"frame_count={frame_count}, "
+                f"repeat_animation={repeat_animation}"
+            )
+
         return frame_duration, repeat_animation
 
 

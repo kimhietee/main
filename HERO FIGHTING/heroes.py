@@ -634,8 +634,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         '''
         """
 
-    def __init__(self, x, y, frames:pygame.Surface=list, frame_duration=100, repeat_animation=1, speed=0, 
-                dmg=0, final_dmg=0, who_attacks:object=None, who_attacked:object=None, moving=False, heal=False,
+    def __init__(self, x, y, frames:pygame.Surface=list, frame_duration=100, repeat_animation=1, dmg=0, final_dmg=0, who_attacks:object=None, who_attacked:object=None,
+                speed=0,  moving=False, heal=False,
                 continuous_dmg=False, per_end_dmg=(False, False),
                 disable_collide=False, stun=(False, 0),
                 sound=(False, None, None, None), kill_collide=False,

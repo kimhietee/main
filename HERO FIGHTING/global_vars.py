@@ -184,6 +184,14 @@ BASIC_ATK_DAMAGE2 = 2.7 # medium 2 atks
 BASIC_ATK_DAMAGE3 = 1.2 #fast atk
 BASIC_ATK_DAMAGE4 = 3.2 # ranged
 
+
+# Attack Speed Globals (DOTA 2-inspired)
+BASE_ATTACK_SPEED = 100  # Starting AS for all heroes
+MIN_ATTACK_SPEED = 20    # Minimum cap (slowest)
+MAX_ATTACK_SPEED = 700   # Maximum cap (fastest)
+AGILITY_AS_BONUS = 1     # +1 AS per agility point
+BASE_BAT = 1000          # Base Attack Time in ms (1s); override per hero
+
 # Miscellaneous
 MULT = 0.7
 dmg_mult = 0.05

@@ -366,12 +366,16 @@ class Phantom_Assasin(Player):
                 if self.is_in_basic_mode():
                     if self.is_skill_ready(self.mana, self.skill_1):
                         
+                        frame_duration, repeat_animation = self.skill_duration(
+                            set_mode = ('seconds', 1000),
+                            frame_count = self.attack_frames['atk1frames']
+                        )
                         attack = Attack_Display(
                             x=self.attack_position(self.rect, 'x', 20, True),
                             y=self.attack_position(self.rect, 'y', 20, False),
                             frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
-                            frame_duration=100,
-                            repeat_animation=1,
+                            frame_duration=frame_duration,
+                            repeat_animation=repeat_animation,
                             speed=6 if self.facing_right else -6,
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],

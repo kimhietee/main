@@ -9,6 +9,7 @@ from global_vars import (
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
+    ZERO_WIDTH, TOTAL_WIDTH,
     attack_display
 )
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped
@@ -369,6 +370,16 @@ class Player(pygame.sprite.Sprite):
         self.player_1_y = 150
         self.player_2_x = 96
         self.player_2_y = 150
+
+        # Player Movement Limitations and Settings
+        self.limit_movement_left = ZERO_WIDTH
+        '''Prevent player moving left.'''
+        self.limit_movement_right = TOTAL_WIDTH
+        '''Prevent player moving right.'''
+        self.jump_force = DEFAULT_JUMP_FORCE
+        '''Jump strength/force of player.'''
+        self.detect_ground = DEFAULT_Y_POS
+        '''Limit where player detects the ground at y level.'''
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
@@ -1791,7 +1802,19 @@ class Player(pygame.sprite.Sprite):
         else:
             self.speed = self.default_speed
             
-    # HELPERS
+    def die(self):
+        if not self.is_dead():  # Check if the player is already dead
+            self.health = 0  # Ensure the health is set to 0 when dying
+            self.winner = 2 if self.player_type == 1 else 1  # Set the winner
+
+    def move_to_screen(self): # drag the player when out of bounds
+        # print('asd')
+        if self.x_pos > width:
+            self.x_pos -= 3
+        if self.x_pos < 0:
+            self.x_pos += 3
+            
+    # ------------------------ HELPERS ------------------------
     def is_busy_attacking(self):
         """Returns True if the player is currently performing any attack."""
         return self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking
@@ -1864,57 +1887,90 @@ class Player(pygame.sprite.Sprite):
     def is_facing_right(self):
         """Returns True if player is currently facing right."""
         return self.facing_right
+    
+    
 
-    def attack_frames(self, default:pygame.Surface| list, flipped:pygame.Surface | list=None):
+
+    # ------------------------ Attack_Display class HELPERS ------------------------
+    def attack_frame_count(self, default:pygame.Surface| list, flipped:pygame.Surface | list=None):
         """Returns the default frames when player is facing right, otherwise returns the flipped frames, as long as the flipped is provided.
         \nWhen only default is provided, always returns the default value. \n\nAccepts a list of attack frames.
         - default = surface list
-        - flipped (optional) = flipped surface list"""
+        - flipped (optiona = flipped surface list"""
         return default if self.facing_right else flipped if flipped is not None else None
         
-    def attack_position(self, target, require_facing, offset, axis, get_pos_type='default'):
-        active_axis = self.rect.centerx if axis == 'x' else self.rect.centery
-        if target == self.rect:
-            if get_pos_type == 'default':
-                if require_facing:
-                        return active_axis + offset if self.facing_right else active_axis - offset
-                else:
-                    return active_axis + offset
-            else:
-                return 0
-        elif target == self.target:
-            if get_pos_type == 'default':
-                if require_facing:
-                        return active_axis + offset if self.facing_right else active_axis - offset
-                else:
-                    return active_axis + offset
-            else:
-                return 0
+    def attack_position(self, target:object, axis:str='x', offset:int=0, require_facing:bool=False, positioning:str='centerx') -> int:
+        """Returns x/y coordinate based on the target and offset starting from player.
+        \nSet the offset either positive/negative values.
+        - self.rect = starting position from player
+        - self.target = starting position from detected enemy player
+        - target (int value returned by particular method (self.target_enemy())) = starting position at specific position (probably the target)"""
+        if axis == 'x':
+            if positioning == 'centerx':
+                position = target.centerx
+        elif axis == 'y':
+            #default to centery, for now.
+            positioning = 'centery'
+            if positioning == 'centery':
+                position = target.centery
+        # -----------------------------------------
+        # Just checking the additional value if center x/y is not provided.
+        if positioning not in ['centerx', 'centery']:
+            if positioning == 'bottom':
+                position = target.bottom
+            elif positioning == 'left':
+                position = target.left
+            elif positioning == 'right':
+                position = target.right
+            elif positioning == 'top':
+                position = target.top
+        # -----------------------------------------
+        if require_facing:
+            final_position = position + offset if self.facing_right else position - offset
+        else:
+            final_position = position + offset
+        return final_position
+    
+
+    def skill_duration(self, set_mode:tuple[str, int | float], frame_count:int, set_max_frame_duration:int=100, repeat_animation:int=1, print_values:bool=False) -> tuple[float, int]:
+        """
+    In milliseconds.
+
+    set_mode options:
+        ('seconds', milliseconds)
+            - 'seconds': set the mode to seconds
+            - milliseconds: total attack duration in ms
+
+        ('frames', frame duration)
+            - 'frames': set the mode to frames
+            - frame duration: how long each frame is displayed
+    """
+        if frame_count <= 0:
+            raise ValueError("frame_count cannot be 0.")
+        if set_mode[0] == 'seconds':
+            frame_duration = set_mode[1] / frame_count
+        elif set_mode[0] == 'frames':
+            frame_duration = set_mode[1]
+        else:
+            raise ValueError("set_mode[0] must be 'seconds' or 'frames'")
+        
+        if frame_duration > set_max_frame_duration:
+            repeat_animation += 1
+            frame_duration /= 2
+
+        frame_duration = round(frame_duration, 2)
+
+        if print_values:
+            print(f'frame_duration = {frame_duration}, frame_count = {frame_count}, repeat_animation = {repeat_animation}')
             
-    def target_enemy(self, position_fallback:int=150):
-        """Returns a tuple (target, target_detected) store to variable depends on u.
-        \n[0] - Returns the closest enemy position detected when facing the enemy in x-axis -> int.
-        \n[1] - Returns if enemy is detected -> bool
-        \nIf facing away from enemy/enemy not detected, targets the ground at provided position in x-axis."""
-        self.single_target()
-        target, target_detected = self.face_selective_target()
-        if not target_detected:
-            target = self.rect.centerx + (position_fallback if self.facing_right else -position_fallback)  # Default to casting in front
-        return target, target_detected
+        return frame_duration, repeat_animation
 
-    def die(self):
-        if not self.is_dead():  # Check if the player is already dead
-            self.health = 0  # Ensure the health is set to 0 when dying
-            self.winner = 2 if self.player_type == 1 else 1  # Set the winner
 
-    def move_to_screen(self): # drag the player when out of bounds
-        # print('asd')
-        if self.x_pos > width:
-            self.x_pos -= 3
-        if self.x_pos < 0:
-            self.x_pos += 3
 
+
+    # ------------------------ Targeting HELPERS ------------------------
     def single_target(self): # for single target spells, updates self.target when called.
+        """Chooses a single enemy target (nearest enemy)"""
         if len(self.enemy) == 1:
             self.target = self.enemy[0]
         elif len(self.enemy) > 1:
@@ -1951,8 +2007,22 @@ class Player(pygame.sprite.Sprite):
             target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
         return target, target_detected
 
-    # Handles input for all heroes
+    def target_enemy(self, position_fallback:int=150):
+        """Returns a tuple (target, target_detected) store to variable depends on u.
+        \n[0] - Returns the closest enemy position detected when facing the enemy in x-axis -> int.
+        \n[1] - Returns if enemy is detected -> bool
+        \nIf facing away from enemy/enemy not detected, targets the ground at provided position in x-axis."""
+        self.single_target()
+        target, target_detected = self.face_selective_target()
+        if not target_detected:
+            target = self.rect.centerx + (position_fallback if self.facing_right else -position_fallback)  # Default to casting in front
+        return target, target_detected
+    
+    # ------------------------ Core Player Input Methods ------------------------
+    
     def inputs(self,):
+        """Base user input collection from saved hotkeys on controls.
+        \nHandles input for all heroes"""
         # print("Entered Player.py")
         keybinds=key.read_settings()
         self.keys = pygame.key.get_pressed()
@@ -1971,6 +2041,35 @@ class Player(pygame.sprite.Sprite):
             (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['sp_skill_p2'][0]])
             )
 
+    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1):
+        '''Handles the player movement using user input (jump, move left/right).
+        \nModify jump_force to increase/decrease the jump force of the player when jumping.
+        \n- right,left,jump_hotkey = user input (no change)
+        \n- current_time = get current time (no change)
+        \n- jump_force: self.jump_force = DEFAULT_Y_POS
+        \n- speed_modifier: base speed = 0
+        \n- special_active_speed: increase speed when special mode = 0.1 (10%)'''
+        
+        if self.is_not_attacking():
+            if right_hotkey:  # Move right
+                self.running = True
+                self.facing_right = True
+                self.x_pos += (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
+                if self.x_pos > self.limit_movement_right - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                    self.x_pos = self.limit_movement_right - (self.hitbox_rect.width/2)
+            elif left_hotkey:  # Move left
+                self.running = True
+                self.facing_right = False
+                self.x_pos -= (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
+                if self.x_pos < (self.limit_movement_left + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                    self.x_pos = (self.limit_movement_left + (self.hitbox_rect.width/2))
+            else:
+                self.running = False
+
+            if jump_hotkey and self.y_pos == self.detect_ground and current_time - self.last_atk_time > JUMP_DELAY:
+                self.jumping = True
+                self.y_velocity = jump_force
+                self.last_atk_time = current_time  # Update the last jump time
     
     # Phased out code (since I don't use super.init)
     def update(self):

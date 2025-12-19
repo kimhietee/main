@@ -121,7 +121,19 @@ hahh = True
 list1 = ['a', 'b', 'c', 'd']
 list2 = ['e', 'f', 'g', 'h']
 
-print([x for x in list1] + [x for x in list2])
+# print([x for x in list1] + [x for x in list2])
+
+
+# print(5 - -2)
+
+print(f'{23.1122038601983:.2f}')
+
+qwe = 123
+
+if qwe < 2:
+    print('asd')
+else:
+    raise ValueError('huh?')
 
 # print(items*2)
 # print(solve(add=True))

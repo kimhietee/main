@@ -334,32 +334,6 @@ class Phantom_Assasin(Player):
         self.special_skill_3 = self.special_attacks[2]
         self.special_skill_4 = self.special_attacks[3]
         self.special_attack = self.special_attacks[4]
-
-    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, speed_modifier=0, special_active_speed=0.1):
-        '''
-        speed_modifier: base speed = 0
-        special_active_speed: increase speed when special mode
-        '''
-        if self.is_not_attacking():
-            if right_hotkey:  # Move right
-                self.running = True
-                self.facing_right = True
-                self.x_pos += (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
-                if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
-                    self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
-            elif left_hotkey:  # Move left
-                self.running = True
-                self.facing_right = False
-                self.x_pos -= (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
-                if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
-                    self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
-            else:
-                self.running = False
-
-            if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
-                self.jumping = True
-                self.y_velocity = DEFAULT_JUMP_FORCE  
-                self.last_atk_time = current_time  # Update the last jump time
         
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         """The most crucial part of collecting user input.
@@ -375,7 +349,8 @@ class Phantom_Assasin(Player):
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
                 speed_modifier = 0,
-                special_active_speed = 0.1
+                special_active_speed = 0.1,
+                jump_force = self.jump_force
                 )
             
         # ---------- Casting ----------
@@ -391,11 +366,10 @@ class Phantom_Assasin(Player):
                 if self.is_in_basic_mode():
                     if self.is_skill_ready(self.mana, self.skill_1):
                         
-
                         attack = Attack_Display(
-                            x=self.rect.centerx - 20 if self.facing_right else self.rect.centerx + 20,
-                            y=self.rect.centery + 30,
-                            frames=self.attack_frames(self.atk1, self.atk1_flipped),
+                            x=self.attack_position(self.rect, 'x', 20, True),
+                            y=self.attack_position(self.rect, 'y', 20, False),
+                            frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
                             frame_duration=100,
                             repeat_animation=1,
                             speed=6 if self.facing_right else -6,
@@ -413,6 +387,8 @@ class Phantom_Assasin(Player):
                         
                 elif self.is_in_special_mode():
                     if self.is_skill_ready(self.mana, self.special_skill_1):
+
+                        pass
                     
 
             

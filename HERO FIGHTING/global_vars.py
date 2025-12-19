@@ -200,12 +200,12 @@ loading_screen_bg = pygame.transform.scale(
 #hero icons
 fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
 wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
-fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
-wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
-water_princess_icon = r'assets\hero profiles\water character profile.png'
-forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
+fire_knight_icon = r'assets\hero profiles\Fire Knight.png'
+wind_hashashin_icon = r'assets\hero profiles\Wind Hashashin.png'
+water_princess_icon = r'assets\hero profiles\Water Princess.png'
+forest_ranger_icon = r'assets\hero profiles\Forest Ranger.png'
 yurei_icon = r'assets\skill icons\onre\Yuriei.jpg'
-chthulu_icon = r'assets\hero profiles\chthulu profile.png'
+chthulu_icon = r'assets\hero profiles\Chthulu.png'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'

@@ -49,6 +49,16 @@ class ImageButton:
         screen.blit(self.image, self.rect)
         screen.blit(self.text_surf, self.text_rect)
 
+    def set_position(self, center): # this is the original position 
+        dx = center[0] - self.rect.centerx
+        dy = center[1] - self.rect.centery
+
+        self.rect.center = center
+
+
+        self.text_rect.x += dx
+        self.text_rect.y += dy
+
 
 
     # Input below can only be checked at pygame.event.MOUSEBUTTON... or any input involving event

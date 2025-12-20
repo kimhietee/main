@@ -1682,36 +1682,62 @@ class Item:
 # modified all crystals to have 15%/5% value
 
 items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08], description="A sturdy helmet that boosts @strength and regeneration."),
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1], description="Reduces damage but slows movement."),
-    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal_per"], [0.15]),
-    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05]),
-    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp_per", "hp_flat"], [0.1, 5.0]), 
-    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3]),
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08],
+        description="A sturdy helmet that boosts @strength and regeneration."),
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1],
+        description="Reduces damage but slows movement."),
+    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal_per"], [0.15],
+        description=r"desc"),
+    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05],
+        description=r"desc"),
+    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp_per", "hp_flat"], [0.1, 5.0],
+        description=r"desc"), 
+    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3],
+        description=r"desc"),
 
-    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),
-    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),
-    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk_flat', 'atk_speed_per', 'move_speed_per'], [25.0, 0.05, 0.05]),
-    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),
-    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),
-    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75]),
+    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05],
+        description=r"desc"),
+    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05],
+        description=r"desc"),
+    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk_flat', 'atk_speed_per', 'move_speed_per'], [25.0, 0.05, 0.05],
+        description=r"desc"),
+    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07],
+        description=r"desc"),
+    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0],
+        description=r"desc"),
+    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75],
+        description=r"desc"),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25]),
-    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]), 
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05],
+        description=r"desc"),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05],
+        description=r"desc"),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05],
+        description=r"desc"),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05],
+        description=r"desc"),
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25],
+        description=r"desc"),
+    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08],
+        description=r"desc"), 
 
-    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]), 
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp_increase_per'], [0.40]), 
-    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),
-    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),
-    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit_chance_per", "crit_dmg_per"], [0.3, 0.8]),
+    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0],
+        description=r"desc"),
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move_speed_per", "atk_speed_flat"], [0.1, 150.0],
+        description=r"desc"), 
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp_increase_per'], [0.40],
+        description=r"desc"), 
+    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0],
+        description=r"desc"),
+    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0],
+        description=r"desc"),
+    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit_chance_per", "crit_dmg_per"], [0.3, 0.8],
+        description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Heal: 50@- Cooldown: 120"),
 
-    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg_return_per'], [0.20]),
-    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [50], description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Cooldown: 120"),  # 'revive_once' as flat 1 (true)
+    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg_return_per'], [0.20],
+        description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Heal: 50@- Cooldown: 120"),
+    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [1],
+        description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Heal: 50@- Cooldown: 120"),  # 'revive_once' as flat 1 (true)
 ]
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
@@ -1758,6 +1784,9 @@ class PlayerSelector:
             self.profile = pygame.transform.scale(image, size)
             self.ingame_profile = pygame.transform.scale(image, (25,25))
         self.profile_rect = self.profile.get_rect(center = self.rect)
+
+        self.original_pos = self.profile_rect.topleft
+        self.slot_pos = None  # where it moves when selected
 
         self.decor_rect = pygame.Rect(self.profile_rect.centerx - offsetdecor[0], self.profile_rect.centery - offsetdecor[1], decorxsize, decorysize)
         
@@ -1820,6 +1849,27 @@ class PlayerSelector:
     
     def associate_value(self):
         return self.class_item
+    
+    def set_position(self, topleft):
+        '''moves the item along with its attributes.'''
+        dx = topleft[0] - self.profile_rect.x
+        dy = topleft[1] - self.profile_rect.y
+
+        # Image
+        self.profile_rect.topleft = topleft
+
+        # Decor
+        self.decor_rect.x += dx
+        self.decor_rect.y += dy
+
+        # Deselect button (FULLY)
+        self.back.set_position((self.back.rect.centerx + dx, self.back.rect.centery + dy))
+
+
+    def move_towards(self, target, speed=10): # smooth movement
+        x = self.profile_rect.x + (target[0] - self.profile_rect.x) * 0.15
+        y = self.profile_rect.y + (target[1] - self.profile_rect.y) * 0.15
+        self.set_position((int(x), int(y)))
     
     def the_info(self, position):
          # Display hero info if hovered
@@ -2135,6 +2185,9 @@ def player_selection():
 
     immediate_run = IMMEDIATE_RUN # for dev option only
 
+    selected_items = [] # stores currently selected item
+    last_item_pos = [] # stores last item position to revert back if deselected
+
     from button import RectButton
     all_items_button = RectButton((width/2), height*0.8, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "All Items")
     x2_bot = RectButton((width/2), height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "2x Bot")
@@ -2238,7 +2291,25 @@ def player_selection():
                     # Draw item selection
                     for item in p1_items:
                         item.update(mouse_pos, mouse_press, p1_items, max_selected=MAX_ITEM)
-                        # item.selected = True
+                        if item.selected:
+                            if item not in selected_items: # only add the item once
+                                selected_items.append(item)
+                            #     last_item_pos.append((item.profile_rect.x, item.profile_rect.y))
+                            # for slot in range(1, len(selected_items) + 1):
+                            #     item.profile_rect.x = 75 * slot
+                            #     item.profile_rect.y = height - 50
+                        else:
+                            if item in selected_items: # only remove if item still present
+                                selected_items.remove(item)
+                                item.move_towards(item.original_pos)
+                                # item.profile_rect.x, item.profile_rect.y = last_item_pos.remove((item.profile_rect.x, item.profile_rect.y))
+
+                    for i, item in  enumerate(selected_items):
+                        slot_x = 75 * (i + 1)
+                        slot_y = height - 100
+                        item.set_position((slot_x, slot_y))
+
+
                     for item in p1_items:
                         item.draw()
 
@@ -2248,7 +2319,7 @@ def player_selection():
                             item.class_item.update((width + (width * 0.322), height - 500))
 
 
-
+                    
 
 
                     # randoms = [1,5,7,8]

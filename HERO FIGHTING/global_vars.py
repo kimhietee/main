@@ -241,7 +241,7 @@ font_size = int(height * 0.02)# = 14
 FONT_PATH = r'assets\\font\\slkscr.ttf'
 _FONT_CACHE = {}
 
-def get_font(size):
+def get_font(size, font_path=FONT_PATH):
         """Return a cached pygame Font object for the given size."""
         try:
                 size = int(size)
@@ -249,9 +249,26 @@ def get_font(size):
                 size = 16
         font = _FONT_CACHE.get(size)
         if font is None:
-                font = pygame.font.Font(FONT_PATH, size)
+                font = pygame.font.Font(font_path, size)
                 _FONT_CACHE[size] = font
         return font
+
+def load_font(font_path, size):
+    """
+    Load a font dynamically from the given path and size.
+
+    Args:
+        font_path: The file path to the font.
+        size: The size of the font to load.
+
+    Returns:
+        A pygame.Font object.
+    """
+    try:
+        return pygame.font.Font(font_path, size)
+    except FileNotFoundError:
+        print(f"Font file not found: {font_path}")
+        return None
 
 SHOW_MINI_HEALTH_BAR = False
 SHOW_MINI_MANA_BAR = False

@@ -1536,42 +1536,116 @@ center_pos = (width / 2, height / 2)
 
 
 class Item:
-    def __init__(self, name, image_path, bonus_type, bonus_value):
+    def __init__(self, name, image_path, bonus_type, bonus_value, description=""):
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(), (75, 75))
-        self.bonus_type = bonus_type  # e.g., 'hp', 'mana', 'atk'
-        self.bonus_value = bonus_value
+        self.bonus_type = bonus_type  # list, e.g., ["str_per", "str_flat", "hp_regen_per"]
+        self.bonus_value = [float(v) for v in bonus_value]  # Always floats for consistency
         self.rect = self.image.get_rect(center=center_pos)
+        self.description = description  # Optional description
 
-        self.info = {type_: value for type_, value in zip(self.bonus_type, self.bonus_value)}
+        self.info = {t: v for t, v in zip(self.bonus_type, self.bonus_value)}
 
-                                    # (items[5].image, (75, height - 300), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30))
-        # self.decor_rect = pygame.Rect(self.rect.centerx - 30, self.rect.centery - 30, 60, 60)
-    
-    def update(self, position):
-        if type(self.info.keys()) != str:
-            stats = ',-> '.join(f"{key}: {'' if val < 0 else '+'}{val * (100 if type(val) == float else 1):.0f}{('%' if type(val) == float else '')}" for key, val in self.info.items()) if '@' not in [v for k, v in self.info.items()] else 'haha'
-        else:
-            stats = ',-> '.join(f"{key}: {val}" for key, val in self.info.items()) 
-        arh = (f"{self.name} ,-> {stats}")
+        # Auto-generate display_info (user-friendly strings)
+        self.display_info = self.generate_display_info()
+
+    def generate_display_info(self):
+        display_map = {
+            # Primary stats
+            "str_per": "Strength",
+            "str_flat": "Strength",
+            "int_per": "Intelligence",
+            "int_flat": "Intelligence",
+            "agi_per": "Agility",
+            "agi_flat": "Agility",
+            "heal_when_low": "Convalescent",
+
+            # Health / Mana
+            "hp_flat": "Max HP",
+            "hp_regen_per": "HP Regen",
+            "mana_per": "Max Mana",
+            "mana_flat": "Max Mana",
+            "mana_regen_per": "Mana Regen",
+            "mana_refund_per": "Mana Refund",
+            "mana_reduce_per": "Mana Cost Reduction",
+
+            # Attack / Damage / Speed
+            "atk_per": "Attack Damage",
+            "atk_flat": "Attack Damage",
+            "atk_speed_flat": "Attack Speed",   # Flat (ticks)
+            "atk_speed_per": "Attack Speed",    # Percentage
+            "spell_dmg_per": "Spell Damage",
+
+            # Defensive / Utility / Special
+            "dmg_reduce_per": "Damage Reduction",
+            "dmg_return_per": "Damage Return",
+            "lifesteal_per": "Lifesteal",
+            "health_cost_per": "Health Cost (as Lifesteal Penalty)",
+            "move_speed_per": "Move Speed",
+            "cd_reduce_per": "Cooldown Reduction",
+            "sp_increase_per": "Special Increase",
+        }
         
-            
-           
+        info_list = []
+        for typ, val in self.info.items():
+            nice_name = display_map.get(typ, typ.replace("_", " ").title())  # Fallback to capitalized type
+            sign = "+" if val > 0 else ""
+            if "_per" in typ:  # Percentage
+                formatted_val = f"{sign}{val * 100:.0f}%"
+            else:  # Flat
+                formatted_val = f"{sign}{val:g}"  # :g trims decimals
+            info_list.append(f"{nice_name}: {formatted_val}")
+        return info_list
+
+    def update(self, position, line_break_every=3, use_literal=False, character_limit=100):
+        if use_literal:
+            # Option 1: Literal values (no %)
+            stats_lines = [f"{key.replace('_', ' ').title()}: {'' if val < 0 else '+'}{val:g}" for key, val in self.info.items()]
+        else:
+            # Option 2: User-friendly
+            stats_lines = self.display_info
+
+        # Auto-wrap long lines (every N items)
+        if line_break_every > 0:
+            wrapped = []
+            for i in range(0, len(stats_lines), line_break_every):
+                chunk = stats_lines[i:i+line_break_every]
+                # Prepend '@-> ' to all but the first in the chunk
+                chunk = [chunk[0]] + [f"@-> {entry}" for entry in chunk[1:]]
+                wrapped.append(' '.join(chunk))
+            stats_lines = wrapped  # Now list of grouped strings
+
+        # Build full lines list: Name first, then stats, then desc (each as separate lines)
+        full_lines = [self.name] + stats_lines
+        if self.description:
+            full_lines += [""]  # Empty line spacer
+            # Split desc into lines if long (e.g., every 40 chars)
+            desc_words = self.description.split()
+            desc_lines = []
+            current_line = ""
+            for word in desc_words:
+                if len(current_line) + len(word) + 1 > character_limit:  # Char limit per line
+                    desc_lines.append(current_line.strip())
+                    current_line = word
+                else:
+                    current_line += " " + word
+            if current_line:
+                desc_lines.append(current_line.strip())
+            full_lines += desc_lines
+
         info_bubble_item = ImageBro(
             image_path=text_box_img,
-            pos=position,
+            pos=(position[0]*0.8, position[1]),
             scale=2,
-            text=arh,
-            font_path=r'assets\font\slkscr.ttf',  # or any other font path
-            font_size=font_size*1.05,  # dynamic size ~29 at 720p
+            text=full_lines,  # Now a list!
+            font_path=r'assets\font\slkscr.ttf',
+            font_size=font_size*1.05,
             text_color='white',
             fku=True,
-            scale_val=(150, 200),
+            scale_val=(250, 200 + (len(full_lines) * font_size)),  # Dynamically grow height
             hover_move=0
-            
-            
         )
-        info_bubble_item.drawing_info(screen, pygame.mouse.get_pos())
+        info_bubble_item.drawing_info(screen)
 
     # def draw(self, pos):
     #     self.decor = pygame.draw.rect(screen, black, self.decor_rect)
@@ -1608,40 +1682,39 @@ class Item:
 # modified all crystals to have 15%/5% value
 
 items = [
-    # stats
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.1, 1, 0.08]),  
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg reduce', 'hp flat', "move speed"], [0.15, 5, -0.1]),
-    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal"], [0.15]),
-    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp flat', 'mana flat', 'agi flat', 'cd reduce'], [30, -30, 5, 0.05]),
-    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp", "hp flat"], [0.1, 5]), 
-    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp regen", "mana regen"], [-0.3, 0.3]),
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08], description="A sturdy helmet that boosts @strength and regeneration."),
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1], description="Reduces damage but slows movement."),
+    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal_per"], [0.15]),
+    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05]),
+    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp_per", "hp_flat"], [0.1, 5.0]), 
+    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3]),
 
-    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp flat', 'dmg reduce', 'hp regen'], [25, 0.05, 0.05]),
-    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana flat', 'spell dmg', 'mana regen'], [25, 0.05, 0.05]),
-    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk flat', 'atk speed', 'move speed'], [25, 0.05, 0.05]),
-    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp regen", "mana regen", "move speed"], [0.07, 0.07, 0.07]),
-    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str flat", "int flat", "agi flat"], [4, 4, 3]),
-    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana refund'], [0.75]),
+    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),
+    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),
+    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk_flat', 'atk_speed_per', 'move_speed_per'], [25.0, 0.05, 0.05]),
+    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),
+    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),
+    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell dmg', 'mana reduce', 'cd reduce'], [0.15, 0.05, 0.05]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana reduce', 'cd reduce', 'spell dmg'], [0.15, 0.05, 0.05]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd reduce', 'mana reduce', 'spell dmg'], [0.15, 0.05, 0.05]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana flat', 'mana reduce', 'spell dmg'], [40, 0.05, 0.05]),
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health cost', "spell dmg"], [-0.15, 0.25]),
-    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int", "int flat", "mana regen"], [0.1, 4, 0.08]), 
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25]),
+    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]), 
 
-    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk", "hp flat", "agi flat"], [0.1, 5, 2]),
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move speed", "attack speed"], [0.1, 150]), 
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp increase'], [0.40]), 
-    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk flat', "move speed", 'attack speed'], [10, 0.05, 50]),
-    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp regen", "mana regen", "move speed", "attack speed", "int flat"], [0.02, 0.02, 0.02, 100, 4]),
-    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit chance", "crit dmg"], [0.3, 0.8]),
+    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]), 
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp_increase_per'], [0.40]), 
+    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),
+    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),
+    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit_chance_per", "crit_dmg_per"], [0.3, 0.8]),
 
-    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg return'], [0.20]),
-    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['dmg return', 'Revive'], [0.1, '+50 hp if HP < 10%']),
-    
-
+    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg_return_per'], [0.20]),
+    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [50], description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Cooldown: 120"),  # 'revive_once' as flat 1 (true)
 ]
+"""# MAX CHAR LENGTH (including spaces):
+\n# -> 32"""
 
 # doc
 #
@@ -1768,9 +1841,10 @@ class PlayerSelector:
                     text_color='white',
                     fku=True,
                     scale_val=(150, 230),
-                    hover_move=0
+                    hover_move=0,
+                    player_info=True
                 )
-                info_bubble.drawing_info(screen, pygame.mouse.get_pos())
+                info_bubble.drawing_info(screen)
 
     def update(self, mouse_pos, mouse_press, other_selectors, max_selected=MAX_ITEM):
         self.draw()
@@ -1794,7 +1868,10 @@ class PlayerSelector:
 
 
 class ImageBro:
-    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0, 0)):
+    '''must pass str with break line of , if players
+        
+        must pass list of str with break line of @ if items'''
+    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0, 0), player_info=False):
         # Load and scale the image
         self.hover_pos = pos
         self.hover_move = hover_move
@@ -1812,19 +1889,35 @@ class ImageBro:
         self.text = text
         self.font = global_vars.get_font(int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
-    
         self.hovered = False
-        self.text_lines = self.text.split(',')
+        
+        self.text_lines = []
+
+        if player_info and isinstance(self.text, str):
+            # Player tooltip: comma-based
+            self.text_lines = self.text.split(',')
+
+        elif isinstance(self.text, (list, tuple)):
+            # Item tooltip: list + '@' line breaks
+            for entry in self.text:
+                if isinstance(entry, str):
+                    self.text_lines.extend(entry.split('@'))
+                else:
+                    self.text_lines.append(str(entry))
+
+
+        # breaks title and info
         self.text_lines.insert(1, '')
 
 
-    def drawing_info(self, screen, mouse_pos):
+    def drawing_info(self, screen):
+        # print(self.text_lines)
         # Draw the image and text
         screen.blit(self.image, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.05), self.hover_pos[1] - (self.hover_pos[1] * 0.29)))
 
         for i, line in enumerate(self.text_lines):
             self.text_surf = pygame.transform.rotozoom(self.font.render(line, global_vars.TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
-            screen.blit(self.text_surf, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.04), self.hover_pos[1] + i * 30))
+            screen.blit(self.text_surf, (self.hover_pos[0] * 0.65 - (self.hover_pos[0] * 0.04), self.hover_pos[1] + i * 30))
 
 
 font_size = int(height * 0.02) # = 100

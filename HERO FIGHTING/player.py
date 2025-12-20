@@ -519,221 +519,162 @@ class Player(pygame.sprite.Sprite):
 
 
     def apply_item_bonuses(self):
-        # misc - apply item bonuses (avoid noisy prints for performance)
-        for item in self.items: # self.items is a list of item classes
-            for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
-                if bonus_type == 'move speed':
-                    self.speed += self.speed * bonus_value
-                    self.running_animation_speed += 10 * bonus_value
+        '''misc - apply item bonuses (avoid noisy prints for performance)
+        self.items is a list of item classes'''
+        # First, collect all bonuses by type for efficient application
+        bonuses = {typ: 0.0 for typ in set(t for item in self.items for t in item.bonus_type)}  # Unique types
+        for item in self.items:
+            for typ, val in item.info.items():
+                bonuses[typ] += val
+
+        # Apply flats first
+        for typ, val in bonuses.items():
+            if "_flat" in typ:
+                base_stat = typ.replace("_flat", "")
+                if base_stat == "str":
+                    self.strength += val
+                elif base_stat == "int":
+                    self.intelligence += val
+                elif base_stat == "agi":
+                    self.agility += val
+                elif base_stat == "hp":
+                    self.max_health += val
+                elif base_stat == "mana":
+                    self.max_mana += val
+                elif base_stat == "atk":
+                    self.basic_attack_damage += val
+                elif typ == "atk_speed_flat":
+                    # Flat attack speed: Reduce anim speed (faster anim = faster atk)
+                    # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
+                    self.basic_attack_animation_speed -= val * 0.1
+                    # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
+                    self.basic_attack_cooldown -= val * 5  # Adjust scalar if base changes
+
+        # Update core stats after flats
+        self.max_health = self.str_mult * self.strength
+        self.max_mana = self.int_mult * self.intelligence
+        self.basic_attack_damage = self.agi_mult * self.agility
+        self.health = self.max_health  # Reset if needed
+        self.mana = self.max_mana
+
+        # Then apply percentages (multiplicative)
+        for typ, val in bonuses.items():
+            if "_per" in typ:
+                base_stat = typ.replace("_per", "")
+                if base_stat == "str":
+                    self.strength *= (1 + val)
+                    self.max_health = self.str_mult * self.strength
+                elif base_stat == "int":
+                    self.intelligence *= (1 + val)
+                    self.max_mana = self.int_mult * self.intelligence
+                elif base_stat == "agi":
+                    self.agility *= (1 + val)
+                    self.basic_attack_damage = self.agi_mult * self.agility
+                elif base_stat == "hp":
+                    self.max_health *= (1 + val)
+                elif base_stat == "mana":
+                    self.max_mana *= (1 + val)
+                elif base_stat == "atk":
+                    self.basic_attack_damage *= (1 + val)
+                elif base_stat == "move_speed":
+                    self.speed *= (1 + val)
+                    self.running_animation_speed += 10 * val  # Legacy scaling; consider *= (1 + val) for consistency
                     self.default_speed = self.speed
-                
-                # ex. 50, 150 attack speed
-                if bonus_type == 'attack speed':  # FLAT ATTACK SPEED!!!
-                    self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 10 animation speed
-                    if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
-                        self.basic_attack_animation_speed = 0.01
-                    self.basic_attack_cooldown -= 0.5 * bonus_value # 100 attack speed = -0.05s cooldown (attack cd = 0.5s)
-                    if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
-                        self.basic_attack_cooldown = 0.01     
-                    print('applied flat atk speed', self.basic_attack_animation_speed)
-                    self.attacks[4].cooldown = self.basic_attack_cooldown
-                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
-                
-                # percentage ex. 0.05 atk speed -> 5%
-                if bonus_type == 'atk speed': # THIS IS PERCENTAGE I NEED TO READ DOCS!!!
-                    print(self.basic_attack_animation_speed * bonus_value, bonus_value)
-                    self.basic_attack_animation_speed -= self.basic_attack_animation_speed * bonus_value  # 100 attack speed, 10% mult = +10 animation speed
-                    if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
-                        self.basic_attack_animation_speed = 0.01
-                    self.basic_attack_cooldown -= 0.5 * (bonus_value * 1000) # convert back to tick second, then multiply back (atk speed value already added) 
-                                                                             # 100 attack speed, 10% mult = -0.05s cooldown (attack cd = 0.5s)
-                    if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
-                        self.basic_attack_cooldown = 0.01   
-                    print('applied atk speed percentage', self.basic_attack_animation_speed)
-                    self.attacks[4].cooldown = self.basic_attack_cooldown
-                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
-
-                if bonus_type == 'mana reduce':
-                    for i in range(0, 4):
-                        self.attacks[i].mana_cost -= int(self.attacks[i].mana_cost * bonus_value)
-                        self.attacks_special[i].mana_cost -= int(self.attacks_special[i].mana_cost * bonus_value)
-                
-                if bonus_type == 'cd reduce':
-                    for i in range(0, 5):
-                        self.attacks[i].cooldown -= int(self.attacks[i].cooldown * bonus_value)
-                        self.attacks_special[i].cooldown -= int(self.attacks_special[i].cooldown * bonus_value)
-
+                elif typ == "atk_speed_per":
+                    # Percentage: Reduce anim speed and cd by %
+                    self.basic_attack_animation_speed *= (1 - val)  # Lower = faster
+                    self.basic_attack_cooldown *= (1 - val)
+                elif typ == "mana_reduce_per":
+                    num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
+                    for i in range(num_skills):
+                        self.attacks[i].mana_cost = int(self.attacks[i].mana_cost * (1 - val))
+                        self.attacks_special[i].mana_cost = int(self.attacks_special[i].mana_cost * (1 - val))
+                elif typ == "cd_reduce_per":
+                    num_skills = len(self.attacks) - 1  # Now 4: Skills only, exclude basic attack
+                    for i in range(num_skills):
+                        self.attacks[i].cooldown = int(self.attacks[i].cooldown * (1 - val))
+                        self.attacks_special[i].cooldown = int(self.attacks_special[i].cooldown * (1 - val))
                 # CENTRALIZED BONUSES BEFORE APPLYING
-                if bonus_type == "lifesteal": # must be higher than 1
-                    self.lifesteal += bonus_value
-                if bonus_type == 'health cost': # value must be less than 1
-                    self.lifesteal += bonus_value
-
-                if bonus_type =='dmg reduce':
-                    self.damage_reduce += bonus_value
-
-                if bonus_type =='sp increase':
-                    self.special_increase += bonus_value
-
+                elif typ == "lifesteal_per":
+                    self.lifesteal += val # must be higher than 1
+                elif typ == "health_cost_per":
+                    self.lifesteal += val  # Penalty as negative lifesteal # value must be less than 1
+                elif typ == "dmg_reduce_per":
+                    self.damage_reduce += val
+                elif typ == "sp_increase_per":
+                    self.special_increase += val
                 # print('mana refunding', self)
                 # print(self.mana_refund)
                 # print(bonus_type)
-                if bonus_type =='mana refund':
-                    self.mana_refund += bonus_value
+                elif typ == "mana_refund_per":
+                    self.mana_refund += val
                 # print(self.mana_refund)
-
-                if bonus_type == 'crit chance':
-                    self.crit_chance += bonus_value
-
-                if bonus_type == 'crit dmg':
-                    self.crit_damage += bonus_value
-
-                if bonus_type == 'dmg return':
+                elif typ == "crit_chance_per":
+                    self.crit_chance += val
+                elif typ == "crit_dmg_per":
+                    self.crit_damage += val
+                elif typ == "dmg_return_per":
                     for enemy in self.enemy:
-                        enemy.lifesteal -= bonus_value
+                        enemy.lifesteal -= val
+                elif typ == "mana_regen_per":
+                    self.mana_regen *= (1 + val)
+                elif typ == "hp_regen_per":
+                    self.health_regen *= (1 + val)
                 # For spell damage vvv -----------------------------------------------------
-                if bonus_type == 'spell dmg':
+                elif typ == "spell_dmg_per":
                     # Apply bonus spell damage to each skill
-                    self.atk1_damage = (
-                        self.atk1_damage[0] + (self.atk1_damage[0] * bonus_value),
-                        self.atk1_damage[1] + (self.atk1_damage[1] * bonus_value)
-                    )
-                    self.atk2_damage = (
-                        self.atk2_damage[0] + (self.atk2_damage[0] * bonus_value),
-                        self.atk2_damage[1] + (self.atk2_damage[1] * bonus_value)
-                    )
-                    self.atk3_damage = (
-                        self.atk3_damage[0] + (self.atk3_damage[0] * bonus_value),
-                        self.atk3_damage[1] + (self.atk3_damage[1] * bonus_value)
-                    )
-                    self.sp_damage = (
-                        self.sp_damage[0] + (self.sp_damage[0] * bonus_value),
-                        self.sp_damage[1] + (self.sp_damage[1] * bonus_value)
-                    )
+                    self.atk1_damage = (self.atk1_damage[0] * (1 + val), self.atk1_damage[1] * (1 + val))
+                    self.atk2_damage = (self.atk2_damage[0] * (1 + val), self.atk2_damage[1] * (1 + val))
+                    self.atk3_damage = (self.atk3_damage[0] * (1 + val), self.atk3_damage[1] * (1 + val))
+                    self.sp_damage = (self.sp_damage[0] * (1 + val), self.sp_damage[1] * (1 + val))
 
                     if hasattr(self, 'atk2_damage_2nd'): # For wind hashahin, or any heroes that needs attribute
-                        self.atk2_damage_2nd = (  #reused by water princess
-                        self.atk2_damage_2nd[0] + (self.atk2_damage_2nd[0] * bonus_value),
-                        self.atk2_damage_2nd[1] + (self.atk2_damage_2nd[1] * bonus_value)
-                    )
+                        self.atk2_damage_2nd = (self.atk2_damage_2nd[0] * (1 + val), self.atk2_damage_2nd[1] * (1 + val)) #reused by water princess
                     if hasattr(self, 'sp_damage_2nd'):
-                        self.sp_damage_2nd = (
-                        self.sp_damage_2nd[0] + (self.sp_damage_2nd[0] * bonus_value),
-                        self.sp_damage_2nd[1] + (self.sp_damage_2nd[1] * bonus_value)
-                    )
+                        self.sp_damage_2nd = (self.sp_damage_2nd[0] * (1 + val), self.sp_damage_2nd[1] * (1 + val))
                     if hasattr(self, 'real_sp_damage'):
-                        self.real_sp_damage = self.real_sp_damage + (self.real_sp_damage * bonus_value)
-
+                        self.real_sp_damage *= (1 + val)
 
                     #some of these from water princess, will reuse some variable
                     if hasattr(self, 'atk3_damage_2nd'):
-                        self.atk3_damage_2nd = self.atk3_damage_2nd + (self.atk3_damage_2nd * bonus_value)
+                        self.atk3_damage_2nd *= (1 + val)
                     if hasattr(self, 'atk1_damage_2nd'):
-                        self.atk1_damage_2nd = self.atk1_damage_2nd + (self.atk1_damage_2nd * bonus_value)
+                        self.atk1_damage_2nd *= (1 + val)
                     if hasattr(self, 'sp_damage_3rd'): # For water princess
-                        self.sp_damage_3rd = (
-                        self.sp_damage_3rd[0] + (self.sp_damage_3rd[0] * bonus_value),
-                        self.sp_damage_3rd[1] + (self.sp_damage_3rd[1] * bonus_value)
-                    )
-                        # can handle single, or tuple
+                        self.sp_damage_3rd = (self.sp_damage_3rd[0] * (1 + val), self.sp_damage_3rd[1] * (1 + val))
+                    # can handle single, or tuple
                     if hasattr(self, 'sp_atk1_damage'):
                         if isinstance(self.sp_atk1_damage, tuple):
-                            self.sp_atk1_damage = (
-                                self.sp_atk1_damage[0] + (self.sp_atk1_damage[0] * bonus_value),
-                                self.sp_atk1_damage[1] + (self.sp_atk1_damage[1] * bonus_value)
-                            )
+                            self.sp_atk1_damage = (self.sp_atk1_damage[0] * (1 + val), self.sp_atk1_damage[1] * (1 + val))
                         else:
-                            self.sp_atk1_damage = self.sp_atk1_damage + (self.sp_atk1_damage * bonus_value)
+                            self.sp_atk1_damage *= (1 + val)
                     if hasattr(self, 'sp_atk2_damage'):
                         if isinstance(self.sp_atk2_damage, tuple):
-                            self.sp_atk2_damage = (
-                                self.sp_atk2_damage[0] + (self.sp_atk2_damage[0] * bonus_value),
-                                self.sp_atk2_damage[1] + (self.sp_atk2_damage[1] * bonus_value)
-                            )
+                            self.sp_atk2_damage = (self.sp_atk2_damage[0] * (1 + val), self.sp_atk2_damage[1] * (1 + val))
                         else:
-                            self.sp_atk2_damage = self.sp_atk2_damage + (self.sp_atk2_damage * bonus_value)
+                            self.sp_atk2_damage *= (1 + val)
                     if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
-                        self.sp_atk2_damage_2nd = (
-                        self.sp_atk2_damage_2nd[0] + (self.sp_atk2_damage_2nd[0] * bonus_value),
-                        self.sp_atk2_damage_2nd[1] + (self.sp_atk2_damage_2nd[1] * bonus_value)
-                    )
+                        self.sp_atk2_damage_2nd = (self.sp_atk2_damage_2nd[0] * (1 + val), self.sp_atk2_damage_2nd[1] * (1 + val))
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
-                        self.sp_atk2_damage_3rd = (
-                        self.sp_atk2_damage_3rd[0] + (self.sp_atk2_damage_3rd[0] * bonus_value),
-                        self.sp_atk2_damage_3rd[1] + (self.sp_atk2_damage_3rd[1] * bonus_value)
-                    )
+                        self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
                     if hasattr(self, 'sp_atk3_damage'): # For water princess
-                        self.sp_atk3_damage = (
-                        self.sp_atk3_damage[0] + (self.sp_atk3_damage[0] * bonus_value),
-                        self.sp_atk3_damage[1] + (self.sp_atk3_damage[1] * bonus_value)
-                    )
+                        self.sp_atk3_damage = (self.sp_atk3_damage[0] * (1 + val), self.sp_atk3_damage[1] * (1 + val))
                 # For spell damage ^^^ -----------------------------------------------------
-                
 
-                # apply flat bonuses first
+        # Caps and safety
+        self.basic_attack_animation_speed = max(0.01, self.basic_attack_animation_speed)
+        self.basic_attack_cooldown = max(0.01, self.basic_attack_cooldown)
+        self.attacks[4].cooldown = self.basic_attack_cooldown
+        self.attacks_special[4].cooldown = self.basic_attack_cooldown
 
-                if bonus_type == 'str flat':
-                    self.strength += bonus_value
-                    self.max_health = self.str_mult * self.strength
-                if bonus_type == 'int flat':
-                    self.intelligence += bonus_value
-                    self.max_mana = self.int_mult * self.intelligence
-                if bonus_type == 'agi flat':
-                    self.agility += bonus_value
-                    self.basic_attack_damage = self.agi_mult * self.agility
-
-                # then apply multiplication with the bonus flat (slight difference)
-                if bonus_type == 'str':
-                    self.strength += self.strength * bonus_value
-                    self.max_health = self.str_mult * self.strength
-                if bonus_type == 'int':
-                    self.intelligence += self.intelligence * bonus_value
-                    self.max_mana = self.int_mult * self.intelligence
-                if bonus_type == 'agi':
-                    self.agility += self.agility * bonus_value
-                    self.basic_attack_damage = self.agi_mult * self.agility
-
-                if bonus_type == 'mana regen':
-                    self.mana_regen += self.mana_regen * bonus_value
-                if bonus_type == 'hp regen':
-                    self.health_regen += self.health_regen * bonus_value
-                
-                # self.max_mana = self.intelligence * self.int_mult
-                
-                # self.mana = self.max_mana
-                #print(self.strength, bonus_value, self.strength * bonus_value)
-                #print(bonus_value, bonus_type, self.strength, self.strength * bonus_value, self.strength + bonus_value)
-
-        for item in self.items:
-            for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
-                
-
-                
-                # same for these, apply flat, then percentage bonuses
-                if bonus_type == 'hp flat':
-                    self.max_health += bonus_value
-                if bonus_type == 'mana flat':
-                    self.max_mana += bonus_value
-                if bonus_type == 'atk flat':
-                    self.basic_attack_damage += bonus_value/100 # example, +0.25 atk flat, but it convers to percentage, turn into 25, then divide 100 = 0.25
-                    
-                # percentages
-                if bonus_type == 'hp':
-                    self.max_health += self.max_health * bonus_value
-                if bonus_type == 'mana':
-                    self.max_mana += self.max_mana * bonus_value
-                if bonus_type == 'atk':
-                    self.basic_attack_damage += self.basic_attack_damage * bonus_value
-
-
-                # will apply unique bonuses
-                if hasattr(self, 'arrow_stuck_damage'):
-                    # reapply bonus
-                    self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
-                
+        # Reapply hero-specific (e.g., arrow_stuck)
+        if hasattr(self, 'arrow_stuck_damage'):
+            # reapply bonus
+            self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05  # total dmg=1
 
         # get final attack speed with bonuses
         self.get_current_atk_speed = self.basic_attack_animation_speed
+        
     def get_atk_speed(self): # pls dont change this variable
         return self.get_current_atk_speed # im tired debugging
      
@@ -1233,6 +1174,29 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, ('purple' if self.special == self.max_special else 'blue' if self.special_active else gold),
                           (bar_x, bar_y, gold_width, bar_height))
 
+    def draw_health_mana_regen(self, screen, hp_regen, mana_regen):
+        """
+        Draws the current health and mana regeneration rates on the health and mana bars.
+        The text is green, half the size of the default font, and positioned slightly adjusted
+        based on the player type (right for Player 1, left for Player 2).
+        """
+        font = global_vars.get_font(15)  # Half the default size
+        regen_hp_color = green
+        regen_mana_color = cyan2
+
+        # Health regeneration text
+        health_regen_text = font.render(f"+{hp_regen * FPS:.1f}/s", True, regen_hp_color)
+        mana_regen_text = font.render(f"+{mana_regen * FPS:.1f}/s", True, regen_mana_color)
+
+        if self.player_type == 1:
+            # Player 1: Adjust text slightly to the right
+            screen.blit(health_regen_text, (self.player_1_x - health_regen_text.get_width() - 25, self.player_1_y + 27))
+            screen.blit(mana_regen_text, (self.player_1_x - health_regen_text.get_width() - 25, self.player_1_y+50 + 27))
+        elif self.player_type == 2:
+            # Player 2: Adjust text slightly to the left
+            screen.blit(health_regen_text, (self.healthdecor_p2_starting+self.hpdecor_end_p2 + 15, self.player_2_y + 27))
+            screen.blit(mana_regen_text, (self.healthdecor_p2_starting+self.hpdecor_end_p2 + 15, self.player_2_y+50 + 27))
+
     def player_status(self, health, mana, special):
         font = global_vars.get_font(20)
         p1_x = self.player_1_x
@@ -1487,6 +1451,8 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.rect(screen, dim_gray, self.special_decor_p2)
             pygame.draw.rect(screen, special_color_p2, self.special_bar_p2)
+
+        
 
         # Variables are outside the class
         # Health and Mana Icon Draw
@@ -2178,6 +2144,12 @@ class Player(pygame.sprite.Sprite):
             self.detect_and_display_damage()
             self.detect_and_display_mana()
             self.update_damage_numbers(screen)
+
+
+            # show health regen
+            self.draw_health_mana_regen(screen, self.hp_regen_rate, self.mana_regen_rate)
+            
+            
 
             
             

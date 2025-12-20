@@ -651,7 +651,7 @@ class Wind_Hashashin(Player):
                                 who_attacked=self.enemy,
                                 sound=(True, self.basic_sound, None, None),
                                 moving=True,
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed),
 
                                 hitbox_scale_y=0.3,
                                 hitbox_scale_x=0.3,
@@ -905,7 +905,7 @@ class Wind_Hashashin(Player):
                                 stun=(False, 0),
                                 sound=(True, self.basic_sound, None, None),
                                 kill_collide=False,
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed),
 
                                 hitbox_scale_y=0.4,
                                 hitbox_scale_x=0.4,
@@ -1093,9 +1093,6 @@ class Wind_Hashashin(Player):
                     for mana in self.attacks_special:
                         mana.draw_mana_cost(screen, self.mana)
 
-        # Update the player status (health and mana bars)
-        self.player_status(self.health, self.mana, self.special)
-        
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:

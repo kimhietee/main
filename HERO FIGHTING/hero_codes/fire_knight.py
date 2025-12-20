@@ -1030,9 +1030,6 @@ class Fire_Knight(Player):
                     for mana in self.attacks_special:
                         mana.draw_mana_cost(screen, self.mana)
 
-        # Update the player status (health and mana bars)
-        self.player_status(self.health, self.mana, self.special)
-        
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:

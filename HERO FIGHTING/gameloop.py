@@ -2307,4 +2307,29 @@ def animate_element_entry(element, start_pos, end_pos, speed):
         element.rect.topleft = (int(new_x), int(new_y))
         yield
 
+def load_font(font_path, size):
+    """
+    Load a font dynamically from the given path and size.
+
+    Args:
+        font_path: The file path to the font.
+        size: The size of the font to load.
+
+    Returns:
+        A pygame.Font object.
+    """
+    try:
+        return pygame.font.Font(font_path, size)
+    except FileNotFoundError:
+        print(f"Font file not found: {font_path}")
+        return None
+
+# Example usage:
+# To use the new font, call the `load_font` function with the desired path and size.
+# Example:
+# new_font = load_font('path/to/your/font.ttf', 30)
+# if new_font:
+#     text_surface = new_font.render('Your Text Here', True, (255, 255, 255))
+#     screen.blit(text_surface, (x, y))
+
 

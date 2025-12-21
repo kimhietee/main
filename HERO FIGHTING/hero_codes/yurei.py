@@ -588,41 +588,31 @@ class Yurei(Player):
             super().take_damage(damage, add_mana_to_self, enemy, add_mana_to_enemy, mana_multiplier)
         
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
+        """The most crucial part of collecting user input.
+        - Processes player input each frame, handling movement and skill casting based on state."""
+        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
-        if self.casting_invisible: #dont move if going invisible
-            # print('will not cast because still casting invi')
+
+        if self.is_dead():
             return
-
+        
+        # ---------- Moving ----------
         if self.can_move():
-            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.basic_attacking):
-                if right_hotkey:  # Move right
-                    self.running = True
-                    self.facing_right = True #if self.player_type == 1 else False
-                    self.x_pos += (self.speed - ((self.speed * 0.0) if self.special_active else (self.speed * 0.05)))
-                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
-                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
-                elif left_hotkey:  # Move left
-                    self.running = True
-                    self.facing_right = False #if self.player_type == 1 else True
-                    self.x_pos -= (self.speed - ((self.speed * 0.0) if self.special_active else (self.speed * 0.05)))
-                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
-                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
-                else:
-                    self.running = False
-
-                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
-                    self.jumping = True
-                    self.y_velocity = DEFAULT_JUMP_FORCE  
-                    self.last_atk_time = current_time  # Update the last jump time
+            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
+                speed_modifier = 0.05,
+                special_active_speed = 0.25,
+                jump_force = self.jump_force,
+                jump_force_modifier = 0
+                )
             
-        if not self.can_cast():
-            # If can't cast skills, still allow basic attacks only when silenced (not frozen)
-            # If frozen, block everything immediately
-            if getattr(self, 'frozen', False):
-                return
-            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
-                return
+        # ---------- Casting ----------
+        if self.is_frozen():
+            return
+        
+        if self.is_silenced() and not basic_hotkey:
+            return
+        
             
         if not self.special_active:
             if not self.jumping and not self.is_dead():
@@ -1044,7 +1034,6 @@ class Yurei(Player):
         else:
             return
     def update(self):
-        super().update()
         
         
         if not self.is_dead():

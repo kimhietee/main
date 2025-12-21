@@ -32,7 +32,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = False
+IMMEDIATE_RUN = True
 
 HERO1_BOT = False
 all_items = False #equip bot with all items
@@ -49,7 +49,7 @@ MAX_ITEM = 40
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False
-show_bot_skills = True
+show_bot_skills = False
 show_bot_stats = False
 
 SINGLE_MODE_ACTIVE = False # constant

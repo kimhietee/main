@@ -533,39 +533,72 @@ class Chthulu(Player):
 
         self.last_atk_time -= animation_speed
 
+    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1, jump_force_modifier=0):
+
+        flying_speed_bonus = 1.5
+        if self.is_not_attacking():
+            # Calculate effective speed first
+            if self.special_active:
+                effective_speed = special_active_speed
+            else:
+                effective_speed = speed_modifier
+            
+            # Bonus speed for flying
+            if self.flying:
+                if self.special_active:
+                    effective_speed = special_active_speed + flying_speed_bonus
+                else:
+                    effective_speed = speed_modifier + flying_speed_bonus
+
+            if right_hotkey:
+                self.running = True
+                self.facing_right = True
+                self.x_pos += self.speed + (self.speed * effective_speed)
+                if self.x_pos > self.limit_movement_right - (self.hitbox_rect.width / 2):
+                    self.x_pos = self.limit_movement_right - (self.hitbox_rect.width / 2)
+            elif left_hotkey:
+                self.running = True
+                self.facing_right = False
+                self.x_pos -= self.speed + (self.speed * effective_speed)
+                if self.x_pos < self.limit_movement_left + (self.hitbox_rect.width / 2):
+                    self.x_pos = self.limit_movement_left + (self.hitbox_rect.width / 2)
+            else:
+                self.running = False
+
+            # Jumping
+            if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                self.jumping = True
+                self.y_velocity = jump_force * (1 + jump_force_modifier)
+                self.last_atk_time = current_time
+                
+
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
+
+        
+        """The most crucial part of collecting user input.
+        - Processes player input each frame, handling movement and skill casting based on state."""
+        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
+        if self.is_dead():
+            return
+        
+        # ---------- Moving ----------
         if self.can_move():
-            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
-                if right_hotkey:  # Move right
-                    self.running = True
-                    self.facing_right = True #if self.player_type == 1 else False
-                    self.x_pos += (self.speed - (self.speed * 0.5)) if not self.flying else (self.speed + (self.speed * 1)) if not self.special_active else (self.speed - (self.speed * 0.4)) if not self.flying else (self.speed + (self.speed * 1.5))
-                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
-                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
-                elif left_hotkey:  # Move left
-                    self.running = True
-                    self.facing_right = False #if self.player_type == 1 else True
-                    self.x_pos -= (self.speed - (self.speed * 0.5)) if not self.flying else (self.speed + (self.speed * 1))  if not self.special_active else (self.speed - (self.speed * 0.4)) if not self.flying else (self.speed + (self.speed * 1.5))
-                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
-                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
-                else:
-                    self.running = False
-
-                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
-                    self.jumping = True
-                    self.y_velocity = (DEFAULT_JUMP_FORCE - (DEFAULT_JUMP_FORCE * 0.05))
-                    self.last_atk_time = current_time  # Update the last jump time
+            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
+                speed_modifier = -0.5,
+                special_active_speed = -0.4,
+                jump_force = self.jump_force,
+                jump_force_modifier = -0.05
+                )
             
-        if not self.can_cast():
-            # If can't cast skills, still allow basic attacks only when silenced (not frozen)
-            # If frozen, block everything immediately
-            if getattr(self, 'frozen', False):
-                return
-            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
-                return
+        # ---------- Casting ----------
+        if self.is_frozen():
+            return
+        
+        if self.is_silenced() and not basic_hotkey:
+            return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -1020,7 +1053,6 @@ class Chthulu(Player):
 
 
     def update(self):
-        super().update()
         
 
          
@@ -1060,8 +1092,8 @@ class Chthulu(Player):
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
         # shift pos
-        self.rect.y += self.y_visual_offset
-        self.hitbox_rect.y -= self.y_visual_offset*1.4
+        self.rect.y += self.y_visual_offset*0.8
+        self.hitbox_rect.y -= self.y_visual_offset
 
         
         

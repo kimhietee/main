@@ -385,8 +385,8 @@ class Player(pygame.sprite.Sprite):
         '''Prevent player moving right.'''
         self.jump_force = DEFAULT_JUMP_FORCE
         '''Jump strength/force of player.'''
-        self.detect_ground = DEFAULT_Y_POS
-        '''Limit where player detects the ground at y level.'''
+        # self.detect_ground = DEFAULT_Y_POS
+        # '''Limit where player detects the ground at y level.'''
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
@@ -1174,14 +1174,16 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, ('purple' if self.special == self.max_special else 'blue' if self.special_active else gold),
                           (bar_x, bar_y, gold_width, bar_height))
 
-    def draw_health_mana_regen(self, screen, hp_regen, mana_regen):
+    def draw_regen_rate(self, screen, hp_regen, mana_regen, p1_posx=0, p1_posy=0, p2_posx1=0, p2_posx2=0, p2_posy=0):
         """
+        Must call player_status first to initialize the variables passed.
+        
         Draws the current health and mana regeneration rates on the health and mana bars.
         The text is green, half the size of the default font, and positioned slightly adjusted
         based on the player type (right for Player 1, left for Player 2).
         """
         font = global_vars.get_font(15)  # Half the default size
-        regen_hp_color = green
+        regen_hp_color = green 
         regen_mana_color = cyan2
 
         # Health regeneration text
@@ -1190,12 +1192,12 @@ class Player(pygame.sprite.Sprite):
 
         if self.player_type == 1:
             # Player 1: Adjust text slightly to the right
-            screen.blit(health_regen_text, (self.player_1_x - health_regen_text.get_width() - 25, self.player_1_y + 27))
-            screen.blit(mana_regen_text, (self.player_1_x - health_regen_text.get_width() - 25, self.player_1_y+50 + 27))
+            screen.blit(health_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy + 27))
+            screen.blit(mana_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy+50 + 27))
         elif self.player_type == 2:
             # Player 2: Adjust text slightly to the left
-            screen.blit(health_regen_text, (self.healthdecor_p2_starting+self.hpdecor_end_p2 + 15, self.player_2_y + 27))
-            screen.blit(mana_regen_text, (self.healthdecor_p2_starting+self.hpdecor_end_p2 + 15, self.player_2_y+50 + 27))
+            screen.blit(health_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy + 27))
+            screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 27))
 
     def player_status(self, health, mana, special):
         font = global_vars.get_font(20)
@@ -1312,6 +1314,10 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.rect(screen, dim_gray, self.special_decor_p1)
             pygame.draw.rect(screen, special_color, self.special_bar_p1)
+
+            # show health regen (call player_status() firsts)
+            self.draw_regen_rate(screen, self.hp_regen_rate, self.mana_regen_rate, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
+
 
 
         elif self.player_type == 2:
@@ -1439,6 +1445,7 @@ class Player(pygame.sprite.Sprite):
             ))
 
             
+ 
 
             # Draw Rects
             pygame.draw.rect(screen, dim_gray, self.hp_decor_p2)
@@ -1452,6 +1459,9 @@ class Player(pygame.sprite.Sprite):
             pygame.draw.rect(screen, dim_gray, self.special_decor_p2)
             pygame.draw.rect(screen, special_color_p2, self.special_bar_p2)
 
+            # show health regen (call player_status() firsts)
+            self.draw_regen_rate(screen, self.hp_regen_rate, self.mana_regen_rate, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
+
         
 
         # Variables are outside the class
@@ -1461,6 +1471,8 @@ class Player(pygame.sprite.Sprite):
         # screen.blit(mana_icon, mana_icon_p1_rect)
         # screen.blit(mana_icon, mana_icon_p2_rect)
 
+        
+        
         if self.health <= 0:
             self.health = 0
             self.winner = 2 if self.player_type == 1 else 1
@@ -1840,7 +1852,15 @@ class Player(pygame.sprite.Sprite):
 
     def is_slowed(self):
         '''return true if slowed'''
-        return (self.is_dead() or self.slowed)
+        return self.slowed
+    
+    def is_frozen(self):
+        '''return true if frozen'''
+        return self.frozen
+    
+    def is_silenced(self):
+        '''return true if silenced'''
+        return self.silenced
 
     
     def can_move(self):
@@ -2100,8 +2120,8 @@ class Player(pygame.sprite.Sprite):
 
             (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['sp_skill_p2'][0]])
             )
-
-    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1):
+#sp=0.25, default=0.2 jump=0.1
+    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1, jump_force_modifier=0):
         '''Handles the player movement using user input (jump, move left/right).
         \nModify jump_force to increase/decrease the jump force of the player when jumping.
         \n- right,left,jump_hotkey = user input (no change)
@@ -2114,21 +2134,26 @@ class Player(pygame.sprite.Sprite):
             if right_hotkey:  # Move right
                 self.running = True
                 self.facing_right = True
-                self.x_pos += (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
+                self.x_pos += (self.speed + ((self.speed * special_active_speed) if self.special_active else (self.speed * speed_modifier)))
                 if self.x_pos > self.limit_movement_right - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
                     self.x_pos = self.limit_movement_right - (self.hitbox_rect.width/2)
             elif left_hotkey:  # Move left
                 self.running = True
                 self.facing_right = False
-                self.x_pos -= (self.speed + ((self.speed * special_active_speed) if self.special_active else speed_modifier))
+                self.x_pos -= (self.speed + ((self.speed * special_active_speed) if self.special_active else (self.speed * speed_modifier)))
                 if self.x_pos < (self.limit_movement_left + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
                     self.x_pos = (self.limit_movement_left + (self.hitbox_rect.width/2))
             else:
                 self.running = False
-
-            if jump_hotkey and self.y_pos == self.detect_ground and current_time - self.last_atk_time > JUMP_DELAY:
+            # print('------------')
+            # print(self.y_pos == DEFAULT_Y_POS)
+            # print(current_time - self.last_atk_time > JUMP_DELAY)
+            # print(jump_hotkey)
+            # print(self.y_pos, DEFAULT_Y_POS)
+            if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                # print(self.y_pos == self.detect_ground)
                 self.jumping = True
-                self.y_velocity = jump_force
+                self.y_velocity = jump_force * (1 + jump_force_modifier)
                 self.last_atk_time = current_time  # Update the last jump time
     
     # Phased out code (since I don't use super.init)
@@ -2156,17 +2181,6 @@ class Player(pygame.sprite.Sprite):
                     for mana in self.attacks_special:
                         mana.draw_mana_cost(screen, self.mana)
 
-        
-            
-
-
-
-            # show health regen
-            self.draw_health_mana_regen(screen, self.hp_regen_rate, self.mana_regen_rate)
-            
-            
-
-            
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
 
@@ -2174,12 +2188,60 @@ class Player(pygame.sprite.Sprite):
                 # Restore previous hitbox size
                 self.hitbox_rect.size = self.prev_hitbox_size
                 self.hitbox_removed = False
-                            
+
+        elif self.is_dead():
+            if not getattr(self, "hitbox_removed", False):
+                # Capture previous hitbox size
+                self.prev_hitbox_size = self.hitbox_rect.size
+                self.hitbox_rect.size = (0, 0)
+                self.hitbox_removed = True
+
+
+            # if being alived, 
+            if not self.is_dead() and getattr(self, "hitbox_removed", True):
+                self.hitbox_rect.size = self.prev_hitbox_rect
+                self.hitbox_removed = False
+
+
+        # This part updated the code anyways if player is dead or not
+        # -----------------------------------------------------------
+        # Updates display damage/mana
+        self.detect_and_display_damage()
+        self.detect_and_display_mana()
+        self.update_damage_numbers(screen)
+
+        if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
+            pass
+        else:
+            # Update the player status (health and mana bars)
+            self.player_status(self.health, self.mana, self.special)
+
+        # update neccesities
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
+
+        
+        # -----------------------------
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0  
+        self.inputs()
+        self.move_to_screen()  
+        # -----------------------------
             # print(self.slowed, 'default:', self.default_speed)
             # print('current:', self.speed)
 
-            if hasattr(self, 'atk_hasted'):
-                pass
+            # if hasattr(self, 'atk_hasted'):
+            #     pass
             # print(self.enemy)
                 # print(self.get_current_atk_speed)
                 # print('jump pos:', self.get_jump_pos)
@@ -2200,67 +2262,13 @@ class Player(pygame.sprite.Sprite):
                 # print(self.silenced)
 
         # if dead, remove the hitbox (NOTE: when revived after death, hitbox still removed)
-        elif self.is_dead():
-            if not getattr(self, "hitbox_removed", False):
-                # Capture previous hitbox size
-                self.prev_hitbox_size = self.hitbox_rect.size
-                self.hitbox_rect.size = (0, 0)
-                self.hitbox_removed = True
-
-
-
-            if not getattr(self, "hitbox_removed", False):
-                #capture previous hitbox rect
-                self.prev_hitbox_rect = self.hitbox_rect.size
-                self.hitbox_rect.size = (0, 0)
-                self.hitbox_removed = True
-
-
-            # if being alived, 
-            if not self.is_dead() and getattr(self, "hitbox_removed", True):
-                self.hitbox_rect.size = self.prev_hitbox_rect
-                self.hitbox_removed = False
-
-
-            # delete/remove/kill hero if died for too long
+        
+        # delete/remove/kill hero if died for too long
             # self.dead_timer = self.dead_timer or pygame.time.get_ticks()
             # if pygame.time.get_ticks() - self.dead_timer >= 2000000: # reset the game after 5s to remove bugs (intented for creeps only)
             #     self.kill()
             # else:
             #     self.dead_timer = None
-
-
-        # This part updated the code anyways if player is dead or not
-        # Updates display damage/mana
-            self.detect_and_display_damage()
-            self.detect_and_display_mana()
-            self.update_damage_numbers(screen)
-
-            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
-                pass
-            else:
-                # Update the player status (health and mana bars)
-                self.player_status(self.health, self.mana, self.special)
-
-            # update neccesities
-            if global_vars.DRAW_DISTANCE:
-                self.draw_distance(self.enemy)
-            if global_vars.SHOW_HITBOX:
-                
-                self.draw_hitbox(screen)
-            self.update_hitbox()
-
-            self.inputs()
-            self.move_to_screen()
-
-            # Stop at the ground level
-            if self.y_pos > DEFAULT_Y_POS:
-                self.y_pos = DEFAULT_Y_POS
-                self.y_velocity = 0
-                self.jumping = False 
-            if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
-                self.player_jump_index = 0
-                self.player_jump_index_flipped = 0
                 
         # if self.is_dead:
         #     return

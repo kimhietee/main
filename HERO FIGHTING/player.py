@@ -2131,13 +2131,143 @@ class Player(pygame.sprite.Sprite):
                 self.y_velocity = jump_force
                 self.last_atk_time = current_time  # Update the last jump time
     
+    # Phased out code (since I don't use super.init)
     def update(self):
         """Base player update: handles universal effects."""
         self.draw_movement_status(screen)
         if not self.is_dead():
+            self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
+            self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
+            self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        
+            
+
+
+
+            # show health regen
+            self.draw_health_mana_regen(screen, self.hp_regen_rate, self.mana_regen_rate)
+            
+            
+
+            
+            
+            self.handle_speed() # thit shii finally worked! (coder: kimhietee)
+
+            if getattr(self, "hitbox_removed", False):
+                # Restore previous hitbox size
+                self.hitbox_rect.size = self.prev_hitbox_size
+                self.hitbox_removed = False
+                            
+            # print(self.slowed, 'default:', self.default_speed)
+            # print('current:', self.speed)
+
+            if hasattr(self, 'atk_hasted'):
+                pass
+            # print(self.enemy)
+                # print(self.get_current_atk_speed)
+                # print('jump pos:', self.get_jump_pos)
+                # print(self.y_pos)
+                # print('jump time:', pygame.time.get_ticks() - self.jump_attack_time)
+                # print('jump done:', self.jump_done)
+                
+                #test delay
+                # if self.attacking3:
+                #     print('attack start')
+                # print(pygame.time.get_ticks())
+                # print(self.sp_mana_refund)
+            # print(self.items)
+            
+            # if self.player_type == 1:
+            #     print(self.enemy)
+            # print(self.frozen, self.can_cast(), self.can_move())
+                # print(self.silenced)
+
+        # if dead, remove the hitbox (NOTE: when revived after death, hitbox still removed)
+        elif self.is_dead():
+            if not getattr(self, "hitbox_removed", False):
+                # Capture previous hitbox size
+                self.prev_hitbox_size = self.hitbox_rect.size
+                self.hitbox_rect.size = (0, 0)
+                self.hitbox_removed = True
+
+
+
+            if not getattr(self, "hitbox_removed", False):
+                #capture previous hitbox rect
+                self.prev_hitbox_rect = self.hitbox_rect.size
+                self.hitbox_rect.size = (0, 0)
+                self.hitbox_removed = True
+
+
+            # if being alived, 
+            if not self.is_dead() and getattr(self, "hitbox_removed", True):
+                self.hitbox_rect.size = self.prev_hitbox_rect
+                self.hitbox_removed = False
+
+
+            # delete/remove/kill hero if died for too long
+            # self.dead_timer = self.dead_timer or pygame.time.get_ticks()
+            # if pygame.time.get_ticks() - self.dead_timer >= 2000000: # reset the game after 5s to remove bugs (intented for creeps only)
+            #     self.kill()
+            # else:
+            #     self.dead_timer = None
+
+
+        # This part updated the code anyways if player is dead or not
+        # Updates display damage/mana
+            self.detect_and_display_damage()
+            self.detect_and_display_mana()
+            self.update_damage_numbers(screen)
+
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
+                pass
+            else:
+                # Update the player status (health and mana bars)
+                self.player_status(self.health, self.mana, self.special)
+
+            # update neccesities
+            if global_vars.DRAW_DISTANCE:
+                self.draw_distance(self.enemy)
+            if global_vars.SHOW_HITBOX:
+                
+                self.draw_hitbox(screen)
+            self.update_hitbox()
+
             self.inputs()
             self.move_to_screen()
-        elif self.is_dead():
-            pass  # Handle death-related updates here
+
+            # Stop at the ground level
+            if self.y_pos > DEFAULT_Y_POS:
+                self.y_pos = DEFAULT_Y_POS
+                self.y_velocity = 0
+                self.jumping = False 
+            if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+                self.player_jump_index = 0
+                self.player_jump_index_flipped = 0
+                
+        # if self.is_dead:
+        #     return
+        # Handle global effects like stun or freeze
+        # if self.stunned or getattr(self, "frozen", False):
+        #     return
+
+        # pygame.draw.rect(screen, (255, 0, 0), self.rect)
 
 

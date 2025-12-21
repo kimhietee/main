@@ -1229,15 +1229,7 @@ class Water_Princess(Player):
         self.last_atk_time -= animation_speed
 
     def update(self):
-        if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
-        if global_vars.SHOW_HITBOX:
-            
-            self.draw_hitbox(screen)
-        self.update_hitbox()
-
-        self.inputs()
-        self.move_to_screen()
+        super().update()
 
          
         
@@ -1269,38 +1261,12 @@ class Water_Princess(Player):
         self.y_velocity += DEFAULT_GRAVITY
         self.y_pos += self.y_velocity
 
-        # Stop at the ground level
-        if self.y_pos > DEFAULT_Y_POS:
-            self.y_pos = DEFAULT_Y_POS
-            self.y_velocity = 0
-            self.jumping = False 
-        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
-            self.player_jump_index = 0
-            self.player_jump_index_flipped = 0
+        
 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        if not self.is_dead():
-            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
-                pass
-            else:
-                if not self.special_active:
-                    for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-                else:
-                    for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-
-                if not self.special_active:
-                    for mana in self.attacks:
-                        mana.draw_mana_cost(screen, self.mana)
-                else:
-                    for mana in self.attacks_special:
-                        mana.draw_mana_cost(screen, self.mana)
-
-        # Update the player status (health and mana bars)
-        self.player_status(self.health, self.mana, self.special)
+        
         
         # Update the health and mana bars
         if self.health != 0:

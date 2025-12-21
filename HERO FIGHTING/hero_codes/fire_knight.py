@@ -955,18 +955,10 @@ class Fire_Knight(Player):
             
 
     def update(self):
+        super().update()
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
-        if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
-        if global_vars.SHOW_HITBOX:
-            
-            self.draw_hitbox(screen)
-        self.update_hitbox()
 
-        self.keys = pygame.key.get_pressed()
 
-        self.inputs()
-        self.move_to_screen()
 
          
 
@@ -1000,35 +992,10 @@ class Fire_Knight(Player):
         self.y_velocity += (DEFAULT_GRAVITY + (DEFAULT_GRAVITY * 0.03))
         self.y_pos += self.y_velocity
 
-        # Stop at the ground level
-        if self.y_pos > DEFAULT_Y_POS:
-            self.y_pos = DEFAULT_Y_POS
-            self.y_velocity = 0
-            self.jumping = False 
-        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
-            self.player_jump_index = 0
-            self.player_jump_index_flipped = 0
+        
 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
-
-        if not self.is_dead():
-            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
-                pass
-            else:
-                if not self.special_active:
-                    for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-                else:
-                    for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-
-                if not self.special_active:
-                    for mana in self.attacks:
-                        mana.draw_mana_cost(screen, self.mana)
-                else:
-                    for mana in self.attacks_special:
-                        mana.draw_mana_cost(screen, self.mana)
 
         # Update the health and mana bars
         if self.health != 0:

@@ -50,7 +50,7 @@ MAX_ITEM = 40
 
 hitboxanddistance = False
 show_bot_skills = True
-show_bot_stats = True
+show_bot_stats = False
 
 SINGLE_MODE_ACTIVE = False # constant
 MUTE = False # constant

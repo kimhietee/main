@@ -76,8 +76,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.strength = 40
         self.intelligence = 36
         self.agility = 35
-        
 
+        self.health_regen = self.regen_per_second(1.1)
+        self.mana_regen = self.regen_per_second(7.5)
+        
         self.base_max_mana = self.intelligence * self.int_mult
         
         self.max_health = self.strength * self.str_mult
@@ -924,7 +926,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:
-                self.mana += (self.mana_regen + (self.mana_regen * (0.20 if not self.special_active else 0.30)))
+                self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
                 self.health += self.health_regen
         else:

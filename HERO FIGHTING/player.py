@@ -120,8 +120,8 @@ class Player(pygame.sprite.Sprite):
         self.special = 0
         self.special_active = False
 
-        self.mana_regen = DEFAULT_MANA_REGENERATION
-        self.health_regen = DEFAULT_HEALTH_REGENERATION
+        self.mana_regen = self.regen_per_second(DEFAULT_MANA_REGENERATION)
+        self.health_regen = self.regen_per_second(DEFAULT_HEALTH_REGENERATION)
 
         self.basic_attack_cooldown = BASIC_ATK_COOLDOWN
 
@@ -288,9 +288,9 @@ class Player(pygame.sprite.Sprite):
         # Skills
         self.attacks = []
 
-        # Regen Rate
-        self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
-        self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
+        # # Regen Rate
+        # self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
+        # self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
 
         # After Bar Reduces
         self.white_health_p1 = self.health
@@ -489,7 +489,7 @@ class Player(pygame.sprite.Sprite):
         # print(delta)
         if delta < 0:
             self.display_damage(-delta, interval=interval, health_modify=True)  # Normal damage (red)
-        elif delta > DEFAULT_HEALTH_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
+        elif delta > self.health_regen*10:  # Only show healing if it's significant (not just natural regen)
             self.display_damage(delta, interval=interval, color=(0, 255, 0), health_modify=True)  # Green heal
         self.last_health = self.health
 
@@ -529,20 +529,40 @@ class Player(pygame.sprite.Sprite):
 
         # Apply flats first
         for typ, val in bonuses.items():
+            print(typ, "hp_regen_flat")
+            # print(bonuses)
             if "_flat" in typ:
                 base_stat = typ.replace("_flat", "")
                 if base_stat == "str":
                     self.strength += val
+                    self.max_health = self.str_mult * self.strength
+                    self.health = self.max_health  # Reset if needed
+
                 elif base_stat == "int":
                     self.intelligence += val
+                    self.max_mana = self.int_mult * self.intelligence
+                    self.mana = self.max_mana
+
+
                 elif base_stat == "agi":
                     self.agility += val
+                    self.basic_attack_damage = self.agi_mult * self.agility
+
                 elif base_stat == "hp":
                     self.max_health += val
                 elif base_stat == "mana":
                     self.max_mana += val
                 elif base_stat == "atk":
                     self.basic_attack_damage += val
+                
+                elif typ == "hp_regen_flat":
+                    self.health_regen += self.regen_per_second(val)
+                    pass
+                    # print(val, self.regen_per_second(val) * 60, self.health_regen * 60, 'total:', (self.health_regen + self.regen_per_second(val)) * 60)
+                    # self.health_regen = self.health_regen + val / 60
+                    # print('added hp regen to:', self.__class__.__name__)
+                elif typ == "mana_regen_flat":
+                    self.mana_regen += self.regen_per_second(val)
                 elif typ == "atk_speed_flat":
                     # Flat attack speed: Reduce anim speed (faster anim = faster atk)
                     # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
@@ -550,15 +570,8 @@ class Player(pygame.sprite.Sprite):
                     # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
                     self.basic_attack_cooldown -= val * 5  # Adjust scalar if base changes
 
-        # Update core stats after flats
-        self.max_health = self.str_mult * self.strength
-        self.max_mana = self.int_mult * self.intelligence
-        self.basic_attack_damage = self.agi_mult * self.agility
-        self.health = self.max_health  # Reset if needed
-        self.mana = self.max_mana
+        # Apply percentages (multiplicative)
 
-        # Then apply percentages (multiplicative)
-        for typ, val in bonuses.items():
             if "_per" in typ:
                 base_stat = typ.replace("_per", "")
                 if base_stat == "str":
@@ -603,23 +616,20 @@ class Player(pygame.sprite.Sprite):
                     self.damage_reduce += val
                 elif typ == "sp_increase_per":
                     self.special_increase += val
-                # print('mana refunding', self)
-                # print(self.mana_refund)
-                # print(bonus_type)
                 elif typ == "mana_refund_per":
                     self.mana_refund += val
-                # print(self.mana_refund)
                 elif typ == "crit_chance_per":
                     self.crit_chance += val
                 elif typ == "crit_dmg_per":
                     self.crit_damage += val
-                elif typ == "dmg_return_per":
+                elif typ == "dmg_return_per": # negative value for enemy
                     for enemy in self.enemy:
                         enemy.lifesteal -= val
                 elif typ == "mana_regen_per":
                     self.mana_regen *= (1 + val)
                 elif typ == "hp_regen_per":
                     self.health_regen *= (1 + val)
+                
                 # For spell damage vvv -----------------------------------------------------
                 elif typ == "spell_dmg_per":
                     # Apply bonus spell damage to each skill
@@ -1316,7 +1326,7 @@ class Player(pygame.sprite.Sprite):
             pygame.draw.rect(screen, special_color, self.special_bar_p1)
 
             # show health regen (call player_status() firsts)
-            self.draw_regen_rate(screen, self.hp_regen_rate, self.mana_regen_rate, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
+            self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
 
 
 
@@ -1460,7 +1470,7 @@ class Player(pygame.sprite.Sprite):
             pygame.draw.rect(screen, special_color_p2, self.special_bar_p2)
 
             # show health regen (call player_status() firsts)
-            self.draw_regen_rate(screen, self.hp_regen_rate, self.mana_regen_rate, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
+            self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
 
         
 
@@ -1924,6 +1934,8 @@ class Player(pygame.sprite.Sprite):
         return self.facing_right
     
     
+    def regen_per_second(self, amount, fps=FPS):
+        return amount / fps
 
 
     # ------------------------ Attack_Display class HELPERS ------------------------
@@ -2120,7 +2132,7 @@ class Player(pygame.sprite.Sprite):
 
             (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['sp_skill_p2'][0]])
             )
-#sp=0.25, default=0.2 jump=0.1
+#sp=-0.1, default=-0.2 jump=-0.05
     def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1, jump_force_modifier=0):
         '''Handles the player movement using user input (jump, move left/right).
         \nModify jump_force to increase/decrease the jump force of the player when jumping.

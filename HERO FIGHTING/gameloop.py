@@ -707,6 +707,7 @@ def game(bg=None):
             main.draw_hp_mana_icons()
 
             #drawing the damage display
+            x = 0
 
             
 
@@ -2213,6 +2214,9 @@ def settings(in_game=False):
 if __name__ == '__main__':
     main_menu()
 
+
+
+
 import math
 
 class AnimationUtils:
@@ -2285,7 +2289,7 @@ def set_background_texture(screen, texture_path):
 # Example usage in the game loop
 # Replace the plain color background with a texture
 background_texture_path = r'assets/black sand.jpg'  # Replace with your texture file
-set_background_texture(screen, background_texture_path)
+# set_background_texture(screen, background_texture_path)
 
 # Add animations for elements entering the screen
 def animate_element_entry(element, start_pos, end_pos, speed):
@@ -2330,6 +2334,4 @@ def load_font(font_path, size):
 # new_font = load_font('path/to/your/font.ttf', 30)
 # if new_font:
 #     text_surface = new_font.render('Your Text Here', True, (255, 255, 255))
-#     screen.blit(text_surface, (x, y))
-
-
+#     screen.blit(text_surface, (x, y

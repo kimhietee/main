@@ -32,7 +32,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 HERO1_BOT = False
 all_items = False #equip bot with all items
@@ -77,8 +77,10 @@ TOTAL_WIDTH = width
 DISABLE_HEAL_REGEN = False
 DISABLE_MANA_REGEN = False
 
-DEFAULT_HEALTH_REGENERATION = 0.02
-DEFAULT_MANA_REGENERATION = 0.1
+DEFAULT_HEALTH_REGENERATION = 1.2 # 1.2/s (0.02)
+DEFAULT_MANA_REGENERATION = 6.0 # 6.0/s (0.1)
+
+
 DEFAULT_BASIC_ATK_DMG_BONUS = 1.2
 DEFAULT_SPECIAL_SKILL_COOLDOWN = 2000 #120000
 
@@ -242,7 +244,9 @@ FONT_PATH = r'assets\\font\\slkscr.ttf'
 _FONT_CACHE = {}
 
 def get_font(size, font_path=FONT_PATH):
-        """Return a cached pygame Font object for the given size."""
+        """Return a cached pygame Font object for the given size.
+        
+        If font_path is not provided, uses the default font."""
         try:
                 size = int(size)
         except Exception:
@@ -388,8 +392,4 @@ no_swap = False
 # size = 30
 # for i in range(size):
 #     count = size - i
-#     print(' ' * (count // 2), end='')
-#     print('*' * (i+1))
-# x = 1
-# b = [1,2,3,4,5,6,7,8,9,10]
-# print(x in b)
+#     print(' '

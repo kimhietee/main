@@ -1564,9 +1564,11 @@ class Item:
             "hp_per": "Max HP",
             "hp_flat": "Max HP",
             "hp_regen_per": "HP Regen",
+            "hp_regen_flat": "HP Regen",
             "mana_per": "Max Mana",
             "mana_flat": "Max Mana",
             "mana_regen_per": "Mana Regen",
+            "mana_regen_flat": "Mana Regen",
             "mana_refund_per": "Mana Refund",
             "mana_reduce_per": "Mana Cost Reduction",
 
@@ -1598,7 +1600,8 @@ class Item:
             info_list.append(f"{nice_name}: {formatted_val}")
         return info_list
 
-    def update(self, position, line_break_every=3, use_literal=False, character_limit=100):
+    def update(self, position, line_break_every=5, use_literal=False, character_limit=100):
+        '''line_break_every = simply dont put arrow at the bonus.'''
         if use_literal:
             # Option 1: Literal values (no %)
             stats_lines = [f"{key.replace('_', ' ').title()}: {'' if val < 0 else '+'}{val:g}" for key, val in self.info.items()]
@@ -1697,7 +1700,7 @@ items = [
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),
     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per', "hp_regen_flat"], [0.15, 0.05, 0.05, 5]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
     Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),
@@ -1858,10 +1861,17 @@ class PlayerSelector:
 
        
 # class PlayerSelector:
-#     def __init__(self, image:pygame.Surface, position:tuple, value:object, size:int=(75, 75), decorxsize:int=85, decorysize:int=85, offsetdecor:int=(42, 42)):
-#         self.image = image
+#     def __init__(self, image_path:str, position:tuple, value:object, size:int=(75, 75), decorxsize:int=85, decorysize:int=85, offsetdecor:int=(42, 42)):
 #         self.position = position
 #         self.value = value # item_class or hero_class
+
+#         self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(), size)
+#         self.image_rect = self.image.get_rect(center = self.position)
+        
+#         self.button_rect = pygame.Rect(self.image_rect.centerx - offsetdecor[0], self.image_rect.centery - offsetdecor[1], decorxsize, decorysize)
+
+
+
 
 class ImageBro:
     '''must pass str with break line of , if players
@@ -2149,7 +2159,7 @@ def player_selection():
             return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Chthulu
+            PLAYER_1_SELECTED_HERO = Fire_Knight
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
@@ -2456,8 +2466,7 @@ def player_selection():
                                 if global_vars.toggle_hero3:
                                     hero3.items.append(item.associate_value())
 
-                    hero1.apply_item_bonuses()
-                    hero2.apply_item_bonuses()
+
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.toggle_hero3:
                             hero3.apply_item_bonuses()
@@ -2585,6 +2594,43 @@ def player_selection():
 
         pygame.display.update()
         clock.tick(FPS)
+
+
+bot = object
+
+
+
+
+# ONLY PLACE HOLDER VALUE, CHANGES LATER
+# fire_wizard = Fire_Wizard(PLAYER_1)
+# wanderer_magician = Wanderer_Magician(PLAYER_2)
+
+# fire_wizard_select = PlayerSelector(fire_wizard_icon, (75, height -75), Fire_Wizard)
+# wanderer_magician_select = PlayerSelector(wanderer_magician_icon, (75*3, height -75), Wanderer_Magician)
+
+# p1_select_icon = [
+#         PlayerSelector(fire_wizard_icon, (75, height - 75), Fire_Wizard),
+#         PlayerSelector(wanderer_magician_icon, (75 * 3, height - 75), Wanderer_Magician),
+#         PlayerSelector(fire_knight_icon, (75 * 5, height - 75), Fire_Knight),
+#         PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)
+#     ]
+
+
+
+
+        # self.player_death = self.load_attack_class(
+        #     filepath=r"PYTHON WITH KIM  NEW!\characters\skeleton\craftpix-net-957123-free-skeleton-pixel-art-sprite-sheets\Skeleton_Warrior\Dead.png",
+        #     frame_width=192, 
+        #     frame_height=192, 
+        #     rows=1, 
+        #     columns=4, 
+        #     scale=1, 
+        #     rotation=0,
+        #     frame_duration=100
+        # )
+    
+
+
 
 
 bot = object

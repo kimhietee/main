@@ -93,6 +93,10 @@ class Fire_Knight(Player):
         self.intelligence = 36
         self.agility = 65 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
+        self.health_regen = self.regen_per_second(1.5)
+        self.mana_regen = self.regen_per_second(5.6)
+
+
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
         self.max_mana = (self.intelligence * self.int_mult)
@@ -950,7 +954,7 @@ class Fire_Knight(Player):
     def update(self):
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
-
+        # self.health_regen += 0.0001
 
          
 
@@ -994,7 +998,7 @@ class Fire_Knight(Player):
             if not DISABLE_MANA_REGEN:
                 self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
-                self.health += (self.health_regen + (self.health_regen * 0.2))
+                self.health += self.health_regen
         else:
             self.health = 0
 

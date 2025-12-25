@@ -27,8 +27,8 @@ class ImageButton:
         
         
         # Text
-        self.text = text
-        self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
+        self.text = text 
+        self.font = get_font(int(font_size*7.142857142857143), font_path) # Font size = 100
         self.text_color = text_color
 
         text_surf = self.font.render(self.text, self.text_anti_alias, self.text_color)

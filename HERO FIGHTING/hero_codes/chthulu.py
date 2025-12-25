@@ -63,12 +63,16 @@ class Chthulu(Player):
         self.strength = 40
         self.intelligence = 40
         self.agility = 35 # real agility = 20
+        
 
         # trait: Increased str potency
         rate = 1.5
         self.str_mult += 0.5
         self.int_mult += 0.5
         self.agi_mult += 0.05
+
+        self.health_regen = self.regen_per_second(1.4)
+        self.mana_regen = self.regen_per_second(5.8)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)

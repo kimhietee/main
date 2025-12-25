@@ -94,7 +94,7 @@ class Fire_Knight(Player):
         self.agility = 65 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
         self.health_regen = self.regen_per_second(1.5)
-        self.mana_regen = self.regen_per_second(5.6)
+        self.mana_regen = self.regen_per_second(5.3)
 
 
         # Base Stats

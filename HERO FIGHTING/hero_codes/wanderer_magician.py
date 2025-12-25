@@ -77,7 +77,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.intelligence = 36
         self.agility = 35
 
-        self.health_regen = self.regen_per_second(1.1)
+        self.health_regen = self.regen_per_second(1.0)
         self.mana_regen = self.regen_per_second(7.5)
         
         self.base_max_mana = self.intelligence * self.int_mult

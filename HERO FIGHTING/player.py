@@ -2157,13 +2157,8 @@ class Player(pygame.sprite.Sprite):
                     self.x_pos = (self.limit_movement_left + (self.hitbox_rect.width/2))
             else:
                 self.running = False
-            # print('------------')
-            # print(self.y_pos == DEFAULT_Y_POS)
-            # print(current_time - self.last_atk_time > JUMP_DELAY)
-            # print(jump_hotkey)
-            # print(self.y_pos, DEFAULT_Y_POS)
+
             if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
-                # print(self.y_pos == self.detect_ground)
                 self.jumping = True
                 self.y_velocity = jump_force * (1 + jump_force_modifier)
                 self.last_atk_time = current_time  # Update the last jump time
@@ -2176,6 +2171,8 @@ class Player(pygame.sprite.Sprite):
             self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+
+            # Draws hero skills in game
             if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
                 pass
             else:

@@ -131,10 +131,21 @@ loading = ImageButton(
 # Menu button to return to menu()
 menu_button = ImageButton(
     image_path=menu_button_img,
-    pos=(40, 10),
-    scale=0.75,
+    pos=(60, 25),
+    scale=0.9,
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+ingame_menu_button = ImageButton(
+    image_path=menu_button_img,
+    pos=(50, 15),
+    scale=0.9,
+    text='',
+    font_path=global_vars.FONT_PATH,  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -317,9 +328,19 @@ def show_controls(font=None):
 
 
 
+from typing import Callable, Any
 
+def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=MENU_FADE_DURATION, immediate_load=False):
+    '''Uses current single background frame to cover the current screen with current background,
+    displays loading image and fading into provided function.
 
-def fade(background, action):
+    - background: Single background image (must be a surface).
+
+    - action: Function to be called after fade
+
+    - fade_duration: How long to turn screen black.
+
+    - immediate_load: If True, calls the assigned function immediately (displays loading, no black fade).'''
     # background = pygame.transform.scale(
     #     pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
@@ -341,12 +362,17 @@ def fade(background, action):
             current_time = pygame.time.get_ticks()
             # pygame.time.get_ticks()
             fade_elapsed = current_time - fade_start_time
-            fade_alpha = min(255, int((fade_elapsed / MENU_FADE_DURATION) * 255))
+            fade_alpha = min(255, int((fade_elapsed / fade_duration) * 255))
             fade_overlay.set_alpha(fade_alpha)
-            screen.blit(fade_overlay, (0, 0))
-            if fade_alpha >= 255:
-                fading = False
+            screen.blit(fade_overlay, (0, 0)) if not immediate_load else None
+            print(fade_alpha, not immediate_load)
+            if fade_alpha >= 255 and not immediate_load:
                 action()
+                fading = False
+                return
+            if fade_alpha >= 10 and immediate_load: # load function immediately (just displaying first frame)
+                action()
+                fading = False
                 return
             
         pygame.display.update()
@@ -359,6 +385,8 @@ def fade(background, action):
 #             count += 1
 #     # print(count)
 #     return count
+
+
 
 def item_list(itemlist): # at least it works, not reusable tho
     value_list = []
@@ -568,7 +596,7 @@ def game(bg=None):
             #         menu()
             #         return    
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if menu_button.is_clicked(event.pos):
+                if ingame_menu_button.is_clicked(event.pos):
                     paused = True 
                 
             # Toggle pause state when the pause key is pressed
@@ -701,7 +729,7 @@ def game(bg=None):
 
             main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
             
-            menu_button.draw(main.screen, mouse_pos)
+            ingame_menu_button.draw(main.screen, mouse_pos)
             
             #drawing the hp and mana icon
             main.draw_hp_mana_icons()
@@ -1044,7 +1072,8 @@ def menu():
                     # return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if control_button.is_clicked(event.pos):
-                    controls()
+                    fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
+                    # controls()
                     return
                     # return
                 
@@ -1081,7 +1110,7 @@ def menu():
 
         settings_button.draw(main.screen,mouse_pos)
 
-
+        
 
 
         if campaign_button.is_hovered(mouse_pos):

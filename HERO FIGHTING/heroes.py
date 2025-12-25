@@ -224,16 +224,12 @@ from global_vars import (IMMEDIATE_RUN,
 
     ZERO_WIDTH, TOTAL_WIDTH
 )
-# from attack import Attacks, Attack_Display
+
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped, load_attack, load_attack_flipped
 from player import Player
-# from heroes import Fire_Wizard, Wanderer_Magician, Fire_Knight, Wind_Hashashin
 from button import ImageButton
-
 from bot_ai import create_bot
-
 import Animate_BG
-
 import global_vars
 
 import key
@@ -362,6 +358,8 @@ class Attacks:
     def is_ready(self):
         return self.time_since_use() >= self.cooldown
 
+
+    # Is being called to game loop
     def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, player=None):
         # print("Has entered Heroes")
         # Check if player is silenced or frozen
@@ -1642,7 +1640,7 @@ class Item:
             pos=(position[0]*0.8, position[1]),
             scale=2,
             text=full_lines,  # Now a list!
-            font_path=r'assets\font\slkscr.ttf',
+            font_path=global_vars.FONT_PATH,
             font_size=font_size*1.05,
             text_color='white',
             fku=True,
@@ -1774,7 +1772,7 @@ class PlayerSelector:
             pos=(self.profile_rect.centerx, self.profile_rect.top - 25),
             scale=0.5,
             text='Deselect',
-            font_path=r'assets\font\slkscr.ttf',  # or any other font path
+            font_path=global_vars.FONT_PATH,  # or any other font path
             font_size=font_size * 0.6,  # dynamic size ~29 at 720p
             text_color='white',
             text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -1831,7 +1829,7 @@ class PlayerSelector:
                     pos=position,
                     scale=2,
                     text=f"{hero_name_text}, {hero_stats_text}",
-                    font_path=r'assets\font\slkscr.ttf',
+                    font_path=global_vars.FONT_PATH,
                     font_size=font_size * 1.05,
                     text_color='white',
                     fku=True,
@@ -1931,10 +1929,12 @@ scale = 0.8
 center_pos = (width / 2, height / 2)
 
 
+
+#new vvvv
 menu_button = ImageButton(
     image_path=menu_button_img,
-    pos=(40, 10),
-    scale=0.75,
+    pos=(60, 25),
+    scale=0.9,
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
@@ -1947,7 +1947,7 @@ loading = ImageButton(
     pos=center_pos,
     scale=0.8,
     text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=global_vars.FONT_PATH,  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -1958,7 +1958,7 @@ fight = ImageButton(
     pos=(width/2, height*0.9),
     scale=0.8,
     text='FIGHT!',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=global_vars.FONT_PATH,  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -1969,7 +1969,7 @@ done = ImageButton(
     pos=(width/2, height*0.9),
     scale=0.8,
     text='select',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=global_vars.FONT_PATH,  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -2142,12 +2142,12 @@ def player_selection():
     immediate_run = IMMEDIATE_RUN # for dev option only
 
     from button import RectButton
-    all_items_button = RectButton((width/2), height*0.8, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "All Items")
-    x2_bot = RectButton((width/2), height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "2x Bot")
-    random_p1 = RectButton((width/2), height*0.7, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Random")
-    random_p2 = RectButton((width/2), height*0.7, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Random")
+    all_items_button = RectButton((width/2), height*0.8, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "All Items")
+    x2_bot = RectButton((width/2), height*0.6, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "2x Bot")
+    random_p1 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random")
+    random_p2 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random")
 
-    toggle_bot_button = RectButton((width/2), height*0.8, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Toggle Bot")
+    toggle_bot_button = RectButton((width/2), height*0.8, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Toggle Bot")
     # chosen hero will be the name
     def get_name(v:str):
         r = v.split('_')

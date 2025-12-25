@@ -39,7 +39,7 @@ all_items = False #equip bot with all items
 
 toggle_hero3 = False
 random_pick_p1 = False 
-
+random_pick_p2 = False 
 
 
 MAIN_VOLUME = 0.05
@@ -241,6 +241,7 @@ font_size = int(height * 0.02)# = 14
 
 # Font cache to avoid repeated font creation (expensive)
 FONT_PATH = r'assets\\font\\slkscr.ttf'
+FONT_PATH_2 = r'assets\\font\\slkscr.ttf'
 _FONT_CACHE = {}
 
 def get_font(size, font_path=FONT_PATH):

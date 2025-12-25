@@ -1700,7 +1700,7 @@ items = [
     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),
     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75]),
     
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per', "hp_regen_flat"], [0.15, 0.05, 0.05, 5]),
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),
     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
     Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),
@@ -1715,7 +1715,7 @@ items = [
     Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit_chance_per", "crit_dmg_per"], [0.3, 0.8]),
 
     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg_return_per'], [0.20]),
-    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [50], description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Cooldown: 120"),  # 'revive_once' as flat 1 (true)
+    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [50], description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Cooldown: 120s"),  # 'revive_once' as flat 1 (true)
 ]
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
@@ -2472,11 +2472,10 @@ def player_selection():
                             hero3.apply_item_bonuses()
 
                     hero1_group = pygame.sprite.Group()
-                    hero1_group.add(hero1)
                     # hero1_group.add(hero3)
 
                     hero2_group = pygame.sprite.Group()
-                    hero2_group.add(hero2)
+                    
 
                     if global_vars.SINGLE_MODE_ACTIVE:
                         if global_vars.toggle_hero3:
@@ -2485,26 +2484,18 @@ def player_selection():
                     # ------------------------------
                     # --- Create bots for both teams ---
                     # hero1_group.add(
-                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
-                    # )
-                    # hero1_group.add(
-                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
-                    # )
-                    # hero1_group.add(
-                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(3))
+                    #     *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2) for _ in range(4))
                     # )
 
+                    
+
                     # hero2_group.add(
-                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
-                    # )
-                    # hero2_group.add(
-                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
-                    # )
-                    # hero2_group.add(
-                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(3))
+                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
                     # )
 
-                   
+                    hero1_group.add(hero1)
+
+                    hero2_group.add(hero2)
 
                     # --- Assign enemies ---
                     for h in hero1_group:
@@ -2555,7 +2546,7 @@ def player_selection():
                     #             i.items.append(item.associate_value())
                     # for i in hero2_group:
                     #     i.apply_item_bonuses()
-                    #     # i.enemy = [hero1]
+                    #     i.enemy = [hero1]
                     #     for x in hero1_group:
                     #         x.enemy.append(i)
 
@@ -2565,7 +2556,7 @@ def player_selection():
                     #             i.items.append(item.associate_value())
                     # for i in hero1_group:
                     #     i.apply_item_bonuses()
-                    #     # i.enemy = [hero2]
+                    #     i.enemy = [hero2]
                     #     for x in hero2_group:
                     #         x.enemy.append(i)
 

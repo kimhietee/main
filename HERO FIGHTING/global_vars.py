@@ -39,10 +39,10 @@ all_items = False #equip bot with all items
 
 toggle_hero3 = False
 random_pick_p1 = False 
-random_pick_p2 = False 
 
 
-MAIN_VOLUME = 0.01
+
+MAIN_VOLUME = 0.05
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 40

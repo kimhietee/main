@@ -6,7 +6,7 @@ height = 720
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
-icon = pygame.image.load(r'assets\icons\miku.png')      
+icon = pygame.image.load(r'assets\icons\miku.png')
 FPS = 60
 clock = pygame.time.Clock()
 # screen = pygame.display.set_mode((width, height))
@@ -42,14 +42,14 @@ random_pick_p1 = False
 random_pick_p2 = False 
 
 
-MAIN_VOLUME = 0.05
+MAIN_VOLUME = 0.3
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 40
 # MAX DEFAULT ITEM = 3
 
 hitboxanddistance = False
-show_bot_skills = False
+show_bot_skills = True
 show_bot_stats = True
 
 SINGLE_MODE_ACTIVE = False # constant
@@ -77,12 +77,9 @@ TOTAL_WIDTH = width
 DISABLE_HEAL_REGEN = False
 DISABLE_MANA_REGEN = False
 
-DEFAULT_HEALTH_REGENERATION = 1.2 # 1.2/s (0.02)
-DEFAULT_MANA_REGENERATION = 6.0 # 6.0/s (0.1)
-
-
+DEFAULT_HEALTH_REGENERATION = 0.02
+DEFAULT_MANA_REGENERATION = 0.1
 DEFAULT_BASIC_ATK_DMG_BONUS = 1.2
-DEFAULT_SPECIAL_SKILL_COOLDOWN = 2000 #120000
 
 LOW_HP = 20
 LITERAL_HEALTH_DEAD = 0
@@ -186,14 +183,6 @@ BASIC_ATK_DAMAGE2 = 2.7 # medium 2 atks
 BASIC_ATK_DAMAGE3 = 1.2 #fast atk
 BASIC_ATK_DAMAGE4 = 3.2 # ranged
 
-
-# Attack Speed Globals (DOTA 2-inspired)
-BASE_ATTACK_SPEED = 100  # Starting AS for all heroes
-MIN_ATTACK_SPEED = 20    # Minimum cap (slowest)
-MAX_ATTACK_SPEED = 700   # Maximum cap (fastest)
-AGILITY_AS_BONUS = 1     # +1 AS per agility point
-BASE_BAT = 1000          # Base Attack Time in ms (1s); override per hero
-
 # Miscellaneous
 MULT = 0.7
 dmg_mult = 0.05
@@ -210,12 +199,11 @@ loading_screen_bg = pygame.transform.scale(
 #hero icons
 fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
 wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
-fire_knight_icon = r'assets\hero profiles\Fire Knight.png'
-wind_hashashin_icon = r'assets\hero profiles\Wind Hashashin.png'
-water_princess_icon = r'assets\hero profiles\Water Princess.png'
-forest_ranger_icon = r'assets\hero profiles\Forest Ranger.png'
+fire_knight_icon = r'assets\hero profiles\fire knight prof.png'
+wind_hashashin_icon = r'assets\hero profiles\wind hasashin prof.jpg'
+water_princess_icon = r'assets\hero profiles\water character profile.png'
+forest_ranger_icon = r'assets\hero profiles\wind ranger profile.png'
 yurei_icon = r'assets\skill icons\onre\Yuriei.jpg'
-chthulu_icon = r'assets\hero profiles\Chthulu.png'
 
 #buttons
 play_button_img = r'assets\UI\buttons\BTN PLAY.png'
@@ -239,42 +227,6 @@ center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14
 
-# Font cache to avoid repeated font creation (expensive)
-FONT_PATH = r'assets\\font\\slkscr.ttf'
-FONT_PATH_2 = r'assets\\font\\slkscr.ttf'
-_FONT_CACHE = {}
-
-def get_font(size, font_path=FONT_PATH):
-        """Return a cached pygame Font object for the given size.
-        
-        If font_path is not provided, uses the default font."""
-        try:
-                size = int(size)
-        except Exception:
-                size = 16
-        font = _FONT_CACHE.get(size)
-        if font is None:
-                font = pygame.font.Font(font_path, size)
-                _FONT_CACHE[size] = font
-        return font
-
-def load_font(font_path, size):
-    """
-    Load a font dynamically from the given path and size.
-
-    Args:
-        font_path: The file path to the font.
-        size: The size of the font to load.
-
-    Returns:
-        A pygame.Font object.
-    """
-    try:
-        return pygame.font.Font(font_path, size)
-    except FileNotFoundError:
-        print(f"Font file not found: {font_path}")
-        return None
-
 SHOW_MINI_HEALTH_BAR = False
 SHOW_MINI_MANA_BAR = False
 SHOW_MINI_SPECIAL_BAR = False
@@ -285,11 +237,6 @@ summon_display = pygame.sprite.Group()
 
 
 no_swap = False
-
-# import heroes as main
-# def assign_summon_enemy(player_type):
-#         for hero in (main.hero1_group if player_type == 2 else main.hero2_group):
-#                 hero.enemy += list(summon_display)
 
 
 
@@ -393,4 +340,8 @@ no_swap = False
 # size = 30
 # for i in range(size):
 #     count = size - i
-#     print(' '
+#     print(' ' * (count // 2), end='')
+#     print('*' * (i+1))
+# x = 1
+# b = [1,2,3,4,5,6,7,8,9,10]
+# print(x in b)

@@ -95,9 +95,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.strength = 32
         self.intelligence = 52
         self.agility = 35 # = 48
-
-        self.health_regen = self.regen_per_second(1.1)
-        self.mana_regen = self.regen_per_second(5.9)
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -112,14 +109,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         # real mana cost is commented
-        self.atk1_mana_cost = 120 #100
+        self.atk1_mana_cost = 100 #100
         self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
         self.sp_mana_cost = 220 #120
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 10000 + 5000 # 12 seconds
+        self.atk1_cooldown = 7000 + 5000 # 12 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
@@ -351,7 +348,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             ]
 
         # Modify
-        self.lowest_mana_cost = self.mana_cost_list[1]
+        self.lowest_mana_cost = self.mana_cost_list[0]
 
         # Skills
         self.attacks = [
@@ -459,7 +456,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
 
         # Trait: + 20% attack speed
-        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
+        self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.3)
         # Trait: + 15% lifesteal
         self.lifesteal = 0.1
         # Trait : + (some values)% mana refund if hits enemy
@@ -479,8 +476,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.max_distance = 200
         self.dash_speed = 5
 
-        # initialize current attack speed snapshot from base value
-        self.get_current_atk_speed = self.basic_attack_animation_speed
+        self.get_current_atk_speed = 0 # SEEMS THE BOT DON'T HAVE THIS VARIABLE
         
 
     # Will modify the attack speed of forest ranger when basic attacking
@@ -527,31 +523,35 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         return atk_speed
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
-        """The most crucial part of collecting user input.
-        - Processes player input each frame, handling movement and skill casting based on state."""
-        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if self.is_dead():
-            return
-        
-        # ---------- Moving ----------
         if self.can_move():
-            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.15,
-                special_active_speed = 0.25,
-                jump_force = self.jump_force,
-                jump_force_modifier = 0.05
-                )
+            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
+                if right_hotkey:  # Move right
+                    self.running = True
+                    self.facing_right = True #if self.player_type == 1 else False
+                    self.x_pos += (self.speed + ((self.speed * 0.25) if self.special_active else (self.speed * 0.15)))
+                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
+                elif left_hotkey:  # Move left
+                    self.running = True
+                    self.facing_right = False #if self.player_type == 1 else True
+                    self.x_pos -= (self.speed + ((self.speed * 0.25) if self.special_active else (self.speed * 0.15)))
+                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
+                else:
+                    self.running = False
+
+                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                    self.jumping = True
+                    self.y_velocity = (DEFAULT_JUMP_FORCE + (DEFAULT_JUMP_FORCE * 0.05))   
+                    self.last_atk_time = current_time  # Update the last jump time
             
-        # ---------- Casting ----------
-        if self.is_frozen():
-            return
-        
-        if self.is_silenced() and not basic_hotkey:
-            return
-        
+        if not self.can_cast():
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -665,18 +665,18 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'delay': (False, 0),
                                 'stop_movement': (True, 2, 1),
                                 'follow': (True, False),
-                                'follow_offset': (-30 if self.facing_right else 30, random.randint(30, 45)),
+                                'follow_offset': (-30 if self.facing_right else 30, random.randint(40, self.target.hitbox_rect.height)),
                                 'add_mana': True,
                                 'mana_mult': self.atk2_mana_refund,
-                                'hitbox_scale_x': 0.3,
-                                'hitbox_scale_y': 0.3,
+                                'hitbox_scale_x': 0.1,
+                                'hitbox_scale_y': 0.1,
 
                                 # leave arrow bullets
                                 'spawn_attack':  {
 
                                     'attack_kwargs': {
                                         'x': self.target.x_pos,
-                                        'y': self.target.y_pos + (random.randint(-40, 3)),
+                                        'y': self.target.y_pos + (random.randint(-40, 40)),
                                         'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                         'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                         'repeat_animation': 1,
@@ -690,7 +690,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'delay': (False, 0),
                                         'stop_movement': (False, 3, 2, 0.2),
                                         'follow': (False, True),
-                                        'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
+                                        'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                         'add_mana': True,
                                         # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
@@ -848,7 +848,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 3)),
+                                    'y': self.target.y_pos + (random.randint(-40, 40)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -862,7 +862,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1006,18 +1006,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'dmg': self.sp_atk2_damage_2nd[0],
                                 'final_dmg': self.sp_atk2_damage_2nd[1],
                                 'who_attacks': self,
-                                # Do NOT preassign who_attacked here; let the spawned attack resolve the actual collided enemy.
+                                'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
                                 'stop_movement': (True, 3, 2, 0.2),
                                 'follow': (True, False),
-                                # Use a conservative follow vertical offset; avoid sampling target hitbox at cast time
-                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(30, 45))),
+                                'follow_offset': (-30 if self.facing_right else 30, (random.randint(40, self.target.hitbox_rect.height)),),
                                 'add_mana': True,
                                 'mana_mult': self.sp_atk2_mana_refund_2nd,
-                                'hitbox_scale_x': 0.3,
-                                'hitbox_scale_y': 0.3,
+                                'hitbox_scale_x': 0.1,
+                                'hitbox_scale_y': 0.1,
                                 'spawn_attack': {
                                                 'use_attack_onhit_pos': True,
 
@@ -1029,13 +1028,12 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'dmg': self.atk2_damage_2nd[0],
                                                     'final_dmg': self.atk2_damage_2nd[1],
                                                     'who_attacks': self,
-                                                    # Defer who_attacked resolution to collision time
+                                                    'who_attacked': self.enemy,
                                                     'sound': (True, self.atk2_sound, None, None),
                                                     'delay': (True, 1050),
                                                     'stop_movement': (True, 3, 2, 0.5),
                                                     'follow': (False, True),
-                                                    # Avoid using target hitbox at cast; keep vertical small
-                                                    'follow_offset': (0, (random.randint(30, 45))),
+                                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                                     'add_mana': True,
                                                     'mana_mult': self.atk2_mana_refund_2nd,
                                                     'hitbox_scale_x': 0.3,
@@ -1045,7 +1043,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'spawn_attack': {
 
                                                         'attack_kwargs': {
-                                                            # Do not hardcode x/y to the preselected target; spawn at collision point instead
+                                                            'x': self.target.x_pos,
+                                                            'y': self.target.y_pos + (random.randint(-40, 40)),
                                                             'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                                             'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                                             'repeat_animation': 1,
@@ -1053,7 +1052,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'dmg': 0,
                                                             'final_dmg': self.arrow_stuck_damage,
                                                             'who_attacks': self,
-                                                            # who_attacked deliberately omitted so Attack_Display will assign collided enemy
+                                                            'who_attacked': self.target,
                                                             'moving': False,
                                                             'sound': (False, self.atk2_sound, None, None),
                                                             'delay': (False, 0),
@@ -1092,36 +1091,50 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
                         self.single_target()
-                        target, target_detected = self.face_selective_target()
-                        if not target_detected:
-                            target = self.rect.centerx + (200 if self.facing_right else -200)  # Default to casting in front
+                        enemy_posx = (self.target.x_pos)
+                        enemy_posy = (self.target.rect.centery)
+                        # one liner is getting hard, took codes from bot_ai
+                        self.enemy_on_right = self.x_pos < (self.target.x_pos)
+                        self.enemy_on_left = self.x_pos > (self.target.x_pos)
+                        enemy_pos = (self.target.x_pos)
+                        target_detected = False
+                        if self.enemy_on_right and self.facing_right:
+                            target = enemy_pos
+                            target_detected = True
+                        elif self.enemy_on_right and not self.facing_right:
+                            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
+                        elif self.enemy_on_left and not self.facing_right:
+                            target = enemy_pos
+                            target_detected = True
+                        else:
+                            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
 
                         attack = Attack_Display(
                             x=target,
-                            y=DEFAULT_Y_POS - 100,
-                            frames=self.sp_atk3,
-                            frame_duration=111.111,
+                            y=DEFAULT_Y_POS-130,
+                            frames=self.sp_atk3, 
+                            frame_duration=111.111, # (2000 / 18) 2s root
                             repeat_animation=1,
                             dmg=self.sp_atk3_damage[0],
                             final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            sound=(True, self.atk3_sound, None, None),
+                            sound=(True, self.atk3_sound , None, None),
                             delay=(True, 1750),
                             follow=(False, target_detected),
-                            follow_offset=(0, -50),
+                            follow_offset= (0, -50),
                             stop_movement=(True, 2, 2),
                             hitbox_scale_x=0.35,
                             hitbox_scale_y=1,
                             add_mana=True,
                             mana_mult=self.sp_atk3_mana_refund,
-                                                        
+                            
                             # leave arrow bullets
                             spawn_attack= {
 
                                 'attack_kwargs': {
-                                    'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 3)),
+                                    'x': enemy_posx,
+                                    'y': enemy_posy + (random.randint(-40, 40)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1135,17 +1148,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
                                 }
-
                         )
                         attack_display.add(attack)
-                        self.mana -= self.attacks_special[2].mana_cost
+                        self.mana -=  self.attacks_special[2].mana_cost
                         self.attacks_special[2].last_used_time = current_time
                         self.running = False
                         self.attacking3 = True
@@ -1245,7 +1257,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 3)),
+                                    'y': self.target.y_pos + (random.randint(-40, 40)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1259,7 +1271,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1306,8 +1318,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             
 
     def update(self):
-        
+        super().update()
         # print(self.stunned)
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
+
+        self.inputs()
+        self.move_to_screen()
 
         # print(self.distance_covered)
         if not self.is_dead():
@@ -1347,14 +1368,43 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.y_velocity += DEFAULT_GRAVITY
         self.y_pos += self.y_velocity
 
-        
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0
 
         # print(self.basic_attack_animation_speed)
         # print(f'cd:{self.basic_attack_cooldown}')
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
-        
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
+            pass
+        else:
+            # Update the player status (health and mana bars)
+            self.player_status(self.health, self.mana, self.special)
         
         # Update the health and mana bars
         if self.health != 0:
@@ -1365,7 +1415,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         else:
             self.health = 0
 
-        if not global_vars.DISABLE_SPECIAL_REDUCE:
+        if not DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
@@ -1422,7 +1472,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             spawn_attack= {
                                 'attack_kwargs': {
                                     'x': self.target.x_pos,
-                                    'y': self.target.y_pos + (random.randint(-40, 3)),
+                                    'y': self.target.y_pos + (random.randint(-40, 40)),
                                     'frames': self.base_arrow if self.facing_right else self.base_arrow_flipped,
                                     'frame_duration': self.arrow_stuck_duration, # slow for 1s (second / frames)
                                     'repeat_animation': 1,
@@ -1436,7 +1486,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'delay': (False, 0),
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
-                                    'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
+                                    'follow_offset': (random.randint(-30, 30), (random.randint(40, self.target.hitbox_rect.height))),
                                     'add_mana': True,
                                     # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
@@ -1454,7 +1504,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             # self.y_velocity -= DEFAULT_GRAVITY  # optional: cancel gravity impulse if you want freeze in air
 
 
-        super().update()
+        
                     #self.apply_item_bonuses()
         # print(self.basic_attack_damage)
                 # self.max_mana = min(200, self.max_mana + 10)

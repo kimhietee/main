@@ -22,8 +22,6 @@ def solve(print_res=False, sub=False, left=False, add=False):
         x = a+(a*b)
         return x
     
-
-    
 # x = []
 # h = type(x)
 # if h is list:
@@ -103,37 +101,9 @@ import random
 c = float(f'{random.random():.2f}') #chance
 d = 1.3 #dmg
 v = 0.5 #value
-# print(f'{f'{d*(1+v):.2f}' if c < 0.2 else f'{d}'}')
+print(f'{f'{d*(1+v):.2f}' if c < 0.2 else f'{d}'}')
 
 
-hahh = True
-
-# if hahh:
-#     print('once', hahh)
-#     print('twice', hahh)
-#     hahh = False
-#     print('thrice', hahh)
-#     for i in range(5):
-#         print(f'still running even {hahh} is False.')
-
-
-
-list1 = ['a', 'b', 'c', 'd']
-list2 = ['e', 'f', 'g', 'h']
-
-# print([x for x in list1] + [x for x in list2])
-
-
-# print(5 - -2)
-
-print(f'{23.1122038601983:.2f}')
-
-qwe = 123
-
-if qwe < 2:
-    print('asd')
-else:
-    raise ValueError('huh?')
 
 # print(items*2)
 # print(solve(add=True))

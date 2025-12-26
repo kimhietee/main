@@ -85,9 +85,6 @@ class Wind_Hashashin(Player):
         self.intelligence = 40
         self.agility = 13 #(13*4=52)
 
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(6.1)
-
         # Base Stats
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -441,31 +438,36 @@ class Wind_Hashashin(Player):
         
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
-        """The most crucial part of collecting user input.
-        - Processes player input each frame, handling movement and skill casting based on state."""
-        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if self.is_dead():
-            return
+        if self.can_move(): # fully working
+            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
+                if right_hotkey:  # Move right
+                    self.running = True
+                    self.facing_right = True #if self.player_type == 1 else False
+                    self.x_pos += (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.25)))
+                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
+                elif left_hotkey:  # Move left
+                    self.running = True
+                    self.facing_right = False #if self.player_type == 1 else True
+                    self.x_pos -= (self.speed + ((self.speed * 0.2) if not self.special_active else (self.speed * 0.25)))
+                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
+                else:
+                    self.running = False
+
+                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                    self.jumping = True
+                    self.y_velocity = (DEFAULT_JUMP_FORCE + (DEFAULT_JUMP_FORCE * 0.1)) 
+                    self.last_atk_time = current_time  # Update the last jump time
+
         
-        # ---------- Moving ----------
-        if self.can_move():
-            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.2,
-                special_active_speed = 0.25,
-                jump_force = self.jump_force,
-                jump_force_modifier = 0.1
-                )
-            
-        # ---------- Casting ----------
-        if self.is_frozen():
-            return
-        
-        if self.is_silenced() and not basic_hotkey:
-            return
-        
+        if not self.can_cast():
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         if not self.special_active:
             if not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -646,7 +648,7 @@ class Wind_Hashashin(Player):
                                 who_attacked=self.enemy,
                                 sound=(True, self.basic_sound, None, None),
                                 moving=True,
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
 
                                 hitbox_scale_y=0.3,
                                 hitbox_scale_x=0.3,
@@ -900,7 +902,7 @@ class Wind_Hashashin(Player):
                                 stun=(False, 0),
                                 sound=(True, self.basic_sound, None, None),
                                 kill_collide=False,
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
 
                                 hitbox_scale_y=0.4,
                                 hitbox_scale_x=0.4,
@@ -957,8 +959,17 @@ class Wind_Hashashin(Player):
     
     
     def update(self):
-        
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
 
+        self.keys = pygame.key.get_pressed()
+
+        self.inputs()
+        self.move_to_screen()
 
          
         
@@ -1024,14 +1035,8 @@ class Wind_Hashashin(Player):
             self.atk3_animation(2) #animation speed increase
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
         elif self.sp_attacking:
-            # Ensure the target is valid before accessing its attributes
-            if self.target is not None and not self.target.is_dead():
-                self.x_pos = self.target.x_pos
-                self.y_pos = self.target.y_pos
-            else:
-                # Reset the target and stop the special attack if the target is invalid
-                self.target = None
-                self.sp_attacking = False
+            self.x_pos = self.target.x_pos
+            self.y_pos = self.target.y_pos
             self.sp_animation()
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
@@ -1049,11 +1054,39 @@ class Wind_Hashashin(Player):
         # else:
         #     self.jumping = False
 
-        
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0
 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        # Update the player status (health and mana bars)
+        self.player_status(self.health, self.mana, self.special)
+        
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:
@@ -1063,7 +1096,7 @@ class Wind_Hashashin(Player):
         else:
             self.health = 0
 
-        if not global_vars.DISABLE_SPECIAL_REDUCE:
+        if not DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:

@@ -81,7 +81,7 @@ class Display_Text: # display damage taken text previously (not working for now)
 class Fire_Knight(Player):
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
-        # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
+        self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
 
         self.player_type = player_type
         self.name = "Fire Knight"
@@ -92,10 +92,6 @@ class Fire_Knight(Player):
         self.strength = 42
         self.intelligence = 36
         self.agility = 65 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
-
-        self.health_regen = self.regen_per_second(1.5)
-        self.mana_regen = self.regen_per_second(5.0)
-
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult) + 20
@@ -467,31 +463,35 @@ class Fire_Knight(Player):
             self.player_atk1_index_flipped = 0
 
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
-        """The most crucial part of collecting user input.
-        - Processes player input each frame, handling movement and skill casting based on state."""
-        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if self.is_dead():
-            return
-        
-        # ---------- Moving ----------
         if self.can_move():
-            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = -0.2,
-                special_active_speed = -0.1,
-                jump_force = self.jump_force,
-                jump_force_modifier = -0.05
-                )
+            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
+                if right_hotkey:  # Move right
+                    self.running = True
+                    self.facing_right = True #if self.player_type == 1 else False
+                    self.x_pos += (self.speed - ((self.speed * 0.2) if not self.special_active else (self.speed * 0.1)))
+                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
+                elif left_hotkey:  # Move left
+                    self.running = True
+                    self.facing_right = False #if self.player_type == 1 else True
+                    self.x_pos -= (self.speed - ((self.speed * 0.2) if not self.special_active else (self.speed * 0.1)))
+                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
+                else:
+                    self.running = False
+
+                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                    self.jumping = True
+                    self.y_velocity = (DEFAULT_JUMP_FORCE - (DEFAULT_JUMP_FORCE * 0.05))  
+                    self.last_atk_time = current_time  # Update the last jump time  
             
-        # ---------- Casting ----------
-        if self.is_frozen():
-            return
-        
-        if self.is_silenced() and not basic_hotkey:
-            return
-        
+        if not self.can_cast():
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         if not self.special_active:
             if not self.jumping and not self.is_dead():
                 if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
@@ -952,9 +952,18 @@ class Fire_Knight(Player):
             
 
     def update(self):
-        # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
+        self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
 
-        # self.health_regen += 0.0001
+        self.keys = pygame.key.get_pressed()
+
+        self.inputs()
+        self.move_to_screen()
 
          
 
@@ -988,21 +997,49 @@ class Fire_Knight(Player):
         self.y_velocity += (DEFAULT_GRAVITY + (DEFAULT_GRAVITY * 0.03))
         self.y_pos += self.y_velocity
 
-        
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0
 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        # Update the player status (health and mana bars)
+        self.player_status(self.health, self.mana, self.special)
+        
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:
                 self.mana += self.mana_regen
             if not DISABLE_HEAL_REGEN:
-                self.health += self.health_regen
+                self.health += (self.health_regen + (self.health_regen * 0.2))
         else:
             self.health = 0
 
-        if not global_vars.DISABLE_SPECIAL_REDUCE:
+        if not DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:

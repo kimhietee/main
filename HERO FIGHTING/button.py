@@ -1,5 +1,5 @@
 import pygame
-from global_vars import get_font
+
 
 
 class ImageButton:
@@ -27,15 +27,14 @@ class ImageButton:
         
         
         # Text
-        self.text = text 
-        self.font = get_font(int(font_size*7.142857142857143), font_path) # Font size = 100
+        self.text = text
+        self.font = pygame.font.Font(font_path, int(font_size*7.142857142857143)) # Font size = 100
         self.text_color = text_color
 
         text_surf = self.font.render(self.text, self.text_anti_alias, self.text_color)
         text_surf.set_alpha(int(self.alpha[1] * 255))
 
         self.text_surf = pygame.transform.rotozoom(text_surf, 0, 0.2)
-        # self.text_surf = text_surf
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
     def draw(self, screen, mouse_pos):
@@ -49,16 +48,6 @@ class ImageButton:
         # Draw the image and text
         screen.blit(self.image, self.rect)
         screen.blit(self.text_surf, self.text_rect)
-
-    def set_position(self, center): # this is the original position 
-        dx = center[0] - self.rect.centerx
-        dy = center[1] - self.rect.centery
-
-        self.rect.center = center
-
-
-        self.text_rect.x += dx
-        self.text_rect.y += dy
 
 
 
@@ -85,20 +74,7 @@ class ImageButton:
 
 
 
-# class Button:
-#     def __init__(self, image_path:str, position:tuple[int, int], image_size:int, text:str, font_path:str, text_size:int, text_color:str):
-#         self.image = pygame.transform.rotozoom(pygame.image.load(image_path).convert_alpha(), 0, image_size)
-#         self.image_rect = self.image.get_rect(center = position)
-        
-#         font_size = int(text_size*7.142857142857143)
-        
-#         self.font = get_font(font_size, font_path)
 
-#         # not scaled (font already scaled)
-#         text_surf = self.font.render(self.text, self.text_anti_alias, self.text_color)
-#         text_scale = 0.2
-#         # scaled again
-#         self.text_surf = pygame.transform.rotozoom(text_surf, 0, text_scale)
     
 
     
@@ -247,4 +223,23 @@ class RectButton:
         #     if event.type == pygame.MOUSEBUTTONDOWN:
         #         if button_hovered:
         #             self.button_clicked = not self.button_clicked
-                # self.do
+                # self.done_clicking = True
+
+        # self.rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
+        # if self.button_clicked:
+        #     self.rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
+        # if self.button_clicked and self.button_hovered:
+        #     self.rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+
+        # pygame.draw.rect(screen, self.rect_color, self.rect)
+
+        # print(self.button_clicked)
+
+        # rect_color = None
+        # if button_hovered :
+        #     rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4) if button_hovered else (30,30,30)
+
+        #     pygame.draw.rect(screen, rect_color, self.rect)
+
+
+    

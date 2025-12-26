@@ -9,7 +9,6 @@ from global_vars import (
     X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS,
     DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
     WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
-    ZERO_WIDTH, TOTAL_WIDTH,
     attack_display
 )
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped
@@ -19,6 +18,7 @@ import global_vars
 import key
 
 #AS OF 4/23/25 (12:15 AM)
+print('pls don\'t pause if you have active buff :)')
 '''SPECIAL LASTS 16-17 SECONDS
  if you don't do anything :))'''
 '''
@@ -120,8 +120,8 @@ class Player(pygame.sprite.Sprite):
         self.special = 0
         self.special_active = False
 
-        self.mana_regen = self.regen_per_second(DEFAULT_MANA_REGENERATION)
-        self.health_regen = self.regen_per_second(DEFAULT_HEALTH_REGENERATION)
+        self.mana_regen = DEFAULT_MANA_REGENERATION
+        self.health_regen = DEFAULT_HEALTH_REGENERATION
 
         self.basic_attack_cooldown = BASIC_ATK_COOLDOWN
 
@@ -135,14 +135,7 @@ class Player(pygame.sprite.Sprite):
         # # self.item_info_dict = {}   
         # self.item_info_dict.update(self.player_instance.bonus_type, self.player_instance.bonus_value)  
 
-        # Attack Speed Calculation
-        self.base_as = global_vars.BASE_ATTACK_SPEED
-        self.base_bat = global_vars.BASE_BAT  # ms; heroes can override
-        self.flat_as_bonus = 0
-        self.percent_as_bonus = 0.0
-        self.flat_as_reduction = 0
-        self.percent_as_reduction = 0.0
-        self.last_basic_attack_time = -BASIC_ATK_COOLDOWN  # Ready initially (use your existing BASIC_ATK_COOLDOWN as fallback)
+
 
         # Player Position
         self.x = 0
@@ -288,9 +281,9 @@ class Player(pygame.sprite.Sprite):
         # Skills
         self.attacks = []
 
-        # # Regen Rate
-        # self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
-        # self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
+        # Regen Rate
+        self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
+        self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
 
         # After Bar Reduces
         self.white_health_p1 = self.health
@@ -362,7 +355,7 @@ class Player(pygame.sprite.Sprite):
         # self.just_spawned = True
         self.damage_numbers = []
 
-        self.damage_font = global_vars.get_font(30)  # preload font
+        self.damage_font = pygame.font.Font('assets/font/slkscr.ttf', 30)  # preload font
 
 
         # for reset_all() function
@@ -377,16 +370,6 @@ class Player(pygame.sprite.Sprite):
         self.player_1_y = 150
         self.player_2_x = 96
         self.player_2_y = 150
-
-        # Player Movement Limitations and Settings
-        self.limit_movement_left = ZERO_WIDTH
-        '''Prevent player moving left.'''
-        self.limit_movement_right = TOTAL_WIDTH
-        '''Prevent player moving right.'''
-        self.jump_force = DEFAULT_JUMP_FORCE
-        '''Jump strength/force of player.'''
-        # self.detect_ground = DEFAULT_Y_POS
-        # '''Limit where player detects the ground at y level.'''
 
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
@@ -436,7 +419,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 size = size or int(20 + damage * 3)  # Small damage gets boosted 
 
-        font = global_vars.get_font(size)
+        font = pygame.font.Font('assets/font/slkscr.ttf', size)
 
         # Format floating numbers cleanly
         if isinstance(damage, float):
@@ -489,7 +472,7 @@ class Player(pygame.sprite.Sprite):
         # print(delta)
         if delta < 0:
             self.display_damage(-delta, interval=interval, health_modify=True)  # Normal damage (red)
-        elif delta > self.health_regen*10:  # Only show healing if it's significant (not just natural regen)
+        elif delta > DEFAULT_HEALTH_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
             self.display_damage(delta, interval=interval, color=(0, 255, 0), health_modify=True)  # Green heal
         self.last_health = self.health
 
@@ -519,172 +502,204 @@ class Player(pygame.sprite.Sprite):
 
 
     def apply_item_bonuses(self):
-        '''misc - apply item bonuses (avoid noisy prints for performance)
-        self.items is a list of item classes'''
-        # First, collect all bonuses by type for efficient application
-        bonuses = {typ: 0.0 for typ in set(t for item in self.items for t in item.bonus_type)}  # Unique types
-        for item in self.items:
-            for typ, val in item.info.items():
-                bonuses[typ] += val
-
-        # Apply flats first
-        for typ, val in bonuses.items():
-            print(typ, "hp_regen_flat")
-            # print(bonuses)
-            if "_flat" in typ:
-                base_stat = typ.replace("_flat", "")
-                if base_stat == "str":
-                    self.strength += val
-                    self.max_health = self.str_mult * self.strength
-                    self.health = self.max_health  # Reset if needed
-
-                elif base_stat == "int":
-                    self.intelligence += val
-                    self.max_mana = self.int_mult * self.intelligence
-                    self.mana = self.max_mana
-
-
-                elif base_stat == "agi":
-                    self.agility += val
-                    self.basic_attack_damage = self.agi_mult * self.agility
-
-                elif base_stat == "hp":
-                    self.max_health += val
-                elif base_stat == "mana":
-                    self.max_mana += val
-                elif base_stat == "atk":
-                    self.basic_attack_damage += val
-                
-                elif typ == "hp_regen_flat":
-                    self.health_regen += self.regen_per_second(val)
-                    pass
-                    # print(val, self.regen_per_second(val) * 60, self.health_regen * 60, 'total:', (self.health_regen + self.regen_per_second(val)) * 60)
-                    # self.health_regen = self.health_regen + val / 60
-                    # print('added hp regen to:', self.__class__.__name__)
-                elif typ == "mana_regen_flat":
-                    self.mana_regen += self.regen_per_second(val)
-                elif typ == "atk_speed_flat":
-                    # Flat attack speed: Reduce anim speed (faster anim = faster atk)
-                    # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
-                    self.basic_attack_animation_speed -= val * 0.1
-                    # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
-                    self.basic_attack_cooldown -= val * 5  # Adjust scalar if base changes
-
-        # Apply percentages (multiplicative)
-
-            if "_per" in typ:
-                base_stat = typ.replace("_per", "")
-                if base_stat == "str":
-                    self.strength *= (1 + val)
-                    self.max_health = self.str_mult * self.strength
-                elif base_stat == "int":
-                    self.intelligence *= (1 + val)
-                    self.max_mana = self.int_mult * self.intelligence
-                elif base_stat == "agi":
-                    self.agility *= (1 + val)
-                    self.basic_attack_damage = self.agi_mult * self.agility
-                elif base_stat == "hp":
-                    self.max_health *= (1 + val)
-                elif base_stat == "mana":
-                    self.max_mana *= (1 + val)
-                elif base_stat == "atk":
-                    self.basic_attack_damage *= (1 + val)
-                elif base_stat == "move_speed":
-                    self.speed *= (1 + val)
-                    self.running_animation_speed += 10 * val  # Legacy scaling; consider *= (1 + val) for consistency
+        # print(self.basic_attack_animation_speed)
+        #misc
+        print(self.basic_attack_animation_speed) # NOTE, BONUSES ARE NOT CENTRALIZED, each bonus is applied 1 by 1
+        for item in self.items: # self.items is a list of item classes
+            for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
+                if bonus_type == 'move speed':
+                    self.speed += self.speed * bonus_value
+                    self.running_animation_speed += 10 * bonus_value
                     self.default_speed = self.speed
-                elif typ == "atk_speed_per":
-                    # Percentage: Reduce anim speed and cd by %
-                    self.basic_attack_animation_speed *= (1 - val)  # Lower = faster
-                    self.basic_attack_cooldown *= (1 - val)
-                elif typ == "mana_reduce_per":
-                    num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
-                    for i in range(num_skills):
-                        self.attacks[i].mana_cost = int(self.attacks[i].mana_cost * (1 - val))
-                        self.attacks_special[i].mana_cost = int(self.attacks_special[i].mana_cost * (1 - val))
-                elif typ == "cd_reduce_per":
-                    num_skills = len(self.attacks) - 1  # Now 4: Skills only, exclude basic attack
-                    for i in range(num_skills):
-                        self.attacks[i].cooldown = int(self.attacks[i].cooldown * (1 - val))
-                        self.attacks_special[i].cooldown = int(self.attacks_special[i].cooldown * (1 - val))
-                # CENTRALIZED BONUSES BEFORE APPLYING
-                elif typ == "lifesteal_per":
-                    self.lifesteal += val # must be higher than 1
-                elif typ == "health_cost_per":
-                    self.lifesteal += val  # Penalty as negative lifesteal # value must be less than 1
-                elif typ == "dmg_reduce_per":
-                    self.damage_reduce += val
-                elif typ == "sp_increase_per":
-                    self.special_increase += val
-                elif typ == "mana_refund_per":
-                    self.mana_refund += val
-                elif typ == "crit_chance_per":
-                    self.crit_chance += val
-                elif typ == "crit_dmg_per":
-                    self.crit_damage += val
-                elif typ == "dmg_return_per": # negative value for enemy
-                    for enemy in self.enemy:
-                        enemy.lifesteal -= val
-                elif typ == "mana_regen_per":
-                    self.mana_regen *= (1 + val)
-                elif typ == "hp_regen_per":
-                    self.health_regen *= (1 + val)
                 
+                # ex. 50, 150 attack speed
+                if bonus_type == 'attack speed':  # FLAT ATTACK SPEED!!!
+                    self.basic_attack_animation_speed -= 0.1 * bonus_value  # 100 attack speed = 10 animation speed
+                    if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_animation_speed = 0.01
+                    self.basic_attack_cooldown -= 0.5 * bonus_value # 100 attack speed = -0.05s cooldown (attack cd = 0.5s)
+                    if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_cooldown = 0.01     
+                    print('applied flat atk speed', self.basic_attack_animation_speed)
+                    self.attacks[4].cooldown = self.basic_attack_cooldown
+                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
+                
+                # percentage ex. 0.05 atk speed -> 5%
+                if bonus_type == 'atk speed': # THIS IS PERCENTAGE I NEED TO READ DOCS!!!
+                    print(self.basic_attack_animation_speed * bonus_value, bonus_value)
+                    self.basic_attack_animation_speed -= self.basic_attack_animation_speed * bonus_value  # 100 attack speed, 10% mult = +10 animation speed
+                    if self.basic_attack_animation_speed < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_animation_speed = 0.01
+                    self.basic_attack_cooldown -= 0.5 * (bonus_value * 1000) # convert back to tick second, then multiply back (atk speed value already added) 
+                                                                             # 100 attack speed, 10% mult = -0.05s cooldown (attack cd = 0.5s)
+                    if self.basic_attack_cooldown < 0.01:  # Prevent negative or zero speed
+                        self.basic_attack_cooldown = 0.01   
+                    print('applied atk speed percentage', self.basic_attack_animation_speed)
+                    self.attacks[4].cooldown = self.basic_attack_cooldown
+                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
+
+                if bonus_type == 'mana reduce':
+                    for i in range(0, 4):
+                        self.attacks[i].mana_cost -= int(self.attacks[i].mana_cost * bonus_value)
+                        self.attacks_special[i].mana_cost -= int(self.attacks_special[i].mana_cost * bonus_value)
+                
+                if bonus_type == 'cd reduce':
+                    for i in range(0, 5):
+                        self.attacks[i].cooldown -= int(self.attacks[i].cooldown * bonus_value)
+                        self.attacks_special[i].cooldown -= int(self.attacks_special[i].cooldown * bonus_value)
+
+                # CENTRALIZED BONUSES BEFORE APPLYING
+                if bonus_type == "lifesteal": # must be higher than 1
+                    self.lifesteal += bonus_value
+                if bonus_type == 'health cost': # value must be less than 1
+                    self.lifesteal += bonus_value
+
+                if bonus_type =='dmg reduce':
+                    self.damage_reduce += bonus_value
+
+                if bonus_type =='sp increase':
+                    self.special_increase += bonus_value
+
+                # print('mana refunding', self)
+                # print(self.mana_refund)
+                # print(bonus_type)
+                if bonus_type =='mana refund':
+                    self.mana_refund += bonus_value
+                # print(self.mana_refund)
+
+                if bonus_type == 'crit chance':
+                    self.crit_chance += bonus_value
+
+                if bonus_type == 'crit dmg':
+                    self.crit_damage += bonus_value
+
+                if bonus_type == 'dmg return':
+                    for enemy in self.enemy:
+                        enemy.lifesteal -= bonus_value
                 # For spell damage vvv -----------------------------------------------------
-                elif typ == "spell_dmg_per":
+                if bonus_type == 'spell dmg':
                     # Apply bonus spell damage to each skill
-                    self.atk1_damage = (self.atk1_damage[0] * (1 + val), self.atk1_damage[1] * (1 + val))
-                    self.atk2_damage = (self.atk2_damage[0] * (1 + val), self.atk2_damage[1] * (1 + val))
-                    self.atk3_damage = (self.atk3_damage[0] * (1 + val), self.atk3_damage[1] * (1 + val))
-                    self.sp_damage = (self.sp_damage[0] * (1 + val), self.sp_damage[1] * (1 + val))
+                    self.atk1_damage = (
+                        self.atk1_damage[0] + (self.atk1_damage[0] * bonus_value),
+                        self.atk1_damage[1] + (self.atk1_damage[1] * bonus_value)
+                    )
+                    self.atk2_damage = (
+                        self.atk2_damage[0] + (self.atk2_damage[0] * bonus_value),
+                        self.atk2_damage[1] + (self.atk2_damage[1] * bonus_value)
+                    )
+                    self.atk3_damage = (
+                        self.atk3_damage[0] + (self.atk3_damage[0] * bonus_value),
+                        self.atk3_damage[1] + (self.atk3_damage[1] * bonus_value)
+                    )
+                    self.sp_damage = (
+                        self.sp_damage[0] + (self.sp_damage[0] * bonus_value),
+                        self.sp_damage[1] + (self.sp_damage[1] * bonus_value)
+                    )
 
                     if hasattr(self, 'atk2_damage_2nd'): # For wind hashahin, or any heroes that needs attribute
-                        self.atk2_damage_2nd = (self.atk2_damage_2nd[0] * (1 + val), self.atk2_damage_2nd[1] * (1 + val)) #reused by water princess
+                        self.atk2_damage_2nd = (  #reused by water princess
+                        self.atk2_damage_2nd[0] + (self.atk2_damage_2nd[0] * bonus_value),
+                        self.atk2_damage_2nd[1] + (self.atk2_damage_2nd[1] * bonus_value)
+                    )
                     if hasattr(self, 'sp_damage_2nd'):
-                        self.sp_damage_2nd = (self.sp_damage_2nd[0] * (1 + val), self.sp_damage_2nd[1] * (1 + val))
+                        self.sp_damage_2nd = (
+                        self.sp_damage_2nd[0] + (self.sp_damage_2nd[0] * bonus_value),
+                        self.sp_damage_2nd[1] + (self.sp_damage_2nd[1] * bonus_value)
+                    )
                     if hasattr(self, 'real_sp_damage'):
-                        self.real_sp_damage *= (1 + val)
+                        self.real_sp_damage = self.real_sp_damage + (self.real_sp_damage * bonus_value)
+
 
                     #some of these from water princess, will reuse some variable
                     if hasattr(self, 'atk3_damage_2nd'):
-                        self.atk3_damage_2nd *= (1 + val)
+                        self.atk3_damage_2nd = self.atk3_damage_2nd + (self.atk3_damage_2nd * bonus_value)
                     if hasattr(self, 'atk1_damage_2nd'):
-                        self.atk1_damage_2nd *= (1 + val)
+                        self.atk1_damage_2nd = self.atk1_damage_2nd + (self.atk1_damage_2nd * bonus_value)
                     if hasattr(self, 'sp_damage_3rd'): # For water princess
-                        self.sp_damage_3rd = (self.sp_damage_3rd[0] * (1 + val), self.sp_damage_3rd[1] * (1 + val))
-                    # can handle single, or tuple
+                        self.sp_damage_3rd = (
+                        self.sp_damage_3rd[0] + (self.sp_damage_3rd[0] * bonus_value),
+                        self.sp_damage_3rd[1] + (self.sp_damage_3rd[1] * bonus_value)
+                    )
                     if hasattr(self, 'sp_atk1_damage'):
-                        if isinstance(self.sp_atk1_damage, tuple):
-                            self.sp_atk1_damage = (self.sp_atk1_damage[0] * (1 + val), self.sp_atk1_damage[1] * (1 + val))
-                        else:
-                            self.sp_atk1_damage *= (1 + val)
+                        self.sp_atk1_damage = self.sp_atk1_damage + (self.sp_atk1_damage * bonus_value)
                     if hasattr(self, 'sp_atk2_damage'):
-                        if isinstance(self.sp_atk2_damage, tuple):
-                            self.sp_atk2_damage = (self.sp_atk2_damage[0] * (1 + val), self.sp_atk2_damage[1] * (1 + val))
-                        else:
-                            self.sp_atk2_damage *= (1 + val)
+                        self.sp_atk2_damage = self.sp_atk2_damage + (self.sp_atk2_damage * bonus_value)
                     if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
-                        self.sp_atk2_damage_2nd = (self.sp_atk2_damage_2nd[0] * (1 + val), self.sp_atk2_damage_2nd[1] * (1 + val))
+                        self.sp_atk2_damage_2nd = (
+                        self.sp_atk2_damage_2nd[0] + (self.sp_atk2_damage_2nd[0] * bonus_value),
+                        self.sp_atk2_damage_2nd[1] + (self.sp_atk2_damage_2nd[1] * bonus_value)
+                    )
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
-                        self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
+                        self.sp_atk2_damage_3rd = (
+                        self.sp_atk2_damage_3rd[0] + (self.sp_atk2_damage_3rd[0] * bonus_value),
+                        self.sp_atk2_damage_3rd[1] + (self.sp_atk2_damage_3rd[1] * bonus_value)
+                    )
                     if hasattr(self, 'sp_atk3_damage'): # For water princess
-                        self.sp_atk3_damage = (self.sp_atk3_damage[0] * (1 + val), self.sp_atk3_damage[1] * (1 + val))
+                        self.sp_atk3_damage = (
+                        self.sp_atk3_damage[0] + (self.sp_atk3_damage[0] * bonus_value),
+                        self.sp_atk3_damage[1] + (self.sp_atk3_damage[1] * bonus_value)
+                    )
                 # For spell damage ^^^ -----------------------------------------------------
+                
 
-        # Caps and safety
-        self.basic_attack_animation_speed = max(0.01, self.basic_attack_animation_speed)
-        self.basic_attack_cooldown = max(0.01, self.basic_attack_cooldown)
-        self.attacks[4].cooldown = self.basic_attack_cooldown
-        self.attacks_special[4].cooldown = self.basic_attack_cooldown
+                # apply flat bonuses first
 
-        # Reapply hero-specific (e.g., arrow_stuck)
-        if hasattr(self, 'arrow_stuck_damage'):
-            # reapply bonus
-            self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05  # total dmg=1
+                if bonus_type == 'str flat':
+                    self.strength += bonus_value
+                    self.max_health = self.str_mult * self.strength
+                if bonus_type == 'int flat':
+                    self.intelligence += bonus_value
+                    self.max_mana = self.int_mult * self.intelligence
+                if bonus_type == 'agi flat':
+                    self.agility += bonus_value
+                    self.basic_attack_damage = self.agi_mult * self.agility
+
+                # then apply multiplication with the bonus flat (slight difference)
+                if bonus_type == 'str':
+                    self.strength += self.strength * bonus_value
+                    self.max_health = self.str_mult * self.strength
+                if bonus_type == 'int':
+                    self.intelligence += self.intelligence * bonus_value
+                    self.max_mana = self.int_mult * self.intelligence
+                if bonus_type == 'agi':
+                    self.agility += self.agility * bonus_value
+                    self.basic_attack_damage = self.agi_mult * self.agility
+
+                if bonus_type == 'mana regen':
+                    self.mana_regen += self.mana_regen * bonus_value
+                if bonus_type == 'hp regen':
+                    self.health_regen += self.health_regen * bonus_value
+                
+                # self.max_mana = self.intelligence * self.int_mult
+                
+                # self.mana = self.max_mana
+                #print(self.strength, bonus_value, self.strength * bonus_value)
+                #print(bonus_value, bonus_type, self.strength, self.strength * bonus_value, self.strength + bonus_value)
+
+        for item in self.items:
+            for bonus_value, bonus_type in zip(item.bonus_value, item.bonus_type):
+                
+
+                
+                # same for these, apply flat, then percentage bonuses
+                if bonus_type == 'hp flat':
+                    self.max_health += bonus_value
+                if bonus_type == 'mana flat':
+                    self.max_mana += bonus_value
+                if bonus_type == 'atk flat':
+                    self.basic_attack_damage += bonus_value/100 # example, +0.25 atk flat, but it convers to percentage, turn into 25, then divide 100 = 0.25
+                    
+                # percentages
+                if bonus_type == 'hp':
+                    self.max_health += self.max_health * bonus_value
+                if bonus_type == 'mana':
+                    self.max_mana += self.max_mana * bonus_value
+                if bonus_type == 'atk':
+                    self.basic_attack_damage += self.basic_attack_damage * bonus_value
+                
 
         # get final attack speed with bonuses
         self.get_current_atk_speed = self.basic_attack_animation_speed
-        
     def get_atk_speed(self): # pls dont change this variable
         return self.get_current_atk_speed # im tired debugging
      
@@ -1184,33 +1199,8 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, ('purple' if self.special == self.max_special else 'blue' if self.special_active else gold),
                           (bar_x, bar_y, gold_width, bar_height))
 
-    def draw_regen_rate(self, screen, hp_regen, mana_regen, p1_posx=0, p1_posy=0, p2_posx1=0, p2_posx2=0, p2_posy=0):
-        """
-        Must call player_status first to initialize the variables passed.
-        
-        Draws the current health and mana regeneration rates on the health and mana bars.
-        The text is green, half the size of the default font, and positioned slightly adjusted
-        based on the player type (right for Player 1, left for Player 2).
-        """
-        font = global_vars.get_font(15)  # Half the default size
-        regen_hp_color = green 
-        regen_mana_color = cyan2
-
-        # Health regeneration text
-        health_regen_text = font.render(f"+{hp_regen * FPS:.1f}/s", True, regen_hp_color)
-        mana_regen_text = font.render(f"+{mana_regen * FPS:.1f}/s", True, regen_mana_color)
-
-        if self.player_type == 1:
-            # Player 1: Adjust text slightly to the right
-            screen.blit(health_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy + 27))
-            screen.blit(mana_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy+50 + 27))
-        elif self.player_type == 2:
-            # Player 2: Adjust text slightly to the left
-            screen.blit(health_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy + 27))
-            screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 27))
-
     def player_status(self, health, mana, special):
-        font = global_vars.get_font(20)
+        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
         p1_x = self.player_1_x
         p1_y = self.player_1_y
         p2_x = self.player_2_x
@@ -1324,10 +1314,6 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.rect(screen, dim_gray, self.special_decor_p1)
             pygame.draw.rect(screen, special_color, self.special_bar_p1)
-
-            # show health regen (call player_status() firsts)
-            self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
-
 
 
         elif self.player_type == 2:
@@ -1455,7 +1441,6 @@ class Player(pygame.sprite.Sprite):
             ))
 
             
- 
 
             # Draw Rects
             pygame.draw.rect(screen, dim_gray, self.hp_decor_p2)
@@ -1469,11 +1454,6 @@ class Player(pygame.sprite.Sprite):
             pygame.draw.rect(screen, dim_gray, self.special_decor_p2)
             pygame.draw.rect(screen, special_color_p2, self.special_bar_p2)
 
-            # show health regen (call player_status() firsts)
-            self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
-
-        
-
         # Variables are outside the class
         # Health and Mana Icon Draw
         # screen.blit(hp_icon, hp_icon_p1_rect)
@@ -1481,8 +1461,6 @@ class Player(pygame.sprite.Sprite):
         # screen.blit(mana_icon, mana_icon_p1_rect)
         # screen.blit(mana_icon, mana_icon_p2_rect)
 
-        
-        
         if self.health <= 0:
             self.health = 0
             self.winner = 2 if self.player_type == 1 else 1
@@ -1504,6 +1482,7 @@ class Player(pygame.sprite.Sprite):
             #     self.attacking3 = True
             # if skill_4_rect.collidepoint(self.mouse_pos) and self.mouse_press[0]:
             #     self.sp_attacking = True
+
 
 
     def is_skill_clicked(self, mouse_pos, mana):
@@ -1579,30 +1558,11 @@ class Player(pygame.sprite.Sprite):
             # print('mana added')
 
     def draw_distance(self, enemy): # self.enemy_distance = int(abs(self.player.x_pos - self.x_pos))
-        # Accept either a single enemy object or a list of enemies
-        font = global_vars.get_font(20)
-        target = None
-        # If a list was passed, pick the nearest valid enemy
-        if isinstance(enemy, (list, tuple)):
-            candidates = [e for e in enemy if e is not None and hasattr(e, 'x_pos')]
-            if not candidates:
-                return
-            target = min(candidates, key=lambda e: abs(self.x_pos - getattr(e, 'x_pos', self.x_pos)))
-        else:
-            target = enemy
-
-        if target is None or not hasattr(target, 'x_pos'):
-            return
-
-        try:
-            enemy_distance = int(abs(self.x_pos - target.x_pos))
-        except Exception:
-            return
-
+        font = pygame.font.Font(r'assets\font\slkscr.ttf', 20)
+        enemy_distance = int(abs(self.x_pos - enemy.x_pos))
         enemy_distance_surf = font.render(str(enemy_distance), TEXT_ANTI_ALIASING, 'Red')
         screen.blit(enemy_distance_surf, (self.x_pos, self.y_pos - 120))
-        left = self.x_pos if target.x_pos > self.x_pos else target.x_pos
-        line_rect = pygame.rect.Rect((left), self.y_pos - 60, enemy_distance, 2)
+        line_rect = pygame.rect.Rect((self.x_pos if enemy.x_pos > self.x_pos else enemy.x_pos), self.y_pos - 60, enemy_distance, 2)
         pygame.draw.rect(screen, 'Red', line_rect)
     
     def stun(self, stunned, x_pos, y_pos, adjust_y_pos, jump_force=DEFAULT_JUMP_FORCE, gravity=DEFAULT_GRAVITY):
@@ -1738,14 +1698,8 @@ class Player(pygame.sprite.Sprite):
                 except ValueError:
                     pass
             if len(self._slow_sources) == 0:
-                # Reset slow-related state when no slow sources remain
                 self.slowed = False
-                self.speed_multiplier = 1.0
-                try:
-                    # restore slow_speed to the base speed value
-                    self.slow_speed = self.speed * self.speed_multiplier
-                except Exception:
-                    self.slow_speed = getattr(self, 'default_speed', getattr(self, 'speed', 0))
+                # self.speed = self.default_speed
             
         elif type == 4:  # Silence
             if source is None:
@@ -1791,12 +1745,26 @@ class Player(pygame.sprite.Sprite):
         # Optional: Draw hitbox outline (for debugging)
         # pygame.draw.rect(screen, (0, 255, 0), self.hitbox_rect, 2)
 
+    def is_slowed(self):
+        '''return true if slowed'''
+        return (self.is_dead() or self.slowed)
+
     def handle_speed(self):
         if self.slowed:
             self.speed = self.slow_speed
         else:
             self.speed = self.default_speed
-            
+    def can_move(self):
+        """Return True if the player can move (not frozen or rooted or dead)."""
+        return not (self.is_dead() or self.frozen or self.rooted)
+
+    def can_cast(self):
+        """Return True if the player can use skills (not frozen or dead)."""
+        return not (self.is_dead() or self.frozen or self.silenced)
+    
+    def draw_hp(self):
+        pass
+
     def die(self):
         if not self.is_dead():  # Check if the player is already dead
             self.health = 0  # Ensure the health is set to 0 when dying
@@ -1809,260 +1777,7 @@ class Player(pygame.sprite.Sprite):
         if self.x_pos < 0:
             self.x_pos += 3
 
-
-
-
-
-
-
-
-
-
-
-
-
-    def calculate_effective_as(self):
-        """Effective Attack Speed."""
-        as_from_agility = self.agility * global_vars.AGILITY_AS_BONUS
-        base_with_agility = self.base_as + as_from_agility
-        effective_as = base_with_agility + self.flat_as_bonus - self.flat_as_reduction
-        total_percent = 1 + self.percent_as_bonus - self.percent_as_reduction
-        effective_as *= max(0.0, total_percent)
-        return max(global_vars.MIN_ATTACK_SPEED, min(global_vars.MAX_ATTACK_SPEED, effective_as))
-
-    def calculate_basic_attack_interval(self):
-        """Interval in ms: BAT / (AS / 100)."""
-        effective_as = self.calculate_effective_as()
-        return self.base_bat / (effective_as / 100)
-
-    def can_basic_attack(self):
-        """Check if interval has passed."""
-        current_time = pygame.time.get_ticks()
-        return current_time - self.last_basic_attack_time >= self.calculate_basic_attack_interval()
-
-
-
-
-
-
-
-
-
-
-
-            
-    # ------------------------ HELPERS ------------------------
-    def is_busy_attacking(self):
-        """Returns True if the player is currently performing any attack."""
-        return self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking
-
-    def is_not_attacking(self):
-        """Returns True if the player is not performing any skill or attack."""
-        return not self.is_busy_attacking()
-
-    def is_slowed(self):
-        '''return true if slowed'''
-        return self.slowed
-    
-    def is_frozen(self):
-        '''return true if frozen'''
-        return self.frozen
-    
-    def is_silenced(self):
-        '''return true if silenced'''
-        return self.silenced
-
-    
-    def can_move(self):
-        """Return True if the player can move (not frozen or rooted or dead)."""
-        return not (self.is_dead() or self.frozen or self.rooted)
-
-    def can_cast(self):
-        """Return True if the player can use skills (not frozen or dead)."""
-        return not (self.is_dead() or self.frozen or self.silenced)
-    
-    def draw_hp(self):
-        pass
-
-    def is_using_skill_1(self):
-        """Returns True if the player is currently performing skill 1."""
-        return self.attacking1
-
-    def is_using_skill_2(self):
-        """Returns True if the player is currently performing skill 2."""
-        return self.attacking2
-
-    def is_using_skill_3(self):
-        """Returns True if the player is currently performing skill 3."""
-        return self.attacking3
-    
-    def is_using_skill_4(self):
-            """Returns True if the player is performing the special attack."""
-            return self.sp_attacking
-    
-    def is_using_basic_attack(self):
-        """Returns True if the player is performing a basic attack."""
-        return self.basic_attacking
-
-    def can_cast_skill(self):
-        """
-        Returns True if the player is able to cast a skill.
-        Handles silenced/frozen states automatically.
-        """
-        if self.frozen or self.silenced:
-            return False
-        return True
-
-    def can_cast_specific_skill(self, skill_index):
-        """Returns True if the specific skill is ready and player can cast it."""
-        return self.can_cast_skill() and self.attacks[skill_index].is_ready() and self.mana >= self.attacks[skill_index].mana_cost
-
-    def is_special_active(self):
-        """Returns True if the player is in special mode."""
-        return self.special_active
-
-    def is_jumping_or_dead(self):
-        """Returns True if player is jumping or dead."""
-        return self.jumping or self.is_dead()
-
-    def is_moving(self):
-        """Returns True if player is currently moving horizontally."""
-        return self.running
-
-    def is_facing_right(self):
-        """Returns True if player is currently facing right."""
-        return self.facing_right
-    
-    
-    def regen_per_second(self, amount, fps=FPS):
-        return amount / fps
-
-
-    # ------------------------ Attack_Display class HELPERS ------------------------
-    def attack_frame_count(self, default:pygame.Surface| list, flipped:pygame.Surface | list=None):
-        """Returns the default frames when player is facing right, otherwise returns the flipped frames, as long as the flipped is provided.
-        \nWhen only default is provided, always returns the default value. \n\nAccepts a list of attack frames.
-        - default = surface list
-        - flipped (optiona = flipped surface list"""
-        return default if self.facing_right else flipped if flipped is not None else None
-        
-    def attack_position(self, target:object, axis:str='x', offset:int=0, require_facing:bool=False, positioning:str='centerx') -> int:
-        """Returns x/y coordinate based on the target and offset starting from player.
-        \nSet the offset either positive/negative values.
-        - self.rect = starting position from player
-        - self.target = starting position from detected enemy player
-        - target (int value returned by particular method (self.target_enemy())) = starting position at specific position (probably the target)"""
-        if axis == 'x':
-            if positioning == 'centerx':
-                position = target.centerx
-        elif axis == 'y':
-            #default to centery, for now.
-            positioning = 'centery'
-            if positioning == 'centery':
-                position = target.centery
-        # -----------------------------------------
-        # Just checking the additional value if center x/y is not provided.
-        if positioning not in ['centerx', 'centery']:
-            if positioning == 'bottom':
-                position = target.bottom
-            elif positioning == 'left':
-                position = target.left
-            elif positioning == 'right':
-                position = target.right
-            elif positioning == 'top':
-                position = target.top
-        # -----------------------------------------
-        if require_facing:
-            final_position = position + offset if self.facing_right else position - offset
-        else:
-            final_position = position + offset
-        return final_position
-    
-
-    def skill_duration(
-        self,
-        set_mode: tuple[str, int | float],
-        frame_count: int = None,
-        repeat_animation: int = 1,
-        frame_divisor: int = 1,
-        set_max_frame_duration: int = 100,
-        print_values: bool = False
-    ) -> tuple[float, int]:
-        """
-        Calculate animation frame duration and repeat count.
-
-        set_mode:
-            ('seconds', total_ms)
-                - total_ms: total animation duration in milliseconds
-                - requires frame_count
-
-            ('frames', frame_duration)
-                - frame_duration: duration of each frame in milliseconds
-
-        frame_count:
-            - Number of animation frames (used only in 'seconds' mode)
-
-        repeat_animation:
-            - How many times the animation repeats
-
-        frame_divisor:
-            - Divides frame duration and multiplies repeat count
-            - Example: 2 = faster frames, more repeats
-
-        set_max_frame_duration:
-            - Maximum allowed duration per frame (ms)
-            - Auto-increases repeat_animation if exceeded
-
-        Returns:
-            (frame_duration, repeat_animation)
-        """
-
-
-        if frame_divisor <= 0:
-            raise ValueError("frame_divisor must be greater than 0")
-
-        if set_mode[0] == 'seconds':
-            if frame_count is None or frame_count <= 0:
-                raise ValueError("frame_count must be greater than 0 when using 'seconds' mode")
-
-            total_ms = set_mode[1]
-
-            frame_duration = total_ms / frame_count
-
-            # Manual divisor
-            frame_duration /= frame_divisor
-            repeat_animation *= frame_divisor
-
-            # Auto-adjust if too slow
-            safety = 0
-            while frame_duration > set_max_frame_duration and safety < 10:
-                repeat_animation += 1
-                frame_duration = total_ms / (frame_count * repeat_animation)
-                safety += 1
-
-        elif set_mode[0] == 'frames':
-            frame_duration = set_mode[1]
-
-        else:
-            raise ValueError("set_mode[0] must be 'seconds' or 'frames'")
-
-        frame_duration = round(frame_duration, 2)
-
-        if print_values:
-            print(
-                f"frame_duration={frame_duration}, "
-                f"frame_count={frame_count}, "
-                f"repeat_animation={repeat_animation}"
-            )
-
-        return frame_duration, repeat_animation
-
-
-
-
-    # ------------------------ Targeting HELPERS ------------------------
     def single_target(self): # for single target spells, updates self.target when called.
-        """Chooses a single enemy target (nearest enemy)"""
         if len(self.enemy) == 1:
             self.target = self.enemy[0]
         elif len(self.enemy) > 1:
@@ -2078,43 +1793,9 @@ class Player(pygame.sprite.Sprite):
         else:
             # No enemies available, use random as fallback
             self.target = random.choice(self.enemy)
-    def face_selective_target(self):
-        '''Pls call self.single_target() to update the self.target.
-        
-        Returns the targett and the detected target, store it to variable.'''
-        # one liner is getting hard, took codes from bot_ai
-        self.enemy_on_right = self.x_pos < (self.target.x_pos)
-        self.enemy_on_left = self.x_pos > (self.target.x_pos)
-        enemy_pos = (self.target.x_pos)
-        target_detected = False
-        if self.enemy_on_right and self.facing_right:
-            target = enemy_pos
-            target_detected = True
-        elif self.enemy_on_right and not self.facing_right:
-            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
-        elif self.enemy_on_left and not self.facing_right:
-            target = enemy_pos
-            target_detected = True
-        else:
-            target = self.rect.centerx + 300 if self.facing_right else self.rect.centerx - 300
-        return target, target_detected
 
-    def target_enemy(self, position_fallback:int=150):
-        """Returns a tuple (target, target_detected) store to variable depends on u.
-        \n[0] - Returns the closest enemy position detected when facing the enemy in x-axis -> int.
-        \n[1] - Returns if enemy is detected -> bool
-        \nIf facing away from enemy/enemy not detected, targets the ground at provided position in x-axis."""
-        self.single_target()
-        target, target_detected = self.face_selective_target()
-        if not target_detected:
-            target = self.rect.centerx + (position_fallback if self.facing_right else -position_fallback)  # Default to casting in front
-        return target, target_detected
-    
-    # ------------------------ Core Player Input Methods ------------------------
-    
+    # Handles input for all heroes
     def inputs(self,):
-        """Base user input collection from saved hotkeys on controls.
-        \nHandles input for all heroes"""
         # print("Entered Player.py")
         keybinds=key.read_settings()
         self.keys = pygame.key.get_pressed()
@@ -2132,36 +1813,7 @@ class Player(pygame.sprite.Sprite):
 
             (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['sp_skill_p2'][0]])
             )
-#sp=-0.1, default=-0.2 jump=-0.05
-    def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1, jump_force_modifier=0):
-        '''Handles the player movement using user input (jump, move left/right).
-        \nModify jump_force to increase/decrease the jump force of the player when jumping.
-        \n- right,left,jump_hotkey = user input (no change)
-        \n- current_time = get current time (no change)
-        \n- jump_force: self.jump_force = DEFAULT_Y_POS
-        \n- speed_modifier: base speed = 0
-        \n- special_active_speed: increase speed when special mode = 0.1 (10%)'''
-        
-        if self.is_not_attacking():
-            if right_hotkey:  # Move right
-                self.running = True
-                self.facing_right = True
-                self.x_pos += (self.speed + ((self.speed * special_active_speed) if self.special_active else (self.speed * speed_modifier)))
-                if self.x_pos > self.limit_movement_right - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
-                    self.x_pos = self.limit_movement_right - (self.hitbox_rect.width/2)
-            elif left_hotkey:  # Move left
-                self.running = True
-                self.facing_right = False
-                self.x_pos -= (self.speed + ((self.speed * special_active_speed) if self.special_active else (self.speed * speed_modifier)))
-                if self.x_pos < (self.limit_movement_left + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
-                    self.x_pos = (self.limit_movement_left + (self.hitbox_rect.width/2))
-            else:
-                self.running = False
 
-            if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
-                self.jumping = True
-                self.y_velocity = jump_force * (1 + jump_force_modifier)
-                self.last_atk_time = current_time  # Update the last jump time
     
     # Phased out code (since I don't use super.init)
     def update(self):
@@ -2172,85 +1824,17 @@ class Player(pygame.sprite.Sprite):
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 
-            # Draws hero skills in game
-            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
-                pass
-            else:
-                if not self.special_active:
-                    for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-                else:
-                    for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-
-                if not self.special_active:
-                    for mana in self.attacks:
-                        mana.draw_mana_cost(screen, self.mana)
-                else:
-                    for mana in self.attacks_special:
-                        mana.draw_mana_cost(screen, self.mana)
-
+            # Updates display damage/mana
+            self.detect_and_display_damage()
+            self.detect_and_display_mana()
+            self.update_damage_numbers(screen)
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
-
-            if getattr(self, "hitbox_removed", False):
-                # Restore previous hitbox size
-                self.hitbox_rect.size = self.prev_hitbox_size
-                self.hitbox_removed = False
-
-        elif self.is_dead():
-            if not getattr(self, "hitbox_removed", False):
-                # Capture previous hitbox size
-                self.prev_hitbox_size = self.hitbox_rect.size
-                self.hitbox_rect.size = (0, 0)
-                self.hitbox_removed = True
-
-
-            # if being alived, 
-            if not self.is_dead() and getattr(self, "hitbox_removed", True):
-                self.hitbox_rect.size = self.prev_hitbox_rect
-                self.hitbox_removed = False
-
-
-        # This part updated the code anyways if player is dead or not
-        # -----------------------------------------------------------
-        # Updates display damage/mana
-        self.detect_and_display_damage()
-        self.detect_and_display_mana()
-        self.update_damage_numbers(screen)
-
-        if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_stats:
-            pass
-        else:
-            # Update the player status (health and mana bars)
-            self.player_status(self.health, self.mana, self.special)
-
-        # update neccesities
-        if global_vars.DRAW_DISTANCE:
-            self.draw_distance(self.enemy)
-        if global_vars.SHOW_HITBOX:
-            
-            self.draw_hitbox(screen)
-        self.update_hitbox()
-
-        
-        # -----------------------------
-        # Stop at the ground level
-        if self.y_pos > DEFAULT_Y_POS:
-            self.y_pos = DEFAULT_Y_POS
-            self.y_velocity = 0
-            self.jumping = False 
-        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
-            self.player_jump_index = 0
-            self.player_jump_index_flipped = 0  
-        self.inputs()
-        self.move_to_screen()  
-        # -----------------------------
             # print(self.slowed, 'default:', self.default_speed)
             # print('current:', self.speed)
 
-            # if hasattr(self, 'atk_hasted'):
-            #     pass
+            if hasattr(self, 'atk_hasted'):
+                pass
             # print(self.enemy)
                 # print(self.get_current_atk_speed)
                 # print('jump pos:', self.get_jump_pos)
@@ -2270,15 +1854,6 @@ class Player(pygame.sprite.Sprite):
             # print(self.frozen, self.can_cast(), self.can_move())
                 # print(self.silenced)
 
-        # if dead, remove the hitbox (NOTE: when revived after death, hitbox still removed)
-        
-        # delete/remove/kill hero if died for too long
-            # self.dead_timer = self.dead_timer or pygame.time.get_ticks()
-            # if pygame.time.get_ticks() - self.dead_timer >= 2000000: # reset the game after 5s to remove bugs (intented for creeps only)
-            #     self.kill()
-            # else:
-            #     self.dead_timer = None
-                
         # if self.is_dead:
         #     return
         # Handle global effects like stun or freeze

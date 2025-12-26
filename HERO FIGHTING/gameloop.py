@@ -101,6 +101,35 @@ paused = False
 is_paused = False
 xaxa = pygame.time.Clock()
 
+
+
+
+
+
+
+
+w_gap = 0.1
+h_gap = 0.133
+base_width = 0.1
+base_height = 0.33
+
+button_width = 60
+button_height = 60
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
     title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (x_offset / 2, y_offset))
@@ -131,21 +160,10 @@ loading = ImageButton(
 # Menu button to return to menu()
 menu_button = ImageButton(
     image_path=menu_button_img,
-    pos=(60, 25),
-    scale=0.9,
+    pos=(40, 10),
+    scale=0.75,
     text='',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-ingame_menu_button = ImageButton(
-    image_path=menu_button_img,
-    pos=(50, 15),
-    scale=0.9,
-    text='',
-    font_path=global_vars.FONT_PATH,  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -246,14 +264,13 @@ settings_button = ImageButton(
 )
 
 has_changes = False
-def show_confirmation_modals(font=None):
-    # Use cached font if not provided
-    if font is None:
-        font = global_vars.get_font(60)
-
+def show_confirmation_modals(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
+    
     if no_swap:
+        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
         create_title('(The existing key will be leave empty)', font, 0.5, height * 0.5)
     else:
+        # create_title('Are you sure you want to proceed?', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 0.5, height * 0.35)
         create_title('(The existing key will be swapped)', font, 0.5, height * 0.5)
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,150,150))
     # create_title('Key already in use', font, 1, height * 0.40, color=(150,10,10))
@@ -261,22 +278,20 @@ def show_confirmation_modals(font=None):
     
     create_title('Key already in use', font, 1, height * 0.40, color)
         
-def save_before_exiting_modal(font=None):
-    if font is None:
-        font = global_vars.get_font(60)
+def save_before_exiting_modal(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 60)):
+    
     create_title('Save before exiting!', font, 0.5, height * 0.95, x_offset=width*0.35)
    
     
 
 
 
-def show_controls(font=None):
+def show_controls(font=pygame.font.Font(fr'assets\font\slkscr.ttf', 40)):
     # Display controls title
     draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
     draw_black_screen(0.2,size=(width*0.45 + width*0.05, height * 0.2,  width*0.44, height*0.65))
-    if font is None:
-        font = global_vars.get_font(40)
-    create_title('CONTROLS', global_vars.get_font(60), 1, height * 0.1)
+
+    create_title('CONTROLS', pygame.font.Font(fr'assets\font\slkscr.ttf', 60), 1, height * 0.1)
     
     # Player 1 Controls
     create_title('Player 1:', font, 1, height * 0.25, angle=0, x_offset=width *0.33)
@@ -288,14 +303,22 @@ def show_controls(font=None):
 
 
 
+    # w_gap = 0.1
+    # h_gap = 0.133
+    # base_width = 0.1
+    # base_height = 0.3
 
+    # button_width = 60
+    # button_height = 60
 
+    w_margin = 0.143
+    h_margin = 0.02
 
     skill_controls = [
-    "Skill 1 Key",
-    "Skill 2 Key",
-    "Skill 3 Key",
-    "Skill 4 Key",
+    "Skill 1",
+    "Skill 2",
+    "Skill 3",
+    "Skill 4",
     ]
 
     move_controls = [
@@ -305,42 +328,69 @@ def show_controls(font=None):
     ]
 
     Basic_SP_control = [
-    "Basic Attack Key",
-    "Special Skill Key"
+    "Attack",
+    "Special"
     ]
     
-    # Display controls for both players
-    for i, text in enumerate(skill_controls):
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.35)
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.35) + (width * 0.9)))
-
-    for i, text in enumerate(move_controls):
-        create_title(text, font, 0.5, height * 0.728 , color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))))
-        create_title(text, font, 0.5, height *0.728, color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))) + (width * 0.9) )
-    
-    for i, text in enumerate(Basic_SP_control):
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.8)
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.8) + (width * 0.9)))
-
+    create_title("Attack", font, 0.5, height * (base_height - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
+    create_title("Special", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
     
 
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Left", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    
+
+    create_title("Jump", font, 0.5, height * ((base_height - h_margin)), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
+
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    create_title("Right", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    
+    
+    create_title("Skill 1", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width) + w_margin))
+    create_title("Skill 2", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Skill 3", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
+    create_title("Skill 4", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
 
 
 
 
-from typing import Callable, Any
+    create_title("Attack", font, 0.5, height * (base_height - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
+    create_title("Special", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
+    
 
-def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=MENU_FADE_DURATION, immediate_load=False):
-    '''Uses current single background frame to cover the current screen with current background,
-    displays loading image and fading into provided function.
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Left", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    
 
-    - background: Single background image (must be a surface).
+    create_title("Jump", font, 0.5, height * ((base_height - h_margin)), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
 
-    - action: Function to be called after fade
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    create_title("Right", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    
+    
+    create_title("Skill 1", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width) + w_margin))
+    create_title("Skill 2", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Skill 3", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
+    create_title("Skill 4", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
 
-    - fade_duration: How long to turn screen black.
 
-    - immediate_load: If True, calls the assigned function immediately (displays loading, no black fade).'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def fade(background, action):
     # background = pygame.transform.scale(
     #     pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
 
@@ -362,17 +412,12 @@ def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=M
             current_time = pygame.time.get_ticks()
             # pygame.time.get_ticks()
             fade_elapsed = current_time - fade_start_time
-            fade_alpha = min(255, int((fade_elapsed / fade_duration) * 255))
+            fade_alpha = min(255, int((fade_elapsed / MENU_FADE_DURATION) * 255))
             fade_overlay.set_alpha(fade_alpha)
-            screen.blit(fade_overlay, (0, 0)) if not immediate_load else None
-            print(fade_alpha, not immediate_load)
-            if fade_alpha >= 255 and not immediate_load:
-                action()
+            screen.blit(fade_overlay, (0, 0))
+            if fade_alpha >= 255:
                 fading = False
-                return
-            if fade_alpha >= 10 and immediate_load: # load function immediately (just displaying first frame)
                 action()
-                fading = False
                 return
             
         pygame.display.update()
@@ -386,8 +431,6 @@ def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=M
 #     # print(count)
 #     return count
 
-
-
 def item_list(itemlist): # at least it works, not reusable tho
     value_list = []
     for i, item in enumerate(itemlist):
@@ -400,7 +443,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
     cell_width = width // grid_size
     cell_height = height // grid_size
 
-    font = global_vars.get_font(20)
+    font = pygame.font.Font(None, 20)
 
     for i in range(grid_size + 1):
         # Vertical lines
@@ -486,7 +529,7 @@ def game(bg=None):
     ground = pygame.Rect(0, main.DEFAULT_Y_POS, 2121, 1111)
     
     start_time = pygame.time.get_ticks()
-    timer_font = global_vars.get_font(50)  # Timer font
+    timer_font = pygame.font.Font(r'assets\font\slkscr.ttf', 50)  # Timer font
 
     cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
     cube_sound.set_volume(0.8 * global_vars.MAIN_VOLUME) 
@@ -596,7 +639,7 @@ def game(bg=None):
             #         menu()
             #         return    
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if ingame_menu_button.is_clicked(event.pos):
+                if menu_button.is_clicked(event.pos):
                     paused = True 
                 
             # Toggle pause state when the pause key is pressed
@@ -645,12 +688,12 @@ def game(bg=None):
                 
 
             if keys[main.pygame.K_4] and not keys[main.pygame.K_LALT]: # disable special
-                global_vars.DISABLE_SPECIAL_REDUCE = False
+                main.DISABLE_SPECIAL_REDUCE = False
             elif keys[main.pygame.K_4] and keys[main.pygame.K_LALT]: # special on (alt)
-                global_vars.DISABLE_SPECIAL_REDUCE = True
+                main.DISABLE_SPECIAL_REDUCE = True
 
             if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT]:
-                global_vars.DISABLE_SPECIAL_REDUCE = True
+                main.DISABLE_SPECIAL_REDUCE = True
                 main.hero1.special = 0.01
                 main.hero2.special = 0.01
 
@@ -661,11 +704,11 @@ def game(bg=None):
                 
             '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
-            # if FREEZE_SPECIAL: 
-            #     main.hero1.special_active = True
-            #     main.hero2.special_active = True
-            #     main.hero1.special += 0.001
-            #     main.hero2.special += 0.001
+            if FREEZE_SPECIAL: 
+                main.hero1.special_active = True
+                main.hero2.special_active = True
+                main.hero1.special += 0.001
+                main.hero2.special += 0.001
             # elsed:
             #     pass
 
@@ -697,14 +740,13 @@ def game(bg=None):
             pygame.draw.rect(main.screen, main.black, ground)
 
 
-            # Draw selected hero icons in-game (top corners)
-            for selector in main.p1_select:
-                if selector.is_selected():
-                    selector.draw_icon(center_pos=(75, 75))  # Top-left
-
-            for selector in main.p2_select:
-                if selector.is_selected():
-                    selector.draw_icon(center_pos=(width - 75, 75))  # Top-righ
+            for icons in main.p1_select:
+                if icons.is_selected():
+                    icons.draw_icon(size=(75, 75))
+        
+            for icons in main.p2_select:
+                if icons.is_selected():
+                    icons.draw_icon(size=(main.width - 75, 75))
 
             for i, item in enumerate(item_list(main.p1_items)):
                 item.draw_icon(item_pos=(150+(50*i), 100), hero_icon=False)
@@ -726,19 +768,16 @@ def game(bg=None):
                 )
 
 
-
-
             timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
 
             main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
             
-            ingame_menu_button.draw(main.screen, mouse_pos)
+            menu_button.draw(main.screen, mouse_pos)
             
             #drawing the hp and mana icon
             main.draw_hp_mana_icons()
 
             #drawing the damage display
-            x = 0
 
             
 
@@ -964,10 +1003,8 @@ in_game_settings_button = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
-def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+def battle_end(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
-    if font is None:
-        font = global_vars.get_font(100)
     if winner is not None:
         if winner == 'hero1':
             create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.40)
@@ -987,10 +1024,8 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
             fade(loading_screen_bg, game)
             return
 
-def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
+def pause(mouse_pos, mouse_press, font=pygame.font.Font(fr'assets\font\slkscr.ttf', 100), default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
-    if font is None:
-        font = global_vars.get_font(100)
     if paused:
         create_title('PAUSED', font, default_size - 0.55, height * 0.40)
     
@@ -1038,7 +1073,7 @@ def menu():
     # background = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
 
-    font = global_vars.get_font(100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -1046,7 +1081,7 @@ def menu():
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
-
+        
         main.screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1075,8 +1110,7 @@ def menu():
                     # return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if control_button.is_clicked(event.pos):
-                    fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
-                    # controls()
+                    controls()
                     return
                     # return
                 
@@ -1101,6 +1135,7 @@ def menu():
             if keys[pygame.K_e]:
                 controls()
                 return
+            
         # main.screen.blit(background, (0, 0))
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
@@ -1113,7 +1148,7 @@ def menu():
 
         settings_button.draw(main.screen,mouse_pos)
 
-        
+
 
 
         if campaign_button.is_hovered(mouse_pos):
@@ -1199,7 +1234,7 @@ swapconfirm_no = ImageButton(
     scale=0.8,
     text='Back',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p,
+    font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
@@ -1234,39 +1269,61 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
  
     new_key = [Keybinds_keys[x] for x in Keybinds_keys]
 
-    
+
+
+
+
+
+
+
+    # w_gap = 0.1
+    # h_gap = 0.133
+    # base_width = 0.1
+    # base_height = 0.33
+
+    # button_width = 60
+    # button_height = 60
+
+
+    basic_atk_btn_p1 = RectButton(width*base_width, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[4][1],button_width,button_height,0)
+    sp_skill_btn_p1 = RectButton(width*base_width, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[5][1],button_width,button_height,0)
+
+
    
-    skill_1_btn_p1 = RectButton(width*0.08, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[0][1],40,40,0)
-    skill_2_btn_p1 = RectButton(width*0.08, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[1][1],40,40,0)
-    skill_3_btn_p1 = RectButton(width*0.08, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[2][1],40,40,0)
-    skill_4_btn_p1 = RectButton(width*0.08, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[3][1],40,40,0)
-
-    basic_atk_btn_p1 = RectButton(width*0.27, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[4][1],40,40,0)
-    sp_skill_btn_p1 = RectButton(width*0.27, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[5][1],40,40,0)
-
+    skill_1_btn_p1 = RectButton(width*base_width,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[0][1],button_width,button_height,0)
+    skill_2_btn_p1 = RectButton(width*(base_width + w_gap),       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[1][1],button_width,button_height,0)
+    skill_3_btn_p1 = RectButton(width*(base_width + (w_gap *2)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[2][1],button_width,button_height,0)
+    skill_4_btn_p1 = RectButton(width*(base_width + (w_gap *3)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[3][1],button_width,button_height,0)
 
     
-    left_move_btn_p1 = RectButton(width*0.1, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[7][1],40,40,0)
-    jump_btn_p1 = RectButton(width*0.20, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[6][1],40,40,0)
-    right_move_btn_p1 = RectButton(width*0.3, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[8][1],40,40,0)
+    left_move_btn_p1 = RectButton(width*(base_width + w_gap), height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[7][1],button_width,button_height,0)
+    jump_btn_p1 = RectButton(width*(base_width + 2*w_gap), height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[6][1],button_width,button_height,0)
+    right_move_btn_p1 = RectButton(width*(base_width + 3*w_gap) , height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[8][1],button_width,button_height,0)
 
 
+    # w_gap = 0.1
+    # h_gap = 0.133
+    # base_width = 0.1
+    # base_height = 0.33
+
+    # button_width = 60
+    # button_height = 60
+    width_half = width*0.5
+    skill_1_btn_p2 = RectButton(width*base_width + width_half,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[0][1],button_width,button_height,0)
+    skill_2_btn_p2 = RectButton(width*(base_width + w_gap) + width_half,       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[1][1],button_width,button_height,0)
+    skill_3_btn_p2 = RectButton(width*(base_width + (w_gap *2)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[2][1],button_width,button_height,0)
+    skill_4_btn_p2 = RectButton(width*(base_width + (w_gap *3)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[3][1],button_width,button_height,0)
 
 
-    skill_1_btn_p2 = RectButton(width*0.08 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[9][1],40,40,0)
-    skill_2_btn_p2 = RectButton(width*0.08 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[10][1],40,40,0)
-    skill_3_btn_p2 = RectButton(width*0.08 + left_width, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[11][1],40,40,0)
-    skill_4_btn_p2 = RectButton(width*0.08 + left_width, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[12][1],40,40,0)
-
-    basic_atk_btn_p2 = RectButton(width*0.27 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[13][1],40,40,0)
-    sp_skill_btn_p2 = RectButton(width*0.27 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[14][1],40,40,0)
-
-    
-    left_move_btn_p2 = RectButton(width*0.1 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[16][1],40,40,0)
-    jump_btn_p2 = RectButton(width*0.20 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[15][1],40,40,0)
-    right_move_btn_p2 = RectButton(width*0.3 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[17][1],40,40,0)
+    basic_atk_btn_p2 = RectButton(width*base_width + width_half, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[4][1],button_width,button_height,0)
+    sp_skill_btn_p2 = RectButton(width*base_width + width_half, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[5][1],button_width,button_height,0)
 
 
+    left_move_btn_p2 = RectButton(width*(base_width + w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[7][1],button_width,button_height,0)
+    jump_btn_p2 = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[6][1],button_width,button_height,0)
+    right_move_btn_p2 = RectButton(width*(base_width + 3*w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[8][1],button_width,button_height,0)
+
+   
 
 
     key_list = [
@@ -1341,12 +1398,12 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                 print("Error")
                             
                             for count,i in enumerate(data):
-                                # print(i)
+                                print(count, i)
 
 
                                 # print(tuple(new_key[count]))
                                 data[i] = tuple(new_key[count])
-
+                                print(data[i], "Saved Data")
                             with open(key.filename, "w") as f:
                                 # print(data, "Data type")
                                 json.dump(data, f, indent=4)
@@ -1365,13 +1422,15 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                         temporary_list.append(key.data[i])
                     update_key_display(key_list, temporary_list)
                     new_key = temporary_list
-
+                    print(new_key)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if swapconfirm_yes.is_clicked(mouse_pos):
                                 display_keyswap_confirmation(False)
-                                indexed = key_store.index(key_name)
+                                indexed = key_store.index(key_name.upper())
                                 temp = new_key[detect.index(True)]
-                                new_key[detect.index(True)] = (key_index, key_name)
+                                #removed key indexed
+                                print("this is the index", key_index)
+                                new_key[detect.index(True)] = (pygame.key.key_code(key_name), key_name.upper())
                                 
 
                                 if no_swap:
@@ -1469,22 +1528,25 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
         # print(type(keys))
             
+            
             if any(detect):
+                # print("new keysss", new_key)
                 key_store = [x[1].upper() for x in new_key]
                 for key_index in (key.status):
                     if keys[key_index] == True:
+                        print(f"Key pressed: {pygame.key.name(key_index)}, {key_index}")
                         # print([x[1].upper() for x in new_key])
-                        key_name = pygame.key.name(key_index).upper()
+                        key_name = pygame.key.name(key_index)
                         if key_name == "UP":
                                 key_name = "^"
                         elif key_name == "DOWN":
-                                key_name = r"\/"
+                                key_name = "\/"
                         elif key_name  == "LEFT":
                                 key_name = "<"
                         elif key_name == "RIGHT":
                                 key_name = ">"
                          
-                        if key_name not in key_store:
+                        if key_name.upper() not in key_store:
                             
                         
                             print(f"selected {pygame.key.name(key_index)}")
@@ -1836,7 +1898,7 @@ def main_menu():
     # background = main.pygame.transform.scale(
         # pygame.image.load(r'assets\backgrounds\8.png').convert(), (main.width, main.height))
 
-    font = global_vars.get_font(100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
     while True:
@@ -1862,7 +1924,6 @@ def main_menu():
             if keys[pygame.K_RETURN]:
                 menu()
                 return
-
         # main.screen.blit(background, (0, 0))
         Animate_BG.dragon_bg.display(screen, speed=50)
         # Animate_BG.trees_bg.display(screen, speed=50)
@@ -1880,55 +1941,17 @@ def reset_all():
     global_vars.PAUSED_TOTAL_DURATION = 0
     global_vars.PAUSED_START = None
     # reset hero states
-    heroes_to_reset = [x for x in main.hero1_group] + [x for x in main.hero2_group]
+    heroes_to_reset = [main.hero1, main.hero2]
     if hasattr(main, 'hero3') and main.hero3 is not None:
         heroes_to_reset.append(main.hero3)
     for hero in heroes_to_reset:
-        # clear public-style source sets (older code may use these)
         hero.freeze_sources = set()
         hero.root_sources = set()
-        # clear internal status source lists used by `Player` methods
-        try:
-            hero._freeze_sources = []
-        except Exception:
-            pass
-        try:
-            hero._root_sources = []
-        except Exception:
-            pass
-        try:
-            hero._slow_sources = []
-        except Exception:
-            pass
-        try:
-            hero._silence_sources = []
-        except Exception:
-            pass
-
-        # clear status flags; we will also call remove_movement_status to trigger any cleanup logic
         hero.frozen = False
         hero.rooted = False
         hero.stunned = False
         hero.slowed = False
         hero.silenced = False
-
-        # Ensure symmetric removal (this clears derived state like speed_multiplier, atk_hasted, etc.)
-        try:
-            hero.remove_movement_status(1, source=None)
-        except Exception:
-            pass
-        try:
-            hero.remove_movement_status(2, source=None)
-        except Exception:
-            pass
-        try:
-            hero.remove_movement_status(3, source=None)
-        except Exception:
-            pass
-        try:
-            hero.remove_movement_status(4, source=None)
-        except Exception:
-            pass
         if hasattr(hero, 'atk_hasted'):
             # print('ahah')
             default_atk_speed_with_bonus = hero.get_atk_speed()
@@ -1938,9 +1961,6 @@ def reset_all():
             hero.invisible = False
             hero.casting_invisible = False
             hero.invisible_duration = 0
-        if hasattr(hero, 'flying'):
-            hero.flying = False
-            hero.flying_duration = 0
         hero.y_velocity = 0
         hero.x_velocity = 0
         hero.running = False
@@ -1949,89 +1969,64 @@ def reset_all():
         hero.special_active = False
         hero.animation_done = False
 
-        for attack in hero.attacks:
+    # reset cd
+    for attack in main.hero1.attacks:
+        attack.reduce_cd(True)
+    for attack in main.hero2.attacks:
+        attack.reduce_cd(True)
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        for attack in main.hero3.attacks:
             attack.reduce_cd(True)
-        for attack in hero.attacks_special:
+
+    for attack in main.hero1.attacks_special:
+        attack.reduce_cd(True)
+    for attack in main.hero2.attacks_special :
+        attack.reduce_cd(True)
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        for attack in main.hero3.attacks_special:
             attack.reduce_cd(True)
-        
-        hero.health = hero.max_health
-        hero.mana = hero.max_mana
-        hero.special = 0
-        if hasattr(hero, 'white_health_p1'):
-            hero.white_health_p1 = hero.max_health
-        if hasattr(hero, 'white_health_p2'):
-            hero.white_health_p2 = hero.max_health
 
-        if hasattr(hero, 'white_mana_p1'):
-            hero.white_mana_p1 = hero.max_mana
-        if hasattr(hero, 'white_mana_p2'):
-            hero.white_mana_p2 = hero.max_mana
+    #reset health
+    main.hero1.health = main.hero1.max_health
+    main.hero2.health = main.hero2.max_health
+    main.hero1.mana = main.hero1.max_mana
+    main.hero2.mana = main.hero2.max_mana
+    main.hero1.special = 0
+    main.hero2.special = 0
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        main.hero3.health = main.hero3.max_health
+        main.hero3.mana = main.hero3.max_mana
+        main.hero3.special = 0
+        main.hero3.white_health_p2 = main.hero3.max_health
+        main.hero3.white_mana_p2 = main.hero3.max_mana
+        main.hero3.damage_numbers.clear()
 
-        hero.damage_numbers.clear()
+    main.hero1.white_health_p1 = main.hero1.max_health
+    main.hero2.white_health_p2 = main.hero2.max_health
+    main.hero1.white_mana_p1 = main.hero1.max_mana
+    main.hero2.white_mana_p2 = main.hero2.max_mana
 
-        hero.x_pos = global_vars.X_POS_SPACING + random.randint(-20, 20) if hero.player_type == 1 else global_vars.DEFAULT_X_POS
-        hero.y_pos = global_vars.DEFAULT_Y_POS
-        
+    main.hero1.damage_numbers.clear()
+    main.hero2.damage_numbers.clear()
+
+    # reset pos
+    main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
+    main.hero1.y_pos = global_vars.DEFAULT_Y_POS
+    main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
+    main.hero2.y_pos = global_vars.DEFAULT_Y_POS
+    if hasattr(main, 'hero3') and main.hero3 is not None:
+        from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
+        main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
+        main.hero3.y_pos = DEFAULT_Y_POS
+
+    # fade_overlay = pygame.Surface((width, height))
+    # fade_overlay.fill((0, 0, 0))
+    # fade_alpha = 0
+    # fading = True
+    # fade_start_time = pygame.time.get_ticks()
+
     attack_display.empty()
-
-    # # reset cd
-    # for attack in main.hero1.attacks:
-    #     attack.reduce_cd(True)
-    # for attack in main.hero2.attacks:
-    #     attack.reduce_cd(True)
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     for attack in main.hero3.attacks:
-    #         attack.reduce_cd(True)
-
-    # for attack in main.hero1.attacks_special:
-    #     attack.reduce_cd(True)
-    # for attack in main.hero2.attacks_special :
-    #     attack.reduce_cd(True)
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     for attack in main.hero3.attacks_special:
-    #         attack.reduce_cd(True)
-
-    # #reset health
-    # main.hero1.health = main.hero1.max_health
-    # main.hero2.health = main.hero2.max_health
-    # main.hero1.mana = main.hero1.max_mana
-    # main.hero2.mana = main.hero2.max_mana
-    # main.hero1.special = 0
-    # main.hero2.special = 0
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     main.hero3.health = main.hero3.max_health
-    #     main.hero3.mana = main.hero3.max_mana
-    #     main.hero3.special = 0
-    #     main.hero3.white_health_p2 = main.hero3.max_health
-    #     main.hero3.white_mana_p2 = main.hero3.max_mana
-    #     main.hero3.damage_numbers.clear()
-
-    # main.hero1.white_health_p1 = main.hero1.max_health
-    # main.hero2.white_health_p2 = main.hero2.max_health
-    # main.hero1.white_mana_p1 = main.hero1.max_mana
-    # main.hero2.white_mana_p2 = main.hero2.max_mana
-
-    # main.hero1.damage_numbers.clear()
-    # main.hero2.damage_numbers.clear()
-
-    # # reset pos
-    # main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
-    # main.hero1.y_pos = global_vars.DEFAULT_Y_POS
-    # main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
-    # main.hero2.y_pos = global_vars.DEFAULT_Y_POS
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
-    #     main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
-    #     main.hero3.y_pos = DEFAULT_Y_POS
-
-    # # fade_overlay = pygame.Surface((width, height))
-    # # fade_overlay.fill((0, 0, 0))
-    # # fade_alpha = 0
-    # # fading = True
-    # # fade_start_time = pygame.time.get_ticks()
-
-    # attack_display.empty()
-    # # Reset paused tracking so timers/cooldowns start fresh
+    # Reset paused tracking so timers/cooldowns start fresh
     
 
 volume_limit = {'min':100, 'max':300}
@@ -2044,13 +2039,13 @@ from button import RectButton
 def settings(in_game=False):
     global paused
     
-    font = global_vars.get_font(100)
+    font = pygame.font.Font(fr'assets\font\slkscr.ttf', 100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
     # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
 
     
     # current_volume = global_vars.MAIN_VOLUME*100
-    setting_font = global_vars.get_font(int(height * 0.025))
+    setting_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
     
     # true
     
@@ -2212,7 +2207,7 @@ def settings(in_game=False):
         vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max']-volume_limit['min']) + 30, volume_bar_y-5, 60, 30)
         pygame.draw.rect(screen, black, vol_num_rect)
         vol_num = int(global_vars.MAIN_VOLUME * 100) if not mute_clicked else 0
-        vol_num_font = global_vars.get_font(int(height * 0.025))
+        vol_num_font = pygame.font.Font(fr'assets\font\slkscr.ttf', int(height * 0.025))
         vol_num_text = vol_num_font.render(f'{vol_num}%', global_vars.TEXT_ANTI_ALIASING, white)
         vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
         screen.blit(vol_num_text, vol_num_text_rect)
@@ -2247,123 +2242,3 @@ if __name__ == '__main__':
     main_menu()
 
 
-
-
-import math
-
-class AnimationUtils:
-    @staticmethod
-    def shake(element, strength, duration, clock):
-        """
-        Shake an element (e.g., button or image) with configurable strength and duration.
-
-        Args:
-            element: The element to shake (must have a `rect` attribute).
-            strength: The maximum offset for the shake.
-            duration: The duration of the shake in milliseconds.
-            clock: The pygame clock to manage time.
-        """
-        start_time = pygame.time.get_ticks()
-        original_pos = element.rect.topleft
-
-        while pygame.time.get_ticks() - start_time < duration:
-            offset_x = random.randint(-strength, strength)
-            offset_y = random.randint(-strength, strength)
-            element.rect.topleft = (original_pos[0] + offset_x, original_pos[1] + offset_y)
-            yield
-            element.rect.topleft = original_pos
-
-    @staticmethod
-    def sine_wave_animation(start, end, speed, time):
-        """
-        Create a sine wave animation for smooth oscillation.
-
-        Args:
-            start: The starting value.
-            end: The ending value.
-            speed: The speed of the oscillation.
-            time: The current time (e.g., pygame.time.get_ticks()).
-
-        Returns:
-            The current value based on the sine wave.
-        """
-        amplitude = (end - start) / 2
-        midpoint = (end + start) / 2
-        return midpoint + amplitude * math.sin(speed * time)
-
-# Example usage of animations in the menu
-def animate_button_hover(button, mouse_pos):
-    """
-    Animate button hover effect (e.g., scaling).
-
-    Args:
-        button: The button to animate.
-        mouse_pos: The current mouse position.
-    """
-    if button.is_hovered(mouse_pos):
-        button.scale = AnimationUtils.sine_wave_animation(0.8, 1.0, 0.005, pygame.time.get_ticks())
-    else:
-        button.scale = 0.8
-
-# Add support for textured backgrounds
-def set_background_texture(screen, texture_path):
-    """
-    Set a textured background for the game screen.
-
-    Args:
-        screen: The pygame screen object.
-        texture_path: The file path to the texture image.
-    """
-    texture = pygame.image.load(texture_path)
-    texture = pygame.transform.scale(texture, screen.get_size())
-    screen.blit(texture, (0, 0))
-
-# Example usage in the game loop
-# Replace the plain color background with a texture
-background_texture_path = r'assets/black sand.jpg'  # Replace with your texture file
-# set_background_texture(screen, background_texture_path)
-
-# Add animations for elements entering the screen
-def animate_element_entry(element, start_pos, end_pos, speed):
-    """
-    Animate an element entering the screen from a start position to an end position.
-
-    Args:
-        element: The element to animate (must have a `rect` attribute).
-        start_pos: The starting position (x, y).
-        end_pos: The ending position (x, y).
-        speed: The speed of the animation.
-    """
-    element.rect.topleft = start_pos
-    while element.rect.topleft != end_pos:
-        current_x, current_y = element.rect.topleft
-        target_x, target_y = end_pos
-        new_x = current_x + (target_x - current_x) * speed
-        new_y = current_y + (target_y - current_y) * speed
-        element.rect.topleft = (int(new_x), int(new_y))
-        yield
-
-def load_font(font_path, size):
-    """
-    Load a font dynamically from the given path and size.
-
-    Args:
-        font_path: The file path to the font.
-        size: The size of the font to load.
-
-    Returns:
-        A pygame.Font object.
-    """
-    try:
-        return pygame.font.Font(font_path, size)
-    except FileNotFoundError:
-        print(f"Font file not found: {font_path}")
-        return None
-
-# Example usage:
-# To use the new font, call the `load_font` function with the desired path and size.
-# Example:
-# new_font = load_font('path/to/your/font.ttf', 30)
-# if new_font:
-#     text_surface = new_font.render('Your Text Here', True, (255, 255, 255))
-#     screen.blit(text_surface, (x, y

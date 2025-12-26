@@ -18,7 +18,6 @@ from global_vars import (IMMEDIATE_RUN,
     ZERO_WIDTH, TOTAL_WIDTH
 )
 from heroes import Attacks, Attack_Display
-import heroes
 from player import Player
 import global_vars
 import pygame
@@ -52,7 +51,32 @@ FIRE_WIZARD_ATK3_SIZE = 0.3
 FIRE_WIZARD_SP_SIZE = 1.3
 
 class Fire_Wizard(Player):
-    # Update log for heroes
+    def __init__(self, player_type, enemy):
+        super().__init__(player_type, enemy)
+        self.player_type = player_type # 1 for player 1, 2 for player 2
+        self.name = "Fire Wizard"
+
+        self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
+
+        # stat
+        self.strength = 40
+        self.intelligence = 40
+        self.agility = 27 # real agility = 27
+
+        # Base Stats
+        self.max_health = self.strength * self.str_mult
+        self.max_mana = self.intelligence * self.int_mult
+        self.health = self.max_health
+        self.mana = self.max_mana
+        self.basic_attack_damage = self.agility * self.agi_mult
+        # BASIC_ATK_DAMAGE2
+
+        # Player Position
+        self.x = 50
+        self.y = 50
+        self.width = 200
+
+        # Update log for heroes
 
         #wind hashashin
         # Skill 1: (10, 0) = 10 -> (8, 0) = 8
@@ -163,56 +187,23 @@ class Fire_Wizard(Player):
         # arrow_stuck_damage: (self.basic_attack_damage * 0.3) - 0.05 = 1 ->  (self.basic_attack_damage * 0.5) - 0.25 = 1.5
         # dash speed: 4 -> 5
 
-        # fire wizard update 12/9/25
-        # trait: dmg_mult 20% -> 10% (20% is not actually implemented, too OP)
-        # Skill 2: reverted back to original version with rework
-        
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
-        self.player_type = player_type # 1 for player 1, 2 for player 2
-        self.name = "Fire Wizard"
-
-        self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
-
-        # stat
-        self.strength = 40
-        self.intelligence = 40
-        self.agility = 27 # real agility = 27
-
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(5.7)
-
-        # Base Stats
-        self.max_health = self.strength * self.str_mult
-        self.max_mana = self.intelligence * self.int_mult
-        self.health = self.max_health
-        self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
-        # BASIC_ATK_DAMAGE2
-
-        # Player Position
-        self.x = 50
-        self.y = 50
-        self.width = 200
-
-
         #mana cost
         self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 75
+        self.atk2_mana_cost = 15
         self.atk3_mana_cost = 100
         self.sp_mana_cost = 200
         self.atk2_mana_cost_sp = 80
         
         #dmg
         self.atk1_cooldown = 7000 # 7000
-        self.atk2_cooldown = 10000
+        self.atk2_cooldown = 1000
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
         self.atk2_cooldown_sp = 5000 + 13000
         #FORMULA = DESIRED DMG / TOTAL FRAME EX. dmg=25/34 == 0.6944
         self.damage_list = [
             (13, 0),
-            (20/53, 0), #total damage=130
+            (10/53, 0), #total damage=60
             (40/34, 0),
             (50/28, 10)
         ]
@@ -445,31 +436,35 @@ class Fire_Wizard(Player):
         self.white_mana_p2 = self.mana   
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
-        """The most crucial part of collecting user input.
-        - Processes player input each frame, handling movement and skill casting based on state."""
-        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
-        if self.is_dead():
-            return
-        
-        # ---------- Moving ----------
         if self.can_move():
-            self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0,
-                special_active_speed = 0.1,
-                jump_force = self.jump_force,
-                jump_force_modifier = 0
-                )
+            if not (self.attacking1 or self.attacking2 or self.attacking3 or self.sp_attacking or self.basic_attacking):
+                if right_hotkey:  # Move right
+                    self.running = True
+                    self.facing_right = True #if self.player_type == 1 else False
+                    self.x_pos += (self.speed + ((self.speed * 0.1) if self.special_active else 0))
+                    if self.x_pos > TOTAL_WIDTH - (self.hitbox_rect.width/2):  # Prevent moving beyond the screen
+                        self.x_pos = TOTAL_WIDTH - (self.hitbox_rect.width/2)
+                elif left_hotkey:  # Move left
+                    self.running = True
+                    self.facing_right = False #if self.player_type == 1 else True
+                    self.x_pos -= (self.speed + ((self.speed * 0.1) if self.special_active else 0))
+                    if self.x_pos < (ZERO_WIDTH + (self.hitbox_rect.width/2)):  # Prevent moving beyond the screen
+                        self.x_pos = (ZERO_WIDTH + (self.hitbox_rect.width/2))
+                else:
+                    self.running = False
+
+                if jump_hotkey and self.y_pos == DEFAULT_Y_POS and current_time - self.last_atk_time > JUMP_DELAY:
+                    self.jumping = True
+                    self.y_velocity = DEFAULT_JUMP_FORCE  
+                    self.last_atk_time = current_time  # Update the last jump time
             
-        # ---------- Casting ----------
-        if self.is_frozen():
-            return
-        
-        if self.is_silenced() and not basic_hotkey:
-            return
-        
+        if not self.can_cast():
+            # If can't cast skills, still allow basic attacks
+            if not (basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking):
+                return
         
         if not self.special_active:
             if not self.jumping and not self.is_dead():
@@ -512,41 +507,22 @@ class Fire_Wizard(Player):
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        # for i in [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]:
-                        #     attack = Attack_Display(
-                        #         x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
-                        #         y=self.rect.centery + 30,
-                        #         frames=self.atk2,
-                        #         frame_duration=62.893, # 20seconds total #3.33 seconds each
-                        #         repeat_animation=6,
-                        #         speed=5 if self.facing_right else -5,
-                        #         dmg=self.atk2_damage[0],
-                        #         final_dmg=self.atk2_damage[1],
-                        #         who_attacks=self,
-                        #         who_attacked=self.enemy,
-                        #         delay=(True, 800),
-                        #         sound=(True, self.atk2_sound, None, None),
-                        #         # stop_movement=(True,4,1)
-                        #         ) # Replace with the target
-                        #     attack_display.add(attack)
-
-                        for i in [60*2, 120*2, 180*2]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery + 30,
-                                frames=self.atk2,
-                                frame_duration=62.893, # 20seconds total #3.33 seconds each
-                                repeat_animation=6,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0],
-                                final_dmg=self.atk2_damage[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                delay=(True, 800),
-                                sound=(True, self.atk2_sound, None, None)
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
+                        attack = Attack_Display(
+                            x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
+                            y=self.rect.centery + 30,
+                            frames=self.atk2,
+                            frame_duration=62.893, # 20seconds total #3.33 seconds each
+                            repeat_animation=6,
+                            speed=5 if self.facing_right else -5,
+                            dmg=self.atk2_damage[0],
+                            final_dmg=self.atk2_damage[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            delay=(True, 800),
+                            sound=(True, self.atk2_sound, None, None),
+                            stop_movement=(True,4,1)
+                            ) # Replace with the target
+                        attack_display.add(attack)
                         self.mana -= self.attacks[1].mana_cost
                         self.attacks[1].last_used_time = current_time
                         self.running = False
@@ -558,14 +534,6 @@ class Fire_Wizard(Player):
 
                         # summon = create_summon_bot(Skeleton, self.player_type, self.enemy)
                         # global_vars.summon_display.add(summon)
-
-                        
-                        # global_vars.assign_summon_enemy(self.player_type)
-                        # for hero in (hero1_group if self.player_type == 2 else hero2_group):
-                        #     hero.enemy = list(global_vars.summon_display)
-
-                        # for h in hero1_group:
-                        # h.enemy = list(hero2_group)
 
                     else:
                         pass
@@ -747,11 +715,11 @@ class Fire_Wizard(Player):
                                 x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
                                 y=self.rect.centery + 30,
                                 frames=self.atk2,
-                                frame_duration=47.16, # 15 seconds = damage / 2
-                                repeat_animation=6,
+                                frame_duration=50,
+                                repeat_animation=4,
                                 speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0]/2,
-                                final_dmg=self.atk2_damage[1]/2,
+                                dmg=self.atk2_damage[0],
+                                final_dmg=self.atk2_damage[1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                             delay=(True, 800)) # Replace with the target
@@ -874,7 +842,15 @@ class Fire_Wizard(Player):
         
     
     def update(self):
-        
+        if global_vars.DRAW_DISTANCE:
+            self.draw_distance(self.enemy)
+        if global_vars.SHOW_HITBOX:
+            
+            self.draw_hitbox(screen)
+        self.update_hitbox()
+
+        self.inputs()
+        self.move_to_screen()
 
          
         
@@ -904,11 +880,39 @@ class Fire_Wizard(Player):
         self.y_velocity += DEFAULT_GRAVITY
         self.y_pos += self.y_velocity
 
-        
+        # Stop at the ground level
+        if self.y_pos > DEFAULT_Y_POS:
+            self.y_pos = DEFAULT_Y_POS
+            self.y_velocity = 0
+            self.jumping = False 
+        if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
+            self.player_jump_index = 0
+            self.player_jump_index_flipped = 0
 
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
+        if not self.is_dead():
+            if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:
+                pass
+            else:
+                if not self.special_active:
+                    for attack in self.attacks:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                else:
+                    for attack in self.attacks_special:
+                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+
+                if not self.special_active:
+                    for mana in self.attacks:
+                        mana.draw_mana_cost(screen, self.mana)
+                else:
+                    for mana in self.attacks_special:
+                        mana.draw_mana_cost(screen, self.mana)
+
+        # Update the player status (health and mana bars)
+        self.player_status(self.health, self.mana, self.special)
+        
         # Update the health and mana bars
         if self.health != 0:
             if not DISABLE_MANA_REGEN:
@@ -918,7 +922,7 @@ class Fire_Wizard(Player):
         else:
             self.health = 0
 
-        if not global_vars.DISABLE_SPECIAL_REDUCE:
+        if not DISABLE_SPECIAL_REDUCE:
             if self.special_active:
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:

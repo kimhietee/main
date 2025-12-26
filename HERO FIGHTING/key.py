@@ -123,7 +123,7 @@ status = [
 ]
 
 
-filename = "Settings.json"
+filename = "keybinds.json"
 
     
 

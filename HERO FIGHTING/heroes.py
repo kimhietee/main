@@ -1834,7 +1834,7 @@ class PlayerSelector:
     DECOR_SIZE_SMALL = (60, 60)
     DECOR_OFFSET_SMALL = (30, 30)
 
-    DESELECT_Y_OFFSET = -25
+    DESELECT_Y_OFFSET = -35
 
     def __init__(self, image, center_pos, class_item, small=False, custom_size=None):
         """
@@ -1881,8 +1881,9 @@ class PlayerSelector:
 
         self.original_pos = center_pos
         self.target_pos = center_pos
-        self.move_speed = 0.2
-
+        self.move_speed = 0.1
+        # print(self.original_pos)
+        self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
         self.back_button = ImageButton(
             image_path=text_box_img,
             pos=(self.profile_rect.centerx, self.profile_rect.top + self.DESELECT_Y_OFFSET),
@@ -1912,34 +1913,33 @@ class PlayerSelector:
         """Internal: Sync all rects to given center."""
         dx = center[0] - self.profile_rect.centerx
         dy = center[1] - self.profile_rect.centery
+        # print(dx, dy)
 
         self.profile_rect.center = center
         self.decor_rect.move_ip(dx, dy)
-        self.back_button.set_position(center)  # Assuming ImageButton has set_position
+        self.back_button.set_position((center[0], center[1] + self.DESELECT_Y_OFFSET))  # Assuming ImageButton has set_position # Full (x, y) with offset
         # If associated item needs to follow (e.g., for tooltip alignment)
         if hasattr(self.class_item, 'set_position'):
             self.class_item.set_position(center)
 
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=MAX_ITEM):
-        """
-        Update state and handle movement/selection logic.
-        
-        Args:
-            mouse_pos (tuple): Current mouse position.
-            mouse_pressed (tuple): pygame.mouse.get_pressed() result.
-            other_selectors (list): All PlayerSelector instances for count limit.
-            max_selected (int): Maximum allowed selections.
-        """
         # Smooth movement toward target
+        
         if self.profile_rect.center != self.target_pos:
             current = list(self.profile_rect.center)
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
-            if abs(dx) > 1 or abs(dy) > 1:
+
+            # If very close, snap exactly to avoid drift
+            if abs(dx) < 0.5 and abs(dy) < 0.5:
+                self._apply_position(self.target_pos)
+            else:
+                # Normal smooth movement
                 current[0] += dx * self.move_speed
                 current[1] += dy * self.move_speed
+                
                 self._apply_position((int(current[0]), int(current[1])))
-
+        
         # Draw base
         self.draw()
 
@@ -1952,6 +1952,11 @@ class PlayerSelector:
                 self.hovered = True
                 if mouse_pressed[0]:
                     self.selected = True
+                    highlight_pos = (
+                        self.original_pos[0] + self.highlight_offset[0],
+                        self.original_pos[1] + self.highlight_offset[1]
+                    )
+                    self.set_position(highlight_pos)
                     self.hovered = False
             else:
                 self.hovered = False
@@ -1960,8 +1965,9 @@ class PlayerSelector:
             self.back_button.draw(screen, mouse_pos)
             if mouse_pressed[0] and self.back_button.is_clicked(mouse_pos):
                 self.selected = False
-                # Optional: snap back to original position
                 self.set_position(self.original_pos)
+
+
 
     def draw(self):
         """Draw border and profile image based on state."""
@@ -2404,7 +2410,16 @@ def player_selection():
                     for item in p1_items:
                         item.update(mouse_pos, mouse_press, p1_items, max_selected=MAX_ITEM)
                         if item.selected:
-                            pass
+                            highlight_x = item.original_pos[0] + item.highlight_offset[0]
+                            highlight_y = item.original_pos[1] + item.highlight_offset[1]
+                            item.set_position((highlight_x, highlight_y))
+                            print(item.original_pos)    
+                            print(item.target_pos)
+                            
+
+
+
+
                     for item in p1_items:
                         item.draw()
 

@@ -101,6 +101,21 @@ paused = False
 is_paused = False
 xaxa = pygame.time.Clock()
 
+
+
+
+
+w_gap = 0.1
+h_gap = 0.133
+base_width = 0.1
+base_height = 0.33
+
+button_width = 60
+button_height = 60
+width_half = width*0.45
+
+
+
 def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
     title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
     title_rect = title.get_rect(center = (x_offset / 2, y_offset))
@@ -286,43 +301,56 @@ def show_controls(font=None):
     
 
 
+    w_margin = 0.143
+    h_margin = 0.02
 
-
-
-
-
-    skill_controls = [
-    "Skill 1 Key",
-    "Skill 2 Key",
-    "Skill 3 Key",
-    "Skill 4 Key",
-    ]
-
-    move_controls = [
-    "Move Left",
-    "Jump",
-    "Move Right"
-    ]
-
-    Basic_SP_control = [
-    "Basic Attack Key",
-    "Special Skill Key"
-    ]
+    # width_half = width*0.5
     
-    # Display controls for both players
-    for i, text in enumerate(skill_controls):
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.35)
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.35) + (width * 0.9)))
-
-    for i, text in enumerate(move_controls):
-        create_title(text, font, 0.5, height * 0.728 , color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))))
-        create_title(text, font, 0.5, height *0.728, color=white, angle=0, x_offset=(width * (0.235  +( i * 0.2))) + (width * 0.9) )
+    create_title("Attack", font, 0.5, height * (base_height - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
+    create_title("Special", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin))
     
-    for i, text in enumerate(Basic_SP_control):
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=width*0.8)
-        create_title(text, font, 0.5, height * (0.328 + i * 0.1), color=white, angle=0, x_offset=((width *0.8) + (width * 0.9)))
 
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Left", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
     
+
+    create_title("Jump", font, 0.5, height * ((base_height - h_margin)), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
+
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    create_title("Right", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+    
+    
+    create_title("Skill 1", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width) + w_margin))
+    create_title("Skill 2", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin))
+    create_title("Skill 3", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin))
+    create_title("Skill 4", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin))
+
+
+
+
+    create_title("Attack", font, 0.5, height * (base_height - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin) + width_half*2)
+    create_title("Special", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*(base_width + w_margin) + width_half*2)
+    
+
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin) + width_half*2)
+    create_title("Left", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin) + width_half*2)
+    
+
+    create_title("Jump", font, 0.5, height * ((base_height - h_margin)), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin) + width_half*2)
+
+    create_title("Move", font, 0.5, height * ((base_height + h_gap) - h_margin - 0.03), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin) + width_half*2)
+    create_title("Right", font, 0.5, height * ((base_height + h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin) + width_half*2)
+    
+    
+    create_title("Skill 1", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width) + w_margin) + width_half*2)
+    create_title("Skill 2", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 2*w_gap) + w_margin) + width_half*2)
+    create_title("Skill 3", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 4*w_gap) + w_margin) + width_half*2)
+    create_title("Skill 4", font, 0.5, height * ((base_height + 2.5*h_gap) - h_margin), color=white, angle=0, x_offset=width*((base_width + 6*w_gap) + w_margin) + width_half*2)
+
+
+
+
+
 
 
 
@@ -1236,36 +1264,48 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
     
    
-    skill_1_btn_p1 = RectButton(width*0.08, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[0][1],40,40,0)
-    skill_2_btn_p1 = RectButton(width*0.08, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[1][1],40,40,0)
-    skill_3_btn_p1 = RectButton(width*0.08, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[2][1],40,40,0)
-    skill_4_btn_p1 = RectButton(width*0.08, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[3][1],40,40,0)
 
-    basic_atk_btn_p1 = RectButton(width*0.27, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[4][1],40,40,0)
-    sp_skill_btn_p1 = RectButton(width*0.27, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[5][1],40,40,0)
+    basic_atk_btn_p1 = RectButton(width*base_width, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[4][1],button_width,button_height,0)
+    sp_skill_btn_p1 = RectButton(width*base_width, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[5][1],button_width,button_height,0)
 
 
-    
-    left_move_btn_p1 = RectButton(width*0.1, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[7][1],40,40,0)
-    jump_btn_p1 = RectButton(width*0.20, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[6][1],40,40,0)
-    right_move_btn_p1 = RectButton(width*0.3, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[8][1],40,40,0)
-
-
-
-
-    skill_1_btn_p2 = RectButton(width*0.08 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[9][1],40,40,0)
-    skill_2_btn_p2 = RectButton(width*0.08 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[10][1],40,40,0)
-    skill_3_btn_p2 = RectButton(width*0.08 + left_width, height*0.5, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[11][1],40,40,0)
-    skill_4_btn_p2 = RectButton(width*0.08 + left_width, height*0.6, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[12][1],40,40,0)
-
-    basic_atk_btn_p2 = RectButton(width*0.27 + left_width, height*0.3, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[13][1],40,40,0)
-    sp_skill_btn_p2 = RectButton(width*0.27 + left_width, height*0.4, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[14][1],40,40,0)
+   
+    skill_1_btn_p1 = RectButton(width*base_width,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[0][1],button_width,button_height,0)
+    skill_2_btn_p1 = RectButton(width*(base_width + w_gap),       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[1][1],button_width,button_height,0)
+    skill_3_btn_p1 = RectButton(width*(base_width + (w_gap *2)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[2][1],button_width,button_height,0)
+    skill_4_btn_p1 = RectButton(width*(base_width + (w_gap *3)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[3][1],button_width,button_height,0)
 
     
-    left_move_btn_p2 = RectButton(width*0.1 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[16][1],40,40,0)
-    jump_btn_p2 = RectButton(width*0.20 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[15][1],40,40,0)
-    right_move_btn_p2 = RectButton(width*0.3 + left_width, height*0.76, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), new_key[17][1],40,40,0)
+    left_move_btn_p1 = RectButton(width*(base_width + w_gap), height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[7][1],button_width,button_height,0)
+    jump_btn_p1 = RectButton(width*(base_width + 2*w_gap), height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[6][1],button_width,button_height,0)
+    right_move_btn_p1 = RectButton(width*(base_width + 3*w_gap) , height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[8][1],button_width,button_height,0)
 
+
+    # w_gap = 0.1
+    # h_gap = 0.133
+    # base_width = 0.1
+    # base_height = 0.33
+
+    # button_width = 60
+    # button_height = 60
+    
+    skill_1_btn_p2 = RectButton(width*base_width + width_half,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[9][1],button_width,button_height,0)
+    skill_2_btn_p2 = RectButton(width*(base_width + w_gap) + width_half,       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[10][1],button_width,button_height,0)
+    skill_3_btn_p2 = RectButton(width*(base_width + (w_gap *2)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[11][1],button_width,button_height,0)
+    skill_4_btn_p2 = RectButton(width*(base_width + (w_gap *3)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[12][1],button_width,button_height,0)
+
+
+    basic_atk_btn_p2 = RectButton(width*base_width + width_half, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[13][1],button_width,button_height,0)
+    sp_skill_btn_p2 = RectButton(width*base_width + width_half, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[14][1],button_width,button_height,0)
+
+
+    left_move_btn_p2 = RectButton(width*(base_width + w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[16][1],button_width,button_height,0)
+    jump_btn_p2 = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[15][1],button_width,button_height,0)
+    right_move_btn_p2 = RectButton(width*(base_width + 3*w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[17][1],button_width,button_height,0)
+
+    temp_button = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), "UwU",button_width,button_height,0)
+    
+   
 
 
 
@@ -1371,7 +1411,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                 display_keyswap_confirmation(False)
                                 indexed = key_store.index(key_name)
                                 temp = new_key[detect.index(True)]
-                                new_key[detect.index(True)] = (key_index, key_name)
+                                new_key[detect.index(True)] = (pygame.key.key_code(key_name), key_name)
                                 
 
                                 if no_swap:
@@ -1404,67 +1444,90 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                 # ([x for i,x in enumerate(key.detect_key_skill.values()) if i!= 0 ])
                 
                 if skill_1_btn_p1.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_1_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_1_p1'] = True
+                    key.detect_key_skill['read_skill_1_p1'] = temp_value
+
                 if skill_2_btn_p1.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_2_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_2_p1'] = True
+                    key.detect_key_skill['read_skill_2_p1'] = temp_value
+
                 if skill_3_btn_p1.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_3_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_3_p1'] = True
+                    key.detect_key_skill['read_skill_3_p1'] = temp_value
+
                 if skill_4_btn_p1.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_4_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_4_p1'] = True
+                    key.detect_key_skill['read_skill_4_p1'] = temp_value
 
                
 
 
-                if basic_atk_btn_p1.is_clicked(event.pos)and can_click:
+                if basic_atk_btn_p1.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_basic_atk_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_basic_atk_p1'] = True
+                    key.detect_key_skill['read_basic_atk_p1'] = temp_value
 
-                if sp_skill_btn_p1.is_clicked(event.pos)and can_click:    
+                if sp_skill_btn_p1.is_clicked(event.pos)and can_click:  
+                    temp_value = not key.detect_key_skill['read_sp_skill_p1']  
                     refresh_key(key.detect_key_skill)            
-                    key.detect_key_skill['read_sp_skill_p1'] = True
+                    key.detect_key_skill['read_sp_skill_p1'] = temp_value
+
                 if jump_btn_p1.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_jump_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_jump_p1'] = True
+                    key.detect_key_skill['read_jump_p1'] = temp_value
                 if left_move_btn_p1.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_left_move_p1']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_left_move_p1'] = True
-                if right_move_btn_p1.is_clicked(event.pos)and can_click:       
+                    key.detect_key_skill['read_left_move_p1'] = temp_value
+
+                if right_move_btn_p1.is_clicked(event.pos)and can_click:  
+                    temp_value = not key.detect_key_skill['read_right_move_p1']     
                     refresh_key(key.detect_key_skill)           
-                    key.detect_key_skill['read_right_move_p1'] = True
+                    key.detect_key_skill['read_right_move_p1'] = temp_value
                              #Player 2 settings
 
                 if skill_1_btn_p2.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_1_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_1_p2'] = True
+                    key.detect_key_skill['read_skill_1_p2'] = temp_value
                 if skill_2_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_2_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_2_p2'] = True
+                    key.detect_key_skill['read_skill_2_p2'] = temp_value
                 if skill_3_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_3_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_3_p2'] = True
+                    key.detect_key_skill['read_skill_3_p2'] = temp_value
                 if skill_4_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_skill_4_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_skill_4_p2'] = True
+                    key.detect_key_skill['read_skill_4_p2'] = temp_value
                 if basic_atk_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_basic_atk_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_basic_atk_p2'] = True
+                    key.detect_key_skill['read_basic_atk_p2'] = temp_value
 
                 if sp_skill_btn_p2.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_sp_skill_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_sp_skill_p2'] = True
+                    key.detect_key_skill['read_sp_skill_p2'] = temp_value
                 if jump_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_jump_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_jump_p2'] = True
+                    key.detect_key_skill['read_jump_p2'] = temp_value
                 if left_move_btn_p2.is_clicked(event.pos) and can_click:
+                    temp_value = not key.detect_key_skill['read_left_move_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_left_move_p2'] = True
+                    key.detect_key_skill['read_left_move_p2'] = temp_value
                 if right_move_btn_p2.is_clicked(event.pos)and can_click:
+                    temp_value = not key.detect_key_skill['read_right_move_p2']
                     refresh_key(key.detect_key_skill)
-                    key.detect_key_skill['read_right_move_p2'] = True
+                    key.detect_key_skill['read_right_move_p2'] = temp_value
 
 
         # print(type(keys))

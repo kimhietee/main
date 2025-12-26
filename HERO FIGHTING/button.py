@@ -3,8 +3,9 @@ from global_vars import get_font
 
 
 class ImageButton:
-    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True):
+    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True, y_margin=0):
         # Load and scale the image
+        
         self.hover_pos = pos
         self.hover_move = hover_move
         self.fku = fku
@@ -37,7 +38,9 @@ class ImageButton:
         self.text_surf = pygame.transform.rotozoom(text_surf, 0, 0.2)
         # self.text_surf = text_surf
         self.text_rect = self.text_surf.get_rect(center=self.rect.center)
-
+        
+        self.y_margin =  y_margin
+        
     def draw(self, screen, mouse_pos):
         if self.rect.collidepoint(mouse_pos):
             self.rect.centery = self.hover_pos[1] + self.hover_move 
@@ -51,11 +54,22 @@ class ImageButton:
         screen.blit(self.text_surf, self.text_rect)
 
     def set_position(self, center): # this is the original position 
-        dx = center[0] - self.rect.centerx
-        dy = center[1] - self.rect.centery
+        dx = center[0] - self.rect.centerx 
+        dy = center[1] - self.rect.centery - self.y_margin
+
+        #----------
+        self.rect.move_ip(dx, dy)
+        self.hover_pos = (center[0], center[1] + self.y_margin)
+        # self.text_rect.move_ip(dx, dy)
+        #----------
+
+        
+        # print(dx, dy)
 
         self.rect.center = center
 
+        self.hover_pos = (center)
+        # self.hover_pos[1] += dy
 
         self.text_rect.x += dx
         self.text_rect.y += dy

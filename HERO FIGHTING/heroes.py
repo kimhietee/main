@@ -1576,6 +1576,8 @@ class Item:
             "atk_speed_flat": "Attack Speed",   # Flat (ticks)
             "atk_speed_per": "Attack Speed",    # Percentage
             "spell_dmg_per": "Spell Damage",
+            "crit_chance_per": "Critical Chance",
+            "crit_dmg_per": "Critical Damage",
 
             # Defensive / Utility / Special
             "dmg_reduce_per": "Damage Reduction",
@@ -1637,15 +1639,15 @@ class Item:
 
         info_bubble_item = ImageBro(
             image_path=text_box_img,
-            pos=(position[0]*0.8, position[1]),
-            scale=2,
-            text=full_lines,  # Now a list!
+            # pos=(position[0]*0.6, position[1]),  # Your custom position
+            pos=position,
+            text=full_lines,
             font_path=global_vars.FONT_PATH,
-            font_size=font_size*1.05,
+            font_size=font_size * 1.05,
             text_color='white',
-            fku=True,
-            scale_val=(250, 200 + (len(full_lines) * font_size)),  # Dynamically grow height
-            hover_move=0
+            # fixed_size=(250, 200 + (len(full_lines) * font_size)),  # Keep your dynamic height
+            text_scale=1.3,  # <-- Makes text 80% size → looks cleaner in tall box
+            anchor='bottomleft'  # Or 'center', etc.
         )
         info_bubble_item.drawing_info(screen)
 
@@ -1684,36 +1686,100 @@ class Item:
 # modified all crystals to have 15%/5% value
 
 items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08], description="A sturdy helmet that boosts @strength and regeneration."),
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1], description="Reduces damage but slows movement."),
-    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", ["lifesteal_per"], [0.15]),
-    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05]),
-    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", ["hp_per", "hp_flat"], [0.1, 5.0]), 
-    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3]),
+    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", 
+         ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08]),  # Stats clear → no desc needed
 
-    Item("Red Gem", r"assets\item icons\gems\Icons_15.png", ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),
-    Item("Blue Gem", r"assets\item icons\gems\Icons_11.png", ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),
-    Item("Green Gem", r"assets\item icons\gems\Icons_03.png", ['atk_flat', 'atk_speed_per', 'move_speed_per'], [0.25, 0.05, 0.05]),
-    Item("Elixir", r"assets\item icons\in use\Icons_30.png", ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),
-    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),
-    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", ['mana_refund_per'], [0.75]),
-    
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25]),
-    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]), 
+    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", 
+         ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1],
+         description="Reduces damage taken@but lowers movement speed."),
 
-    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]), 
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", ['sp_increase_per'], [0.40]), 
-    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),
-    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),
-    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", ["crit_chance_per", "crit_dmg_per"], [0.3, 0.8]),
+    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", 
+         ["lifesteal_per"], [0.15]),  # Simple → no desc
 
-    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", ['dmg_return_per'], [0.20]),
-    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", ['heal_when_low'], [50], description=r"If hero falls below 10% health,@heals the hero for 50 HP.@@- Cooldown: 120s"),  # 'revive_once' as flat 1 (true)
+    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", 
+         ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05],
+         description="Gains HP and agility@but loses mana.@Reduces skill cooldowns."),
+
+    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", 
+         ["hp_per", "hp_flat"], [0.1, 5.0]),  # Clear → no desc
+
+    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", 
+         ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3],
+         description="Greatly increases mana regeneration@at the cost of health regeneration."),
+
+
+
+    Item("Crimson Hearthstone", r"assets\item icons\gems\Icons_15.png", 
+         ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Azure Myststone", r"assets\item icons\gems\Icons_11.png", 
+         ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Verdant Fury", r"assets\item icons\gems\Icons_03.png", 
+         ['atk_flat', 'atk_speed_per', 'move_speed_per'], [0.25, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Elixir", r"assets\item icons\in use\Icons_30.png", 
+         ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),  # Balanced → no desc
+
+    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", 
+         ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),  # Clear → no desc
+
+    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", 
+         ['mana_refund_per'], [0.75],
+         description="Refunds 75% of mana spent on skills."),
+
+
+
+    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", 
+         ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", 
+         ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", 
+         ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", 
+         ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),  # Clear → no desc
+
+    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", 
+         ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25],
+         description="Greatly increases spell damage@but reduces max health."),
+
+    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", 
+         ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]),  # Clear → no desc
+
+
+
+    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", 
+         ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),  # Clear → no desc
+
+    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", 
+         ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]),  # Clear → no desc
+
+    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", 
+         ['sp_increase_per'], [0.40],
+         description="Special meter fills 40% faster."),
+
+    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", 
+         ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),  # Clear → no desc
+
+    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", 
+         ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),  # Many stats → no desc
+
+    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", 
+         ["crit_chance_per", "crit_dmg_per"], [0.2, 0.7],
+         description="Grants each attack a 20%@chance to deal 70% more damage."),
+
+
+
+    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
+         ['dmg_return_per'], [0.20],
+         description="Returns 20% of damage taken to attacker."),
+
+    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
+         ['heal_when_low'], [50], 
+         description="When below 10% HP:@heals 50 HP once.@@Cooldown: 120s"),
 ]
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
@@ -1731,6 +1797,16 @@ Elixir: 8% hp regen, 8% mana regen, 4% move speed
 Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
+HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35",
+    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23",
+    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35"
+}
 
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 20% spell dmg",
@@ -1744,117 +1820,212 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
 }
 
 
+
+
 class PlayerSelector:
-    def __init__(self, image, rect, class_item, size=(75,75), decorxsize=85, decorysize=85, offsetdecor=(42, 42)):
-        self.image = image
-        self.rect = rect
+    """
+    Clickable selector for heroes, items, or maps with smooth movement on select.
+    """
+    # Default sizes
+    PROFILE_SIZE = (75, 75)        # Heroes
+    INGAME_SIZE = (50, 50)         # Items (your old size)
+    DECOR_SIZE_LARGE = (85, 85)
+    DECOR_OFFSET_LARGE = (42, 42)
+    DECOR_SIZE_SMALL = (60, 60)
+    DECOR_OFFSET_SMALL = (30, 30)
+
+    DESELECT_Y_OFFSET = -25
+
+    def __init__(self, image, center_pos, class_item, small=False, custom_size=None):
+        """
+        Args:
+            image: str path or Surface
+            center_pos: (x, y) tuple
+            class_item: Hero class or Item instance
+            small: True for item-sized icons (50x50)
+            custom_size: (w, h) tuple for maps/other special sizes (overrides small)
+        """
         self.class_item = class_item
 
-        # self.real_class_item = self.class_item
+        if isinstance(image, str):
+            original = pygame.image.load(image).convert_alpha()
+        else:
+            original = image
 
-        # Check if the image is a file path or a pygame.Surface
-        if isinstance(image, str):  # If it's a file path, load the image
-            self.profile = pygame.transform.scale(pygame.image.load(image).convert_alpha(), size)
-            self.ingame_profile = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (25,25))
-        else:  # If it's already a pygame.Surface, use it directly
-            self.profile = pygame.transform.scale(image, size)
-            self.ingame_profile = pygame.transform.scale(image, (25,25))
-        self.profile_rect = self.profile.get_rect(center = self.rect)
+        # Determine size
+        if custom_size:
+            profile_size = custom_size
+            decor_size = (custom_size[0] + 15, custom_size[1] + 15)  # rough border
+            decor_offset = (decor_size[0] // 2, decor_size[1] // 2)
+        elif small:
+            profile_size = self.INGAME_SIZE
+            decor_size = self.DECOR_SIZE_SMALL
+            decor_offset = self.DECOR_OFFSET_SMALL
+        else:
+            profile_size = self.PROFILE_SIZE
+            decor_size = self.DECOR_SIZE_LARGE
+            decor_offset = self.DECOR_OFFSET_LARGE
 
-        self.decor_rect = pygame.Rect(self.profile_rect.centerx - offsetdecor[0], self.profile_rect.centery - offsetdecor[1], decorxsize, decorysize)
-        
+        self.profile = pygame.transform.scale(original, profile_size)
+        self.ingame_profile = pygame.transform.scale(original, (25, 25))  # always keep small version
+
+        self.profile_rect = self.profile.get_rect(center=center_pos)
+        self.decor_rect = pygame.Rect(
+            self.profile_rect.centerx - decor_offset[0],
+            self.profile_rect.centery - decor_offset[1],
+            *decor_size
+        )
+
         self.hovered = False
         self.selected = False
-        
 
-        self.back = ImageButton(
+        self.original_pos = center_pos
+        self.target_pos = center_pos
+        self.move_speed = 0.2
+
+        self.back_button = ImageButton(
             image_path=text_box_img,
-            pos=(self.profile_rect.centerx, self.profile_rect.top - 25),
+            pos=(self.profile_rect.centerx, self.profile_rect.top + self.DESELECT_Y_OFFSET),
             scale=0.5,
             text='Deselect',
-            font_path=global_vars.FONT_PATH,  # or any other font path
-            font_size=font_size * 0.6,  # dynamic size ~29 at 720p
+            font_path=global_vars.FONT_PATH,
+            font_size=font_size * 0.75,
             text_color='white',
             text_anti_alias=global_vars.TEXT_ANTI_ALIASING
         )
 
-
-    def draw(self):
-        if self.selected:
-            self.decor = pygame.draw.rect(screen, gold, self.decor_rect)
-
-        elif self.hovered:
-            self.decor = pygame.draw.rect(screen, white, self.decor_rect)
+    def set_position(self, new_center, instant=False):
+        """
+        Move the selector to a new center position.
         
+        Args:
+            new_center (tuple): New (x, y) center.
+            instant (bool): If True, snap immediately (bypass lerp).
+        """
+        if instant:
+            self.target_pos = new_center
+            self._apply_position(new_center)
         else:
-            self.decor = pygame.draw.rect(screen, black, self.decor_rect)
+            self.target_pos = new_center
 
-        screen.blit(self.profile, self.profile_rect)
+    def _apply_position(self, center):
+        """Internal: Sync all rects to given center."""
+        dx = center[0] - self.profile_rect.centerx
+        dy = center[1] - self.profile_rect.centery
 
-    def draw_icon(self, size:tuple=(0,0), item_pos:tuple=(0,0), hero_icon=True):
-        if hero_icon:
-            border_size = 85
-            offset_decor = 42
-            profile_rect = self.profile.get_rect(center = size) #use the prof rect as pos (hero icons)
-        else:
-            border_size = 30
-            offset_decor = 15
-            profile_rect = self.ingame_profile.get_rect(center = item_pos) #use provided pos for item icons
-        decor_rect = pygame.Rect(profile_rect.centerx - offset_decor, profile_rect.centery - offset_decor, border_size, border_size)
-        pygame.draw.rect(screen, black, decor_rect)
-        if hero_icon:
-            screen.blit(self.profile, profile_rect)
-        else:
-            screen.blit(self.ingame_profile, profile_rect)
-        # print(item_pos)
+        self.profile_rect.center = center
+        self.decor_rect.move_ip(dx, dy)
+        self.back_button.set_position(center)  # Assuming ImageButton has set_position
+        # If associated item needs to follow (e.g., for tooltip alignment)
+        if hasattr(self.class_item, 'set_position'):
+            self.class_item.set_position(center)
 
-    def is_selected(self):
-        return self.selected
-    
-    def associate_value(self):
-        return self.class_item
-    
-    def the_info(self, position):
-         # Display hero info if hovered
-        if self.hovered and isinstance(self.class_item, type) and issubclass(self.class_item, Player):
-            hero_name = self.class_item.__name__.replace("_", " ")
-            if hero_name in HERO_INFO:
-                # Separate the hero's name and stats
-                hero_name_text = hero_name
-                hero_stats_text = HERO_INFO[hero_name]
-                
-                # Display the name and stats in separate lines
-                info_bubble = ImageBro(
-                    image_path=text_box_img,
-                    pos=position,
-                    scale=2,
-                    text=f"{hero_name_text}, {hero_stats_text}",
-                    font_path=global_vars.FONT_PATH,
-                    font_size=font_size * 1.05,
-                    text_color='white',
-                    fku=True,
-                    scale_val=(150, 230),
-                    hover_move=0,
-                    player_info=True
-                )
-                info_bubble.drawing_info(screen)
+    def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=MAX_ITEM):
+        """
+        Update state and handle movement/selection logic.
+        
+        Args:
+            mouse_pos (tuple): Current mouse position.
+            mouse_pressed (tuple): pygame.mouse.get_pressed() result.
+            other_selectors (list): All PlayerSelector instances for count limit.
+            max_selected (int): Maximum allowed selections.
+        """
+        # Smooth movement toward target
+        if self.profile_rect.center != self.target_pos:
+            current = list(self.profile_rect.center)
+            dx = self.target_pos[0] - current[0]
+            dy = self.target_pos[1] - current[1]
+            if abs(dx) > 1 or abs(dy) > 1:
+                current[0] += dx * self.move_speed
+                current[1] += dy * self.move_speed
+                self._apply_position((int(current[0]), int(current[1])))
 
-    def update(self, mouse_pos, mouse_press, other_selectors, max_selected=MAX_ITEM):
+        # Draw base
         self.draw()
 
-        selected_count = sum(1 for selector in other_selectors if selector.selected)
+        # Selection logic
+        selected_count = sum(1 for s in other_selectors if s.selected)
+        can_select = selected_count < max_selected
+
         if not self.selected:
-            if self.decor_rect.collidepoint(mouse_pos) and selected_count < max_selected:
+            if self.decor_rect.collidepoint(mouse_pos) and can_select:
                 self.hovered = True
-                if mouse_press[0]:
+                if mouse_pressed[0]:
                     self.selected = True
                     self.hovered = False
             else:
                 self.hovered = False
         else:
-            self.back.draw(screen, mouse_pos)
-            if mouse_press[0] and self.back.is_clicked(mouse_pos):  # Check if "Deselect" button is clicked
+            # Show and handle deselect button
+            self.back_button.draw(screen, mouse_pos)
+            if mouse_pressed[0] and self.back_button.is_clicked(mouse_pos):
                 self.selected = False
+                # Optional: snap back to original position
+                self.set_position(self.original_pos)
+
+    def draw(self):
+        """Draw border and profile image based on state."""
+        color = gold if self.selected else white if self.hovered else black
+        pygame.draw.rect(screen, color, self.decor_rect)
+        screen.blit(self.profile, self.profile_rect)
+
+    def draw_icon(self, center_pos, small=False):
+        """
+        Draw small or large icon with black border (used in-game).
+        
+        Args:
+            center_pos (tuple): Center position for the icon.
+            small (bool): If True, use ingame size (25x25).
+        """
+        profile = self.ingame_profile if small else self.profile
+        size = self.INGAME_SIZE if small else self.PROFILE_SIZE
+        offset = self.DECOR_OFFSET_SMALL if small else self.DECOR_OFFSET_LARGE
+        border = self.DECOR_SIZE_SMALL if small else self.DECOR_SIZE_LARGE
+
+        rect = profile.get_rect(center=center_pos)
+        decor = pygame.Rect(rect.centerx - offset[0], rect.centery - offset[1], *border)
+        pygame.draw.rect(screen, black, decor)
+        screen.blit(profile, rect)
+
+    def is_selected(self):
+        return self.selected
+
+    def get_associated(self):
+        """Return the associated hero class or item."""
+        return self.class_item
+
+    def show_hover_tooltip(self, position):
+        """Display hero info tooltip on hover (if applicable)."""
+        if (self.hovered and
+            isinstance(self.class_item, type) and
+            issubclass(self.class_item, Player)):
+            hero_name = self.class_item.__name__.replace("_", " ")
+            if hero_name in HERO_INFO:
+                # info_bubble = ImageBro(
+                #     image_path=text_box_img,
+                #     pos=position,
+                #     scale=2,
+                #     text=f"{hero_name}, {HERO_INFO[hero_name]}",
+                #     font_path=global_vars.FONT_PATH,
+                #     font_size=font_size * 1.05,
+                #     text_color='white',
+                #     fku=True,
+                #     scale_val=(150, 230),
+                #     hover_move=0,
+                #     player_info=True
+                # )
+                info_bubble = ImageBro(
+                    image_path=text_box_img,
+                    pos=position,
+                    text=f"{hero_name}, {HERO_INFO[hero_name]}",
+                    font_path=global_vars.FONT_PATH,
+                    font_size=font_size * 1.05,
+                    text_color='white',
+                    player_info=True,
+                    text_scale=1.3,  # Full size
+                    anchor='bottomright'
+                )
+                info_bubble.drawing_info(screen)
         
 
        
@@ -1872,56 +2043,79 @@ class PlayerSelector:
 
 
 class ImageBro:
-    '''must pass str with break line of , if players
+    """
+    Flexible tooltip:
+    - fixed_size for manual control (items)
+    - text_scale to make text smaller/bigger independently
+    """
+    def __init__(self, image_path, pos, text, font_path, font_size, text_color='white',
+                 padding=(20, 20), min_size=(150, 100), player_info=False, anchor='topleft',
+                 fixed_size=None, text_scale=1.0):  # <-- NEW: text_scale
+        """
+        Args:
+            text_scale: float multiplier for font_size (e.g., 0.8 = 80% size)
+            fixed_size: (w, h) for manual background size
+        """
+        self.original_bg = pygame.image.load(image_path).convert_alpha()
         
-        must pass list of str with break line of @ if items'''
-    def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0, 0), player_info=False):
-        # Load and scale the image
-        self.hover_pos = pos
-        self.hover_move = hover_move
-        self.fku = fku
-        self.scale_val = scale_val
-        if self.fku:
-            self.original_image = pygame.transform.scale(
-        pygame.image.load(image_path).convert_alpha(), (self.scale_val[0], self.scale_val[1]))
-        else:
-            self.original_image = pygame.image.load(image_path).convert_alpha()
-
-        self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
-        self.rect = self.image.get_rect(center=pos)
-        # Text
-        self.text = text
-        self.font = global_vars.get_font(int(font_size*7.142857142857143)) # Font size = 100
+        # Effective font size
+        effective_font_size = int(font_size * text_scale)
+        self.font = global_vars.get_font(effective_font_size)
         self.text_color = text_color
-        self.hovered = False
-        
+        self.padding = padding
+
+        # Text processing
         self.text_lines = []
-
-        if player_info and isinstance(self.text, str):
-            # Player tooltip: comma-based
-            self.text_lines = self.text.split(',')
-
-        elif isinstance(self.text, (list, tuple)):
-            # Item tooltip: list + '@' line breaks
-            for entry in self.text:
+        if player_info and isinstance(text, str):
+            self.text_lines = text.split(',')
+        elif isinstance(text, (list, tuple)):
+            for entry in text:
                 if isinstance(entry, str):
                     self.text_lines.extend(entry.split('@'))
                 else:
                     self.text_lines.append(str(entry))
+        if len(self.text_lines) > 1:
+            self.text_lines.insert(1, '')
 
+        self.rendered_lines = [
+            self.font.render(line, global_vars.TEXT_ANTI_ALIASING, text_color)
+            for line in self.text_lines
+        ]
 
-        # breaks title and info
-        self.text_lines.insert(1, '')
+        # Size logic
+        if fixed_size:
+            final_w, final_h = fixed_size
+            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+        else:
+            # Auto-size with better width
+            if self.rendered_lines:
+                content_w = max(line.get_width() for line in self.rendered_lines)
+                content_h = sum(line.get_height() for line in self.rendered_lines) + 10 * (len(self.rendered_lines) - 1)
+            else:
+                content_w = content_h = 0
+            
+            needed_w = content_w + padding[0] * 2
+            needed_h = content_h + padding[1] * 2
+            
+            # Wider default for better readability
+            final_w = max(needed_w, min_size[0] + 50, self.original_bg.get_width())  # +50 for comfort
+            final_h = max(needed_h, min_size[1], self.original_bg.get_height())
+            
+            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
 
+        # Positioning
+        self.rect = self.background.get_rect()
+        setattr(self.rect, anchor, pos)
+        self.rect.clamp_ip(screen.get_rect())
 
     def drawing_info(self, screen):
-        # print(self.text_lines)
-        # Draw the image and text
-        screen.blit(self.image, (self.hover_pos[0] * 0.63 - (self.hover_pos[0] * 0.05), self.hover_pos[1] - (self.hover_pos[1] * 0.29)))
-
-        for i, line in enumerate(self.text_lines):
-            self.text_surf = pygame.transform.rotozoom(self.font.render(line, global_vars.TEXT_ANTI_ALIASING, self.text_color), 0, 0.2)
-            screen.blit(self.text_surf, (self.hover_pos[0] * 0.65 - (self.hover_pos[0] * 0.04), self.hover_pos[1] + i * 30))
+        screen.blit(self.background, self.rect)
+        
+        y = self.rect.top + self.padding[1]
+        for line_surf in self.rendered_lines:
+            x = self.rect.left + self.padding[0]
+            screen.blit(line_surf, (x, y))
+            y += line_surf.get_height() + 10
 
 
 font_size = int(height * 0.02) # = 100
@@ -2010,125 +2204,90 @@ def player_selection():
     xpos3=width - (75 * 4)+addd
     xpos4=width - (75 * 2.5)+addd
     xpos5=width - (75)+addd
-    
+
+    # positioning
+    upper=550
+    lower=450
+    lower2=350
+    lower3=250
+    lower4=150
     # last is only 75 position for xpos4
 
     #p2
     temp_icon = r'assets\hero profiles\temp.jpg'
     yposlower=75
     yposupper=200
+    # Heroes (large icons — default size)
     p1_select = [
-        #lower
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
-        # PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
         PlayerSelector(chthulu_icon, (xpos5, height - yposlower), Chthulu),
 
-        #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
-        # PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
 
     p2_select = [
-        #lower
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
-        # PlayerSelector(fire_wizard_icon, (xpos4, height - yposlower), Fire_Wizard), #temp
         PlayerSelector(chthulu_icon, (xpos5, height - yposlower), Chthulu),
 
-        #upper
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
-        # PlayerSelector(forest_ranger_icon, (xpos5, height - yposupper), Forest_Ranger) #temp
     ]
-    upper=550
-    lower=450
-    lower2=350
-    lower3=250
-    lower4=150
-    # Item selection
+
+    # Items (small icons — use small=True)
     p1_items = [
-        PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        
-        PlayerSelector(items[6].image, (75, height - lower), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
+        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
+        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
+        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
+        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
+        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
 
-        PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
+        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
+        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
+        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
+        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
+        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
 
-        PlayerSelector(items[18].image, (75, height - lower3), items[18], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
+        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
+        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
+        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
+        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
+        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
 
-        PlayerSelector(items[24].image, (75, height - lower4), items[24], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
+        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
+        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
+        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
+        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
+        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
 
-        ]
-
-    p2_items = [
-        PlayerSelector(items[0].image, (75, height - upper), items[0], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        
-        PlayerSelector(items[6].image, (75, height - lower), items[6], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-
-        PlayerSelector(items[12].image, (75, height - lower2), items[12], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-
-        PlayerSelector(items[18].image, (75, height - lower3), items[18], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
-
-        PlayerSelector(items[24].image, (75, height - lower4), items[24], size=(50, 50), decorxsize=60, decorysize=60, offsetdecor=(30, 30)),
+        PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
+        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
     ]
-        
+
+    # p2_items is identical to p1_items (just copy it)
+    p2_items = p1_items[:]  # Shallow copy is fine since items are immutable references
+
+    # Maps (custom large size)
     map_select = [
-        PlayerSelector(waterfall_icon, (75*2, height - (75*6)), Animate_BG.waterfall_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*6)), Animate_BG.lava_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*6)), Animate_BG.dark_forest_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*6)), Animate_BG.trees_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        # im just gonna use global_vars. at this point
-        PlayerSelector(global_vars.mountains_icon, (75*2, height - (75*3)), Animate_BG.mountains_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
-        PlayerSelector(global_vars.city_icon, (width/2 + (55 * 3), height - (75*3)), Animate_BG.city_bg, size=(200, 125), decorxsize=220, decorysize=145, offsetdecor=(110, 72)),
+        PlayerSelector(waterfall_icon, (75*2, height - (75*6)), Animate_BG.waterfall_bg, custom_size=(200, 125)),
+        PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*6)), Animate_BG.lava_bg, custom_size=(200, 125)),
+        PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*6)), Animate_BG.dark_forest_bg, custom_size=(200, 125)),
+        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*6)), Animate_BG.trees_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.mountains_icon, (75*2, height - (75*3)), Animate_BG.mountains_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.city_icon, (width/2 + (55 * 3), height - (75*3)), Animate_BG.city_bg, custom_size=(200, 125)),
     ]
     
     player_1_choose = True
@@ -2236,10 +2395,10 @@ def player_selection():
 
             for selector in p1_select:
                 if selector.hovered:
-                    selector.the_info((-(width * 0.0001), height - 525))
+                    selector.show_hover_tooltip(mouse_pos)
                     # selector.the_info((width + (width * 0.322), height - 525)) #previous position
                 if selector.is_selected():
-                    PLAYER_1_SELECTED_HERO = selector.associate_value()
+                    PLAYER_1_SELECTED_HERO = selector.get_associated()
 
                     # Draw item selection
                     for item in p1_items:
@@ -2252,7 +2411,9 @@ def player_selection():
 
                     for item in p1_items:
                         if item.hovered:
-                            item.class_item.update((width + (width * 0.322), height - 500))
+                            # item.class_item.update((width + (width * 0.322), height - 500))
+                            item.class_item.update(mouse_pos)
+
 
 
 
@@ -2289,7 +2450,7 @@ def player_selection():
                     
                     random_p1.update(mouse_pos, global_vars.random_pick_p1)
                     random_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-                    # print(selector.associate_value())
+                    # print(selector.get_associated())
                     go = True
                     break  # Only one can be selected
                 else:
@@ -2318,9 +2479,9 @@ def player_selection():
 
             for selector in p2_select:
                 if selector.hovered:
-                    selector.the_info((-(width * 0.0001), height - 525))
+                    selector.show_hover_tooltip(mouse_pos)
                 if selector.is_selected():
-                    PLAYER_2_SELECTED_HERO = selector.associate_value()
+                    PLAYER_2_SELECTED_HERO = selector.get_associated()
 
                     # Draw item selection
                     for item in p2_items:
@@ -2330,7 +2491,7 @@ def player_selection():
 
                     for item in p2_items:
                         if item.hovered:
-                            item.class_item.update((width + (width * 0.322), height - 500))
+                            item.class_item.update(mouse_pos)
                             # item.class_item.update((-(width * 0.0001), height - 500)) #previous position
                     
                     # Hard Bot Option (has all_items) draws hard mode option
@@ -2371,7 +2532,7 @@ def player_selection():
                 # if selector.hovered:
                 #     selector.the_info((-(width * 0.0001), height - 500))
                 if selector.is_selected():
-                    map_selected = selector.associate_value()
+                    map_selected = selector.get_associated()
 
                     # # Draw item selection
                     # for item in p2_items:
@@ -2456,15 +2617,15 @@ def player_selection():
 
                     for item in p1_items:
                         if item.is_selected():
-                            hero1.items.append(item.associate_value())
+                            hero1.items.append(item.get_associated())
 
                     for item in p2_items:
                         if item.is_selected():
-                            hero2.items.append(item.associate_value())
+                            hero2.items.append(item.get_associated())
                             # Also apply to hero3 in single player mode
                             if global_vars.SINGLE_MODE_ACTIVE:
                                 if global_vars.toggle_hero3:
-                                    hero3.items.append(item.associate_value())
+                                    hero3.items.append(item.get_associated())
 
 
                     if global_vars.SINGLE_MODE_ACTIVE:
@@ -2511,7 +2672,7 @@ def player_selection():
                     for item in p1_items:
                         if item.is_selected():
                             for h in hero1_group:
-                                h.items.append(item.associate_value())
+                                h.items.append(item.get_associated())
 
                     for h in hero1_group:
                         h.apply_item_bonuses()
@@ -2523,7 +2684,7 @@ def player_selection():
                     for item in p2_items:
                         if item.is_selected():
                             for h in hero2_group:
-                                h.items.append(item.associate_value())
+                                h.items.append(item.get_associated())
 
                     for h in hero2_group:
                         h.apply_item_bonuses()
@@ -2543,7 +2704,7 @@ def player_selection():
                     # for item in p2_items:
                     #     if item.is_selected():
                     #         for i in hero2_group:
-                    #             i.items.append(item.associate_value())
+                    #             i.items.append(item.get_associated())
                     # for i in hero2_group:
                     #     i.apply_item_bonuses()
                     #     i.enemy = [hero1]
@@ -2553,7 +2714,7 @@ def player_selection():
                     # for item in p1_items:
                     #     if item.is_selected():
                     #         for i in hero1_group:
-                    #             i.items.append(item.associate_value())
+                    #             i.items.append(item.get_associated())
                     # for i in hero1_group:
                     #     i.apply_item_bonuses()
                     #     i.enemy = [hero2]

@@ -52,32 +52,7 @@ FIRE_WIZARD_ATK3_SIZE = 0.3
 FIRE_WIZARD_SP_SIZE = 1.3
 
 class Fire_Wizard(Player):
-    def __init__(self, player_type, enemy):
-        super().__init__(player_type, enemy)
-        self.player_type = player_type # 1 for player 1, 2 for player 2
-        self.name = "Fire Wizard"
-
-        self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
-
-        # stat
-        self.strength = 40
-        self.intelligence = 40
-        self.agility = 27 # real agility = 27
-
-        # Base Stats
-        self.max_health = self.strength * self.str_mult
-        self.max_mana = self.intelligence * self.int_mult
-        self.health = self.max_health
-        self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
-        # BASIC_ATK_DAMAGE2
-
-        # Player Position
-        self.x = 50
-        self.y = 50
-        self.width = 200
-
-        # Update log for heroes
+    # Update log for heroes
 
         #wind hashashin
         # Skill 1: (10, 0) = 10 -> (8, 0) = 8
@@ -191,6 +166,34 @@ class Fire_Wizard(Player):
         # fire wizard update 12/9/25
         # trait: dmg_mult 20% -> 10% (20% is not actually implemented, too OP)
         # Skill 2: reverted back to original version with rework
+        
+    def __init__(self, player_type, enemy):
+        super().__init__(player_type, enemy)
+        self.player_type = player_type # 1 for player 1, 2 for player 2
+        self.name = "Fire Wizard"
+
+        self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
+
+        # stat
+        self.strength = 40
+        self.intelligence = 40
+        self.agility = 27 # real agility = 27
+
+        self.health_regen = self.regen_per_second(1.2)
+        self.mana_regen = self.regen_per_second(5.7)
+
+        # Base Stats
+        self.max_health = self.strength * self.str_mult
+        self.max_mana = self.intelligence * self.int_mult
+        self.health = self.max_health
+        self.mana = self.max_mana
+        self.basic_attack_damage = self.agility * self.agi_mult
+        # BASIC_ATK_DAMAGE2
+
+        # Player Position
+        self.x = 50
+        self.y = 50
+        self.width = 200
 
 
         #mana cost

@@ -63,6 +63,9 @@ class Water_Princess(Player):
         self.intelligence = 48
         self.agility = 20 # real agility = 20
 
+        self.health_regen = self.regen_per_second(1.2)
+        self.mana_regen = self.regen_per_second(6.5)
+
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
         self.max_mana = (self.intelligence * self.int_mult)

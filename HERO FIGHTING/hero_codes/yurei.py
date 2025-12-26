@@ -34,6 +34,9 @@ class Yurei(Player):
         self.strength = 36
         self.intelligence = 40
         self.agility = 23
+
+        self.health_regen = self.regen_per_second(1.1)
+        self.mana_regen = self.regen_per_second(5.9)
         
 
         self.base_max_mana = self.intelligence * self.int_mult

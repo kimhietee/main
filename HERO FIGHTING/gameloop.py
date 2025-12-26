@@ -697,13 +697,14 @@ def game(bg=None):
             pygame.draw.rect(main.screen, main.black, ground)
 
 
-            for icons in main.p1_select:
-                if icons.is_selected():
-                    icons.draw_icon(size=(75, 75))
-        
-            for icons in main.p2_select:
-                if icons.is_selected():
-                    icons.draw_icon(size=(main.width - 75, 75))
+            # Draw selected hero icons in-game (top corners)
+            for selector in main.p1_select:
+                if selector.is_selected():
+                    selector.draw_icon(center_pos=(75, 75))  # Top-left
+
+            for selector in main.p2_select:
+                if selector.is_selected():
+                    selector.draw_icon(center_pos=(width - 75, 75))  # Top-righ
 
             for i, item in enumerate(item_list(main.p1_items)):
                 item.draw_icon(item_pos=(150+(50*i), 100), hero_icon=False)
@@ -723,6 +724,8 @@ def game(bg=None):
                     cube['bonus_amount'],
                     cube['sound']
                 )
+
+
 
 
             timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)

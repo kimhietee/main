@@ -85,6 +85,9 @@ class Wind_Hashashin(Player):
         self.intelligence = 40
         self.agility = 13 #(13*4=52)
 
+        self.health_regen = self.regen_per_second(1.2)
+        self.mana_regen = self.regen_per_second(6.1)
+
         # Base Stats
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult

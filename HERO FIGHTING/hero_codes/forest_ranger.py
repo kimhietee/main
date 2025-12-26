@@ -95,6 +95,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.strength = 32
         self.intelligence = 52
         self.agility = 35 # = 48
+
+        self.health_regen = self.regen_per_second(1.1)
+        self.mana_regen = self.regen_per_second(5.9)
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult

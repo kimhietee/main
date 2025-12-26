@@ -71,7 +71,7 @@ class Chthulu(Player):
         self.int_mult += 0.5
         self.agi_mult += 0.05
 
-        self.health_regen = self.regen_per_second(1.4)
+        self.health_regen = self.regen_per_second(1.3)
         self.mana_regen = self.regen_per_second(5.8)
 
         # Base Stats

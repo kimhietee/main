@@ -422,6 +422,7 @@ def item_list(itemlist): # at least it works, not reusable tho
     value_list = []
     for i, item in enumerate(itemlist):
         if item.is_selected():
+            item.decor_rect.width, item.decor_rect.height = 300, 300
             value_list.append(item)
     return value_list
 

@@ -37,7 +37,7 @@ import heroes as main
 import Animate_BG
 
 import key
-
+from player import display_inputs
 
 key.write_settings()
 
@@ -1267,20 +1267,20 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
     
    
 
-    basic_atk_btn_p1 = RectButton(width*base_width, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[4][1],button_width,button_height,0)
-    sp_skill_btn_p1 = RectButton(width*base_width, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[5][1],button_width,button_height,0)
+    basic_atk_btn_p1 = RectButton(width*base_width, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[4][1]),button_width,button_height,0)
+    sp_skill_btn_p1 = RectButton(width*base_width, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[5][1]),button_width,button_height,0)
 
 
    
-    skill_1_btn_p1 = RectButton(width*base_width,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[0][1],button_width,button_height,0)
-    skill_2_btn_p1 = RectButton(width*(base_width + w_gap),       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[1][1],button_width,button_height,0)
-    skill_3_btn_p1 = RectButton(width*(base_width + (w_gap *2)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[2][1],button_width,button_height,0)
-    skill_4_btn_p1 = RectButton(width*(base_width + (w_gap *3)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[3][1],button_width,button_height,0)
+    skill_1_btn_p1 = RectButton(width*base_width,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[0][1]),button_width,button_height,0)
+    skill_2_btn_p1 = RectButton(width*(base_width + w_gap),       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[1][1]),button_width,button_height,0)
+    skill_3_btn_p1 = RectButton(width*(base_width + (w_gap *2)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[2][1]),button_width,button_height,0)
+    skill_4_btn_p1 = RectButton(width*(base_width + (w_gap *3)),  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[3][1]),button_width,button_height,0)
 
     
-    left_move_btn_p1 = RectButton(width*(base_width + w_gap), height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[7][1],button_width,button_height,0)
-    jump_btn_p1 = RectButton(width*(base_width + 2*w_gap), height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[6][1],button_width,button_height,0)
-    right_move_btn_p1 = RectButton(width*(base_width + 3*w_gap) , height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[8][1],button_width,button_height,0)
+    left_move_btn_p1 = RectButton(width*(base_width + w_gap), height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[7][1]),button_width,button_height,0)
+    jump_btn_p1 = RectButton(width*(base_width + 2*w_gap), height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[6][1]),button_width,button_height,0)
+    right_move_btn_p1 = RectButton(width*(base_width + 3*w_gap) , height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[8][1]),button_width,button_height,0)
 
 
     # w_gap = 0.1
@@ -1291,19 +1291,19 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
     # button_width = 60
     # button_height = 60
     
-    skill_1_btn_p2 = RectButton(width*base_width + width_half,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[9][1],button_width,button_height,0)
-    skill_2_btn_p2 = RectButton(width*(base_width + w_gap) + width_half,       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[10][1],button_width,button_height,0)
-    skill_3_btn_p2 = RectButton(width*(base_width + (w_gap *2)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[11][1],button_width,button_height,0)
-    skill_4_btn_p2 = RectButton(width*(base_width + (w_gap *3)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[12][1],button_width,button_height,0)
+    skill_1_btn_p2 = RectButton(width*base_width + width_half,               height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[9][1]),button_width,button_height,0)
+    skill_2_btn_p2 = RectButton(width*(base_width + w_gap) + width_half,       height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[10][1]),button_width,button_height,0)
+    skill_3_btn_p2 = RectButton(width*(base_width + (w_gap *2)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[11][1]),button_width,button_height,0)
+    skill_4_btn_p2 = RectButton(width*(base_width + (w_gap *3)) + width_half,  height*(base_height + 2.5*h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[12][1]),button_width,button_height,0)
 
 
-    basic_atk_btn_p2 = RectButton(width*base_width + width_half, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[13][1],button_width,button_height,0)
-    sp_skill_btn_p2 = RectButton(width*base_width + width_half, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[14][1],button_width,button_height,0)
+    basic_atk_btn_p2 = RectButton(width*base_width + width_half, height*base_height, r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[13][1]),button_width,button_height,0)
+    sp_skill_btn_p2 = RectButton(width*base_width + width_half, height*(base_height + h_gap) , r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[14][1]),button_width,button_height,0)
 
 
-    left_move_btn_p2 = RectButton(width*(base_width + w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[16][1],button_width,button_height,0)
-    jump_btn_p2 = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[15][1],button_width,button_height,0)
-    right_move_btn_p2 = RectButton(width*(base_width + 3*w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), new_key[17][1],button_width,button_height,0)
+    left_move_btn_p2 = RectButton(width*(base_width + w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[16][1]),button_width,button_height,0)
+    jump_btn_p2 = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[15][1]),button_width,button_height,0)
+    right_move_btn_p2 = RectButton(width*(base_width + 3*w_gap) + width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), display_inputs(new_key[17][1]),button_width,button_height,0)
 
     temp_button = RectButton(width*(base_width + 2*w_gap)+ width_half, height*(base_height + h_gap), r'assets\font\slkscr.ttf', int(height * 0.05), (0, 255, 0), "UwU",button_width,button_height,0)
     
@@ -1431,6 +1431,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                     can_click = True
                                     opacity = 0
                                     display_confirmation = False
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if swapconfirm_no.is_clicked(mouse_pos):
                     can_click = True
@@ -1540,14 +1541,14 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                     if keys[key_index] == True:
                         # print([x[1].upper() for x in new_key])
                         key_name = pygame.key.name(key_index).upper()
-                        if key_name == "UP":
-                                key_name = "^"
-                        elif key_name == "DOWN":
-                                key_name = r"\/"
-                        elif key_name  == "LEFT":
-                                key_name = "<"
-                        elif key_name == "RIGHT":
-                                key_name = ">"
+                        # if key_name == "UP":
+                        #         key_name = "^"
+                        # elif key_name == "DOWN":
+                        #         key_name = r"\/"
+                        # elif key_name  == "LEFT":
+                        #         key_name = "<"
+                        # elif key_name == "RIGHT":
+                        #         key_name = ">"
                          
                         if key_name not in key_store:
                             
@@ -1644,6 +1645,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
         jump_btn_p2.update(mouse_pos, key.detect_key_skill['read_jump_p2'])
         left_move_btn_p2.update(mouse_pos, key.detect_key_skill['read_left_move_p2'])
         right_move_btn_p2.update(mouse_pos, key.detect_key_skill['read_right_move_p2'])
+        temp_button.update(mouse_pos, False)
 
 
 
@@ -1748,7 +1750,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 def update_key_display(key_list, new_key):
     
     for index,key in enumerate(key_list):
-        key.text = new_key[index][1]
+        key.text = display_inputs(new_key[index][1])
 
 
 

@@ -74,6 +74,19 @@ special
 4th 70
 '''
 
+
+def display_inputs(key):
+        preset = ["^", "\/", "<", ">"]
+        for index, i in enumerate(["UP", "DOWN", "LEFT", "RIGHT"]):
+            if i == key:
+                return preset[index]
+        return key
+
+
+
+
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, player_type, enemy):
         super().__init__()
@@ -2110,6 +2123,8 @@ class Player(pygame.sprite.Sprite):
             target = self.rect.centerx + (position_fallback if self.facing_right else -position_fallback)  # Default to casting in front
         return target, target_detected
     
+
+    
     # ------------------------ Core Player Input Methods ------------------------
     
     def inputs(self,):
@@ -2119,18 +2134,18 @@ class Player(pygame.sprite.Sprite):
         keybinds=key.read_settings()
         self.keys = pygame.key.get_pressed()
         self.input(
-            (self.keys[keybinds['skill_1_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['skill_1_p2'][0]]), 
-            (self.keys[keybinds['skill_2_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['skill_2_p2'][0]]), 
-            (self.keys[keybinds['skill_3_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['skill_3_p2'][0]]), 
-            (self.keys[keybinds['skill_4_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['skill_4_p2'][0]]),
+            (display_inputs(self.keys[keybinds['skill_2_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['skill_2_p2'][0]])), 
+            (display_inputs(self.keys[keybinds['skill_3_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['skill_3_p2'][0]])), 
+            (display_inputs(self.keys[keybinds['skill_1_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['skill_1_p2'][0]])), 
+            (display_inputs(self.keys[keybinds['skill_4_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['skill_4_p2'][0]])),
 
-            (self.keys[keybinds['right_move_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['right_move_p2'][0]]),
-            (self.keys[keybinds['left_move_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['left_move_p2'][0]]),
-            (self.keys[keybinds['jump_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['jump_p2'][0]]),
+            (display_inputs(self.keys[keybinds['right_move_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['right_move_p2'][0]])),
+            (display_inputs(self.keys[keybinds['left_move_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['left_move_p2'][0]])),
+            (display_inputs(self.keys[keybinds['jump_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['jump_p2'][0]])),
 
-            (self.keys[keybinds['basic_atk_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['basic_atk_p2'][0]]),
+            (display_inputs(self.keys[keybinds['basic_atk_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['basic_atk_p2'][0]])),
 
-            (self.keys[keybinds['sp_skill_p1'][0]]) if self.player_type == 1 else (self.keys[keybinds['sp_skill_p2'][0]])
+            (display_inputs(self.keys[keybinds['sp_skill_p1'][0]])) if self.player_type == 1 else (display_inputs(self.keys[keybinds['sp_skill_p2'][0]]))
             )
 #sp=-0.1, default=-0.2 jump=-0.05
     def player_movement(self, right_hotkey, left_hotkey, jump_hotkey, current_time, jump_force, speed_modifier=0, special_active_speed=0.1, jump_force_modifier=0):

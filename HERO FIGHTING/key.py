@@ -20,8 +20,6 @@ data = {
 
 
 
-
-
 "skill_1_p2" : (pygame.K_u,"U"),
 "skill_2_p2" : (pygame.K_i,"I"),
 "skill_3_p2" : (pygame.K_o,"O"),
@@ -30,9 +28,9 @@ data = {
 "basic_atk_p2" : (pygame.K_l,"L"),
 "sp_skill_p2" : (pygame.K_k,"K"),
 
-"jump_p2" : (pygame.K_UP,"^"),
-"left_move_p2" : (pygame.K_LEFT,"<"),
-"right_move_p2" : (pygame.K_RIGHT,">"),
+"jump_p2" : (pygame.K_UP,"UP"),
+"left_move_p2" : (pygame.K_LEFT,"LEFT"),
+"right_move_p2" : (pygame.K_RIGHT,"RIGHT"),
 
 
 }

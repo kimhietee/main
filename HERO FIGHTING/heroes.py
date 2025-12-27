@@ -228,6 +228,7 @@ from global_vars import (IMMEDIATE_RUN,
 
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped, load_attack, load_attack_flipped
 from player import Player
+from player import display_inputs
 from button import ImageButton
 from bot_ai import create_bot
 import Animate_BG
@@ -385,19 +386,19 @@ class Attacks:
         keybinds=key.read_settings()
         key_text = ""
         if player_type == 1:
-            key_text = keybinds['skill_1_p1'][1] if self.skill_rect == hero1.skill_1_rect else \
-                    keybinds['skill_2_p1'][1] if self.skill_rect == hero1.skill_2_rect else \
-                    keybinds['skill_3_p1'][1] if self.skill_rect == hero1.skill_3_rect else \
-                    keybinds['skill_4_p1'][1] if self.skill_rect == hero1.skill_4_rect else \
-                    keybinds['basic_atk_p1'][1] if self.skill_rect == hero1.basic_icon_rect else \
-                    keybinds['sp_skill_p1'][1] if self.skill_rect == hero1.special_rect else ""
+            key_text = display_inputs(keybinds['skill_1_p1'][1]) if self.skill_rect == hero1.skill_1_rect else \
+                    display_inputs(keybinds['skill_2_p1'][1]) if self.skill_rect == hero1.skill_2_rect else \
+                    display_inputs(keybinds['skill_3_p1'][1]) if self.skill_rect == hero1.skill_3_rect else \
+                    display_inputs(keybinds['skill_4_p1'][1]) if self.skill_rect == hero1.skill_4_rect else \
+                    display_inputs(keybinds['basic_atk_p1'][1]) if self.skill_rect == hero1.basic_icon_rect else \
+                    display_inputs(keybinds['sp_skill_p1'][1]) if self.skill_rect == hero1.special_rect else ""
         elif player_type == 2:
-            key_text = keybinds['skill_1_p2'][1] if self.skill_rect == hero2.skill_1_rect else \
-                    keybinds['skill_2_p2'][1] if self.skill_rect == hero2.skill_2_rect else \
-                    keybinds['skill_3_p2'][1] if self.skill_rect == hero2.skill_3_rect else \
-                    keybinds['skill_4_p2'][1] if self.skill_rect == hero2.skill_4_rect else \
-                    keybinds['basic_atk_p2'][1] if self.skill_rect == hero2.basic_icon_rect else \
-                    keybinds['sp_skill_p2'][1] if self.skill_rect == hero2.special_rect else ""
+            key_text = display_inputs(keybinds['skill_1_p2'][1]) if self.skill_rect == hero2.skill_1_rect else \
+                    display_inputs(keybinds['skill_2_p2'][1]) if self.skill_rect == hero2.skill_2_rect else \
+                    display_inputs(keybinds['skill_3_p2'][1]) if self.skill_rect == hero2.skill_3_rect else \
+                    display_inputs(keybinds['skill_4_p2'][1]) if self.skill_rect == hero2.skill_4_rect else \
+                    display_inputs(keybinds['basic_atk_p2'][1]) if self.skill_rect == hero2.basic_icon_rect else \
+                    display_inputs(keybinds['sp_skill_p2'][1]) if self.skill_rect == hero2.special_rect else ""
 
         # Existing logic for drawing the skill icon
         if not self.special_skill:
@@ -2492,9 +2493,6 @@ def player_selection():
                         equipped_items.update()
                         # print(equipped_items.item)
 
-
-
-
                             # print(item.original_pos)    
                             # print(item.target_pos)
                             
@@ -2508,20 +2506,8 @@ def player_selection():
                             item.class_item.update(mouse_pos)
 
 
-
-
-
-
                     # randoms = [1,5,7,8]
                     # p1_items[randoms[0]].selected = True
-
-
-
-
-
-
-
-
 
 
                     # hero1 bot Option (has all_items) draws hard mode option

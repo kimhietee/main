@@ -100,8 +100,12 @@ class Player(pygame.sprite.Sprite):
         self.slow_source = None
         self.slow_speed = 0
         self.silenced = False
+
         self.str_mult = 5
         self.int_mult = 5
+        
+        self.hp_regen_per_str = 0.01
+        self.mana_regen_per_int = 0.01
         self.agi_mult = 0.1
 
         # stat
@@ -517,6 +521,28 @@ class Player(pygame.sprite.Sprite):
     def display_items(self):
         pass
 
+    def apply_stat_regen_rates(self, rate, stat):
+        '''Called by apply_item_bonuses() after the stats(str,int, agi) is done calculated.'''
+        return rate * stat
+    
+    def calculate_regen(self, base_regen=None, rate=0, stat=0, basic_attack=False):
+        '''
+        If base regen is None, applies the base_regen for the hero. (startup calculation)
+        Leave blank if only apply the rate and stat.(for adding item bonuses)
+
+        For calculating the attack damage, make the basic_attack True so it doesn't divide into fps (will use actual value)
+        
+        base_attack_damage + agility * agi_mult : is the attack damage '''
+        if base_regen is not None:
+            if basic_attack: # don't divide into fps (actual value)
+                return base_regen + self.apply_stat_regen_rates(rate, stat)
+            else: # for hp and mana
+                return self.regen_per_second(base_regen + self.apply_stat_regen_rates(rate, stat))
+        else:# only for adding bonuses (doesn't use base_regen) 
+            if basic_attack:  # don't divide into fps (actual value)
+                self.apply_stat_regen_rates(rate, stat)
+            else: # for hp and mana
+                return self.regen_per_second(self.apply_stat_regen_rates(rate, stat))
 
     def apply_item_bonuses(self):
         '''misc - apply item bonuses (avoid noisy prints for performance)
@@ -537,6 +563,7 @@ class Player(pygame.sprite.Sprite):
                     self.strength += val
                     self.max_health = self.str_mult * self.strength
                     self.health = self.max_health  # Reset if needed
+                    self.health_regen += self.calculate_regen(rate=self.hp_regen_per_str, stat=val)
 
                 elif base_stat == "int":
                     self.intelligence += val
@@ -2245,6 +2272,10 @@ class Player(pygame.sprite.Sprite):
             self.player_jump_index_flipped = 0  
         self.inputs()
         self.move_to_screen()  
+        print(self.health_regen*60)
+        print(self.mana_regen*60)
+        print(self.basic_attack_damage)
+        print('aaaaaaaaaaaaaaaaaaaaaaaaa')
         # -----------------------------
             # print(self.slowed, 'default:', self.default_speed)
             # print('current:', self.speed)

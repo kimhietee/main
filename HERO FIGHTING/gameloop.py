@@ -393,7 +393,7 @@ def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=M
             fade_alpha = min(255, int((fade_elapsed / fade_duration) * 255))
             fade_overlay.set_alpha(fade_alpha)
             screen.blit(fade_overlay, (0, 0)) if not immediate_load else None
-            print(fade_alpha, not immediate_load)
+            # print(fade_alpha, not immediate_load)
             if fade_alpha >= 255 and not immediate_load:
                 action()
                 fading = False
@@ -735,9 +735,9 @@ def game(bg=None):
                     selector.draw_icon(center_pos=(width - 75, 75))  # Top-righ
 
             for i, item in enumerate(item_list(main.p1_items)):
-                item.draw_icon(item_pos=(150+(50*i), 100), hero_icon=False)
+                item.draw_icon((150+(50*i), 100), small=True)
             for i, item in enumerate(item_list(main.p2_items)):
-                item.draw_icon(item_pos=(main.width-(150+(50*i)), 100), hero_icon=False)
+                item.draw_icon((main.width-(150+(50*i)), 100), small=True)
         
             for cube in cubes:
                 cube['fall'], cube['x'] = handle_cube(
@@ -1528,7 +1528,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                     temp_value = not key.detect_key_skill['read_right_move_p2']
                     refresh_key(key.detect_key_skill)
                     key.detect_key_skill['read_right_move_p2'] = temp_value
-
+    
 
         # print(type(keys))
             

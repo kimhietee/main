@@ -178,16 +178,24 @@ class Fire_Wizard(Player):
         self.strength = 40
         self.intelligence = 40
         self.agility = 27 # real agility = 27
+        
+        self.base_health_regen = 1.2
+        self.base_mana_regen = 5.7
+        self.base_attack_damage = 0.1
 
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(5.7)
-
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength)
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence)
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True)
+        print(self.health_regen*60)
+        print(self.mana_regen*60)
+        print(self.basic_attack_damage)
+        print('aaaaaaaaaaaaaaaaaaaaaaaaa')
         # Base Stats
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
+        
         # BASIC_ATK_DAMAGE2
 
         # Player Position
@@ -836,27 +844,26 @@ class Fire_Wizard(Player):
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
-                        attack = Attack_Display(
-                            x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
-                            y=self.rect.centery + 40,
-                            frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
-                            frame_duration=BASIC_FRAME_DURATION,
-                            repeat_animation=2,
-                            speed=0,
-                            dmg=self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS,
-                            final_dmg=0,
-                            who_attacks=self,
-                            who_attacked=self.enemy,
+                        
+                        for i in [200, 900]:
+                            attack = Attack_Display(
+                                x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
+                                y=self.rect.centery + 40,
+                                frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
+                                frame_duration=BASIC_FRAME_DURATION,
+                                repeat_animation=1,
+                                speed=0,
+                                dmg=self.basic_attack_damage  * DEFAULT_BASIC_ATK_DMG_BONUS,
+                                final_dmg=0,
+                                who_attacks=self,
+                                who_attacked=self.enemy,
 
-                            sound=(True, self.basic_sound, None, None),
-                            delay=(True, self.basic_attack_animation_speed * (200 / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
-                            moving=True,
-
-                            hitbox_scale_x=0.4
-                            ,hitbox_scale_y=0.4
-                            ,is_basic_attack=True
-                            )
-                        attack_display.add(attack)
+                                sound=(True, self.basic_sound, None, None),
+                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                                moving=True,
+                                is_basic_attack=True
+                                )
+                            attack_display.add(attack)
                         self.mana -= 0
                         self.attacks_special[4].last_used_time = current_time
                         self.running = False

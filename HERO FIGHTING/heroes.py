@@ -1774,7 +1774,7 @@ items = [
 
 
     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
-         ['dmg_return_per'], [0.20],
+         ['dmg_return_per', 'str_flat'], [0.20, 30],
          description="Returns 20% of damage taken to attacker."),
 
     Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
@@ -2413,8 +2413,8 @@ def player_selection():
                             highlight_x = item.original_pos[0] + item.highlight_offset[0]
                             highlight_y = item.original_pos[1] + item.highlight_offset[1]
                             item.set_position((highlight_x, highlight_y))
-                            print(item.original_pos)    
-                            print(item.target_pos)
+                            # print(item.original_pos)    
+                            # print(item.target_pos)
                             
 
 
@@ -2436,27 +2436,6 @@ def player_selection():
 
                     # randoms = [1,5,7,8]
                     # p1_items[randoms[0]].selected = True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
                     # hero1 bot Option (has all_items) draws hard mode option

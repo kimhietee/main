@@ -31,6 +31,9 @@ class Phantom_Assasin(Player):
         self.intelligence = 40
         self.agility = 30
 
+        self.health_regen = self.regen_per_second(1.2)
+        self.mana_regen = self.regen_per_second(5.7)
+
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION
 

@@ -1779,7 +1779,7 @@ items = [
 
 
     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
-         ['dmg_return_per'], [0.20],
+         ['dmg_return_per', 'str_flat'], [0.20, 30],
          description="Returns 20% of damage taken to attacker."),
 
     Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 

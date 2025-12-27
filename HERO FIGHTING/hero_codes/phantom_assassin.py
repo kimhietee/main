@@ -105,7 +105,7 @@ class Phantom_Assasin(Player):
         atk4 = [r'sample', self.attack_frames['atk4frames'], False]
         
         # Skill Icons Source
-        default_skill_size = (ICON_WIDTH, ICON_HEIGHT)
+        default_skill_size = (ICON_WIDTH, ICON_HEIGHT) #touple type shi
         sk_1 = [r'sample', default_skill_size]
         sk_2 = [r'sample', default_skill_size]
         sk_3 = [r'sample', default_skill_size]

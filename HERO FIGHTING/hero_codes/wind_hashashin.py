@@ -85,15 +85,26 @@ class Wind_Hashashin(Player):
         self.intelligence = 40
         self.agility = 13 #(13*4=52)
 
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(6.1)
+
+
+        self.base_health_regen = 0.8 # 1.2
+        self.base_mana_regen = 6.05 # 6.53
+        self.base_attack_damage = 0.0 # 2.0
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 38 * 0.01 = 1.2
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.1 + 40 * 0.01 = 5.5
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 13 * 0.1 = 1.3
 
         # Base Stats
-        self.max_health = self.strength * self.str_mult
-        self.max_mana = self.intelligence * self.int_mult
+        self.max_health = (self.strength * self.str_mult)
+        self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
+
+        self.health_regen = self.regen_per_second(1.2)
+        self.mana_regen = self.regen_per_second(5.5)
+
+
 
         # Player Position
         self.x = 50
@@ -102,11 +113,11 @@ class Wind_Hashashin(Player):
 
         percen = 0.15
         base1 = 50
-        base2 = 70 #80 -> 70
-        base3 = 130 #140 -> 130
+        base2 = 70 #80
+        base3 = 130 #140
         base4 = 200
 
-        self.atk1_mana_cost = int(base1 - (base1 * percen))
+        self.atk1_mana_cost = int(base1 - (base1 * percen)) # 47 !
         self.atk2_mana_cost = int(base2 - (base2 * percen))
         self.atk3_mana_cost = int(base3 - (base3 * percen))
         self.sp_mana_cost = int(base4 - (base4 * percen))

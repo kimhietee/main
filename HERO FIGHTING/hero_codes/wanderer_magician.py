@@ -421,7 +421,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frame_duration=100,
                             repeat_animation=5,
                             speed=7 if self.facing_right else -7,
-                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10]) * 3,
+                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10]) * 3, #30% chance for non crit, 50% chance for crit 2x, 10% chance for super crit 3x and 10% change for super mega crit 4x
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,

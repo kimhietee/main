@@ -59,19 +59,38 @@ class Water_Princess(Player):
         self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
 
         # stat
-        self.strength = 40
+        self.strength = 40 
         self.intelligence = 48
         self.agility = 20 # real agility = 20
 
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(6.5)
+        #base attack instances
+        self.atk_instance = [1.5, 1.0, 5.0] #multiplier for basic attacks # TOTAL ATTACK DMG = 15.0
+        # 1st atk = 2.0*1.5 = 3
+        # 2nd atk = 2.0 = 2
+        # 3rd atk = 2.0 * 5 = 10
+        
+
+        #special attack instances
+        sp_mult_atk = 1.2
+        self.special_instance = [1.5 * sp_mult_atk, 1.0 * sp_mult_atk, 5.0 * sp_mult_atk] #multiplier for basic attacks
+        # 1st atk = 2.0*1.8 = 3.6
+        # 2nd atk = 2.0 *1.2= 2.4
+        # 3rd atk = 2.0 * 6 = 12
+
+        
+        self.base_health_regen = 0.8 # 1.2
+        self.base_mana_regen = 6.05 # 6.53
+        self.base_attack_damage = 0.0 # 2.0
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.05 + 48 * 0.01 = 6.53
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 20 * 0.1 = 2.0
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
 
         # self.basic_atk1_dmg = self.basic_attack_damage*5
         # self.basic_atk2_dmg = self.basic_attack_damage*1.5
@@ -784,9 +803,9 @@ class Water_Princess(Player):
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks[4].is_ready():
                         for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5),
-                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5)
+                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.atk_instance[0]),
+                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.atk_instance[1]),
+                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*self.atk_instance[2])
                             
                             ]:
                             attack = Attack_Display(
@@ -1142,9 +1161,9 @@ class Water_Princess(Player):
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
                     if self.mana >= 0 and self.attacks_special[4].is_ready():
                         for i in [
-                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*1.5,(False, 1, 1)),
-                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage,(False, 1, 1)),
-                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*5,(True, 1, 1))
+                            (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.special_instance[0],(False, 1, 1)),
+                            (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.special_instance[1],(False, 1, 1)),
+                            (2000, self.basic_atk1, self.basic_atk1_flipped, 80, (60, 75, 0.75, 0.2), self.basic_attack_damage*self.special_instance[2],(True, 1, 1))
                             
                             ]:
                             attack = Attack_Display(

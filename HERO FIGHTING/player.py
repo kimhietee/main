@@ -1965,7 +1965,7 @@ class Player(pygame.sprite.Sprite):
         """Returns True if player is jumping or dead."""
         return self.jumping or self.is_dead()
 
-    def is_moving(self):
+    def is_moving(self) -> bool:
         """Returns True if player is currently moving horizontally."""
         return self.running
 
@@ -1973,8 +1973,7 @@ class Player(pygame.sprite.Sprite):
         """Returns True if player is currently facing right."""
         return self.facing_right
     
-    
-    def regen_per_second(self, amount, fps=FPS):
+    def regen_per_second(self, amount, fps=FPS) -> float:
         return amount / fps
 
 

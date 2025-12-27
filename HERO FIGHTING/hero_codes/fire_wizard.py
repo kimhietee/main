@@ -177,22 +177,27 @@ class Fire_Wizard(Player):
         # stat
         self.strength = 40
         self.intelligence = 40
-        self.agility = 27 # real agility = 27
+        self.agility = 26 # real agility = 27
         
-        self.base_health_regen = 1.2
-        self.base_mana_regen = 5.7
-        self.base_attack_damage = 0.1
+        # hp = 1.0, mana = 6.0, atk = 0.1
+        self.base_health_regen = 0.8 # +0.4 = 1.2
+        self.base_mana_regen = 5.3 # +0.4 = 5.7
+        self.base_attack_damage = 0.1 # +2.6 = 2.7
 
-        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength)
-        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence)
-        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True)
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.3 + 40 * 0.01 = 5.7
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.1 + 26 * 0.1 = 2.7
+        
+        #2 attack per basic attack (5.6 DPS)
+
         print(self.health_regen*60)
         print(self.mana_regen*60)
         print(self.basic_attack_damage)
         print('aaaaaaaaaaaaaaaaaaaaaaaaa')
         # Base Stats
-        self.max_health = self.strength * self.str_mult
-        self.max_mana = self.intelligence * self.int_mult
+        self.max_health = self.strength * self.str_mult #40 * 5 = 200HP (max)
+        self.max_mana = self.intelligence * self.int_mult #40 * 5 = 200Mana (max)
         self.health = self.max_health
         self.mana = self.max_mana
         

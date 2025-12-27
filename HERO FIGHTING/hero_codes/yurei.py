@@ -34,15 +34,22 @@ class Yurei(Player):
         self.strength = 36
         self.intelligence = 40
         self.agility = 23
+        
+        self.base_health_regen = 0.75 # ?
+        self.base_mana_regen = 5.6 # ?
+        self.base_attack_damage = 0.0 # 2.0
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.05 + 48 * 0.01 = 6.53
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 20 * 0.1 = 2.0
+
 
         self.health_regen = self.regen_per_second(1.1)
         self.mana_regen = self.regen_per_second(5.9)
         
-
-        self.base_max_mana = self.intelligence * self.int_mult
         
         self.max_health = self.strength * self.str_mult
-        self.max_mana = self.base_max_mana
+        self.max_mana = self.intelligence * self.int_multself.base_max_mana
         # self.special_default_max_mana = self.max_mana # max mana and this variable mustt  be the same
         self.special_bonus_mana = 240
         self.health = self.max_health

@@ -45,8 +45,11 @@ random_pick_p2 = False
 MAIN_VOLUME = 0.05
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 40
+MAX_ITEM = 3
 # MAX DEFAULT ITEM = 3
+
+item_equip_hashmap = [(x*100)-21 for x in range(1,MAX_ITEM+1)]
+
 
 hitboxanddistance = False
 show_bot_skills = False

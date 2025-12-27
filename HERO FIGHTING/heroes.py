@@ -31,7 +31,8 @@ step 1: add to player selector
 '''
 Guide on making an attack:
 
-sample code from wind hashashin atk 4
+sample code from wind 
+ashin atk 4
 
 attack = Attack_Display(
     x=hero1.x_pos if self.player_type == 1 else hero2.x_pos, # in front of him
@@ -222,7 +223,7 @@ from global_vars import (IMMEDIATE_RUN,
     DISABLE_MANA_REGEN,
     attack_display, MULT, dmg_mult,
 
-    ZERO_WIDTH, TOTAL_WIDTH
+    ZERO_WIDTH, TOTAL_WIDTH, item_equip_hashmap
 )
 
 from sprite_loader import SpriteSheet, SpriteSheet_Flipped, load_attack, load_attack_flipped
@@ -260,6 +261,9 @@ hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cst
 mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1))
 hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1))
 mana_icon_p2_rect = mana_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos3)+1))
+
+
+
 
 def draw_hp_mana_icons():
     screen.blit(hp_icon, hp_icon_p1_rect)
@@ -1820,6 +1824,26 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
 }
 
 
+class EquippedItem:
+    def __init__(self, items_list):
+        self.item = []
+        self.items_list = items_list  # List of Item instances
+
+
+    def add(self, item):
+        indexed = len(self.item)
+        if indexed < MAX_ITEM:
+            self.item.append(item)
+
+    def update(self):
+        for i in self.item:
+            if i.selected == False:
+                self.item.remove(i)
+        # print("updating")
+        for i, item in enumerate(self.item):
+            
+            
+            item.set_position((item_equip_hashmap[i], height-50))    
 
 
 class PlayerSelector:
@@ -1875,9 +1899,12 @@ class PlayerSelector:
             self.profile_rect.centery - decor_offset[1],
             *decor_size
         )
-
+        self.can_move_back = False
+        self.can_move = True
         self.hovered = False
         self.selected = False
+        self.move_variable = False
+        self.move_back_variable = False
 
         self.original_pos = center_pos
         self.target_pos = center_pos
@@ -1903,6 +1930,7 @@ class PlayerSelector:
             new_center (tuple): New (x, y) center.
             instant (bool): If True, snap immediately (bypass lerp).
         """
+     
         if instant:
             self.target_pos = new_center
             self._apply_position(new_center)
@@ -1922,21 +1950,53 @@ class PlayerSelector:
         if hasattr(self.class_item, 'set_position'):
             self.class_item.set_position(center)
 
+
+    def enable_movement(self):
+        """Allow movement after animation completes."""
+        while self.move_variable:
+            if not self.can_move and not self.can_move_back:
+                        self.can_move_back = True
+            self.move_variable = False
+
+        while self.move_back_variable:
+            if not self.can_move_back and not self.can_move:
+                        self.can_move = True
+            self.move_back_variable = False
+            print(self.can_move, self.can_move_back)
+
+
+
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=MAX_ITEM):
         # Smooth movement toward target
         
         if self.profile_rect.center != self.target_pos:
+            
             current = list(self.profile_rect.center)
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
 
             # If very close, snap exactly to avoid drift
-            if abs(dx) < 0.5 and abs(dy) < 0.5:
+            if abs(dx * self.move_speed) < 0.5 and abs(dy * self.move_speed) < 0.5:
+                
+
+                
+                self.enable_movement()
                 self._apply_position(self.target_pos)
+
+                self.enable_movement()
+
+
             else:
                 # Normal smooth movement
-                current[0] += dx * self.move_speed
-                current[1] += dy * self.move_speed
+                if abs(dx) > 10:
+                    current[0] += (dx * self.move_speed)
+                else:
+                    current[0] += (dx * 0.3)
+                if abs(dy) > 10:
+                    current[1] += (dy * self.move_speed)
+                else:
+                    current[1] += (dy * 0.3)
+                # print(f"{current[0]} + {dx * self.move_speed}, {current[1]} + {dy * self.move_speed}")
                 
                 self._apply_position((int(current[0]), int(current[1])))
         
@@ -1948,10 +2008,18 @@ class PlayerSelector:
         can_select = selected_count < max_selected
 
         if not self.selected:
-            if self.decor_rect.collidepoint(mouse_pos) and can_select:
+            if self.decor_rect.collidepoint(mouse_pos) and can_select and self.can_move:
                 self.hovered = True
                 if mouse_pressed[0]:
+
+                    self.can_move = False
                     self.selected = True
+
+
+                    self.move_variable = True
+                    
+
+
                     highlight_pos = (
                         self.original_pos[0] + self.highlight_offset[0],
                         self.original_pos[1] + self.highlight_offset[1]
@@ -1963,12 +2031,15 @@ class PlayerSelector:
         else:
             # Show and handle deselect button
             self.back_button.draw(screen, mouse_pos)
-            if mouse_pressed[0] and self.back_button.is_clicked(mouse_pos):
-                self.selected = False
+            if mouse_pressed[0] and self.back_button.is_clicked(mouse_pos) and self.can_move_back:
+                self.move_back_variable = True
+                self.can_move_back = False
+                print(self.can_move_back)
                 self.set_position(self.original_pos)
-
-
-
+                self.selected = False
+                print(self.target_pos)
+                
+                    
     def draw(self):
         """Draw border and profile image based on state."""
         color = gold if self.selected else white if self.hovered else black
@@ -2295,7 +2366,9 @@ def player_selection():
         PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, custom_size=(200, 125)),
         PlayerSelector(global_vars.city_icon, (width/2 + (55 * 3), height - (75*3)), Animate_BG.city_bg, custom_size=(200, 125)),
     ]
-    
+
+
+    equipped_items = EquippedItem(p1_items)
     player_1_choose = True
     player_2_choose = False
     map_choose = False
@@ -2410,16 +2483,21 @@ def player_selection():
                     for item in p1_items:
                         item.update(mouse_pos, mouse_press, p1_items, max_selected=MAX_ITEM)
                         if item.selected:
-                            highlight_x = item.original_pos[0] + item.highlight_offset[0]
-                            highlight_y = item.original_pos[1] + item.highlight_offset[1]
-                            item.set_position((highlight_x, highlight_y))
+                            if item in equipped_items.item:
+                                continue
+                            indexed = len(equipped_items.item)
+                            item.set_position((item_equip_hashmap[indexed], height-100))
+                            equipped_items.add(item)
+                            
+                        equipped_items.update()
+                        # print(equipped_items.item)
+
+
+
+
                             # print(item.original_pos)    
                             # print(item.target_pos)
                             
-
-
-
-
                     for item in p1_items:
                         item.draw()
 
@@ -2436,6 +2514,14 @@ def player_selection():
 
                     # randoms = [1,5,7,8]
                     # p1_items[randoms[0]].selected = True
+
+
+
+
+
+
+
+
 
 
                     # hero1 bot Option (has all_items) draws hard mode option

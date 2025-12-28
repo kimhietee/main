@@ -190,11 +190,6 @@ class Fire_Wizard(Player):
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.1 + 26 * 0.1 = 2.7
         
         #2 attack per basic attack (5.6 DPS)
-
-        print(self.health_regen*60)
-        print(self.mana_regen*60)
-        print(self.basic_attack_damage)
-        print('aaaaaaaaaaaaaaaaaaaaaaaaa')
         # Base Stats
         self.max_health = self.strength * self.str_mult #40 * 5 = 200HP (max)
         self.max_mana = self.intelligence * self.int_mult #40 * 5 = 200Mana (max)

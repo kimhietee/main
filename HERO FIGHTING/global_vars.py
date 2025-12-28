@@ -48,7 +48,7 @@ SMOOTH_BG = False
 MAX_ITEM = 3
 # MAX DEFAULT ITEM = 3
 
-item_equip_hashmap = [(x*100)-21 for x in range(1,MAX_ITEM+1)]
+item_equip_hashmap = [(x*100)-21 for x in range(2,MAX_ITEM+2)]
 
 
 hitboxanddistance = False

@@ -422,7 +422,6 @@ def item_list(itemlist): # at least it works, not reusable tho
     value_list = []
     for i, item in enumerate(itemlist):
         if item.is_selected():
-            item.decor_rect.width, item.decor_rect.height = 300, 300
             value_list.append(item)
     return value_list
 
@@ -731,16 +730,16 @@ def game(bg=None):
             # Draw selected hero icons in-game (top corners)
             for selector in main.p1_select:
                 if selector.is_selected():
-                    selector.draw_icon(center_pos=(75, 75))  # Top-left
+                    selector.draw_icon(center_pos=(75, 75), hero_sp=main.hero1.is_special_active())  # Top-left
 
             for selector in main.p2_select:
                 if selector.is_selected():
-                    selector.draw_icon(center_pos=(width - 75, 75))  # Top-righ
+                    selector.draw_icon(center_pos=(width - 75, 75), hero_sp=main.hero2.is_special_active())  # Top-right
 
             for i, item in enumerate(item_list(main.p1_items)):
-                item.draw_icon((150+(50*i), 100), small=True)
+                item.draw_icon((150+(50*i), 100), small='smallest')
             for i, item in enumerate(item_list(main.p2_items)):
-                item.draw_icon((main.width-(150+(50*i)), 100), small=True)
+                item.draw_icon((main.width-(150+(50*i)), 100), small='smallest')
         
             for cube in cubes:
                 cube['fall'], cube['x'] = handle_cube(
@@ -2039,6 +2038,10 @@ def reset_all():
 
         hero.x_pos = global_vars.X_POS_SPACING + random.randint(-20, 20) if hero.player_type == 1 else global_vars.DEFAULT_X_POS
         hero.y_pos = global_vars.DEFAULT_Y_POS
+        
+        # Reset item cooldowns
+        for item in hero.items:
+            item.last_used = -item.cooldown if item.cooldown > 0 else 0
         
     attack_display.empty()
 

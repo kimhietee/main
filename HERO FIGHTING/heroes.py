@@ -1539,18 +1539,39 @@ center_pos = (width / 2, height / 2)
 
 
 class Item:
-    def __init__(self, name, image_path, bonus_type, bonus_value, description=""):
+    def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, sound_path=None):
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(), (75, 75))
         self.bonus_type = bonus_type  # list, e.g., ["str_per", "str_flat", "hp_regen_per"]
         self.bonus_value = [float(v) for v in bonus_value]  # Always floats for consistency
         self.rect = self.image.get_rect(center=center_pos)
         self.description = description  # Optional description
+        self.cooldown = cooldown  # in seconds
+        self.last_used = -self.cooldown if self.cooldown > 0 else 0  # timestamp in seconds
+
+        # Attack display properties
+        if attack_frames is not None: # load frames if provided
+            self.attack_frames = self.load_img_frames(attack_frames, attack_count, starts_at_zero)
+        self.attack_frame_duration = attack_frame_duration
+        self.attack_repeat = attack_repeat
 
         self.info = {t: v for t, v in zip(self.bonus_type, self.bonus_value)}
 
         # Auto-generate display_info (user-friendly strings)
         self.display_info = self.generate_display_info()
+
+    def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
+        '''
+        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
+        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
+        '''
+        images = []
+        for i in range(count):
+            img_path = (fr'{folder}{i + 1 - starts_at_zero}.png')
+            image = pygame.image.load(img_path).convert_alpha()
+            image = pygame.transform.rotozoom(image, 0, size)
+            images.append(image)
+        return images
 
     def generate_display_info(self):
         display_map = {
@@ -1561,6 +1582,8 @@ class Item:
             "int_flat": "Intelligence",
             "agi_per": "Agility",
             "agi_flat": "Agility",
+            "all_stats_per": "All Stats",
+            "all_stats_flat": "All Stats",
             "heal_when_low": "Convalescent",
 
             # Health / Mana
@@ -1594,15 +1617,21 @@ class Item:
             "sp_increase_per": "Special Increase",
         }
         
+        # Types that are abilities and should not show values
+        ability_types = {"heal_when_low": "passive"}
+        
         info_list = []
         for typ, val in self.info.items():
             nice_name = display_map.get(typ, typ.replace("_", " ").title())  # Fallback to capitalized type
-            sign = "+" if val > 0 else ""
-            if "_per" in typ:  # Percentage
-                formatted_val = f"{sign}{val * 100:.0f}%"
-            else:  # Flat
-                formatted_val = f"{sign}{val:g}"  # :g trims decimals
-            info_list.append(f"{nice_name}: {formatted_val}")
+            if typ in ability_types:
+                info_list.append(f"{nice_name} - {ability_types[typ]} ability")
+            else:
+                sign = "+" if val > 0 else ""
+                if "_per" in typ:  # Percentage
+                    formatted_val = f"{sign}{val * 100:.0f}%"
+                else:  # Flat
+                    formatted_val = f"{sign}{val:g}"  # :g trims decimals
+                info_list.append(f"{nice_name}: {formatted_val}")
         return info_list
 
     def update(self, position, line_break_every=5, use_literal=False, character_limit=100):
@@ -1779,12 +1808,19 @@ items = [
 
 
     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
-         ['dmg_return_per', 'str_flat'], [0.20, 30],
+         ['dmg_return_per'], [0.20],
          description="Returns 20% of damage taken to attacker."),
 
     Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
-         ['heal_when_low'], [50], 
-         description="When below 10% HP:@heals 50 HP once.@@Cooldown: 120s"),
+         ['heal_when_low', 'all_stats_flat'], [1.0, 1.0], 
+         description="When health falls below 10%,@instantly restores health equal@to Strength.@@Cooldown: 120s",
+         cooldown=120,
+         attack_frames=r'assets\attacks_item\Last Breath\image_',
+         attack_count=8,
+         attack_frame_duration=125,
+         attack_repeat=5,
+         starts_at_zero=True,
+         sound_path='pass muna bro'),
 ]
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
@@ -1803,26 +1839,26 @@ Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23",
-    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35"
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, , Trait: 20% spell dmg",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 63, , Trait: 15% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, , Trait: 15% mana, reduce",
+    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%->20% mana, cost/delay",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
+    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23, , Trait: 15% cd reduce",
+    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5-10% stat,potency"
 }
 
-HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 20% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32 (19 dmg), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce",
-    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
-}
+# HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
+#     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 20% spell dmg",
+#     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32 (19 dmg), HP: 200, Mana: 180, Damage: 3.2 , Attack Speed: -500, , Trait: 20%->30% mana, regen",
+#     "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 65 (26 dmg), HP: 220, Mana: 200, Damage: 6.4 , Attack Speed: -700, , Trait: 15% hp regen",
+#     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13 (28 dmg), HP: 190, Mana: 200, Damage: 2.6 , Attack Speed: 0, , Trait: 15% mana, reduce",
+#     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20 (30 dmg), HP: 200, Mana: 240, Damage: 2.0*(1.5/5), Attack Speed: -3200, , Trait: 15%->20% mana, cost/delay",
+#     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35 (18 dmg), HP: 160, Mana: 260, Damage: 3.6, Attack Speed: -880, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
+#     "Yurei": "Strength: 36, Intelligence: 40, Agility: 23 (23 dmg), HP: 180, Mana: 200, Damage: 2.3, Attack Speed: -180, , Trait: 15% cd reduce",
+#     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 35 (31 dmg), HP: 220, Mana: 220, Damage: 5.2, Attack Speed: -300, , Trait: 5-10% stat,potency"
+# }
 
 
 class EquippedItem:
@@ -1858,10 +1894,11 @@ class PlayerSelector:
     DECOR_OFFSET_LARGE = (42, 42)
     DECOR_SIZE_SMALL = (60, 60)
     DECOR_OFFSET_SMALL = (30, 30)
+    DECOR_SIZE_SMALLEST = (30, 30)
 
-    DESELECT_Y_OFFSET = -35
+    DESELECT_Y_OFFSET = -45
 
-    def __init__(self, image, center_pos, class_item, small=False, custom_size=None):
+    def __init__(self, image, center_pos, class_item, small=False, custom_size=None, custom_border=(15,15)):
         """
         Args:
             image: str path or Surface
@@ -1869,6 +1906,7 @@ class PlayerSelector:
             class_item: Hero class or Item instance
             small: True for item-sized icons (50x50)
             custom_size: (w, h) tuple for maps/other special sizes (overrides small)
+            custom_border: (w, h) if custom_size is used. (for decor)
         """
         self.class_item = class_item
 
@@ -1880,7 +1918,7 @@ class PlayerSelector:
         # Determine size
         if custom_size:
             profile_size = custom_size
-            decor_size = (custom_size[0] + 15, custom_size[1] + 15)  # rough border
+            decor_size = (custom_size[0] + custom_border[0], custom_size[1] + custom_border[0])  # rough border
             decor_offset = (decor_size[0] // 2, decor_size[1] // 2)
         elif small:
             profile_size = self.INGAME_SIZE
@@ -1972,34 +2010,31 @@ class PlayerSelector:
         
         if self.profile_rect.center != self.target_pos:
             
-            current = list(self.profile_rect.center)
+            current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
 
             # If very close, snap exactly to avoid drift
-            if abs(dx * self.move_speed) < 0.5 and abs(dy * self.move_speed) < 0.5:
-                
-
-                
-                self.enable_movement()
+            if abs(dx) <= 2 and abs(dy) <= 2:
+                # print("Snapped")
                 self._apply_position(self.target_pos)
-
                 self.enable_movement()
-
 
             else:
                 # Normal smooth movement
+                # print(dx, dy)
                 if abs(dx) > 10:
+                    
                     current[0] += (dx * self.move_speed)
                 else:
                     current[0] += (dx * 0.3)
                 if abs(dy) > 10:
+                    
                     current[1] += (dy * self.move_speed)
                 else:
                     current[1] += (dy * 0.3)
-                # print(f"{current[0]} + {dx * self.move_speed}, {current[1]} + {dy * self.move_speed}")
                 
-                self._apply_position((int(current[0]), int(current[1])))
+                self._apply_position((round(current[0]), round(current[1])))
         
         # Draw base
         self.draw()
@@ -2047,7 +2082,7 @@ class PlayerSelector:
         pygame.draw.rect(screen, color, self.decor_rect)
         screen.blit(self.profile, self.profile_rect)
 
-    def draw_icon(self, center_pos, small=False):
+    def draw_icon(self, center_pos, small=False, hero_sp=False):
         """
         Draw small or large icon with black border (used in-game).
         
@@ -2059,11 +2094,34 @@ class PlayerSelector:
         size = self.INGAME_SIZE if small else self.PROFILE_SIZE
         offset = self.DECOR_OFFSET_SMALL if small else self.DECOR_OFFSET_LARGE
         border = self.DECOR_SIZE_SMALL if small else self.DECOR_SIZE_LARGE
+        if small == 'smallest':
+            offset = (15, 15)
+            border = self.DECOR_SIZE_SMALLEST
+
+        if hero_sp:
+            color = gold
+        elif hero_sp == 'item':
+            color = cyan2
+        else:
+            color = black
 
         rect = profile.get_rect(center=center_pos)
-        decor = pygame.Rect(rect.centerx - offset[0], rect.centery - offset[1], *border)
-        pygame.draw.rect(screen, black, decor)
+        decor = pygame.Rect(rect.centerx - offset[0], rect.centery - offset[1], border[0], border[1])
+        pygame.draw.rect(screen, color, decor)
         screen.blit(profile, rect)
+
+        # Display cooldown if applicable
+        if hasattr(self.class_item, 'cooldown') and self.class_item.cooldown > 0:
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION
+            remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
+            if remaining > 0:
+                font = global_vars.get_font(15)
+                text = font.render(f"{int(remaining)}", True, red)
+                screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
+            else:
+                font = global_vars.get_font(15)
+                text = font.render("ready", True, green)
+                screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
 
     def is_selected(self):
         return self.selected
@@ -2277,11 +2335,11 @@ def player_selection():
     addd=10
     yposlower=75
     yposupper=200
-    xpos1=width - (75 * 7)+addd
-    xpos2=width - (75 * 5.5)+addd
-    xpos3=width - (75 * 4)+addd
-    xpos4=width - (75 * 2.5)+addd
-    xpos5=width - (75)+addd
+    xpos1=width - int(75 * 7)+addd # 535
+    xpos2=width - int(75 * 5.5)+addd # 422.5
+    xpos3=width - int(75 * 4)+addd
+    xpos4=width - int(75 * 2.5)+addd
+    xpos5=width - int(75)+addd
 
     # positioning
     upper=550
@@ -2354,8 +2412,38 @@ def player_selection():
         PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
     ]
 
-    # p2_items is identical to p1_items (just copy it)
-    p2_items = p1_items[:]  # Shallow copy is fine since items are immutable references
+    p2_items = [
+        PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
+        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
+        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
+        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
+        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
+        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
+
+        PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
+        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
+        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
+        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
+        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
+        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
+
+        PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
+        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
+        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
+        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
+        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
+        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
+
+        PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
+        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
+        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
+        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
+        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
+        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
+
+        PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
+        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
+    ]
 
     # Maps (custom large size)
     map_select = [
@@ -2370,6 +2458,8 @@ def player_selection():
 
 
     equipped_items = EquippedItem(p1_items)
+    equipped_items_p2 = EquippedItem(p2_items)
+
     player_1_choose = True
     player_2_choose = False
     map_choose = False
@@ -2477,8 +2567,10 @@ def player_selection():
                 if selector.hovered:
                     selector.show_hover_tooltip(mouse_pos)
                     # selector.the_info((width + (width * 0.322), height - 525)) #previous position
-                if selector.is_selected():
+                if selector.is_selected(): # when hero selection
                     PLAYER_1_SELECTED_HERO = selector.get_associated()
+                    if selector.selected:
+                        selector.set_position((75, height-50))
 
                     # Draw item selection
                     for item in p1_items:
@@ -2548,17 +2640,36 @@ def player_selection():
                     selector.show_hover_tooltip(mouse_pos)
                 if selector.is_selected():
                     PLAYER_2_SELECTED_HERO = selector.get_associated()
+                    if selector.selected:
+                        selector.set_position((75, height-50))
 
-                    # Draw item selection
+                
+        
+
+
+
                     for item in p2_items:
                         item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
+                        if item.selected:
+                            if item in equipped_items_p2.item:
+                                continue
+                            indexed = len(equipped_items_p2.item)
+                            item.set_position((item_equip_hashmap[indexed], height-100))
+                            equipped_items_p2.add(item)
+                            
+                        equipped_items_p2.update()
+                        
+
                     for item in p2_items:
                         item.draw()
 
+            
                     for item in p2_items:
                         if item.hovered:
                             item.class_item.update(mouse_pos)
                             # item.class_item.update((-(width * 0.0001), height - 500)) #previous position
+                
+
                     
                     # Hard Bot Option (has all_items) draws hard mode option
                     if global_vars.SINGLE_MODE_ACTIVE:

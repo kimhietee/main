@@ -62,24 +62,27 @@ class Chthulu(Player):
         # stat
         self.strength = 40
         self.intelligence = 40
-        self.agility = 35 # real agility = 20
+        self.agility = 25 # real agility = 20
         
-
-        # trait: Increased str potency
-        rate = 1.5
+        # trait: Increased str/int -> hp/mana potency
         self.str_mult += 0.5
         self.int_mult += 0.5
-        self.agi_mult += 0.05
+        self.agi_mult += 0.05 # 0.15
 
-        self.health_regen = self.regen_per_second(1.3)
-        self.mana_regen = self.regen_per_second(5.8)
+        self.base_health_regen = 0.9 # 1.3
+        self.base_mana_regen = 4.9 # 5.3
+        self.base_attack_damage = 1.0 # ? 
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.9 + 40 * 0.01 = 1.3
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 40 * 0.01 = 5.8
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 1.0 + 25 * 0.15 = 4.75
+
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
 
         # self.basic_atk1_dmg = self.basic_attack_damage*5
         # self.basic_atk2_dmg = self.basic_attack_damage*1.5

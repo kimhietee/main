@@ -74,7 +74,6 @@ special
 4th 70
 '''
 
-
 def display_inputs(key):
         preset = ["^", "\/", "<", ">"]
         for index, i in enumerate(["UP", "DOWN", "LEFT", "RIGHT"]):
@@ -325,7 +324,9 @@ class Player(pygame.sprite.Sprite):
         self.running_animation_speed = RUNNING_ANIMATION_SPEED
         
         # self.base_attack_animation_speed = 0 # base atk speed for every hero, modify each if you want to set base 
-        self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED # also set this one too
+        self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED # also set this one 
+        
+        # self.basic_attack_animation_speed =self.basic_attack_animation_speed * 0.5 # 60
 
         self.mana_costs = []
 
@@ -606,9 +607,57 @@ class Player(pygame.sprite.Sprite):
                 elif typ == "atk_speed_flat":
                     # Flat attack speed: Reduce anim speed (faster anim = faster atk)
                     # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
-                    self.basic_attack_animation_speed -= val * 0.1
+                    self.basic_attack_animation_speed -= val #removed 0.1 (therefore val is 15)
+                    
                     # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
-                    self.basic_attack_cooldown -= val * 5  # Adjust scalar if base changes
+                    self.basic_attack_cooldown += ((self.basic_attack_cooldown-240) - (self.basic_attack_cooldown-240) - val)  # Adjust scalar if base
+                    
+
+                    # fire wizard stats:
+                    # base attack time: 1.2s
+                    # attack speed: 120
+
+                    # atks per second = (100 + total atk speed) / base attack time
+                    # seconds per atk = base attack time / (1 + total atk speed / 100)
+
+                    #ex. + 100 atk speed, how much is the total?
+                    # ___________ attack speed, ________ attk stime
+
+
+
+
+
+                    # BASIC_ATTACK_COOLDOWN DEFAUT : 500 
+                    
+                    # 120 - (150 * 0.1) = 105
+                    # total = 1,050 = 1.05 seconds
+                    # 120 - 20
+                    
+                    #rules:
+                    # attack speed must not go >  +140
+                    # or below 20 
+
+                    #ex. 600 atk speed = 0.24 second attack cooldown
+                    
+                    #cooldown threshold max(240, min(600, atkspeed?))
+                    #260 maximum minus, 100 maximum addition
+
+                    #500 - (240)  += (260 - val) 
+
+                    #                                      base attack speed           base attack rate (each hero)
+                    #hero 1 basic attack = 2seconds             100 + 20 = 120          0.95 second (950)
+                    #hero 2 bascic attack = 1.5 seconds         90 + 15                 0.75 second (750)
+                    #hero 3 basic attack = 3.2 seconds          120 + 15                0.5 second (500)
+
+
+
+                    # item_1 = +50 attack speed
+                    # hero_1 items = item_1. Total attack speed = base + bonus = 100+50 = 150, attack rate = 1.0 second - 
+
+                    #(percentage % and flat bonuses)
+                    #100% attack speed 100 -> 200       
+                    
+                    # add +20 attack speed
 
         # Apply percentages (multiplicative)
 
@@ -1237,8 +1286,8 @@ class Player(pygame.sprite.Sprite):
         regen_mana_color = cyan2
 
         # Health regeneration text
-        health_regen_text = font.render(f"+{hp_regen * FPS:.1f}/s", True, regen_hp_color)
-        mana_regen_text = font.render(f"+{mana_regen * FPS:.1f}/s", True, regen_mana_color)
+        health_regen_text = font.render(f"+{hp_regen * FPS:.2f}/s", True, regen_hp_color)
+        mana_regen_text = font.render(f"+{mana_regen * FPS:.2f}/s", True, regen_mana_color)
 
         if self.player_type == 1:
             # Player 1: Adjust text slightly to the right
@@ -2210,6 +2259,35 @@ class Player(pygame.sprite.Sprite):
             self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+
+            # Check for heal_when_low items
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION
+            for item in self.items:
+                # -----------------------------------------------------------------------------------------------------
+                if 'heal_when_low' in item.bonus_type:
+                    heal_mult = item.info['heal_when_low']
+                    if self.health <= self.max_health * 0.1 and current_time - item.last_used >= item.cooldown:
+                        heal_amount = self.strength * heal_mult
+                        self.take_heal(heal_amount)
+                        item.last_used = current_time
+                        # Display attack animation for the item
+                        if item.attack_frames:
+                            from heroes import Attack_Display
+                            attack_display.add(Attack_Display(
+                                x=self.x_pos, y=self.y_pos,
+                                frames=item.attack_frames,
+                                frame_duration=item.attack_frame_duration,
+                                repeat_animation=item.attack_repeat,
+                                dmg=0, final_dmg=0,
+                                who_attacks=self, who_attacked=self.enemy,
+                                speed=0, moving=False, heal=False,
+                                continuous_dmg=False, per_end_dmg=(False, False),
+                                disable_collide=True, stun=(False, 0),
+                                sound=(False, None, None, None), kill_collide=False
+                            ))
+                # -----------------------------------------------------------------------------------------------------
+                # elif True:
+                #     pass
 
             # Draws hero skills in game
             if global_vars.SINGLE_MODE_ACTIVE and self.player_type == 2 and not global_vars.show_bot_skills:

@@ -540,9 +540,10 @@ class Player(pygame.sprite.Sprite):
         return rate * stat
     
     def calculate_regen(self, base_regen=None, rate=0, stat=0, basic_attack=False):
-        '''
-        If base regen is None, applies the base_regen for the hero. (startup calculation)
-        Leave blank if only apply the rate and stat.(for adding item bonuses)
+        '''CALCULATES BOTH REGEN AND ATTACK DAMAGE! (sorry)
+
+        - If base regen is None, applies the base_regen for the hero. (startup calculation)
+        - Leave blank if only apply the rate and stat.(for adding item bonuses)
 
         For calculating the attack damage, make the basic_attack True so it doesn't divide into fps (will use actual value)
         
@@ -569,25 +570,36 @@ class Player(pygame.sprite.Sprite):
 
         # Apply flats first
         for typ, val in bonuses.items():
-            print(typ, "hp_regen_flat")
+            # print(typ, "hp_regen_flat")
             # print(bonuses)
             if "_flat" in typ:
                 base_stat = typ.replace("_flat", "")
-                if base_stat == "str":
+                if base_stat == "all_stats":
                     self.strength += val
                     self.max_health = self.str_mult * self.strength
-                    self.health = self.max_health  # Reset if needed
+                    self.health_regen += self.calculate_regen(rate=self.hp_regen_per_str, stat=val)
+                    self.intelligence += val
+                    self.max_mana = self.int_mult * self.intelligence
+                    self.mana_regen += self.calculate_regen(rate=self.mana_regen_per_int, stat=val)
+                    self.agility += val # update atk with bonus agi
+                    self.basic_attack_damage += self.calculate_regen(rate=self.agi_mult, stat=self.agility * val)
+
+
+                elif base_stat == "str":
+                    self.strength += val
+                    self.max_health = self.str_mult * self.strength
                     self.health_regen += self.calculate_regen(rate=self.hp_regen_per_str, stat=val)
 
                 elif base_stat == "int":
                     self.intelligence += val
                     self.max_mana = self.int_mult * self.intelligence
-                    self.mana = self.max_mana
+                    self.mana_regen += self.calculate_regen(rate=self.mana_regen_per_int, stat=val)
 
 
                 elif base_stat == "agi":
-                    self.agility += val
-                    self.basic_attack_damage = self.agi_mult * self.agility
+                    self.agility += val # update atk with bonus agi
+                    self.basic_attack_damage += self.calculate_regen(rate=self.agi_mult, stat=self.agility * val)
+
 
                 elif base_stat == "hp":
                     self.max_health += val
@@ -607,10 +619,11 @@ class Player(pygame.sprite.Sprite):
                 elif typ == "atk_speed_flat":
                     # Flat attack speed: Reduce anim speed (faster anim = faster atk)
                     # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
-                    self.basic_attack_animation_speed -= val #removed 0.1 (therefore val is 15)
+                    self.basic_attack_animation_speed -= val * 0.1 #removed 0.1 (therefore val is 15)
                     
                     # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
-                    self.basic_attack_cooldown += ((self.basic_attack_cooldown-240) - (self.basic_attack_cooldown-240) - val)  # Adjust scalar if base
+                    self.basic_attack_cooldown -= val * 5
+                    # self.basic_attack_cooldown += ((self.basic_attack_cooldown-240) - (self.basic_attack_cooldown-240) - val)  # Adjust scalar if base
                     
 
                     # fire wizard stats:
@@ -663,15 +676,31 @@ class Player(pygame.sprite.Sprite):
 
             if "_per" in typ:
                 base_stat = typ.replace("_per", "")
-                if base_stat == "str":
+                if base_stat == "all_stats":
                     self.strength *= (1 + val)
                     self.max_health = self.str_mult * self.strength
+                    self.health_regen += self.calculate_regen(rate=self.hp_regen_per_str, stat=self.strength * val)
+                    self.intelligence *= (1 + val)
+                    self.max_mana = self.int_mult * self.intelligence
+                    self.mana_regen += self.calculate_regen(rate=self.mana_regen_per_int, stat=self.intelligence * val)
+                    self.agility *= (1 + val)
+                    self.basic_attack_damage = self.agi_mult * self.agility
+
+
+                elif base_stat == "str":
+                    self.strength *= (1 + val)
+                    self.max_health = self.str_mult * self.strength
+                    self.health_regen += self.calculate_regen(rate=self.hp_regen_per_str, stat=self.strength * val)
+
                 elif base_stat == "int":
                     self.intelligence *= (1 + val)
                     self.max_mana = self.int_mult * self.intelligence
+                    self.mana_regen += self.calculate_regen(rate=self.mana_regen_per_int, stat=self.intelligence * val)
+
                 elif base_stat == "agi":
                     self.agility *= (1 + val)
                     self.basic_attack_damage = self.agi_mult * self.agility
+                    
                 elif base_stat == "hp":
                     self.max_health *= (1 + val)
                 elif base_stat == "mana":
@@ -765,6 +794,10 @@ class Player(pygame.sprite.Sprite):
         self.basic_attack_cooldown = max(0.01, self.basic_attack_cooldown)
         self.attacks[4].cooldown = self.basic_attack_cooldown
         self.attacks_special[4].cooldown = self.basic_attack_cooldown
+
+        # Clamp current values
+        self.health = min(self.health, self.max_health)
+        self.mana = min(self.mana, self.max_mana)
 
         # Reapply hero-specific (e.g., arrow_stuck)
         if hasattr(self, 'arrow_stuck_damage'):
@@ -1648,12 +1681,15 @@ class Player(pygame.sprite.Sprite):
         if self.is_dead():
             return
         self.health = max(0, self.health + heal)
+        self.display_damage(heal, color=green, health_modify=True)
 
     def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
+            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
         else: #add mana to the attacked player, called by take_special
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
+            self.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
 
     def take_special(self, amount):
         if self.is_dead():
@@ -2261,7 +2297,7 @@ class Player(pygame.sprite.Sprite):
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 
             # Check for heal_when_low items
-            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000
             for item in self.items:
                 # -----------------------------------------------------------------------------------------------------
                 if 'heal_when_low' in item.bonus_type:
@@ -2274,7 +2310,7 @@ class Player(pygame.sprite.Sprite):
                         if item.attack_frames:
                             from heroes import Attack_Display
                             attack_display.add(Attack_Display(
-                                x=self.x_pos, y=self.y_pos,
+                                x=self.rect.centerx, y=self.rect.centery,
                                 frames=item.attack_frames,
                                 frame_duration=item.attack_frame_duration,
                                 repeat_animation=item.attack_repeat,
@@ -2283,7 +2319,8 @@ class Player(pygame.sprite.Sprite):
                                 speed=0, moving=False, heal=False,
                                 continuous_dmg=False, per_end_dmg=(False, False),
                                 disable_collide=True, stun=(False, 0),
-                                sound=(False, None, None, None), kill_collide=False
+                                sound=(False, None, None, None), kill_collide=False,
+                                follow=(False, True), follow_self=True, follow_offset=(0,50)
                             ))
                 # -----------------------------------------------------------------------------------------------------
                 # elif True:

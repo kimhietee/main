@@ -736,9 +736,9 @@ def game(bg=None):
                 if selector.is_selected():
                     selector.draw_icon(center_pos=(width - 75, 75), hero_sp=main.hero2.is_special_active())  # Top-right
 
-            for i, item in enumerate(item_list(main.p1_items)):
+            for i, item in enumerate(main.hero1.items):
                 item.draw_icon((150+(50*i), 100), small='smallest')
-            for i, item in enumerate(item_list(main.p2_items)):
+            for i, item in enumerate(main.hero2.items):
                 item.draw_icon((main.width-(150+(50*i)), 100), small='smallest')
         
             for cube in cubes:

@@ -45,8 +45,8 @@ random_pick_p2 = False
 MAIN_VOLUME = 0.05
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 3
-# MAX DEFAULT ITEM = 3
+MAX_ITEM = 4
+# MAX DEFAULT ITEM = 4
 
 item_equip_hashmap = [(x*100)-21 for x in range(2,MAX_ITEM+2)]
 
@@ -278,7 +278,7 @@ def load_font(font_path, size):
         print(f"Font file not found: {font_path}")
         return None
 
-SHOW_MINI_HEALTH_BAR = False
+SHOW_MINI_HEALTH_BAR = True
 SHOW_MINI_MANA_BAR = False
 SHOW_MINI_SPECIAL_BAR = False
 

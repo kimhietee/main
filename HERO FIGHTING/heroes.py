@@ -205,6 +205,7 @@ import pygame
 import random
 import time
 import math
+import copy
 import pygame.sprite
 from global_vars import (IMMEDIATE_RUN,
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon, yurei_icon, chthulu_icon,
@@ -598,7 +599,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         18. kill_collide (bool): 
             - If True, the attack sprite disappears instantly upon colliding with the target.
 
-        NEW PARAMETERS (to be added to class):
         19. follow (tuple(bool, bool)):
             - Controls if the attack should follow another sprite:
                 * [0] – If True, the attack will stick to the enemy upon collision and follow them.
@@ -1539,7 +1539,7 @@ center_pos = (width / 2, height / 2)
 
 
 class Item:
-    def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, sound_path=None):
+    def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, size=1, sound_path=None):
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(), (75, 75))
         self.bonus_type = bonus_type  # list, e.g., ["str_per", "str_flat", "hp_regen_per"]
@@ -1549,9 +1549,14 @@ class Item:
         self.cooldown = cooldown  # in seconds
         self.last_used = -self.cooldown if self.cooldown > 0 else 0  # timestamp in seconds
 
+        # for items with ability
+        self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
+        self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
+
+
         # Attack display properties
         if attack_frames is not None: # load frames if provided
-            self.attack_frames = self.load_img_frames(attack_frames, attack_count, starts_at_zero)
+            self.attack_frames = self.load_img_frames(attack_frames, attack_count, starts_at_zero, size)
         self.attack_frame_duration = attack_frame_duration
         self.attack_repeat = attack_repeat
 
@@ -1572,6 +1577,12 @@ class Item:
             image = pygame.transform.rotozoom(image, 0, size)
             images.append(image)
         return images
+    
+    def time_since_use(self):
+        """Return milliseconds elapsed since last use, excluding paused durations."""
+        effective_now = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
+        effective_last = self._last_used_time - self._last_used_paused_total
+        return effective_now - effective_last
 
     def generate_display_info(self):
         display_map = {
@@ -1633,6 +1644,30 @@ class Item:
                     formatted_val = f"{sign}{val:g}"  # :g trims decimals
                 info_list.append(f"{nice_name}: {formatted_val}")
         return info_list
+
+    def draw_icon(self, center_pos, small=False, hero_sp=False):
+        """
+        Draw item icon with cooldown display for equipped items.
+        """
+        if small == 'smallest':
+            profile = pygame.transform.scale(self.image, (25, 25))
+        else:
+            profile = self.image
+        rect = profile.get_rect(center=center_pos)
+        screen.blit(profile, rect)
+
+        # Display cooldown if applicable
+        if hasattr(self, 'cooldown') and self.cooldown > 0 and not global_vars.PAUSED:
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000
+            remaining = self.cooldown - (current_time - self.last_used)
+            if remaining > 0:
+                font = global_vars.get_font(15)
+                text = font.render(f"{math.ceil(remaining)}", True, red)
+                screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
+            else:
+                font = global_vars.get_font(15)
+                text = font.render("ready", True, green)
+                screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
 
     def update(self, position, line_break_every=5, use_literal=False, character_limit=100):
         '''line_break_every = simply dont put arrow at the bonus.'''
@@ -1792,7 +1827,7 @@ items = [
          ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]),  # Clear → no desc
 
     Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", 
-         ['sp_increase_per'], [0.40],
+         ['sp_increase_per', 'all_stats_per'], [0.40, 0.5],
          description="Special meter fills 40% faster."),
 
     Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", 
@@ -1812,14 +1847,15 @@ items = [
          description="Returns 20% of damage taken to attacker."),
 
     Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
-         ['heal_when_low', 'all_stats_flat'], [1.0, 1.0], 
-         description="When health falls below 10%,@instantly restores health equal@to Strength.@@Cooldown: 120s",
+         ['heal_when_low', 'all_stats_flat'], [1.0, 1], 
+         description="When health falls below 10%, instantly@restores health equal@to Strength.@@Cooldown: 120s",
          cooldown=120,
          attack_frames=r'assets\attacks_item\Last Breath\image_',
          attack_count=8,
          attack_frame_duration=125,
          attack_repeat=5,
          starts_at_zero=True,
+         size=2,
          sound_path='pass muna bro'),
 ]
 """# MAX CHAR LENGTH (including spaces):
@@ -1961,6 +1997,7 @@ class PlayerSelector:
             text_anti_alias=global_vars.TEXT_ANTI_ALIASING
         )
 
+        
     def set_position(self, new_center, instant=False):
         """
         Move the selector to a new center position.
@@ -2111,18 +2148,20 @@ class PlayerSelector:
         screen.blit(profile, rect)
 
         # Display cooldown if applicable
-        if hasattr(self.class_item, 'cooldown') and self.class_item.cooldown > 0:
-            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION
+        if hasattr(self.class_item, 'cooldown') and self.class_item.cooldown > 0 and not global_vars.PAUSED:
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000
             remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
             if remaining > 0:
                 font = global_vars.get_font(15)
-                text = font.render(f"{int(remaining)}", True, red)
+                text = font.render(f"{math.ceil(remaining)}", True, red)
                 screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
             else:
                 font = global_vars.get_font(15)
                 text = font.render("ready", True, green)
                 screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
 
+    
+    
     def is_selected(self):
         return self.selected
 
@@ -2849,7 +2888,7 @@ def player_selection():
                     for item in p1_items:
                         if item.is_selected():
                             for h in hero1_group:
-                                h.items.append(item.get_associated())
+                                h.items.append(copy.copy(item.get_associated()))
 
                     for h in hero1_group:
                         h.apply_item_bonuses()
@@ -2861,7 +2900,7 @@ def player_selection():
                     for item in p2_items:
                         if item.is_selected():
                             for h in hero2_group:
-                                h.items.append(item.get_associated())
+                                h.items.append(copy.copy(item.get_associated()))
 
                     for h in hero2_group:
                         h.apply_item_bonuses()

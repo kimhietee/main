@@ -195,6 +195,9 @@ class Fire_Wizard(Player):
         self.max_mana = self.intelligence * self.int_mult #40 * 5 = 200Mana (max)
         self.health = self.max_health
         self.mana = self.max_mana
+        # 1.4
+        # 5.9
+        # 4.05
         
         # BASIC_ATK_DAMAGE2
 

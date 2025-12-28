@@ -1459,7 +1459,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.player_atk3_index_flipped = 0
             # self.y_velocity -= DEFAULT_GRAVITY  # optional: cancel gravity impulse if you want freeze in air
 
-
+        self.health -= 0.1
         super().update()
                     #self.apply_item_bonuses()
         # print(self.basic_attack_damage)

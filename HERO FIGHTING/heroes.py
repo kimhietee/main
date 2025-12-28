@@ -1857,6 +1857,10 @@ items = [
          starts_at_zero=True,
          size=2,
          sound_path='pass muna bro'),
+
+    Item("Absorption", r"assets\item icons\new items\2 Icons with back\Icons_05.png", 
+         ['extra_temp_hp'], [50.0], 
+         description="Grants 50 temporary HP that absorbs@damage before affecting real health."),
 ]
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
@@ -2449,6 +2453,7 @@ def player_selection():
 
         PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
         PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
+        PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
     ]
 
     p2_items = [
@@ -2482,6 +2487,7 @@ def player_selection():
 
         PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
         PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
+        PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
     ]
 
     # Maps (custom large size)

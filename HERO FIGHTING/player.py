@@ -128,6 +128,7 @@ class Player(pygame.sprite.Sprite):
         # Base Stats
         self.max_health = 0
         self.max_mana = 0
+        self.temp_hp = 0
         self.health = self.max_health
         self.mana = self.max_mana
         self.basic_attack_damage = 0
@@ -600,6 +601,9 @@ class Player(pygame.sprite.Sprite):
                     self.agility += val # update atk with bonus agi
                     self.basic_attack_damage += self.calculate_regen(rate=self.agi_mult, stat=self.agility * val)
 
+
+                elif typ == "extra_temp_hp":
+                    self.temp_hp += val
 
                 elif base_stat == "hp":
                     self.max_health += val
@@ -1258,16 +1262,27 @@ class Player(pygame.sprite.Sprite):
         # Health ratio (0.0 to 1.0)
         hp_ratio = max(0, min(1, self.health / self.max_health))
 
-        # Health bar position (10px above hitbox)
-        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        # Calculate extension for temp_hp
+        if self.max_health > 0:
+            extension_width = int((self.temp_hp / self.max_health) * bar_width)
+        else:
+            extension_width = 0
+        total_width = bar_width + extension_width
+
+        # Health bar position (centered)
+        bar_x = self.hitbox_rect.centerx - total_width // 2
         bar_y = self.hitbox_rect.top - 14 - bar_height
 
         # Background (black bar)
-        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+        pygame.draw.rect(screen, black, (bar_x, bar_y, total_width, bar_height))
 
         # Foreground (green health)
         green_width = int(bar_width * hp_ratio)
         pygame.draw.rect(screen, green, (bar_x, bar_y, green_width, bar_height))
+
+        # Temp HP (gold extension)
+        if extension_width > 0:
+            pygame.draw.rect(screen, gold, (bar_x + green_width, bar_y, extension_width, bar_height))
     def draw_mana_bar(self, screen):
         """Draws a small health bar 10px above the player's hitbox."""
         bar_width = 50
@@ -1653,6 +1668,13 @@ class Player(pygame.sprite.Sprite):
             return
         if self.damage_reduce > 0:
             damage -= (damage * self.damage_reduce)
+        
+        # Absorb damage with temp_hp first
+        if self.temp_hp > 0:
+            temp_absorb = min(damage, self.temp_hp)
+            self.temp_hp -= temp_absorb
+            damage -= temp_absorb
+        
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 
@@ -1681,15 +1703,12 @@ class Player(pygame.sprite.Sprite):
         if self.is_dead():
             return
         self.health = max(0, self.health + heal)
-        self.display_damage(heal, color=green, health_modify=True)
 
     def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
-            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
         else: #add mana to the attacked player, called by take_special
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
-            self.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
 
     def take_special(self, amount):
         if self.is_dead():

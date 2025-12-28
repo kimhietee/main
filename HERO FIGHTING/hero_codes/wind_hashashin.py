@@ -87,9 +87,9 @@ class Wind_Hashashin(Player):
 
 
 
-        self.base_health_regen = 0.8 # 1.2
-        self.base_mana_regen = 6.05 # 6.53
-        self.base_attack_damage = 0.0 # 2.0
+        self.base_health_regen = 0.85 # 1.23
+        self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
+        self.base_attack_damage = 0.0 # 1.3
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 38 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.1 + 40 * 0.01 = 5.5
@@ -100,10 +100,6 @@ class Wind_Hashashin(Player):
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-
-        self.health_regen = self.regen_per_second(1.2)
-        self.mana_regen = self.regen_per_second(5.5)
-
 
 
         # Player Position

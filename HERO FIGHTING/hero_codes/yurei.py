@@ -26,7 +26,7 @@ class Yurei(Player):
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         self.player_type = player_type # 1 for player 1, 2 for player 2
-        self.name = "Wanderer Magician"
+        self.name = "Yurei"
 
         self.hitbox_rect = pygame.Rect(0, 0, 45, 100)
 
@@ -35,17 +35,14 @@ class Yurei(Player):
         self.intelligence = 40
         self.agility = 23
         
-        self.base_health_regen = 0.75 # ?
-        self.base_mana_regen = 5.6 # ?
-        self.base_attack_damage = 0.0 # 2.0
+        self.base_health_regen = 0.75 # 1.11
+        self.base_mana_regen = 5.5 # 5.9
+        self.base_attack_damage = 0.0 # 2.3
 
-        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
-        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.05 + 48 * 0.01 = 6.53
-        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 20 * 0.1 = 2.0
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.75 + 36 * 0.01 = 1.11
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.5 + 40 * 0.01 = 5.9
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 23 * 0.1 = 2.0
 
-
-        self.health_regen = self.regen_per_second(1.1)
-        self.mana_regen = self.regen_per_second(5.9)
         
         
         self.max_health = self.strength * self.str_mult
@@ -54,7 +51,6 @@ class Yurei(Player):
         self.special_bonus_mana = 240
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
 
         self.x = 50
         self.y = 50

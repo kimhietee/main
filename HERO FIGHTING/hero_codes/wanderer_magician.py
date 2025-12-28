@@ -77,8 +77,17 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.intelligence = 36
         self.agility = 35
 
+        self.base_health_regen = 0.6 # 1.0
+        self.base_mana_regen = 6.75 # 
+        self.base_attack_damage = 0.0 # 2.0
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.6 + 40 * 0.01 = 1.0
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.75 + 36 * 0.01 = 7.01
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 35 * 0.1 = 3.5
+
+
         self.health_regen = self.regen_per_second(1.0)
-        self.mana_regen = self.regen_per_second(7.2)
+        self.mana_regen = self.regen_per_second(7.0)
         
         self.base_max_mana = self.intelligence * self.int_mult
         
@@ -88,7 +97,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.special_bonus_mana = 240
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
 
         self.x = 50
         self.y = 50

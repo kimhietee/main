@@ -94,17 +94,23 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # stat
         self.strength = 32
         self.intelligence = 52
-        self.agility = 35 # = 48
+        self.agility = 30 # = 35
 
-        self.health_regen = self.regen_per_second(1.1)
-        self.mana_regen = self.regen_per_second(5.9)
+        self.base_health_regen = 0.8 # 1.12
+        self.base_mana_regen = 5.4 # 5.92
+        self.base_attack_damage = 0.5 # 3.5
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.5 + 30 * 0.1 = 3.5
+
+
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
         # self.special_default_max_mana = self.max_mana # max mana and this variable mustt  be the same
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
         
         self.x = 50
         self.y = 50

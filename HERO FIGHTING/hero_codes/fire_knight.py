@@ -93,8 +93,14 @@ class Fire_Knight(Player):
         self.intelligence = 36
         self.agility = 65 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
-        self.health_regen = self.regen_per_second(1.5)
-        self.mana_regen = self.regen_per_second(5.0)
+        self.base_health_regen = 1.1 # 1.52
+        self.base_mana_regen = 4.85 # 5.21
+        self.base_attack_damage = 0.5 # 3.5
+
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #1.1 + 42 * 0.01 = 1.52
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #4.85 + 36 * 0.01 = 5.21
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.5 + 65 * 0.1 = 7
+
 
 
         # Base Stats
@@ -102,7 +108,6 @@ class Fire_Knight(Player):
         self.max_mana = (self.intelligence * self.int_mult)
         self.health = self.max_health
         self.mana = self.max_mana
-        self.basic_attack_damage = self.agility * self.agi_mult
 
         # Player Position
         self.x = 50

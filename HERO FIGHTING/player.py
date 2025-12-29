@@ -113,8 +113,8 @@ class Player(pygame.sprite.Sprite):
         self.slow_speed = 0
         self.silenced = False
         
-        self.temp_hp = 0
-        self.max_temp_hp = 0
+        self.max_temp_hp = 50
+        self.temp_hp = self.max_temp_hp
 
 
         self.str_mult = 5
@@ -1307,8 +1307,10 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, green, (bar_x, bar_y, green_width, bar_height))
 
         # Temp HP (gold extension)
-        if extension_width > 0:
-            pygame.draw.rect(screen, gold, (bar_x + green_width, bar_y, extension_width, bar_height))
+        if self.max_temp_hp > 0:
+            temp_ratio = max(0, min(1, self.temp_hp / self.max_temp_hp))
+            temp_width = int(temp_ratio * extension_width)
+            pygame.draw.rect(screen, gold, (bar_x + green_width, bar_y, temp_width, bar_height))
     def draw_mana_bar(self, screen):
         """Draws a small health bar 10px above the player's hitbox."""
         bar_width = 50
@@ -1525,27 +1527,23 @@ class Player(pygame.sprite.Sprite):
 
             # Adjust bar starting x-position to align inside the decor with a 5px padding
             bar_x_start = self.hp_decor_p2.left + 5
-            hp_bar_max_width = self.hp_decor_p2.width - 10  # Width of the decor minus padding
             mana_bar_max_width = self.mana_decor_p2.width - 10
 
             special_bar_max_width = self.special_decor_p2.width - 10
 
 
             # Calculate dynamic bar widths based on percentage of current value
-            self.health_bar_p2_width = int((self.health / self.max_health) * hp_bar_max_width)
-            self.white_health_p2_width = int((self.white_health_p2 / self.max_health) * hp_bar_max_width)
-
             self.special_bar_p2_width = int((self.special / self.max_special) * special_bar_max_width)
-
+            
             self.mana_bar_p2_width = int((self.mana / self.max_mana) * mana_bar_max_width)
             self.white_mana_p2_width = int((self.white_mana_p2 / self.max_mana) * mana_bar_max_width)
 
             # Health and Mana Rects (bars should start from right side and shrink towards left)
-            self.health_bar_p2 = pygame.Rect(self.hp_decor_p2.right - self.health_bar_p2_width - 5, p2_y, self.health_bar_p2_width, 20)
-            self.health_bar_p2_after = pygame.Rect(self.hp_decor_p2.right - self.white_health_p2_width - 5, p2_y, self.white_health_p2_width, 20)
+            self.health_bar_p2 = pygame.Rect(self.hp_decor_p2.right - self.health - 5, p2_y, self.health, 20)
+            self.health_bar_p2_after = pygame.Rect(self.hp_decor_p2.right - self.white_health_p2 - 5, p2_y, self.white_health_p2, 20)
 
-            self.temp_hp_bar_p2 = pygame.Rect(self.health_bar_p2.x + self.health_bar_p2.width, self.health_bar_p2.y, self.temp_hp, 20)
-
+            self.temp_hp_bar_p2 = pygame.Rect(self.health_bar_p2.x - self.temp_hp, self.health_bar_p2.y, self.temp_hp + 1, 20)
+            
             self.mana_bar_p2 = pygame.Rect(self.mana_decor_p2.right - self.mana_bar_p2_width - 5, p2_y+50, self.mana_bar_p2_width, 20)
             self.mana_bar_p2_after = pygame.Rect(self.mana_decor_p2.right - self.white_mana_p2_width - 5, p2_y+50, self.white_mana_p2_width, 20)
 

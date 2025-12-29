@@ -1002,7 +1002,41 @@ class Player(pygame.sprite.Sprite):
     '''
 
 
+    def load_img_frames_v2(self, folder:str, count:int | tuple, starts_at_zero=False, size=1, typ='frames', flipped=False, rotate=0):
+        ''' Can be used as loading attack frames and loading a spritesheet, provided that count is tuple
+        
+        - folder: path of single frame, without the numbering.
+        
+                if spritesheet, provide the spritesheet path (typ != 'frames')
+        - count: int if typ == 'frames' (frame count)
 
+                tuple if typ == 'spritesheet' (column, rows)
+        '''
+        if typ == 'frames':
+            images = []
+            for i in range(count):
+                img_path = (fr'{folder}{i + 1 - starts_at_zero}.png') 
+                image = pygame.image.load(img_path).convert_alpha()
+                image = pygame.transform.rotozoom(image, 0, size)
+                images.append(image)
+            return images
+            
+        else: # spritesheeet
+            from heroes import load_attack, load_attack_flipped 
+            if not flipped: # normal
+                return load_attack(
+                    filepath=folder,
+                    columns=count[0], 
+                    rows=count[1], 
+                    scale=size, 
+                    rotation=rotate)
+            else:
+                return load_attack_flipped(
+                    filepath=folder,
+                    columns=count[0], 
+                    rows=count[1], 
+                    scale=size, 
+                    rotation=rotate)
     def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
         '''
         assets\characters\Fire wizard\slash pngs\Attack_1_1.png
@@ -1293,14 +1327,13 @@ class Player(pygame.sprite.Sprite):
             extension_width = int((self.max_temp_hp / self.max_health) * bar_width)
         else:
             extension_width = 0
-        total_width = bar_width + extension_width
 
         # Health bar position (centered)
-        bar_x = self.hitbox_rect.centerx - total_width // 2
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
         bar_y = self.hitbox_rect.top - 14 - bar_height
 
         # Background (black bar)
-        pygame.draw.rect(screen, black, (bar_x, bar_y, total_width, bar_height))
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
 
         # Foreground (green health)
         green_width = int(bar_width * hp_ratio)

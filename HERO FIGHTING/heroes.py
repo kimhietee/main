@@ -2394,6 +2394,18 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, m
     screen.blit(title, title_rect)
     # print(title_rect)
 
+
+slot = ImageButton(
+    image_path=r'assets\UI\slot.png',
+    pos=(400, height - 20),
+    scale=1,
+    text='',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    hover_move=0
+)
 # print('opening player selection')
 # print(global_vars.SMOOTH_BG)
 
@@ -2652,7 +2664,7 @@ def player_selection():
         else:
             create_title('Item Selection', font, default_size, height * 0.1, modify_xpos=width*0.05) if not map_choose else None
         menu_button.draw(screen, mouse_pos)
-        
+        slot.draw(screen, mouse_pos) if map_choose else None
 
         if player_1_choose:    
             if not go:                  
@@ -2747,7 +2759,7 @@ def player_selection():
                 x2_bot.draw(screen, global_vars.TEXT_ANTI_ALIASING)
             random_p2.update(mouse_pos, global_vars.random_pick_p2)
             random_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-            
+
             for selector in p2_select:
                 selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
 
@@ -2936,9 +2948,9 @@ def player_selection():
 
                     
 
-                    # hero2_group.add(
-                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
-                    # )
+                    hero2_group.add(
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
+                    )
 
                     hero1_group.add(hero1)
 

@@ -113,7 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.slow_speed = 0
         self.silenced = False
         
-        self.max_temp_hp = 50
+        self.max_temp_hp = 0
         self.temp_hp = self.max_temp_hp
 
 
@@ -1293,14 +1293,13 @@ class Player(pygame.sprite.Sprite):
             extension_width = int((self.max_temp_hp / self.max_health) * bar_width)
         else:
             extension_width = 0
-        total_width = bar_width + extension_width
 
         # Health bar position (centered)
-        bar_x = self.hitbox_rect.centerx - total_width // 2
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
         bar_y = self.hitbox_rect.top - 14 - bar_height
 
         # Background (black bar)
-        pygame.draw.rect(screen, black, (bar_x, bar_y, total_width, bar_height))
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
 
         # Foreground (green health)
         green_width = int(bar_width * hp_ratio)

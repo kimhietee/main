@@ -1601,7 +1601,11 @@ class Item:
             "agi_flat": "Agility",
             "all_stats_per": "All Stats",
             "all_stats_flat": "All Stats",
+
+            # Ability
             "heal_when_low": "Convalescent",
+            "extra_temp_hp": "Absorption",
+
 
             # Health / Mana
             "hp_per": "Max HP",
@@ -2655,6 +2659,12 @@ def player_selection():
             else: #display selected hero name
                 create_title(get_name(PLAYER_1_SELECTED_HERO.__name__), font, default_size, height * 0.1, modify_xpos=width*0.5)
                 
+            # hero1 bot Option (has all_items) draws hard mode option
+            toggle_bot_button.update(mouse_pos, global_vars.HERO1_BOT)
+            toggle_bot_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            
+            random_p1.update(mouse_pos, global_vars.random_pick_p1)
+            random_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
             # fire_wizard_select.update(mouse_pos, mouse_press)
             # wanderer_magician_select.update(mouse_pos, mouse_press)
 
@@ -2702,12 +2712,7 @@ def player_selection():
                     # p1_items[randoms[0]].selected = True
 
 
-                    # hero1 bot Option (has all_items) draws hard mode option
-                    toggle_bot_button.update(mouse_pos, global_vars.HERO1_BOT)
-                    toggle_bot_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
                     
-                    random_p1.update(mouse_pos, global_vars.random_pick_p1)
-                    random_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
                     # print(selector.get_associated())
                     go = True
                     break  # Only one can be selected
@@ -2732,6 +2737,16 @@ def player_selection():
                 create_title('PLAYER 2', font, default_size, height * 0.1, modify_xpos=width*0.5)
             else:
                 create_title(get_name(PLAYER_2_SELECTED_HERO.__name__), font, default_size, height * 0.1, modify_xpos=width*0.5)
+            
+            # Hard Bot Option (has all_items) draws hard mode option
+            if global_vars.SINGLE_MODE_ACTIVE:
+                all_items_button.update(mouse_pos, global_vars.all_items)
+                all_items_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+                x2_bot.update(mouse_pos, global_vars.toggle_hero3)
+                x2_bot.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            random_p2.update(mouse_pos, global_vars.random_pick_p2)
+            random_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            
             for selector in p2_select:
                 selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
 
@@ -2771,14 +2786,7 @@ def player_selection():
                 
 
                     
-                    # Hard Bot Option (has all_items) draws hard mode option
-                    if global_vars.SINGLE_MODE_ACTIVE:
-                        all_items_button.update(mouse_pos, global_vars.all_items)
-                        all_items_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-                        x2_bot.update(mouse_pos, global_vars.toggle_hero3)
-                        x2_bot.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-                    random_p2.update(mouse_pos, global_vars.random_pick_p2)
-                    random_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+                    
                     
                     # print(PLAYER_2_SELECTED_HERO)
                     go = True

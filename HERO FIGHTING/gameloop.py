@@ -655,6 +655,7 @@ def game(bg=None):
             if keys[main.pygame.K_1] and not keys[main.pygame.K_LALT]: # reset
                 main.hero1.special += 500
                 main.hero2.special += 500
+                
 
             # if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT] and not FREEZE_SPECIAL: # freeze
             #     FREEZE_SPECIAL = True
@@ -2024,6 +2025,7 @@ def reset_all():
         hero.health = hero.max_health
         hero.mana = hero.max_mana
         hero.special = 0
+        hero.temp_hp = hero.max_temp_hp
         if hasattr(hero, 'white_health_p1'):
             hero.white_health_p1 = hero.max_health
         if hasattr(hero, 'white_health_p2'):

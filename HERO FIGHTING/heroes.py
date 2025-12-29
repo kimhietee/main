@@ -2471,7 +2471,7 @@ def player_selection():
         indexed = indexed - 1
         new_indexed = 1 + (indexed - (max_width) * ((indexed) // (max_width)))
         # print(f"{indexed} - ({max_width}) * ({indexed}) // ({1+ max_width})")
-        print(f"{item_gap_x} - {new_indexed}, {height} - ({upper} - ({item_gap_y} * ({indexed}) // (1 + {max_width})))))")
+        # print(f"{item_gap_x} - {new_indexed}, {height} - ({upper} - ({item_gap_y} * ({indexed}) // (1 + {max_width})))))")
         return ((item_gap_x * new_indexed),height - (upper - (item_gap_y * ((indexed) // (max_width)))))
 
 
@@ -2746,7 +2746,7 @@ def player_selection():
                 x2_bot.draw(screen, global_vars.TEXT_ANTI_ALIASING)
             random_p2.update(mouse_pos, global_vars.random_pick_p2)
             random_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-            
+
             for selector in p2_select:
                 selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
 
@@ -2935,9 +2935,9 @@ def player_selection():
 
                     
 
-                    # hero2_group.add(
-                    #     *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
-                    # )
+                    hero2_group.add(
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
+                    )
 
                     hero1_group.add(hero1)
 

@@ -628,9 +628,9 @@ class Chthulu(Player):
 
                 elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
                     if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
-                        target, target_detected = self.target_enemy(200)
+                        self.target, target_detected = self.target_enemy(200)
                         attack = Attack_Display(
-                            x=target,
+                            x=self.target.x_pos,
                             y=self.rect.centery + 15,
                             frames=self.atk2,
                             frame_duration=72.72,

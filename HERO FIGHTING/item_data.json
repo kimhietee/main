@@ -177,8 +177,8 @@
       "name": "Absorption",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp"],
-      "bonus_value": [50.0],
-      "description": "Grants 50 temporary HP that absorbs@damage before affecting real health."
+      "bonus_value": [40.0],
+      "description": "Blocks 40 damage@before it affects health"
     }
   ]
 }

@@ -46,7 +46,7 @@ class Yurei(Player):
         
         
         self.max_health = self.strength * self.str_mult
-        self.max_mana = self.intelligence * self.int_multself.base_max_mana
+        self.max_mana = self.intelligence * self.int_mult
         # self.special_default_max_mana = self.max_mana # max mana and this variable mustt  be the same
         self.special_bonus_mana = 240
         self.health = self.max_health
@@ -593,6 +593,12 @@ class Yurei(Player):
         else:
             super().take_damage(damage, add_mana_to_self, enemy, add_mana_to_enemy, mana_multiplier)
         
+    def is_busy_attacking(self):
+        """Override to allow movement when invisible, even if sp_attacking.
+        
+        Cannot move while casting invisible, if done, can move """
+        return (self.attacking1 or self.attacking2 or self.attacking3 or self.basic_attacking) or (self.sp_attacking and self.casting_invisible)
+    
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         """The most crucial part of collecting user input.
         - Processes player input each frame, handling movement and skill casting based on state."""
@@ -1110,7 +1116,7 @@ class Yurei(Player):
         # if self.casting_invisible == True: # 820 CAST TIME!
         #     print('cast time')
         #     print((self.invisible_duration-pygame.time.get_ticks()))
-        # print(self.is_dead())
+        # # print(self.is_dead())
 
         
         # print(self.sp_attacking)

@@ -759,7 +759,9 @@ def game(bg=None):
 
 
 
-            timer_text = timer_font.render(f"[{elapsed_time}]", global_vars.TEXT_ANTI_ALIASING, main.white)
+            minutes = elapsed_time // 60
+            seconds = elapsed_time % 60
+            timer_text = timer_font.render(f"[{minutes:02d}:{seconds:02d}]", global_vars.TEXT_ANTI_ALIASING, main.white)
 
             main.screen.blit(timer_text, (main.width / 2.3, 30))  # Display timer at the top-left corner
             

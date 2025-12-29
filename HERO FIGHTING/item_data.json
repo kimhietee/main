@@ -193,7 +193,7 @@
       "bonus_type": ["extra_temp_hp"],
       "bonus_value": [10.0],
       "cooldown": 100,
-      "description": "granting@10 Temporary HP@@Cooldown: 100s@@\"Go Smash them for me dawg\" "
+      "description": "granting@10 Temporary HP@@Cooldown: 100s@@\"Go Smash them for me dawg\""
     }
     
   ]

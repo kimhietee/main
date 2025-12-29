@@ -1120,6 +1120,7 @@ def menu():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if campaign_button.is_clicked(event.pos):
+                    # fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
                     campaign()
                     return
 
@@ -1137,6 +1138,7 @@ def menu():
         # main.screen.blit(background, (0, 0))
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
+        Animate_BG.Sword_campaign.display(screen, speed=50)
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)

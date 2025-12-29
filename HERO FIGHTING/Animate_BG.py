@@ -206,6 +206,13 @@ waterfall_day_bg = AnimatedBackground(
     size="full"
 )
 
+Sword_campaign = AnimatedBackground(
+    "assets/backgrounds/animated_bg/Campaign/sword_background.webp",
+    9,
+    size="full"
+)
+
+
 waterfall_rainy_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Rainy\\",
     9,

@@ -79,7 +79,7 @@ class SpriteSheet_Flipped:
 
 
 
-def load_attack(filepath, frame_width, frame_height, rows, columns, scale=1, rotation=0, frame_duration=30):
+def load_attack(filepath, frame_width=100, frame_height=100, rows=0, columns=0, scale=1, rotation=0, frame_duration=30):
     """
     Utility function to load an attack animation from a spritesheet.
 
@@ -124,7 +124,7 @@ def load_attack(filepath, frame_width, frame_height, rows, columns, scale=1, rot
     return frames
 
 
-def load_attack_flipped(filepath, frame_width, frame_height, rows, columns, scale=1, rotation=0, frame_duration=100):
+def load_attack_flipped(filepath, frame_width=100, frame_height=100, rows=0, columns=0, scale=1, rotation=0, frame_duration=100):
     """
     Utility function to load an attack animation from a spritesheet.
 

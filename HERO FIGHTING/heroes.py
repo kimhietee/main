@@ -1615,7 +1615,7 @@ class Item:
             "mana_flat": "Max Mana",
             "mana_regen_per": "Mana Regen",
             "mana_regen_flat": "Mana Regen",
-            "mana_refund_per": "Mana Refund",
+            "mana_refund_per": "Mana Steal",
             "mana_reduce_per": "Mana Cost Reduction",
 
             # Attack / Damage / Speed
@@ -2664,7 +2664,7 @@ def player_selection():
         else:
             create_title('Item Selection', font, default_size, height * 0.1, modify_xpos=width*0.05) if not map_choose else None
         menu_button.draw(screen, mouse_pos)
-        slot.draw(screen, mouse_pos) if map_choose else None
+        slot.draw(screen, mouse_pos) if not map_choose else None
 
         if player_1_choose:    
             if not go:                  

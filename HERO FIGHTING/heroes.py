@@ -1531,12 +1531,18 @@ from gameloop import game
 from gameloop import reset_all
 from gameloop import menu
 from gameloop import fade
+import jsonloader as loader
+
+
 
 scale = 0.8
 center_pos = (width / 2, height / 2)
 
+item_data = "item_data.json"
 
+item_data = loader.loadFile(item_data)
 
+# print(item_data["items"])
 
 class Item:
     def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, size=1, sound_path=None):
@@ -1754,114 +1760,143 @@ class Item:
 # Update:
 # modified all crystals to have 15%/5% value
 
-items = [
-    Item("War Helmet", r"assets\item icons\in use\Icons_40.png", 
-         ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08]),  # Stats clear → no desc needed
-
-    Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", 
-         ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1],
-         description="Reduces damage taken@but lowers movement speed."),
-
-    Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", 
-         ["lifesteal_per"], [0.15]),  # Simple → no desc
-
-    Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", 
-         ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05],
-         description="Gains HP and agility@but loses mana.@Reduces skill cooldowns."),
-
-    Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", 
-         ["hp_per", "hp_flat"], [0.1, 5.0]),  # Clear → no desc
-
-    Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", 
-         ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3],
-         description="Greatly increases mana regeneration@at the cost of health regeneration."),
+items = []
 
 
-
-    Item("Crimson Hearthstone", r"assets\item icons\gems\Icons_15.png", 
-         ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
-
-    Item("Azure Myststone", r"assets\item icons\gems\Icons_11.png", 
-         ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
-
-    Item("Verdant Fury", r"assets\item icons\gems\Icons_03.png", 
-         ['atk_flat', 'atk_speed_per', 'move_speed_per'], [0.25, 0.05, 0.05]),  # Clear → no desc
-
-    Item("Elixir", r"assets\item icons\in use\Icons_30.png", 
-         ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),  # Balanced → no desc
-
-    Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", 
-         ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),  # Clear → no desc
-
-    Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", 
-         ['mana_refund_per'], [0.75],
-         description="Refunds 75% of mana spent on skills."),
-
+for item in item_data["items"]:
+    # print(item)
+    # print(item["image_path"])
+    items.append(Item(
+        name=item.get("name", "Unnamed Item"),
+        image_path=item.get("image_path", ""),
+        bonus_type=item.get("bonus_type", "Unknown Bonus"),
+        bonus_value=item.get("bonus_value", "Unknown Bonus Value"),
+        description=item.get("description", ""),
+        cooldown=item.get("cooldown", 0),
+        attack_frames=item.get("attack_frames"),
+        attack_count=item.get("attack_count"),
+        attack_frame_duration=item.get("attack_frame_duration", 100),
+        attack_repeat=item.get("attack_repeat", 1),
+        starts_at_zero=item.get("starts_at_zero", False),
+        size=item.get("size", 1),
+        sound_path=item.get("sound_path")
+    ))
 
 
-    Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", 
-         ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+# items = [
+#     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", 
+#          ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08]),  # Stats clear → no desc needed
 
-    Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", 
-         ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+#     Item("Tough Stone", r"assets\item icons\in use\Icons_14.png", 
+#          ['dmg_reduce_per', 'hp_flat', "move_speed_per"], [0.15, 5.0, -0.1],
+#          description="Reduces damage taken@but lowers movement speed."),
 
-    Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", 
-         ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+#     Item("Undead Marrow", r"assets\item icons\new items\2 Icons with back\Icons_40.png", 
+#          ["lifesteal_per"], [0.15]),  # Simple → no desc
 
-    Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", 
-         ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),  # Clear → no desc
+#     Item("Spoon", r"assets\item icons\new items\2 Icons with back\Icons_19.png", 
+#          ['hp_flat', 'mana_flat', 'agi_flat', 'cd_reduce_per'], [30.0, -30.0, 5.0, 0.05],
+#          description="Gains HP and agility@but loses mana.@Reduces skill cooldowns."),
 
-    Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", 
-         ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25],
-         description="Greatly increases spell damage@but reduces max health."),
+#     Item("Vitality Booster", r"assets\item icons\new items\2 Icons with back\Icons_23.png", 
+#          ["hp_per", "hp_flat"], [0.1, 5.0]),  # Clear → no desc
 
-    Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", 
-         ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]),  # Clear → no desc
+#     Item("Mysterious Mushroom", r"assets\item icons\in use\Icons_08.png", 
+#          ["hp_regen_per", "mana_regen_per"], [-0.3, 0.3],
+#          description="Greatly increases mana regeneration@at the cost of health regeneration."),
 
 
 
-    Item("Old Axe", r"assets\item icons\in use\Icons_09.png", 
-         ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),  # Clear → no desc
+#     Item("Crimson Hearthstone", r"assets\item icons\gems\Icons_15.png", 
+#          ['hp_flat', 'dmg_reduce_per', 'hp_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
 
-    Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", 
-         ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]),  # Clear → no desc
+#     Item("Azure Myststone", r"assets\item icons\gems\Icons_11.png", 
+#          ['mana_flat', 'spell_dmg_per', 'mana_regen_per'], [25.0, 0.05, 0.05]),  # Clear → no desc
 
-    Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", 
-         ['sp_increase_per', 'all_stats_per'], [0.40, 0.5],
-         description="Special meter fills 40% faster."),
+#     Item("Verdant Fury", r"assets\item icons\gems\Icons_03.png", 
+#          ['atk_flat', 'atk_speed_per', 'move_speed_per'], [0.25, 0.05, 0.05]),  # Clear → no desc
 
-    Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", 
-         ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),  # Clear → no desc
+#     Item("Elixir", r"assets\item icons\in use\Icons_30.png", 
+#          ["hp_regen_per", "mana_regen_per", "move_speed_per"], [0.07, 0.07, 0.07]),  # Balanced → no desc
 
-    Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", 
-         ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),  # Many stats → no desc
+#     Item("Energy Booster", r"assets\item icons\new items\2 Icons with back\Icons_12.png", 
+#          ["str_flat", "int_flat", "agi_flat"], [4.0, 4.0, 3.0]),  # Clear → no desc
 
-    Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", 
-         ["crit_chance_per", "crit_dmg_per"], [0.2, 0.7],
-         description="Grants each attack a 20%@chance to deal 70% more damage."),
-
+#     Item("Mana Essence", r"assets\item icons\new items\2 Icons with back\Icons_26.png", 
+#          ['mana_refund_per'], [0.75],
+#          description="Refunds 75% of mana spent on skills."),
 
 
-    Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
-         ['dmg_return_per'], [0.20],
-         description="Returns 20% of damage taken to attacker."),
 
-    Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
-         ['heal_when_low', 'all_stats_flat'], [1.0, 1], 
-         description="When health falls below 10%, instantly@restores health equal@to Strength.@@Cooldown: 120s",
-         cooldown=120,
-         attack_frames=r'assets\attacks_item\Last Breath\image_',
-         attack_count=8,
-         attack_frame_duration=125,
-         attack_repeat=5,
-         starts_at_zero=True,
-         size=2,
-         sound_path='pass muna bro'),
+#     Item("Crimson Crystal", r"assets\item icons\new items\2 Icons with back\Icons_24.png", 
+#          ['spell_dmg_per', 'mana_reduce_per', 'cd_reduce_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
 
-    Item("Absorption", r"assets\item icons\new items\2 Icons with back\Icons_05.png", 
-         ['extra_temp_hp'], [50.0], 
-         description="Grants 50 temporary HP that absorbs@damage before affecting real health."),
-]
+#     Item("Red Crystal", r"assets\item icons\new items\2 Icons with back\Icons_06.png", 
+#          ['mana_reduce_per', 'cd_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+
+#     Item("Ruby", r"assets\item icons\new items\2 Icons with back\Icons_07.png", 
+#          ['cd_reduce_per', 'mana_reduce_per', 'spell_dmg_per'], [0.15, 0.05, 0.05]),  # Clear → no desc
+
+#     Item("Princess Necklace", r"assets\item icons\new items\2 Icons with back\Icons_34.png", 
+#          ['mana_flat', 'mana_reduce_per', 'spell_dmg_per'], [40.0, 0.05, 0.05]),  # Clear → no desc
+
+#     Item("Corrupted Booster", r"assets\item icons\new items\2 Icons with back\Icons_35.png", 
+#          ['health_cost_per', "spell_dmg_per"], [-0.15, 0.25],
+#          description="Greatly increases spell damage@but reduces max health."),
+
+#     Item("Emblem Amulet", r"assets\item icons\in use\Icons_26.png", 
+#          ["int_per", "int_flat", "mana_regen_per"], [0.1, 4.0, 0.08]),  # Clear → no desc
+
+
+
+#     Item("Old Axe", r"assets\item icons\in use\Icons_09.png", 
+#          ["atk_per", "hp_flat", "agi_flat"], [0.1, 5.0, 2.0]),  # Clear → no desc
+
+#     Item("Spirit Feather", r"assets\item icons\in use\Icons_11.png", 
+#          ["move_speed_per", "atk_speed_flat"], [0.1, 150.0]),  # Clear → no desc
+
+#     Item("Cheese", r"assets\item icons\2 Icons with back\Icons_12.png", 
+#          ['sp_increase_per', 'all_stats_per'], [0.40, 0.5],
+#          description="Special meter fills 40% faster."),
+
+#     Item("The Great Hilt", r"assets\item icons\2 Icons with back\Icons_23.png", 
+#          ['atk_flat', "move_speed_per", 'atk_speed_flat'], [0.1, 0.05, 50.0]),  # Clear → no desc
+
+#     Item("Flower Locket", r"assets\item icons\in use\Icons_13.png", 
+#          ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"], [0.02, 0.02, 0.02, 100.0, 4.0]),  # Many stats → no desc
+
+#     Item("Machete", r"assets\item icons\new items\2 Icons with back\Icons_27.png", 
+#          ["crit_chance_per", "crit_dmg_per"], [0.2, 0.7],
+#          description="Grants each attack a 20%@chance to deal 70% more damage."),
+
+
+
+#     Item("Curse of Warlord", r"assets\item icons\new items\2 Icons with back\Icons_15.png", 
+#          ['dmg_return_per'], [0.20],
+#          description="Returns 20% of damage taken to attacker."),
+
+#     Item("Last Breath", r"assets\item icons\new items\2 Icons with back\Icons_04.png", 
+#          ['heal_when_low', 'all_stats_flat'], [1.0, 1], 
+#          description="When health falls below 10%, instantly@restores health equal@to Strength.@@Cooldown: 120s",
+#          cooldown=120,
+#          attack_frames=r'assets\attacks_item\Last Breath\image_',
+#          attack_count=8,
+#          attack_frame_duration=125,
+#          attack_repeat=5,
+#          starts_at_zero=True,
+#          size=2,
+#          sound_path='pass muna bro'),
+
+#     Item("Absorption", r"assets\item icons\new items\2 Icons with back\Icons_05.png", 
+#          ['extra_temp_hp'], [50.0], 
+#          description="Grants 50 temporary HP that absorbs@damage before affecting real health."),
+
+     
+# ]
+
+
+
+
 """# MAX CHAR LENGTH (including spaces):
 \n# -> 32"""
 
@@ -2379,17 +2414,12 @@ def player_selection():
     yposlower=75
     yposupper=200
     xpos1=width - int(75 * 7)+addd # 535
-    xpos2=width - int(75 * 5.5)+addd # 422.5
+    xpos2=width - int(75 * 5.5)+addd # 422
     xpos3=width - int(75 * 4)+addd
     xpos4=width - int(75 * 2.5)+addd
     xpos5=width - int(75)+addd
 
-    # positioning
-    upper=550
-    lower=450
-    lower2=350
-    lower3=250
-    lower4=150
+    
     # last is only 75 position for xpos4
 
     #p2
@@ -2397,6 +2427,7 @@ def player_selection():
     yposlower=75
     yposupper=200
     # Heroes (large icons — default size)
+
     p1_select = [
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
@@ -2421,40 +2452,63 @@ def player_selection():
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
     ]
 
+    # positioning
+    upper=550
+    lower=450
+    lower2=350
+    lower3=250
+    lower4=150
+
+    item_gap_x = 75
+    item_gap_y = 100
+
+    item_spacing_w = 6
+    def position_alignnment_Y(max_width:int, indexed:int):
+        indexed = indexed - 1
+        new_indexed = 1 + (indexed - (max_width) * ((indexed) // (max_width)))
+        # print(f"{indexed} - ({max_width}) * ({indexed}) // ({1+ max_width})")
+        print(f"{item_gap_x} - {new_indexed}, {height} - ({upper} - ({item_gap_y} * ({indexed}) // (1 + {max_width})))))")
+        return ((item_gap_x * new_indexed),height - (upper - (item_gap_y * ((indexed) // (max_width)))))
+
+
     # Items (small icons — use small=True)
-    p1_items = [
-        PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
-        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
-        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
-        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
-        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
+    p1_items = []
+    for x,y in enumerate(items):
+        p1_items.append(PlayerSelector(y.image, position_alignnment_Y(item_spacing_w, x+1), y, small=True),)
 
-        PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
-        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
-        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
-        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
-        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
-        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
+    #     # PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
+    #     PlayerSelector(items[0].image, position_alignnment_Y(item_spacing_w, 1), items[0], small=True),
+    #     PlayerSelector(items[1].image, position_alignnment_Y(item_spacing_w, 2), items[1], small=True),
+    #     PlayerSelector(items[2].image, position_alignnment_Y(item_spacing_w, 3), items[2], small=True),
+    #     PlayerSelector(items[3].image, position_alignnment_Y(item_spacing_w, 4), items[3], small=True),
+    #     PlayerSelector(items[4].image, position_alignnment_Y(item_spacing_w, 5), items[4], small=True),
+    #     PlayerSelector(items[5].image, position_alignnment_Y(item_spacing_w, 6), items[5], small=True),
 
-        PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
-        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
-        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
-        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
-        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
-        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
+    #     PlayerSelector(items[6].image, position_alignnment_Y(item_spacing_w, 7), items[6], small=True),
+    #     PlayerSelector(items[7].image, position_alignnment_Y(item_spacing_w, 8), items[7], small=True),
+    #     PlayerSelector(items[8].image, position_alignnment_Y(item_spacing_w, 9), items[8], small=True),
+    #     PlayerSelector(items[9].image, position_alignnment_Y(item_spacing_w, 10), items[9], small=True),
+    #     PlayerSelector(items[10].image, position_alignnment_Y(item_spacing_w, 11), items[10], small=True),
+    #     PlayerSelector(items[11].image, position_alignnment_Y(item_spacing_w, 12), items[11], small=True),
 
-        PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
-        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
-        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
-        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
-        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
-        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
+    #     PlayerSelector(items[12].image, position_alignnment_Y(item_spacing_w, 13), items[12], small=True),
+    #     PlayerSelector(items[13].image, position_alignnment_Y(item_spacing_w, 14), items[13], small=True),
+    #     PlayerSelector(items[14].image, position_alignnment_Y(item_spacing_w, 15), items[14], small=True),
+    #     PlayerSelector(items[15].image, position_alignnment_Y(item_spacing_w, 16), items[15], small=True),
+    #     PlayerSelector(items[16].image, position_alignnment_Y(item_spacing_w, 17), items[16], small=True),
+    #     PlayerSelector(items[17].image, position_alignnment_Y(item_spacing_w, 18), items[17], small=True),
 
-        PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
-        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
-        PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
-    ]
+    #     PlayerSelector(items[18].image, position_alignnment_Y(item_spacing_w, 19), items[18], small=True),
+    #     PlayerSelector(items[19].image, position_alignnment_Y(item_spacing_w, 20), items[19], small=True),
+    #     PlayerSelector(items[20].image, position_alignnment_Y(item_spacing_w, 21), items[20], small=True),
+    #     PlayerSelector(items[21].image, position_alignnment_Y(item_spacing_w, 22), items[21], small=True),
+    #     PlayerSelector(items[22].image, position_alignnment_Y(item_spacing_w, 23), items[22], small=True),
+    #     PlayerSelector(items[23].image, position_alignnment_Y(item_spacing_w, 24), items[23], small=True),
+
+    #     PlayerSelector(items[24].image, position_alignnment_Y(item_spacing_w, 25), items[24], small=True),
+    #     PlayerSelector(items[25].image, position_alignnment_Y(item_spacing_w, 26), items[25], small=True),
+    #     PlayerSelector(items[26].image, position_alignnment_Y(item_spacing_w, 27), items[26], small=True),
+    # ]
 
     p2_items = [
         PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
@@ -2488,6 +2542,7 @@ def player_selection():
         PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
         PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
         PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
+
     ]
 
     # Maps (custom large size)

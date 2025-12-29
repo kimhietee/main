@@ -181,7 +181,6 @@
     },
     {
       "name": "Unwavering Banner",
-<<<<<<< Updated upstream
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp"],
       "bonus_value": [50.0],
@@ -189,8 +188,6 @@
     },
         {
       "name": "Unwavering Banner V2",
-=======
->>>>>>> Stashed changes
       "image_path": "assets/item icons/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp"],
       "bonus_value": [50.0],

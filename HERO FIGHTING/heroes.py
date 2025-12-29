@@ -1526,7 +1526,6 @@ Chthulu = chthulu.Chthulu
 
 
 
-
 from gameloop import game
 from gameloop import reset_all
 from gameloop import menu
@@ -1891,7 +1890,7 @@ for item in item_data["items"]:
 #          size=2,
 #          sound_path='pass muna bro'),
 
-#     Item("Absorption", r"assets\item icons\new items\2 Icons with back\Icons_05.png", 
+#     Item("Unwavering banner", r"assets\item icons\new items\2 Icons with back\Icons_05.png", 
 #          ['extra_temp_hp'], [50.0], 
 #          description="Grants 50 temporary HP that absorbs@damage before affecting real health."),
 
@@ -2419,11 +2418,11 @@ def player_selection():
     yposupper=200
     xpos1=width - int(75 * 7)+addd # 535
     xpos2=width - int(75 * 5.5)+addd # 422
-    xpos3=width - int(75 * 4)+addd
-    xpos4=width - int(75 * 2.5)+addd
-    xpos5=width - int(75)+addd
+    xpos3=width - int(75 * 4)+addd #310
+    xpos4=width - int(75 * 2.5)+addd #197
+    xpos5=width - int(75)+addd #85
 
-    
+    #difference 112.5
     # last is only 75 position for xpos4
 
     #p2
@@ -2432,11 +2431,14 @@ def player_selection():
     yposupper=200
     # Heroes (large icons — default size)
 
+    p1_select = []
+
     p1_select = [
         PlayerSelector(fire_wizard_icon, (xpos1, height - yposlower), Fire_Wizard),
         PlayerSelector(wanderer_magician_icon, (xpos2, height - yposlower), Wanderer_Magician),
         PlayerSelector(fire_knight_icon, (xpos3, height - yposlower), Fire_Knight),
         PlayerSelector(chthulu_icon, (xpos5, height - yposlower), Chthulu),
+
 
         PlayerSelector(wind_hashashin_icon, (xpos3, height - yposupper), Wind_Hashashin),
         PlayerSelector(water_princess_icon, (xpos2, height - yposupper), Water_Princess),
@@ -2455,24 +2457,20 @@ def player_selection():
         PlayerSelector(forest_ranger_icon, (xpos1, height - yposupper), Forest_Ranger),
         PlayerSelector(yurei_icon, (xpos4, height - yposupper), Yurei),
     ]
+    
 
     # positioning
     upper=550
-    lower=450
-    lower2=350
-    lower3=250
-    lower4=150
-
     item_gap_x = 75
     item_gap_y = 100
 
     item_spacing_w = 6
-    def position_alignnment_Y(max_width:int, indexed:int):
+    def position_alignnment_Y(max_width:int, indexed:int, height_gap = upper, item_gap_x = item_gap_x, item_gap_y = item_gap_y):
         indexed = indexed - 1
         new_indexed = 1 + (indexed - (max_width) * ((indexed) // (max_width)))
         # print(f"{indexed} - ({max_width}) * ({indexed}) // ({1+ max_width})")
-        print(f"{item_gap_x} - {new_indexed}, {height} - ({upper} - ({item_gap_y} * ({indexed}) // (1 + {max_width})))))")
-        return ((item_gap_x * new_indexed),height - (upper - (item_gap_y * ((indexed) // (max_width)))))
+        # print(f"{item_gap_x} - {new_indexed}, {height} - ({upper} - ({item_gap_y} * ({indexed}) // (1 + {max_width})))))")
+        return ((item_gap_x * new_indexed),height - (height_gap - (item_gap_y * ((indexed) // (max_width)))))
 
 
     # Items (small icons — use small=True)
@@ -2480,6 +2478,9 @@ def player_selection():
     for x,y in enumerate(items):
         p1_items.append(PlayerSelector(y.image, position_alignnment_Y(item_spacing_w, x+1), y, small=True),)
 
+    p2_items = []
+    for x,y in enumerate(items):
+        p2_items.append(PlayerSelector(y.image, position_alignnment_Y(item_spacing_w, x+1), y, small=True),)
     #     # PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
     #     PlayerSelector(items[0].image, position_alignnment_Y(item_spacing_w, 1), items[0], small=True),
     #     PlayerSelector(items[1].image, position_alignnment_Y(item_spacing_w, 2), items[1], small=True),
@@ -2514,40 +2515,40 @@ def player_selection():
     #     PlayerSelector(items[26].image, position_alignnment_Y(item_spacing_w, 27), items[26], small=True),
     # ]
 
-    p2_items = [
-        PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-        PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
-        PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
-        PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
-        PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
-        PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
+    # p2_items = [
+    #     PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
+    #     PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
+    #     PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
+    #     PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
+    #     PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
+    #     PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
 
-        PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
-        PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
-        PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
-        PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
-        PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
-        PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
+    #     PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
+    #     PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
+    #     PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
+    #     PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
+    #     PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
+    #     PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
 
-        PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
-        PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
-        PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
-        PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
-        PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
-        PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
+    #     PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
+    #     PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
+    #     PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
+    #     PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
+    #     PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
+    #     PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
 
-        PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
-        PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
-        PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
-        PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
-        PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
-        PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
+    #     PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
+    #     PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
+    #     PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
+    #     PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
+    #     PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
+    #     PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
 
-        PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
-        PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
-        PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
+    #     PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
+    #     PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
+    #     PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
 
-    ]
+    # ]
 
     # Maps (custom large size)
     map_select = [
@@ -2900,12 +2901,12 @@ def player_selection():
 
 
 
-                    for item in p1_items:
-                        if item.is_selected():
+                    for item in equipped_items.item:
+                        # if item.is_selected():
                             hero1.items.append(item.get_associated())
 
-                    for item in p2_items:
-                        if item.is_selected():
+                    for item in equipped_items_p2.item:
+                        # if item.is_selected():
                             hero2.items.append(item.get_associated())
                             # Also apply to hero3 in single player mode
                             if global_vars.SINGLE_MODE_ACTIVE:

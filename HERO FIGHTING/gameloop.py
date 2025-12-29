@@ -356,7 +356,7 @@ def show_controls(font=None):
 
 
 
-
+import jsonloader as Save
 
 from typing import Callable, Any
 
@@ -1377,31 +1377,35 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if keybinds.is_clicked(mouse_pos):
                     if os.path.exists(key.filename):
-                        with open(key.filename, "r") as f:
-                            try:
-                                data = json.load(f)
-                            except json.JSONDecodeError:
-                                print("Error")
+                        # with open(key.filename, "r") as f:
+                        #     try:
+                            data = Save.loadFile(key.filename)
+                            #     data = json.load(f)
+                            # except json.JSONDecodeError:
+                            #     print("Error")
                             
                             for count,i in enumerate(data):
                                 # print(i)
-
-
                                 # print(tuple(new_key[count]))
                                 data[i] = tuple(new_key[count])
 
-                            with open(key.filename, "w") as f:
-                                # print(data, "Data type")
-                                json.dump(data, f, indent=4)
-                            f.close()
+                            Save.saveFile(key.filename, data)
+                            # with open(key.filename, "w") as f:
+                            #     # print(data, "Data type")
+                            #     json.dump(data, f, indent=4)
+
+                            # f.close()
                     
-                        
+                    else:
+                        data = key.data
+                        Save.saveFile(key.filename, data)
+
                     has_changes = False
-                    print('Save keybinds') 
+                    # print('Save keybinds') 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if reset_keybinds.is_clicked(mouse_pos):
-                    print("Reset Key")
+                    # print("Reset Key")
                     
                     temporary_list = []
                     for i in key.data:

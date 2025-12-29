@@ -113,7 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.slow_speed = 0
         self.silenced = False
         
-        self.max_temp_hp = 50
+        self.max_temp_hp = 0
         self.temp_hp = self.max_temp_hp
 
 

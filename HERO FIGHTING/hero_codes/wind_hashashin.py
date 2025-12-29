@@ -533,7 +533,8 @@ class Wind_Hashashin(Player):
                                 moving=i[1],
                                 continuous_dmg=i[1],
                                 stun=(i[5], 40),
-                                sound=(True, self.atk2_sound , self.x_slash_sound, None),
+                                sound=(True, self.atk2_sound, self.x_slash_sound, None),
+                                
                                 stop_movement=(i[1], 3, 2, 0.5)
                                 ) # Replace with the target
                             attack_display.add(attack)

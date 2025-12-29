@@ -112,6 +112,10 @@ class Player(pygame.sprite.Sprite):
         self.slow_source = None
         self.slow_speed = 0
         self.silenced = False
+        
+        self.temp_hp = 0
+        self.max_temp_hp = 0
+
 
         self.str_mult = 5
         self.int_mult = 5
@@ -128,7 +132,6 @@ class Player(pygame.sprite.Sprite):
         # Base Stats
         self.max_health = 0
         self.max_mana = 0
-        self.temp_hp = 0
         self.health = self.max_health
         self.mana = self.max_mana
         self.basic_attack_damage = 0
@@ -378,6 +381,7 @@ class Player(pygame.sprite.Sprite):
         #Attack-------------------------------------------------------------
         self.last_health = self.health
         self.last_mana = self.mana
+        self.last_temp_hp = self.temp_hp
         # self.just_spawned = True
         self.damage_numbers = []
 
@@ -504,12 +508,17 @@ class Player(pygame.sprite.Sprite):
         # This function only for health, check other call for display_damage()
         # print(self.health, self.last_health, 'ahah')
         # print(self.health >= self.max_health)
+        # if self.temp_hp > 0:
+        #     delta = self.temp_hp - self.last_health
+        # else:
         delta = self.health - self.last_health
+
         # print(delta)
         if delta < 0:
             self.display_damage(-delta, interval=interval, health_modify=True)  # Normal damage (red)
         elif delta > self.health_regen*10:  # Only show healing if it's significant (not just natural regen)
             self.display_damage(delta, interval=interval, color=(0, 255, 0), health_modify=True)  # Green heal
+        # self.last_health = self.temp_hp if self.temp_hp > 0 else self.health
         self.last_health = self.health
 
     def detect_and_display_mana(self, interval=30):
@@ -523,6 +532,18 @@ class Player(pygame.sprite.Sprite):
         elif delta > DEFAULT_MANA_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
             self.display_damage(delta, interval=interval, color=cyan2, mana_modify=True)  # Green heal
         self.last_mana = self.mana
+
+    # def detect_and_display_temp_hp(self, interval=30):
+    #     # This function only for health, check other call for display_damage()
+    #     # print(self.health, self.last_health, 'ahah')
+    #     # print(self.health >= self.max_health)
+    #     delta = self.mana - self.last_mana
+    #     # print(delta)
+    #     if delta < 0:
+    #         pass # Do nothing if mana consumed (annoying display)
+    #     elif delta > DEFAULT_MANA_REGENERATION*10:  # Only show healing if it's significant (not just natural regen)
+    #         self.display_damage(delta, interval=interval, color=cyan2, mana_modify=True)  # Green heal
+    #     self.last_mana = self.mana
 
 
             
@@ -572,8 +593,9 @@ class Player(pygame.sprite.Sprite):
         # Apply flats first
         for typ, val in bonuses.items():
             # print(typ, "hp_regen_flat")
-            # print(bonuses)
+            print(bonuses)
             if "_flat" in typ:
+                # print(typ)
                 base_stat = typ.replace("_flat", "")
                 if base_stat == "all_stats":
                     self.strength += val
@@ -602,8 +624,6 @@ class Player(pygame.sprite.Sprite):
                     self.basic_attack_damage += self.calculate_regen(rate=self.agi_mult, stat=self.agility * val)
 
 
-                elif typ == "extra_temp_hp":
-                    self.temp_hp += val
 
                 elif base_stat == "hp":
                     self.max_health += val
@@ -612,15 +632,15 @@ class Player(pygame.sprite.Sprite):
                 elif base_stat == "atk":
                     self.basic_attack_damage += val
                 
-                elif typ == "hp_regen_flat":
+                elif base_stat == "hp_regen":
                     self.health_regen += self.regen_per_second(val)
                     pass
                     # print(val, self.regen_per_second(val) * 60, self.health_regen * 60, 'total:', (self.health_regen + self.regen_per_second(val)) * 60)
                     # self.health_regen = self.health_regen + val / 60
                     # print('added hp regen to:', self.__class__.__name__)
-                elif typ == "mana_regen_flat":
+                elif base_stat == "mana_regen":
                     self.mana_regen += self.regen_per_second(val)
-                elif typ == "atk_speed_flat":
+                elif base_stat == "atk_speed":
                     # Flat attack speed: Reduce anim speed (faster anim = faster atk)
                     # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
                     self.basic_attack_animation_speed -= val * 0.1 #removed 0.1 (therefore val is 15)
@@ -676,6 +696,12 @@ class Player(pygame.sprite.Sprite):
                     
                     # add +20 attack speed
 
+            # Abilities
+            if typ == "extra_temp_hp":
+                print('addeddd')
+                self.temp_hp += val
+                self.max_temp_hp = self.temp_hp
+                print('temp hp:', self.temp_hp)
         # Apply percentages (multiplicative)
 
             if "_per" in typ:
@@ -1264,7 +1290,7 @@ class Player(pygame.sprite.Sprite):
 
         # Calculate extension for temp_hp
         if self.max_health > 0:
-            extension_width = int((self.temp_hp / self.max_health) * bar_width)
+            extension_width = int((self.max_temp_hp / self.max_health) * bar_width)
         else:
             extension_width = 0
         total_width = bar_width + extension_width
@@ -1347,6 +1373,7 @@ class Player(pygame.sprite.Sprite):
             screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 27))
 
     def player_status(self, health, mana, special):
+        # print(self.temp_hp)
         font = global_vars.get_font(20)
         p1_x = self.player_1_x
         p1_y = self.player_1_y
@@ -1372,8 +1399,11 @@ class Player(pygame.sprite.Sprite):
 
             self.special_bar_p1 = pygame.Rect(p1_x, p1_y-25, self.special, 10)
 
+            self.temp_hp_bar_p1 = pygame.Rect(self.health_bar_p1.x + self.health_bar_p1.width, self.health_bar_p1.y, self.temp_hp, 20)
+
+
             # Recalculate mana decor width based on max mana
-            self.hpdecor_end_p1 = self.max_health + 10
+            self.hpdecor_end_p1 = self.max_health + self.temp_hp + 10
             self.manadecor_end_p1 = self.max_mana + 10  # Fixing mana decor width based on max mana
 
             self.hp_decor_p1 = pygame.Rect(p1_x-6, p1_y-5, self.hpdecor_end_p1, 30)
@@ -1429,7 +1459,7 @@ class Player(pygame.sprite.Sprite):
                 special_color = 'yellow'
 
             # Health and Mana Text
-            self.health_display_text_p1 = font.render(f'[{int(self.health)}]', TEXT_ANTI_ALIASING, health_color)
+            self.health_display_text_p1 = font.render(f'[{int(self.health + self.temp_hp)}]', TEXT_ANTI_ALIASING, health_color)
             self.mana_display_text_p1 = font.render(f'[{int(self.mana)}]', TEXT_ANTI_ALIASING, mana_color)
 
             self.special_display_text_p1 = font.render(f'[{int(self.special)}]', TEXT_ANTI_ALIASING, special_color)
@@ -1462,6 +1492,9 @@ class Player(pygame.sprite.Sprite):
             pygame.draw.rect(screen, dim_gray, self.special_decor_p1)
             pygame.draw.rect(screen, special_color, self.special_bar_p1)
 
+            pygame.draw.rect(screen, gold, self.temp_hp_bar_p1)
+
+
             # show health regen (call player_status() firsts)
             self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
 
@@ -1469,10 +1502,12 @@ class Player(pygame.sprite.Sprite):
 
         elif self.player_type == 2:
             # Start positions aligned to the right
-            self.hpdecor_end_p2 = self.max_health + 10
+            self.hpdecor_end_p2 = self.max_health + self.temp_hp + 10
             self.manadecor_end_p2 = self.max_mana + 10  # Fixing mana decor width based on max mana
 
             self.specialdecor_end_p2 = self.max_special + 10
+
+
 
 
 
@@ -1508,6 +1543,8 @@ class Player(pygame.sprite.Sprite):
             # Health and Mana Rects (bars should start from right side and shrink towards left)
             self.health_bar_p2 = pygame.Rect(self.hp_decor_p2.right - self.health_bar_p2_width - 5, p2_y, self.health_bar_p2_width, 20)
             self.health_bar_p2_after = pygame.Rect(self.hp_decor_p2.right - self.white_health_p2_width - 5, p2_y, self.white_health_p2_width, 20)
+
+            self.temp_hp_bar_p2 = pygame.Rect(self.health_bar_p2.x + self.health_bar_p2.width, self.health_bar_p2.y, self.temp_hp, 20)
 
             self.mana_bar_p2 = pygame.Rect(self.mana_decor_p2.right - self.mana_bar_p2_width - 5, p2_y+50, self.mana_bar_p2_width, 20)
             self.mana_bar_p2_after = pygame.Rect(self.mana_decor_p2.right - self.white_mana_p2_width - 5, p2_y+50, self.white_mana_p2_width, 20)
@@ -1569,7 +1606,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 special_color_p2 = 'yellow'
 
-            self.health_display_text_p2 = font.render(f'[{int(self.health)}]', TEXT_ANTI_ALIASING, health_color_p2)
+            self.health_display_text_p2 = font.render(f'[{int(self.health + self.temp_hp)}]', TEXT_ANTI_ALIASING, health_color_p2)
             self.mana_display_text_p2 = font.render(f'[{int(self.mana)}]', TEXT_ANTI_ALIASING, mana_color_p2)
 
             self.special_display_text_p2 = font.render(f'[{int(self.special)}]', TEXT_ANTI_ALIASING, special_color_p2)
@@ -1605,6 +1642,9 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.rect(screen, dim_gray, self.special_decor_p2)
             pygame.draw.rect(screen, special_color_p2, self.special_bar_p2)
+
+            pygame.draw.rect(screen, gold, self.temp_hp_bar_p2)
+
 
             # show health regen (call player_status() firsts)
             self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
@@ -1673,6 +1713,7 @@ class Player(pygame.sprite.Sprite):
         if self.temp_hp > 0:
             temp_absorb = min(damage, self.temp_hp)
             self.temp_hp -= temp_absorb
+            self.display_damage(damage)
             damage -= temp_absorb
         
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
@@ -1703,12 +1744,15 @@ class Player(pygame.sprite.Sprite):
         if self.is_dead():
             return
         self.health = max(0, self.health + heal)
+        self.display_damage(heal, color=green, health_modify=True)
 
     def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
+            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
         else: #add mana to the attacked player, called by take_special
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
+            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
 
     def take_special(self, amount):
         if self.is_dead():

@@ -1120,8 +1120,9 @@ def menu():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if campaign_button.is_clicked(event.pos):
-                    # fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
-                    campaign()
+                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
+                    fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
+                    # campaign()
                     return
 
             if keys[pygame.K_SPACE]:
@@ -1138,7 +1139,7 @@ def menu():
         # main.screen.blit(background, (0, 0))
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
-        Animate_BG.Sword_campaign.display(screen, speed=50)
+        # Animate_BG.Sword_campaign.display(screen, speed=50)
         create_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
@@ -1162,14 +1163,23 @@ def menu():
         pygame.display.update()
         main.clock.tick(main.FPS)
 
+
+load_sword_campaign_bg = False
 def campaign():
+    global load_sword_campaign_bg
     while True:
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         # mouse_press = pygame.mouse.get_pressed()
         # key_press = pygame.key.get_pressed()
 
-        main.screen.fill((50, 50, 50))
+
+        if not load_sword_campaign_bg:
+            Animate_BG.Sword_campaign.load_frames_type2()
+            load_sword_campaign_bg = True
+        Animate_BG.Sword_campaign.display(screen, speed=10)
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1182,6 +1192,9 @@ def campaign():
                     menu() 
                     return
         menu_button.draw(screen, mouse_pos)
+
+        
+        
 
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -1256,8 +1269,6 @@ load_green_bg = False
 def controls(can_click = can_click, opacity=opacity, display_confirmation = display_confirmation, has_changes = has_changes):
     global load_green_bg
 #-------------------------------------START-----------------------------------------
-
-    left_width = width*0.45
     # command_img = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\command image.png').convert(), (main.width/2, main.height))
     # control_img = main.pygame.transform.scale(

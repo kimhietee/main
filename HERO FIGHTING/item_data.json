@@ -4,7 +4,7 @@
       "name": "War Helmet",
       "image_path": "assets/item icons/in use/Icons_40.png",
       "bonus_type": ["str_per", "str_flat", "hp_regen_per"],
-      "bonus_value": [0.1, 1.0, 0.08]
+      "bonus_value": [0.1, 4.0, 0.08]
     },
     {
       "name": "Tough Stone",
@@ -181,25 +181,10 @@
     },
     {
       "name": "Unwavering Banner",
-      "image_path": "assets/item icons/new items/2 Icons with back/Icons_05.png",
-      "bonus_type": ["extra_temp_hp"],
-      "bonus_value": [50.0],
-      "description": "Grants 50 temporary HP that absorbs@damage before affecting real health."
-    },
-        {
-      "name": "Unwavering Banner V2",
       "image_path": "assets/item icons/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp"],
-      "bonus_value": [50.0],
-      "description": "Grants 50 temporary HP that absorbs@damage before affecting real health."
-    },
-    {
-      "name": "Diddy Power",
-      "image_path": "assets/item icons/2 Icons with back/p_diddy.webp",
-      "bonus_type": ["extra_temp_hp"],
-      "bonus_value": [10.0],
-      "cooldown": 100,
-      "description": "granting@10 Temporary HP@@Cooldown: 100s@@\"Go Smash them for me dawg\""
+      "bonus_value": [40.0],
+      "description": "Grants 40 temporary HP that absorbs@damage before affecting real health."
     }
     
   ]

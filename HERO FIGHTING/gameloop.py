@@ -451,7 +451,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
     cell_width = width // grid_size
     cell_height = height // grid_size
 
-    font = global_vars.get_font(20)
+    font = global_vars.get_font(20, None)
 
     for i in range(grid_size + 1):
         # Vertical lines
@@ -753,10 +753,12 @@ def game(bg=None):
             for selector in main.p1_select:
                 if selector.is_selected():
                     selector.draw_icon(center_pos=(75, 75), hero_sp=main.hero1.is_special_active())  # Top-left
+                    # main.hero1.draw_profile(center_pos=(75, 75), hero_sp=main.hero1.is_special_active())
 
             for selector in main.p2_select:
                 if selector.is_selected():
                     selector.draw_icon(center_pos=(width - 75, 75), hero_sp=main.hero2.is_special_active())  # Top-right
+                    # main.hero2.draw_profile(center_pos=(width - 75, 75), hero_sp=main.hero2.is_special_active())
 
             for i, item in enumerate(main.hero1.items):
                 item.draw_icon((150+(50*i), 100), small='smallest')

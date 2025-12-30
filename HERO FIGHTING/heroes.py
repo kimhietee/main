@@ -259,10 +259,10 @@ cstm_pos2 = 0.222 #160
 cstm_pos3 = 0.291 #210
 hp_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\health icon.png').convert_alpha(), 0, 0.05)
 mana_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\mana icon.png').convert_alpha(), 0, 0.065)
-hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos2)+1))
-mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1))
-hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1))
-mana_icon_p2_rect = mana_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos3)+1))
+hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos2)+1-20))
+mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1-20))
+hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1-20))
+mana_icon_p2_rect = mana_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos3)+1-20))
 
 
 
@@ -1917,12 +1917,12 @@ Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27, , Trait: 20% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 32, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 44, Intelligence: 40, Agility: 63, , Trait: 15% hp regen",
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 20% spell dmg",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 35, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 63, , Trait: 15% hp regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%->20% mana, cost/delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 35, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 23, , Trait: 15% cd reduce",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5-10% stat,potency"
 }
@@ -2605,7 +2605,7 @@ def player_selection():
             return r[0]
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Fire_Knight
+            PLAYER_1_SELECTED_HERO = Wanderer_Magician
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None

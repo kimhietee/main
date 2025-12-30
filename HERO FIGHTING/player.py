@@ -83,7 +83,7 @@ def display_inputs(key):
 
 
 
-
+        
 
 
 class Player(pygame.sprite.Sprite):
@@ -123,6 +123,11 @@ class Player(pygame.sprite.Sprite):
         self.hp_regen_per_str = 0.01
         self.mana_regen_per_int = 0.01
         self.agi_mult = 0.1
+        # fire knight bas = 20
+
+        # attack speed stuff
+        self.base_attack_speed = 100
+        self.base_attack_time = 1.7
 
         # stat
         self.strength = 40
@@ -143,9 +148,30 @@ class Player(pygame.sprite.Sprite):
         self.mana_regen = self.regen_per_second(DEFAULT_MANA_REGENERATION)
         self.health_regen = self.regen_per_second(DEFAULT_HEALTH_REGENERATION)
 
+        # will be phased out soon
         self.basic_attack_cooldown = BASIC_ATK_COOLDOWN
 
         self.default_animation_speed = DEFAULT_ANIMATION_SPEED
+
+        attr_size = (24,24)
+        # Strength icon
+        self.strength_attribute_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\Strength_attribute_symbol.webp').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+        # Agility icon
+        self.agility_attribute_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\Agility_attribute_symbol.webp').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+        # Intelligence icon
+        self.intelligence_attribute_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\Intelligence_attribute_symbol.webp').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+
+
+
 
         
         # self.last_health = self.health
@@ -1400,12 +1426,108 @@ class Player(pygame.sprite.Sprite):
 
         if self.player_type == 1:
             # Player 1: Adjust text slightly to the right
-            screen.blit(health_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy + 27))
-            screen.blit(mana_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy+50 + 27))
+            screen.blit(health_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy + 7))
+            screen.blit(mana_regen_text, (p1_posx - health_regen_text.get_width() - 25, p1_posy+50 + 7))
         elif self.player_type == 2:
             # Player 2: Adjust text slightly to the left
-            screen.blit(health_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy + 27))
-            screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 27))
+            screen.blit(health_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy + 7))
+            screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 7))
+    
+    # def draw_icon_and_value(self, screen, )
+    def draw_stats(self, screen):
+        font = global_vars.get_font(15)
+
+        posy = 50
+        gap = 25
+        icon_gap = 6
+
+        posx1 = 135
+        posx2 = width - posx1
+
+        strength_text = font.render(str(int(self.strength)), True, red)
+        intelligence_text = font.render(str(int(self.intelligence)), True, cyan2)
+        agility_text = font.render(str(int(self.agility)), True, green)
+
+        if self.player_type == 1:
+            x = posx1
+
+            # Strength
+            strength_icon_y = posy + (strength_text.get_height() - self.strength_attribute_icon.get_height()) // 2
+            screen.blit(self.strength_attribute_icon, (x, strength_icon_y))
+            screen.blit(strength_text, (x + self.strength_attribute_icon.get_width() + icon_gap, posy))
+            x += self.strength_attribute_icon.get_width() + strength_text.get_width() + gap
+
+            # Intelligence
+            int_icon_y = posy + (intelligence_text.get_height() - self.intelligence_attribute_icon.get_height()) // 2
+            screen.blit(self.intelligence_attribute_icon, (x, int_icon_y))
+            screen.blit(intelligence_text, (x + self.intelligence_attribute_icon.get_width() + icon_gap, posy))
+            x += self.intelligence_attribute_icon.get_width() + intelligence_text.get_width() + gap
+
+            # Agility
+            agi_icon_y = posy + (agility_text.get_height() - self.agility_attribute_icon.get_height()) // 2
+            screen.blit(self.agility_attribute_icon, (x, agi_icon_y))
+            screen.blit(agility_text, (x + self.agility_attribute_icon.get_width() + icon_gap, posy))
+
+        else:
+            x = posx2
+
+            # Agility
+            # Strength
+            strength_icon_y = posy + (strength_text.get_height() - self.strength_attribute_icon.get_height()) // 2
+            screen.blit(self.strength_attribute_icon, (x - self.strength_attribute_icon.get_width(), strength_icon_y))
+            screen.blit(strength_text, (x - self.strength_attribute_icon.get_width() - icon_gap - strength_text.get_width(), posy))
+            x -= self.strength_attribute_icon.get_width() + strength_text.get_width() + gap
+
+            # Intelligence
+            int_icon_y = posy + (intelligence_text.get_height() - self.intelligence_attribute_icon.get_height()) // 2
+            screen.blit(self.intelligence_attribute_icon, (x - self.intelligence_attribute_icon.get_width(), int_icon_y))
+            screen.blit(intelligence_text, (x - self.intelligence_attribute_icon.get_width() - icon_gap - intelligence_text.get_width(), posy))
+            x -= self.intelligence_attribute_icon.get_width() + intelligence_text.get_width() + gap
+
+            # Agility
+            agi_icon_y = posy + (agility_text.get_height() - self.agility_attribute_icon.get_height()) // 2
+            screen.blit(self.agility_attribute_icon, (x - self.agility_attribute_icon.get_width(), agi_icon_y))
+            screen.blit(agility_text, (x - self.agility_attribute_icon.get_width() - icon_gap - agility_text.get_width(), posy))
+
+
+            # Player 2: Adjust text slightly to the left
+            # screen.blit(strength_text, (p2_posx1+p2_posx2 + 15, p2_posy + 27))
+            # screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 27))
+    
+    # def draw_profile(self, center_pos, small=False, hero_sp=False):
+    #     """
+    #     Draw the player's current image as profile icon with border.
+        
+    #     Args:
+    #         center_pos (tuple): Center position for the icon.
+    #         small (bool or str): If True, use small size (50x50). If 'smallest', use 25x25.
+    #         hero_sp (bool): If True, use gold border for special active.
+    #     """
+    #     if self.image is None:
+    #         return
+        
+    #     if small == 'smallest':
+    #         profile = pygame.transform.scale(self.image, (25, 25))
+    #         offset = (15, 15)
+    #         border = (30, 30)
+    #     elif small:
+    #         profile = pygame.transform.scale(self.image, (50, 50))
+    #         offset = (25, 25)
+    #         border = (60, 60)
+    #     else:
+    #         profile = pygame.transform.scale(self.image, (75, 75))
+    #         offset = (37, 37)
+    #         border = (85, 85)
+        
+    #     if hero_sp:
+    #         color = gold
+    #     else:
+    #         color = black
+        
+    #     rect = profile.get_rect(center=center_pos)
+    #     decor = pygame.Rect(rect.centerx - offset[0], rect.centery - offset[1], border[0], border[1])
+    #     # pygame.draw.rect(screen, color, decor)
+    #     screen.blit(profile, rect)
 
     def player_status(self, health, mana, special):
         # print(self.temp_hp)
@@ -1532,6 +1654,8 @@ class Player(pygame.sprite.Sprite):
 
             # show health regen (call player_status() firsts)
             self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p1_posx=self.player_1_x, p1_posy=self.player_1_y)
+            # self.draw_stats(screen, 20, 70)
+
 
 
 
@@ -1679,6 +1803,7 @@ class Player(pygame.sprite.Sprite):
 
             # show health regen (call player_status() firsts)
             self.draw_regen_rate(screen, self.health_regen, self.mana_regen, p2_posx1=self.healthdecor_p2_starting, p2_posx2=self.hpdecor_end_p2, p2_posy=self.player_2_y)
+            
 
         
 
@@ -1689,6 +1814,7 @@ class Player(pygame.sprite.Sprite):
         # screen.blit(mana_icon, mana_icon_p1_rect)
         # screen.blit(mana_icon, mana_icon_p2_rect)
 
+        self.draw_stats(screen)
         
         
         if self.health <= 0:
@@ -2043,7 +2169,7 @@ class Player(pygame.sprite.Sprite):
     def calculate_effective_as(self):
         """Effective Attack Speed."""
         as_from_agility = self.agility * global_vars.AGILITY_AS_BONUS
-        base_with_agility = self.base_as + as_from_agility
+        base_with_agility = self.base_attack_speed + as_from_agility
         effective_as = base_with_agility + self.flat_as_bonus - self.flat_as_reduction
         total_percent = 1 + self.percent_as_bonus - self.percent_as_reduction
         effective_as *= max(0.0, total_percent)

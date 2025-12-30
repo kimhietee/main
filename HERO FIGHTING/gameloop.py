@@ -157,6 +157,17 @@ menu_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
+login_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width * 0.5, height * 0.85),
+    scale=0.9,
+    text='LOGIN',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
 ingame_menu_button = ImageButton(
     image_path=menu_button_img,
     pos=(50, 15),
@@ -1166,18 +1177,42 @@ def menu():
 
 load_sword_campaign_bg = False
 def campaign():
+
+    #variables
     global load_sword_campaign_bg
+    username_input = ""
+    password_input = ""
+    username_clicked = False
+    password_clicked = False
+    login_button_width = width * 0.4
+    login_button_height = 50
+    username_limit_char = [1, 20]
+    password_limit_char = [8, 20]
+    typing_gap = 1500
+    typing = False
+    font = global_vars.get_font(60)
     while True:
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         # mouse_press = pygame.mouse.get_pressed()
         # key_press = pygame.key.get_pressed()
-
+        
 
         if not load_sword_campaign_bg:
             Animate_BG.Sword_campaign.load_frames_type2()
             load_sword_campaign_bg = True
         Animate_BG.Sword_campaign.display(screen, speed=10)
+        
+
+        #typing indicator
+        # print(pygame.time.get_ticks() % typing_gap)
+        if (pygame.time.get_ticks() % typing_gap) > typing_gap/2:
+            
+            typing = True
+            # print(typing)
+        else: 
+            typing = False
+
 
 
         for event in pygame.event.get():
@@ -1191,13 +1226,85 @@ def campaign():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
+                if Username.is_clicked(event.pos):
+                    username_clicked = not username_clicked
+                    password_clicked = False
+                if Password.is_clicked(event.pos):
+                    password_clicked = not password_clicked
+                    username_clicked = False
+                if login_button.is_clicked(event.pos):
+                    menu() 
+                    return
+            if username_clicked:
+                if event.type == pygame.KEYDOWN:
+                    print("Key down")
+                    if event.key == pygame.K_BACKSPACE:
+                        username_input = username_input[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        print("Username entered:", username_input)
+                
+                    elif len(username_input) <= username_limit_char[1]:
+                        username_input += event.unicode
+                        print(event.unicode)
+                    else:
+                        print("max character reached!")
+
+            if password_clicked:
+                if event.type == pygame.KEYDOWN:
+                    print("Key down")
+                    if event.key == pygame.K_BACKSPACE:
+                        password_input = password_input[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        print("Username entered:", password_input)
+
+                    elif len(password_input) <= password_limit_char[1]:
+                        password_input += event.unicode
+                        print(event.unicode)
+                    else:
+                        print("max character reached!")
+            
+        
+        Username = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*0.4, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (0, 255, 0), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+        Password = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*0.6, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+                            (0, 255, 0), ("*" * len(password_input)) + (("|" if typing else "") if password_clicked and len(password_input) <= password_limit_char[1] else ""), 
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+        
+        draw_black_screen(0.5,size=(width*0.2, height * 0.2, width*0.6, height*0.6))
+
+        create_title('FIGHTING KIMHIEE', font , 1, height * 0.1, angle=0, x_offset=width)
+
+        create_title('Username', font , 0.5, height * 0.35, angle=0, x_offset=width*0.74)
+        create_title('Password', font , 0.5, height * 0.55, angle=0, x_offset=width*0.74)
+
+        Password.update(mouse_pos, password_clicked)
+        Password.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        Username.update(mouse_pos, username_clicked)
+        Username.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        login_button.draw(screen, mouse_pos)
+        
+        
         menu_button.draw(screen, mouse_pos)
 
-        
-        
 
+
+        # print("campaign")
         pygame.display.update()
         main.clock.tick(main.FPS)
+
 
 
 

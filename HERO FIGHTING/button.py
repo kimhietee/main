@@ -1,6 +1,6 @@
 import pygame
 from global_vars import get_font
-
+import math
 
 class ImageButton:
     def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True, y_margin=0):
@@ -52,6 +52,8 @@ class ImageButton:
         # Draw the image and text
         screen.blit(self.image, self.rect)
         screen.blit(self.text_surf, self.text_rect)
+
+
 
     def set_position(self, center): # this is the original position 
         dx = center[0] - self.rect.centerx 
@@ -271,3 +273,328 @@ class RectButton:
         #         if button_hovered:
         #             self.button_clicked = not self.button_clicked
                 # self.do
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import global_vars as g
+
+
+
+
+
+
+class ModalObject:
+    """
+    Clickable selector for heroes, items, or maps with smooth movement on select.
+    """
+    # Default sizes
+    PROFILE_SIZE = (75, 75)        # Heroes
+    INGAME_SIZE = (50, 50)         # Items (your old size)
+    DECOR_SIZE_LARGE = (85, 85)
+    DECOR_OFFSET_LARGE = (42, 42)
+    DECOR_SIZE_SMALL = (60, 60)
+    DECOR_OFFSET_SMALL = (30, 30)
+    DECOR_SIZE_SMALLEST = (30, 30)
+
+    DESELECT_Y_OFFSET = -45
+
+    def __init__(self, center_pos, size:tuple=(120,120), b1text = "", b2text = ""):
+        """
+        Args:
+            image: str path or Surface
+            center_pos: (x, y) tuple
+            class_item: Hero class or Item instance
+            small: True for item-sized icons (50x50)
+            custom_size: (w, h) tuple for maps/other special sizes (overrides small)
+            custom_border: (w, h) if custom_size is used. (for decor)
+        """
+        # self.class_item = class_item
+
+        # if isinstance(image, str):
+        #     original = pygame.image.load(image).convert_alpha()
+        # else:
+        # original = (100, 900)
+
+        # Determine size
+      
+        profile_size = size
+        # decor_size = [size[0], size[1]]
+        decor_offset = [12, 12]
+      
+        # self.profile = pygame.transform.scale(original, profile_size)
+        # self.ingame_profile = pygame.transform.scale(original, (25, 25))  # always keep small version
+
+    # Create profile rectangle (no image)
+        self.profile_rect = pygame.Rect(*center_pos, *profile_size)
+        self.profile_rect.center = center_pos
+
+        # Create decor rectangle relative to profile
+        self.decor_rect = pygame.Rect(
+            self.profile_rect.centerx - decor_offset[0],
+            self.profile_rect.centery - decor_offset[1],
+            *size
+            )
+
+        
+        self.can_move_back = False
+        self.can_move = True
+        self.hovered = False
+        self.selected = False
+        self.move_variable = False
+        self.move_back_variable = False
+
+        self.original_pos = center_pos
+        self.target_pos = center_pos
+        self.move_speed = 0.1
+        # print(self.original_pos)
+        self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
+        self.button1 = ImageButton(
+            image_path=g.text_box_img,
+            pos=(center_pos[0] * 0.9, center_pos[1]),
+            scale=0.5,
+            text=b1text,
+            font_path=g.FONT_PATH,
+            font_size=g.font_size * 0.75,
+            text_color='white',
+            text_anti_alias=g.TEXT_ANTI_ALIASING
+        )
+
+        self.button2 = ImageButton(
+            image_path=g.text_box_img,
+            pos=(center_pos[0] * 1.1, center_pos[1]),
+            scale=0.5,
+            text=b2text,
+            font_path=g.FONT_PATH,
+            font_size=g.font_size * 0.75,
+            text_color='white',
+            text_anti_alias=g.TEXT_ANTI_ALIASING
+        )
+        
+        
+    def set_position(self, new_center, instant=False):
+        """
+        Move the selector to a new center position.
+        
+        Args:
+            new_center (tuple): New (x, y) center.
+            instant (bool): If True, snap immediately (bypass lerp).
+        """
+     
+        if instant:
+            self.target_pos = new_center
+            self._apply_position(new_center)
+        else:
+            self.target_pos = new_center
+
+    def _apply_position(self, center):
+        print(center)
+        """Internal: Sync all rects to given center."""
+        dx = center[0] - self.profile_rect.centerx
+        dy = center[1] - self.profile_rect.centery
+        # print(dx, dy)
+
+        self.profile_rect.center = center
+        self.decor_rect.move_ip(dx, dy)
+        self.button1.set_position((center[0] * 0.9, center[1] + 200))
+        self.button2.set_position((center[0] * 1.1, center[1] + 200))  # Assuming ImageButton has set_position # Full (x, y) with offset
+        # If associated item needs to follow (e.g., for tooltip alignment)
+        # if hasattr(self.class_item, 'set_position'):
+        #     self.class_item.set_position(center)
+
+
+    def enable_movement(self):
+        """Allow movement after animation completes."""
+        while self.move_variable:
+            if not self.can_move and not self.can_move_back:
+                        self.can_move_back = True
+            self.move_variable = False
+
+        while self.move_back_variable:
+            if not self.can_move_back and not self.can_move:
+                        self.can_move = True
+            self.move_back_variable = False
+            print(self.can_move, self.can_move_back)
+
+
+
+    def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=g.MAX_ITEM):
+        # Smooth movement toward target
+        
+        if self.profile_rect.center != self.target_pos:
+            
+            current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
+            dx = self.target_pos[0] - current[0]
+            dy = self.target_pos[1] - current[1]
+
+            # If very close, snap exactly to avoid drift
+            if abs(dx) <= 2 and abs(dy) <= 2:
+                # print("Snapped")
+                self._apply_position(self.target_pos)
+                self.enable_movement()
+
+            else:
+                # Normal smooth movement
+                # print(dx, dy)
+                if abs(dx) > 10:
+                    
+                    current[0] += (dx * self.move_speed)
+                else:
+                    current[0] += (dx * 0.3)
+                if abs(dy) > 10:
+                    
+                    current[1] += (dy * self.move_speed)
+                else:
+                    current[1] += (dy * 0.3)
+                
+                self._apply_position((round(current[0]), round(current[1])))
+        
+        # Draw base
+        self.draw()
+
+        # Selection logic
+        # selected_count = sum(1 for s in other_selectors if s.selected)
+        # can_select = selected_count < max_selected
+
+
+
+        # if not self.selected:
+        self.button1.draw(g.screen, mouse_pos)
+        self.button2.draw(g.screen, mouse_pos)
+        if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
+                self.hovered = True
+                if mouse_pressed[0]:
+
+                    self.can_move = False
+                    self.selected = True
+
+
+                    self.move_variable = True
+                    
+
+
+                    highlight_pos = (
+                        self.original_pos[0] + self.highlight_offset[0],
+                        self.original_pos[1] + self.highlight_offset[1]
+                    )
+                    self.set_position(highlight_pos)
+                    self.hovered = False
+        # else:
+        #         self.hovered = False
+        else:
+            # Show and handle deselect button
+            
+            if mouse_pressed[0] and self.button2.is_clicked(mouse_pos) and self.can_move_back:
+                self.move_back_variable = True
+                self.can_move_back = False
+                print(self.can_move_back)
+                self.set_position(self.original_pos)
+                # self.selected = False
+                print(self.target_pos)
+                
+
+
+
+
+
+    def draw(self):
+        """Draw border and profile image based on state."""
+        color = g.gold if self.selected else g.white if self.hovered else g.black
+        # pygame.draw.rect(g.screen, color, self.decor_rect)
+        # g.screen.blit(self.profile_rect, self.profile_rect)
+        pygame.draw.rect(g.screen, (0, 0, 0), self.profile_rect)
+
+
+    def draw_icon(self, center_pos, small=False, hero_sp=False):
+        """
+        Draw small or large icon with black border (used in-game).
+        
+        Args:
+            center_pos (tuple): Center position for the icon.
+            small (bool): If True, use ingame size (25x25).
+        """
+        profile = self.ingame_profile if small else self.profile
+        size = self.INGAME_SIZE if small else self.PROFILE_SIZE
+        offset = self.DECOR_OFFSET_SMALL if small else self.DECOR_OFFSET_LARGE
+        border = self.DECOR_SIZE_SMALL if small else self.DECOR_SIZE_LARGE
+        if small == 'smallest':
+            offset = (15, 15)
+            border = self.DECOR_SIZE_SMALLEST
+
+        if hero_sp:
+            color = g.gold
+        elif hero_sp == 'item':
+            color = g.cyan2
+        else:
+            color = g.black
+
+        rect = profile.get_rect(center=center_pos)
+        decor = pygame.Rect(rect.centerx - offset[0], rect.centery - offset[1], border[0], border[1])
+        pygame.draw.rect(g.screen, color, decor)
+        g.screen.blit(profile, rect)
+
+        # Display cooldown if applicable
+        if hasattr(self.class_item, 'cooldown') and self.class_item.cooldown > 0 and not g.PAUSED:
+            current_time = pygame.time.get_ticks() / 1000 - g.PAUSED_TOTAL_DURATION / 1000
+            remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
+            if remaining > 0:
+                font = g.get_font(15)
+                text = font.render(f"{math.ceil(remaining)}", True, red)
+                g.screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
+            else:
+                font = g.get_font(15)
+                text = font.render("ready", True, g.green)
+                g.screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
+
+    
+    
+    def is_selected(self):
+        return self.selected
+
+    def get_associated(self):
+        """Return the associated hero class or item."""
+        return self.class_item
+
+    # def show_hover_tooltip(self, position):
+    #     """Display hero info tooltip on hover (if applicable)."""
+    #     if (self.hovered and
+    #         isinstance(self.class_item, type) and
+    #         issubclass(self.class_item, g.Player)):
+    #         hero_name = self.class_item.__name__.replace("_", " ")
+    #         if hero_name in g.HERO_INFO:
+                # info_bubble = ImageBro(
+                #     image_path=text_box_img,
+                #     pos=position,
+                #     scale=2,
+                #     text=f"{hero_name}, {HERO_INFO[hero_name]}",
+                #     font_path=global_vars.FONT_PATH,
+                #     font_size=font_size * 1.05,
+                #     text_color='white',
+                #     fku=True,
+                #     scale_val=(150, 230),
+                #     hover_move=0,
+                #     player_info=True
+                # )
+                # info_bubble = ImageBro(
+                #     image_path=g.text_box_img,
+                #     pos=position,
+                #     text=f"{hero_name}, {HERO_INFO[hero_name]}",
+                #     font_path=g.FONT_PATH,
+                #     font_size=g.font_size * 1.05,
+                #     text_color='white',
+                #     player_info=True,
+                #     text_scale=1.3,  # Full size
+                #     anchor='bottomright'
+                # )
+                # info_bubble.drawing_info(g.screen)
+    

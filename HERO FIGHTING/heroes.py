@@ -1530,7 +1530,7 @@ from gameloop import game
 from gameloop import reset_all
 from gameloop import menu
 from gameloop import fade
-import jsonloader as loader
+import loader
 
 
 

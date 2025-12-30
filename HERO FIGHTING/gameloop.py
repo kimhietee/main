@@ -27,7 +27,7 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo
+from button import ImageButton, ImageInfo, ModalObject
 import heroes as main
 
 
@@ -159,9 +159,19 @@ menu_button = ImageButton(
 
 login_button = ImageButton(
     image_path=text_box_img,
-    pos=(width * 0.5, height * 0.85),
+    pos=(width * 0.6, height * 0.85),
     scale=0.9,
     text='LOGIN',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+register_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width * 0.4, height * 0.85),
+    scale=0.9,
+    text='REGISTER',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
@@ -367,7 +377,7 @@ def show_controls(font=None):
 
 
 
-import jsonloader as Save
+import loader as Save
 
 from typing import Callable, Any
 
@@ -1063,6 +1073,7 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
             
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
+
 def menu():
     
     pygame.mixer.music.fadeout(1000)
@@ -1134,7 +1145,7 @@ def menu():
                     # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
                     # campaign()
-                    return
+                    
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -1175,6 +1186,8 @@ def menu():
         main.clock.tick(main.FPS)
 
 
+
+
 load_sword_campaign_bg = False
 def campaign():
 
@@ -1191,9 +1204,14 @@ def campaign():
     typing_gap = 1500
     typing = False
     font = global_vars.get_font(60)
+
+    register_modal = ModalObject((width * 0.5, height * 2),(width*0.5,height*0.7), b1text = "Back", b2text = "Register")
+    # register_modal.set_position((width * 0.5, height * 0.5))
     while True:
+        
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
+        mouse_press = pygame.mouse.get_pressed()
         # mouse_press = pygame.mouse.get_pressed()
         # key_press = pygame.key.get_pressed()
         
@@ -1233,8 +1251,25 @@ def campaign():
                     password_clicked = not password_clicked
                     username_clicked = False
                 if login_button.is_clicked(event.pos):
-                    menu() 
-                    return
+
+                    if len(username_input) == 0:
+                        print("Please Enter Username")
+
+                    else:
+                        user = Save.login_check(username_input)
+                        if user == None:
+                            print("No account")
+                        else:
+                            if user[2] == Save.hash_pw(password_input):
+                                print("LOGIN COMPLETE")
+                            else:
+                                print("wrong password")
+
+                if register_button.is_clicked(event.pos):
+                    print("register")
+                    register_modal.set_position(((width * 0.5),(height * 0.5)))
+                    
+
             if username_clicked:
                 if event.type == pygame.KEYDOWN:
                     print("Key down")
@@ -1296,15 +1331,19 @@ def campaign():
         Username.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         login_button.draw(screen, mouse_pos)
-        
+        register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
 
+        register_modal.update(mouse_pos, mouse_press, None, max_selected=1)
+        
 
 
         # print("campaign")
         pygame.display.update()
         main.clock.tick(main.FPS)
+
+
 
 
 

@@ -220,22 +220,31 @@ class RectButton:
     def change_color(self, default=False, hovered=False, active=False, active_hovered=False):
         if active_hovered: # 200
             self.rect_color = (self.color[0]/1.275, self.color[1]/1.275, self.color[2]/1.275)
+
         elif active: # 150  
             self.rect_color = (self.color[0]/1.7, self.color[1]/1.7, self.color[2]/1.7)
         elif hovered: # 75
             self.rect_color = (self.color[0]/3.4, self.color[1]/3.4, self.color[2]/3.4)
+
         elif default:
             self.rect_color = (30,30,30)
 
+
+     
     def update(self, mouse_pos, variable):
         if self.is_hovered(mouse_pos) and variable:
             self.change_color(active_hovered=True)
+   
+
         elif variable:
             self.change_color(active=True)
+  
         elif self.is_hovered(mouse_pos):
             self.change_color(hovered=True)
+
         else:
             self.change_color(default=True)
+
         
 
         # print(default, hovered, active, active_hovered)

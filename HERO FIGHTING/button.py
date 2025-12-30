@@ -1,5 +1,5 @@
 import pygame
-from global_vars import get_font, screen, width, height
+from global_vars import get_font, screen, width, height, white, TEXT_ANTI_ALIASING
 import math
 
 def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
@@ -12,6 +12,12 @@ def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
 
     # Blit it on the target surface
     screen.blit(overlay, rect.topleft)
+
+def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
+    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
+    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
+
+    screen.blit(title, title_rect)
 
 
 class ImageButton:
@@ -206,6 +212,9 @@ class RectButton:
         self.done_clicking = False
         self.enabled = False
     
+
+        
+
     def set_position(self, pos: tuple):
         self.rect = pygame.Rect(self.x , pos[1], self.width, self.height)
 
@@ -330,7 +339,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120), b1text = "", b2text = "", inputobject:list=[]):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[]):
         """
         Args:
             image: str path or Surface
@@ -377,28 +386,9 @@ class ModalObject:
         self.move_speed = 0.1
         # print(self.original_pos)
         self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
-        self.button1 = ImageButton(
-            image_path=g.text_box_img,
-            pos=(center_pos[0] * 0.8, center_pos[1]),
-            scale=1,
-            text=b1text,
-            font_path=g.FONT_PATH,
-            font_size=g.font_size,
-            text_color='white',
-            text_anti_alias=g.TEXT_ANTI_ALIASING
-        )
-
-        self.button2 = ImageButton(
-            image_path=g.text_box_img,
-            pos=(center_pos[0] * 1.2, center_pos[1]),
-            scale=1,
-            text=b2text,
-            font_path=g.FONT_PATH,
-            font_size=g.font_size,
-            text_color='white',
-            text_anti_alias=g.TEXT_ANTI_ALIASING
-        )
-        
+        self.button1 = buttons[0]
+        self.button2 = buttons[1]
+            
         self.inputobject = inputobject
 
     def set_position(self, new_center, instant=False, selectedval:bool = False):
@@ -437,10 +427,11 @@ class ModalObject:
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=g.MAX_ITEM):
         # Smooth movement toward target
         
+
         if self.profile_rect.center != self.target_pos:
             for num, i in enumerate(self.inputobject):
                 i.set_position((self.profile_rect.centerx,  self.profile_rect.centery*0.8 + 100 * num))
-                print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
+                # print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
                 i.draw(screen, g.TEXT_ANTI_ALIASING)
             current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
             dx = self.target_pos[0] - current[0]
@@ -484,7 +475,7 @@ class ModalObject:
         # if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
         #         self.hovered = True
         #         if mouse_pressed[0]:
-
+        create_title('Register', g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset=width)
         #             self.can_move = False
         #             self.selected = True
 
@@ -566,7 +557,7 @@ class ModalObject:
             remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
             if remaining > 0:
                 font = g.get_font(15)
-                text = font.render(f"{math.ceil(remaining)}", True, red)
+                text = font.render(f"{math.ceil(remaining)}", True, g.red)
                 g.screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
             else:
                 font = g.get_font(15)

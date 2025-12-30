@@ -7,7 +7,7 @@ import time
 
 
 import random
-from global_vars import (IMMEDIATE_RUN,
+from global_vars import (IMMEDIATE_RUN, FONT_PATH,
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size,
@@ -27,7 +27,7 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo, ModalObject, draw_black_screen
+from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title
 import heroes as main
 
 
@@ -118,11 +118,7 @@ width_half = width*0.45
 
 
 
-def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
-    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
-    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
 
-    screen.blit(title, title_rect)
 
 
 
@@ -1213,6 +1209,7 @@ def campaign():
     font = global_vars.get_font(60)
 
     
+    
     # register_modal.set_position((width * 0.5, height * 0.5))
 
     userreg = RectButton(width*0.5 - int(login_button_width/2), 
@@ -1234,7 +1231,7 @@ def campaign():
                             login_button_height, 
                             0)
     
-    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),  b1text = "Back", b2text = "Register", inputobject=[userreg, passreg])
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register])
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 
                             height*0.4, 
@@ -1306,7 +1303,15 @@ def campaign():
                     passwordreg_clicked = not passwordreg_clicked
                     usernamereg_clicked = False
 
-
+                if reg_register.is_clicked(event.pos) and register_modal.selected:
+                    if len(usernamereg_input) >= username_limit_char[0] and len(usernamereg_input) <= username_limit_char[1]:
+                            if len(passwordreg_input) >= password_limit_char[0] and len(passwordreg_input) <= password_limit_char[1]:
+                                Save.register(usernamereg_input, Save.hash_pw(passwordreg_input))
+                                print("Registered Successfully")
+                            else:
+                                print("Passowrd too short")
+                    else:
+                        print("Username too short")
                 if login_button.is_clicked(event.pos) and not register_modal.selected:
                 
                     if len(username_input) == 0:
@@ -1410,6 +1415,8 @@ def campaign():
         create_title('Username', font , 0.5, height * 0.35, angle=0, x_offset=width*0.74)
         create_title('Password', font , 0.5, height * 0.55, angle=0, x_offset=width*0.74)
 
+      
+
         Password.update(mouse_pos, password_clicked)
         Password.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
@@ -1490,6 +1497,28 @@ swapconfirm_no = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
+reg_back = ImageButton(
+            image_path=text_box_img,
+            pos=(center_pos[0] * 0.8, center_pos[1] * 3),
+            scale=1,
+            text="Back",
+            font_path=FONT_PATH,
+            font_size=font_size,
+            text_color='white',
+            text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+        )
+
+reg_register = ImageButton(
+            image_path=text_box_img,
+            pos=(center_pos[0] * 1.2, center_pos[1] * 3),
+            scale=1,
+            text="Register",
+            font_path=FONT_PATH,
+            font_size=font_size,
+            text_color='white',
+            text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+        )
+        
 
 
 

@@ -1,7 +1,7 @@
 import pygame
 from global_vars import get_font, screen, width, height, white, TEXT_ANTI_ALIASING
 import math
-
+import time
 def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
     base_opacity = 255 * opacity
     rect = pygame.Rect(pygame.Rect(size[0], size[1], size[2], size[3]))
@@ -216,7 +216,7 @@ class RectButton:
         
 
     def set_position(self, pos: tuple):
-        self.rect = pygame.Rect(self.x , pos[1], self.width, self.height)
+        self.rect = pygame.Rect(pos[0] - width*0.2 , pos[1], self.width, self.height)
 
 
 
@@ -391,6 +391,25 @@ class ModalObject:
             
         self.inputobject = inputobject
 
+
+        self.shake_count = 0
+        self.shake_dir = False
+
+
+    def shake_enable(self):
+        gap = 0.1 if self.shake_dir else -0.1
+        self.target_pos = (self.target_pos[0] * (1 + gap), self.target_pos[1])
+        self.shake_dir = not self.shake_dir
+        print(gap)
+        print(self.target_pos)
+
+
+    def shake(self, times):
+        self.move_speed = 0.5
+        print('waw')
+        self.shake_count = times
+        self.shake_enable()
+    
     def set_position(self, new_center, instant=False, selectedval:bool = False):
         """
         Move the selector to a new center position.
@@ -422,17 +441,18 @@ class ModalObject:
         # if hasattr(self.class_item, 'set_position'):
         #     self.class_item.set_position(center)
 
-
+        for num, i in enumerate(self.inputobject):
+                i.set_position((center[0], center[1]*0.8 + 100 * num))
+                # print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
+                i.draw(screen, g.TEXT_ANTI_ALIASING)
   
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=g.MAX_ITEM):
         # Smooth movement toward target
         
 
         if self.profile_rect.center != self.target_pos:
-            for num, i in enumerate(self.inputobject):
-                i.set_position((self.profile_rect.centerx,  self.profile_rect.centery*0.8 + 100 * num))
-                # print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
-                i.draw(screen, g.TEXT_ANTI_ALIASING)
+            
+
             current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
@@ -440,7 +460,12 @@ class ModalObject:
             # If very close, snap exactly to avoid drift
             if abs(dx) <= 2 and abs(dy) <= 2:
                 print("Snapped")
+
                 self._apply_position(self.target_pos)
+                if self.shake_count:
+                    self.shake_count -= 1
+                    self.shake_enable()
+
                 # self.enable_movement()
             else:
                 # Normal smooth movement
@@ -475,7 +500,7 @@ class ModalObject:
         # if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
         #         self.hovered = True
         #         if mouse_pressed[0]:
-        create_title('Register', g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset=width)
+        create_title('Register', g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
         #             self.can_move = False
         #             self.selected = True
 
@@ -494,13 +519,6 @@ class ModalObject:
         # else:
         #     # Show and handle deselect button
             
-        if mouse_pressed[0] and self.button2.is_clicked(mouse_pos):
-                # self.move_back_variable = True
-                # self.can_move_back = False
-                # print(self.can_move_back)
-                self.set_position(self.original_pos)
-                self.selected = False
-                # print(self.target_pos)
         if mouse_pressed[0] and self.button1.is_clicked(mouse_pos):
                 # self.move_back_variable = True
                 # self.can_move_back = False
@@ -508,6 +526,14 @@ class ModalObject:
                 self.set_position(self.original_pos)
                 self.selected = False
                 # print(self.target_pos)
+        if mouse_pressed[0] and self.button2.is_clicked(mouse_pos):
+                # self.move_back_variable = True
+                # self.can_move_back = False
+                # print(self.can_move_back)
+                # self.set_position(self.original_pos)
+                # self.selected = False
+                # print(self.target_pos)
+                pass
     
 
 

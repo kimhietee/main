@@ -1307,15 +1307,23 @@ def campaign():
                     if len(usernamereg_input) >= username_limit_char[0] and len(usernamereg_input) <= username_limit_char[1]:
                             if len(passwordreg_input) >= password_limit_char[0] and len(passwordreg_input) <= password_limit_char[1]:
                                 Save.register(usernamereg_input, Save.hash_pw(passwordreg_input))
+                                Save.show_all_user()
                                 print("Registered Successfully")
+                                register_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
                             else:
                                 print("Passowrd too short")
+                                register_modal.shake(5)
                     else:
                         print("Username too short")
+                        register_modal.shake(5)
+
+
+                        
                 if login_button.is_clicked(event.pos) and not register_modal.selected:
                 
                     if len(username_input) == 0:
                         print("Please Enter Username")
+                        
 
                     else:
                         user = Save.login_check(username_input)
@@ -1326,8 +1334,11 @@ def campaign():
                                 print("LOGIN COMPLETE")
                             else:
                                 print("wrong password")
+                                
 
-                if register_button.is_clicked(event.pos):
+
+
+                if register_button.is_clicked(event.pos) and not register_modal.selected:
                     print("register")
                     register_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
                     usernamereg_clicked = False

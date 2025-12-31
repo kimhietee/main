@@ -778,7 +778,7 @@ class Yurei(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                             x=self.rect.centerx + 30 if self.facing_right else self.rect.centerx - 30,
                             y=self.rect.centery + 20,
@@ -803,6 +803,7 @@ class Yurei(Player):
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -1000,7 +1001,7 @@ class Yurei(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                             x=self.rect.centerx + 30 if self.facing_right else self.rect.centerx - 30,
                             y=self.rect.centery + 20,
@@ -1025,6 +1026,7 @@ class Yurei(Player):
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass

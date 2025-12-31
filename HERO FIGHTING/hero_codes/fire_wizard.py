@@ -206,6 +206,8 @@ class Fire_Wizard(Player):
         self.y = 50
         self.width = 200
 
+        self.base_attack_speed = 300
+        self.base_attack_time = 1700
 
         #mana cost
         self.atk1_mana_cost = 50
@@ -649,7 +651,7 @@ class Fire_Wizard(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [200, 900]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
@@ -675,6 +677,7 @@ class Fire_Wizard(Player):
                         self.basic_attacking = True
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -846,7 +849,7 @@ class Fire_Wizard(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         
                         for i in [200, 900]:
                             attack = Attack_Display(
@@ -873,6 +876,7 @@ class Fire_Wizard(Player):
                         self.basic_attacking = True
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
+                        self.last_basic_attack_time = current_time
 
                         # print("Attack executed")
                     else:
@@ -885,7 +889,33 @@ class Fire_Wizard(Player):
     
     def update(self):
         
+        # Attack Speed Statuses for Fire Wizard (sorted alphabetically)
 
+        # Base and Bonus Attack Speed Variables
+        print(f"base_attack_speed: {self.base_attack_speed}")  # 300 (fire wizard specific)
+        print(f"base_attack_time: {self.base_attack_time}")    # 1700 (milliseconds)
+        print(f"bonus_attack_speed_flat: {self.bonus_attack_speed_flat}")  # 0
+        print(f"bonus_attack_speed_per: {self.bonus_attack_speed_per}")    # 0.0
+
+        # Calculated Attack Speed Values
+        print(f"attack_speed (effective): {self.attack_speed}")  # Calculated via calculate_effective_as()
+        print(f"basic_attack_cooldown: {self.basic_attack_cooldown}")  # Calculated via calculate_basic_attack_interval()
+        print(f"basic_attack_animation_speed: {self.basic_attack_animation_speed}")  # Calculated based on attack speed
+
+        # Timing and State Variables
+        print(f"last_basic_attack_time: {self.last_basic_attack_time}")  # Timestamp of last basic attack
+
+        # Related Constants (from global_vars)
+        print(f"AGILITY_AS_BONUS: {global_vars.AGILITY_AS_BONUS}")  # 1 (+1 AS per agility point)
+        print(f"BASIC_ATK_COOLDOWN: {global_vars.BASIC_ATK_COOLDOWN}")  # 500 (fallback cooldown in ms)
+        print(f"DEFAULT_ANIMATION_SPEED: {global_vars.DEFAULT_ANIMATION_SPEED}")  # 120 (frames per second)
+        print(f"MAX_ATTACK_SPEED: {global_vars.MAX_ATTACK_SPEED}")  # 700 (fastest cap)
+        print(f"MIN_ATTACK_SPEED: {global_vars.MIN_ATTACK_SPEED}")  # 20 (slowest cap)
+
+        # Method Results
+        print(f"calculate_effective_as(): {self.calculate_effective_as()}")  # Current effective attack speed
+        print(f"calculate_basic_attack_interval(): {self.calculate_basic_attack_interval()}")  # Current interval in ms
+        print(f"can_basic_attack(): {self.can_basic_attack()}")  # Boolean: ready to attack?
          
         
         if not self.is_dead():

@@ -126,32 +126,35 @@ class Player(pygame.sprite.Sprite):
         # fire knight bas = 20
 
         # attack speed stuff
-        self.base_attack_speed = 100
-        self.base_attack_time = 1.7
+        self.base_attack_speed = 100 # base atk speed for every hero, modify each if you want to set base 
+        self.base_attack_time = 1700
+
+        
 
         # stat
         self.strength = 40
         self.intelligence = 40
         self.agility = 40
 
-        # Base Stats
-        self.max_health = 0
-        self.max_mana = 0
-        self.health = self.max_health
-        self.mana = self.max_mana
-        self.basic_attack_damage = 0
-
-        self.max_special = MAX_SPECIAL
-        self.special = 0
-        self.special_active = False
 
         self.mana_regen = self.regen_per_second(DEFAULT_MANA_REGENERATION)
         self.health_regen = self.regen_per_second(DEFAULT_HEALTH_REGENERATION)
 
+        # Attack Speed Calculation
+        self.bonus_attack_speed_flat = 0
+        self.bonus_attack_speed_per = 0.0
+        #self.flat_as_reduction = 0
+        #self.percent_as_reduction = 0.0
+        self.last_basic_attack_time = -BASIC_ATK_COOLDOWN  # Ready initially (use your existing BASIC_ATK_COOLDOWN as fallback)
+
         # will be phased out soon
         self.basic_attack_cooldown = BASIC_ATK_COOLDOWN
 
+        self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED # also set this one 
+        
         self.default_animation_speed = DEFAULT_ANIMATION_SPEED
+
+        self.attack_speed = self.calculate_effective_as()
 
         attr_size = (24,24)
         # Strength icon
@@ -170,25 +173,17 @@ class Player(pygame.sprite.Sprite):
             (attr_size[0], attr_size[1])
         )
 
-
-
-
         
-        # self.last_health = self.health
-        
-        # self.bonus_type = "strength"
-        # self.bonus_value = self.strength
-        # # self.item_info_dict = {}   
-        # self.item_info_dict.update(self.player_instance.bonus_type, self.player_instance.bonus_value)  
+        # Base Stats
+        self.max_health = 0
+        self.max_mana = 0
+        self.health = self.max_health
+        self.mana = self.max_mana
+        self.basic_attack_damage = 0
 
-        # Attack Speed Calculation
-        self.base_as = global_vars.BASE_ATTACK_SPEED
-        self.base_bat = global_vars.BASE_BAT  # ms; heroes can override
-        self.flat_as_bonus = 0
-        self.percent_as_bonus = 0.0
-        self.flat_as_reduction = 0
-        self.percent_as_reduction = 0.0
-        self.last_basic_attack_time = -BASIC_ATK_COOLDOWN  # Ready initially (use your existing BASIC_ATK_COOLDOWN as fallback)
+        self.max_special = MAX_SPECIAL
+        self.special = 0
+        self.special_active = False
 
         # Player Position
         self.x = 0
@@ -353,8 +348,7 @@ class Player(pygame.sprite.Sprite):
         self.default_speed = self.speed
         self.running_animation_speed = RUNNING_ANIMATION_SPEED
         
-        # self.base_attack_animation_speed = 0 # base atk speed for every hero, modify each if you want to set base 
-        self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED # also set this one 
+        
         
         # self.basic_attack_animation_speed =self.basic_attack_animation_speed * 0.5 # 60
 
@@ -437,6 +431,18 @@ class Player(pygame.sprite.Sprite):
         # self.detect_ground = DEFAULT_Y_POS
         # '''Limit where player detects the ground at y level.'''
 
+        self.attack_stats = [
+                {'icon': self.strength_attribute_icon, 'value': self.attack_speed, 'color': white},
+                {'icon': self.intelligence_attribute_icon, 'value': self.basic_attack_cooldown, 'color': 'Blue'},
+                {'icon': self.agility_attribute_icon, 'value': self.basic_attack_damage, 'color': red}
+            ]
+        
+        self.attribute_stats = [
+                {'icon': self.strength_attribute_icon, 'value': self.strength, 'color': red},
+                {'icon': self.intelligence_attribute_icon, 'value': self.intelligence, 'color': cyan2},
+                {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
+            ]
+        
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
             return  # Safety check
@@ -667,12 +673,23 @@ class Player(pygame.sprite.Sprite):
                 elif base_stat == "mana_regen":
                     self.mana_regen += self.regen_per_second(val)
                 elif base_stat == "atk_speed":
+                    self.bonus_attack_speed_flat += val
+                    self.attack_speed = self.calculate_effective_as()
+                    self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+                    # self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED - ((DEFAULT_ANIMATION_SPEED * (self.base_attack_time / self.basic_attack_cooldown) - DEFAULT_ANIMATION_SPEED))
+                    self.basic_attack_animation_speed = (DEFAULT_ANIMATION_SPEED * (2 - self.base_attack_time / self.basic_attack_cooldown))
+
+                    self.attacks[4].cooldown = self.basic_attack_cooldown
+                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
+
+
+
                     # Flat attack speed: Reduce anim speed (faster anim = faster atk)
                     # Scale: 100 flat = -10 anim speed (arbitrary, from your old 0.1 * val)
-                    self.basic_attack_animation_speed -= val * 0.1 #removed 0.1 (therefore val is 15)
+                    # self.basic_attack_animation_speed -= val * 0.1 #removed 0.1 (therefore val is 15)
                     
                     # Cooldown: 100 flat = -500ms (assuming ms; 100 flat = full base reduction if base=500)
-                    self.basic_attack_cooldown -= val * 5
+                    # self.basic_attack_cooldown -= val * 5
                     # self.basic_attack_cooldown += ((self.basic_attack_cooldown-240) - (self.basic_attack_cooldown-240) - val)  # Adjust scalar if base
                     
 
@@ -767,10 +784,23 @@ class Player(pygame.sprite.Sprite):
                     self.speed *= (1 + val)
                     self.running_animation_speed += 10 * val  # Legacy scaling; consider *= (1 + val) for consistency
                     self.default_speed = self.speed
-                elif typ == "atk_speed_per":
+                elif base_stat == "atk_speed":
+                    self.bonus_attack_speed_per += val
+                    self.attack_speed = self.calculate_effective_as()
+                    self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+                    # self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED - ((DEFAULT_ANIMATION_SPEED * (self.base_attack_time / self.basic_attack_cooldown) - DEFAULT_ANIMATION_SPEED))
+                    self.basic_attack_animation_speed = (DEFAULT_ANIMATION_SPEED * (2 - self.base_attack_time / self.basic_attack_cooldown))
+
+                    self.attacks[4].cooldown = self.basic_attack_cooldown
+                    self.attacks_special[4].cooldown = self.basic_attack_cooldown
+
+
+
+
+
                     # Percentage: Reduce anim speed and cd by %
-                    self.basic_attack_animation_speed *= (1 - val)  # Lower = faster
-                    self.basic_attack_cooldown *= (1 - val)
+                    # self.basic_attack_animation_speed *= (1 - val)  # Lower = faster
+                    # self.basic_attack_cooldown *= (1 - val)
                 elif typ == "mana_reduce_per":
                     num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
                     for i in range(num_skills):
@@ -854,17 +884,18 @@ class Player(pygame.sprite.Sprite):
         # Clamp current values
         self.health = min(self.health, self.max_health)
         self.mana = min(self.mana, self.max_mana)
-
+        self.basic_attack_animation_speed = max(global_vars.MIN_ATTACK_SPEED, self.basic_attack_animation_speed)
         # Reapply hero-specific (e.g., arrow_stuck)
         if hasattr(self, 'arrow_stuck_damage'):
             # reapply bonus
             self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05  # total dmg=1
 
+
         # get final attack speed with bonuses
-        self.get_current_atk_speed = self.basic_attack_animation_speed
+        # self.get_current_atk_speed = self.basic_attack_animation_speed
         
-    def get_atk_speed(self): # pls dont change this variable
-        return self.get_current_atk_speed # im tired debugging
+    # def get_atk_speed(self): # pls dont change this variable
+    #     return self.get_current_atk_speed # im tired debugging
      
 
         # print(self.basic_attack_damage)
@@ -1434,61 +1465,57 @@ class Player(pygame.sprite.Sprite):
             screen.blit(mana_regen_text, (p2_posx1+p2_posx2 + 15, p2_posy+50 + 7))
     
     # def draw_icon_and_value(self, screen, )
-    def draw_stats(self, screen):
+    def draw_stats(self, screen, stats=None, posy=50, gap=25, icon_gap=6):
+        """
+        Draws stats with icons on the screen.
+        
+        If stats is None, uses default strength, intelligence, agility.
+        Otherwise, uses the provided list of dicts, each with:
+        - 'icon': pygame.Surface
+        - 'value': int/float
+        - 'color': tuple (RGB)
+        
+        Example custom stats:
+        stats = [
+            {'icon': some_icon, 'value': 100, 'color': (255, 0, 0)},
+            # ...
+        ]
+        """
         font = global_vars.get_font(15)
 
-        posy = 50
-        gap = 25
-        icon_gap = 6
+        if stats is None:
+            # Default stats
+            stats = [
+                {'icon': self.strength_attribute_icon, 'value': self.strength, 'color': red},
+                {'icon': self.intelligence_attribute_icon, 'value': self.intelligence, 'color': cyan2},
+                {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
+            ]
 
         posx1 = 135
         posx2 = width - posx1
 
-        strength_text = font.render(str(int(self.strength)), True, red)
-        intelligence_text = font.render(str(int(self.intelligence)), True, cyan2)
-        agility_text = font.render(str(int(self.agility)), True, green)
+        start_x = posx1 if self.player_type == 1 else posx2
+        direction = 1 if self.player_type == 1 else -1
 
-        if self.player_type == 1:
-            x = posx1
+        x = start_x
 
-            # Strength
-            strength_icon_y = posy + (strength_text.get_height() - self.strength_attribute_icon.get_height()) // 2
-            screen.blit(self.strength_attribute_icon, (x, strength_icon_y))
-            screen.blit(strength_text, (x + self.strength_attribute_icon.get_width() + icon_gap, posy))
-            x += self.strength_attribute_icon.get_width() + strength_text.get_width() + gap
+        for attr in stats:
+            icon = attr['icon']
+            value = attr['value']
+            color = attr['color']
 
-            # Intelligence
-            int_icon_y = posy + (intelligence_text.get_height() - self.intelligence_attribute_icon.get_height()) // 2
-            screen.blit(self.intelligence_attribute_icon, (x, int_icon_y))
-            screen.blit(intelligence_text, (x + self.intelligence_attribute_icon.get_width() + icon_gap, posy))
-            x += self.intelligence_attribute_icon.get_width() + intelligence_text.get_width() + gap
+            text = font.render(str(int(value)), True, color)
 
-            # Agility
-            agi_icon_y = posy + (agility_text.get_height() - self.agility_attribute_icon.get_height()) // 2
-            screen.blit(self.agility_attribute_icon, (x, agi_icon_y))
-            screen.blit(agility_text, (x + self.agility_attribute_icon.get_width() + icon_gap, posy))
+            icon_y = posy + (text.get_height() - icon.get_height()) // 2
 
-        else:
-            x = posx2
-
-            # Agility
-            # Strength
-            strength_icon_y = posy + (strength_text.get_height() - self.strength_attribute_icon.get_height()) // 2
-            screen.blit(self.strength_attribute_icon, (x - self.strength_attribute_icon.get_width(), strength_icon_y))
-            screen.blit(strength_text, (x - self.strength_attribute_icon.get_width() - icon_gap - strength_text.get_width(), posy))
-            x -= self.strength_attribute_icon.get_width() + strength_text.get_width() + gap
-
-            # Intelligence
-            int_icon_y = posy + (intelligence_text.get_height() - self.intelligence_attribute_icon.get_height()) // 2
-            screen.blit(self.intelligence_attribute_icon, (x - self.intelligence_attribute_icon.get_width(), int_icon_y))
-            screen.blit(intelligence_text, (x - self.intelligence_attribute_icon.get_width() - icon_gap - intelligence_text.get_width(), posy))
-            x -= self.intelligence_attribute_icon.get_width() + intelligence_text.get_width() + gap
-
-            # Agility
-            agi_icon_y = posy + (agility_text.get_height() - self.agility_attribute_icon.get_height()) // 2
-            screen.blit(self.agility_attribute_icon, (x - self.agility_attribute_icon.get_width(), agi_icon_y))
-            screen.blit(agility_text, (x - self.agility_attribute_icon.get_width() - icon_gap - agility_text.get_width(), posy))
-
+            if direction == 1:
+                screen.blit(icon, (x, icon_y))
+                screen.blit(text, (x + icon.get_width() + icon_gap, posy))
+                x += icon.get_width() + text.get_width() + gap
+            else:
+                screen.blit(icon, (x - icon.get_width(), icon_y))
+                screen.blit(text, (x - icon.get_width() - icon_gap - text.get_width(), posy))
+                x -= icon.get_width() + text.get_width() + gap
 
             # Player 2: Adjust text slightly to the left
             # screen.blit(strength_text, (p2_posx1+p2_posx2 + 15, p2_posy + 27))
@@ -1531,6 +1558,20 @@ class Player(pygame.sprite.Sprite):
 
     def player_status(self, health, mana, special):
         # print(self.temp_hp)
+
+        self.attack_stats = [
+                {'icon': self.strength_attribute_icon, 'value': self.attack_speed, 'color': white},
+                {'icon': self.intelligence_attribute_icon, 'value': self.basic_attack_cooldown, 'color': 'Blue'},
+                {'icon': self.agility_attribute_icon, 'value': self.basic_attack_damage, 'color': red}
+            ]
+        
+        self.attribute_stats = [
+                {'icon': self.strength_attribute_icon, 'value': self.strength, 'color': red},
+                {'icon': self.intelligence_attribute_icon, 'value': self.intelligence, 'color': cyan2},
+                {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
+            ]
+        
+        
         font = global_vars.get_font(20)
         p1_x = self.player_1_x
         p1_y = self.player_1_y
@@ -1814,7 +1855,19 @@ class Player(pygame.sprite.Sprite):
         # screen.blit(mana_icon, mana_icon_p1_rect)
         # screen.blit(mana_icon, mana_icon_p2_rect)
 
-        self.draw_stats(screen)
+        self.draw_stats(screen,
+                        self.attribute_stats,
+                        posy=50,
+                        gap=25,
+                        icon_gap=6
+                        )
+        
+        self.draw_stats(screen,
+                        self.attack_stats,
+                        posy=30,
+                        gap=25,
+                        icon_gap=6
+                        )
         
         
         if self.health <= 0:
@@ -2167,24 +2220,36 @@ class Player(pygame.sprite.Sprite):
 
 
     def calculate_effective_as(self):
-        """Effective Attack Speed."""
+        """Effective Attack Speed.
+        
+        calculates:
+        (base attack speed + attack speed from agility + flat attack speed from items) * attack speed multiplier
+
+        required:
+        - current agility
+        - base attack speed
+        - attack speed from items
+        - attack speed multiplier
+
+        """
         as_from_agility = self.agility * global_vars.AGILITY_AS_BONUS
         base_with_agility = self.base_attack_speed + as_from_agility
-        effective_as = base_with_agility + self.flat_as_bonus - self.flat_as_reduction
-        total_percent = 1 + self.percent_as_bonus - self.percent_as_reduction
+        effective_as = base_with_agility + self.bonus_attack_speed_flat# - self.flat_as_reduction
+        total_percent = 1 + self.bonus_attack_speed_per# - self.percent_as_reduction
         effective_as *= max(0.0, total_percent)
         return max(global_vars.MIN_ATTACK_SPEED, min(global_vars.MAX_ATTACK_SPEED, effective_as))
 
     def calculate_basic_attack_interval(self):
-        """Interval in ms: BAT / (AS / 100)."""
+        """Interval in ms: BAT / (AS / 100).
+        
+        base attack time / (total attack speed / 100)"""
         effective_as = self.calculate_effective_as()
-        return self.base_bat / (effective_as / 100)
+        return self.base_attack_time / (effective_as / 100)
 
     def can_basic_attack(self):
         """Check if interval has passed."""
         current_time = pygame.time.get_ticks()
         return current_time - self.last_basic_attack_time >= self.calculate_basic_attack_interval()
-
 
 
 
@@ -2619,6 +2684,18 @@ class Player(pygame.sprite.Sprite):
             self.player_jump_index_flipped = 0  
         self.inputs()
         self.move_to_screen()  
+
+
+
+        self.calculate_effective_as()
+        self.calculate_basic_attack_interval()
+
+
+
+
+
+
+
         # print(self.health_regen*60)
         # print(self.mana_regen*60)
         # print(self.basic_attack_damage)

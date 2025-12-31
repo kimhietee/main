@@ -549,7 +549,7 @@ class ModalObject:
             remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
             if remaining > 0:
                 font = g.get_font(15)
-                text = font.render(f"{math.ceil(remaining)}", True, red)
+                text = font.render(f"{math.ceil(remaining)}", True, g.red)
                 g.screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
             else:
                 font = g.get_font(15)

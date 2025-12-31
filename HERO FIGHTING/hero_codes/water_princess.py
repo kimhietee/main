@@ -801,7 +801,7 @@ class Water_Princess(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [
                             (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.atk_instance[0]),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.atk_instance[1]),
@@ -834,6 +834,7 @@ class Water_Princess(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -1159,7 +1160,7 @@ class Water_Princess(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [
                             (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.special_instance[0],(False, 1, 1)),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.special_instance[1],(False, 1, 1)),
@@ -1193,6 +1194,7 @@ class Water_Princess(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
 
                         # print("Attack executed")
                     else:

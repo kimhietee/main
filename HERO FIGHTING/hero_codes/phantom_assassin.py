@@ -97,7 +97,7 @@ class Phantom_Assasin(Player):
 
         # Character Frame Source (remove the counting number)
         #   - str [0] file path
-        #   - int [1] frame count - turn it into tuple to make it co
+        #   - int [1] frame count - turn it into tuple to make it column and rows
         #   - bool [2] starts at zero 
         basic_attack_animation = [r'assets\attacks\Basic Attack\wanderer magician\basic atk\basic atk_', 5, False]
         jumping_animation = [r'assets\characters\Phantom Assassin\Jump.png', 2, False]
@@ -109,15 +109,6 @@ class Phantom_Assasin(Player):
         atk3_animiation = [r'assets\characters\Phantom Assassin\Attack3.png', 6, False]
         atk4_animation = [r'assets\characters\Phantom Assassin\Attack4.png', 6, False]
 
-        self.player_jump = load_attack(
-        filepath=r"assets\characters\Onre\Flight.png",
-        frame_width=100, 
-        frame_height=100, 
-        rows=1, 
-        columns=6, 
-        scale=DEFAULT_CHAR_SIZE, 
-        rotation=0,
-    )
                 
         # Attack Frame Count
         self.attack_frames = {

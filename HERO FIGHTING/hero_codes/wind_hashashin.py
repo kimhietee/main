@@ -639,7 +639,7 @@ class Wind_Hashashin(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [0, 300]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
@@ -671,6 +671,7 @@ class Wind_Hashashin(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -887,7 +888,7 @@ class Wind_Hashashin(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [0, 300]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
@@ -924,6 +925,7 @@ class Wind_Hashashin(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass

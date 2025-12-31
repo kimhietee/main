@@ -632,7 +632,7 @@ class Fire_Knight(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                             x=self.rect.centerx + 70 if self.facing_right else self.rect.centerx - 70,
                             y=self.rect.centery + 90,
@@ -660,6 +660,7 @@ class Fire_Knight(Player):
                         self.player_atk1_index_flipped = 0
 
                         self.basic_attacking = True
+                        self.last_basic_attack_time = current_time
  
                         # print("Attack executed")
                     else:
@@ -901,7 +902,7 @@ class Fire_Knight(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                             x=self.rect.centerx + 70 if self.facing_right else self.rect.centerx - 70,
                             y=self.rect.centery + 90,
@@ -949,6 +950,7 @@ class Fire_Knight(Player):
                         self.basic_sound.play()
 
                         self.basic_attacking = True
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass

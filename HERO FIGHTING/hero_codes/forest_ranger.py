@@ -100,11 +100,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_mana_regen = 5.4 # 5.92
         self.base_attack_damage = 0.5 # 3.5
 
+        self.base_attack_speed = 1000
+        self.base_attack_time = 1600
+
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.5 + 30 * 0.1 = 3.5
 
-
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
         
         self.max_health = self.strength * self.str_mult
         self.max_mana = self.intelligence * self.int_mult
@@ -471,6 +477,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Trait : + (some values)% mana refund if hits enemy
 
         self.atk_hasted = False
+        self.was_hasted = False
         self.atk_haste_duration = 0
         self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
         self.default_atk_speed = self.basic_attack_animation_speed
@@ -528,9 +535,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.last_atk_time -= animation_speed
 
     def haste_atk(self, current_atk_speed, bonus_value=500):
-        atk_buff = bonus_value * 0.1
-        atk_speed = current_atk_speed - atk_buff
-        return atk_speed
+        # Deprecated: haste now handled through attack_speed bonuses
+        return current_atk_speed
     
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         """The most crucial part of collecting user input.
@@ -963,7 +969,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                         # Activate attack speed haste
                         self.atk_hasted = True
-                        self.haste_value = 600 # attack speed bonus
+                        self.haste_value = 60 # attack speed bonus
                         self.atk_haste_duration = (pygame.time.get_ticks()+611.11) + 5000
                         self.default_atk_speed = self.basic_attack_animation_speed # gets previous atk_speed (NEVER CAST SKILL TWICE! : wont reset properly)
 
@@ -1380,11 +1386,26 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     self.special_active = False
 
         # print(self.basic_attack_animation_speed)
-        if self.atk_hasted:
-            self.basic_attack_animation_speed = self.haste_atk(self.get_current_atk_speed, self.haste_value)
-            if pygame.time.get_ticks() >= self.atk_haste_duration:
-                self.atk_hasted = False
-                self.basic_attack_animation_speed = self.get_current_atk_speed
+        if self.atk_hasted and not self.was_hasted:
+            self.bonus_attack_speed_flat += self.haste_value
+            self.speed = self.default_speed * 1.5  # increase move speed
+            self.attack_speed = self.calculate_effective_as()
+            self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+            self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
+            self.attacks[4].cooldown = self.basic_attack_cooldown
+            self.attacks_special[4].cooldown = self.basic_attack_cooldown
+            self.was_hasted = True
+        elif not self.atk_hasted and self.was_hasted:
+            self.bonus_attack_speed_flat -= self.haste_value
+            self.speed = self.default_speed  # reset move speed
+            self.attack_speed = self.calculate_effective_as()
+            self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+            self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
+            self.attacks[4].cooldown = self.basic_attack_cooldown
+            self.attacks_special[4].cooldown = self.basic_attack_cooldown
+            self.was_hasted = False
+        if self.atk_hasted and pygame.time.get_ticks() >= self.atk_haste_duration:
+            self.atk_hasted = False
 
         # atk3
         if not self.jump_attack_pending and not self.jump_done: # freeze y_pos when attacking starts

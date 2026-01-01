@@ -126,7 +126,8 @@ class Player(pygame.sprite.Sprite):
         # fire knight bas = 20
 
         # attack speed stuff
-        self.base_attack_speed = 100 # base atk speed for every hero, modify each if you want to set base 
+        # base atk speed for every hero, modify each if you want to set base 
+        self.base_attack_speed = 100 
         self.base_attack_time = 1700
 
         
@@ -431,18 +432,6 @@ class Player(pygame.sprite.Sprite):
         # self.detect_ground = DEFAULT_Y_POS
         # '''Limit where player detects the ground at y level.'''
 
-        self.attack_stats = [
-                {'icon': self.strength_attribute_icon, 'value': self.attack_speed, 'color': white},
-                {'icon': self.intelligence_attribute_icon, 'value': self.basic_attack_cooldown, 'color': 'Blue'},
-                {'icon': self.agility_attribute_icon, 'value': self.basic_attack_damage, 'color': red}
-            ]
-        
-        self.attribute_stats = [
-                {'icon': self.strength_attribute_icon, 'value': self.strength, 'color': red},
-                {'icon': self.intelligence_attribute_icon, 'value': self.intelligence, 'color': cyan2},
-                {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
-            ]
-        
     def display_damage(self, damage, interval=30, color=(255, 0, 0), size=None, health_modify=False, mana_modify=False):
         if not hasattr(self, 'rect'):
             return  # Safety check
@@ -677,7 +666,7 @@ class Player(pygame.sprite.Sprite):
                     self.attack_speed = self.calculate_effective_as()
                     self.basic_attack_cooldown = self.calculate_basic_attack_interval()
                     # self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED - ((DEFAULT_ANIMATION_SPEED * (self.base_attack_time / self.basic_attack_cooldown) - DEFAULT_ANIMATION_SPEED))
-                    self.basic_attack_animation_speed = (DEFAULT_ANIMATION_SPEED * (2 - self.base_attack_time / self.basic_attack_cooldown))
+                    self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
                     self.attacks[4].cooldown = self.basic_attack_cooldown
                     self.attacks_special[4].cooldown = self.basic_attack_cooldown
@@ -789,7 +778,7 @@ class Player(pygame.sprite.Sprite):
                     self.attack_speed = self.calculate_effective_as()
                     self.basic_attack_cooldown = self.calculate_basic_attack_interval()
                     # self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED - ((DEFAULT_ANIMATION_SPEED * (self.base_attack_time / self.basic_attack_cooldown) - DEFAULT_ANIMATION_SPEED))
-                    self.basic_attack_animation_speed = (DEFAULT_ANIMATION_SPEED * (2 - self.base_attack_time / self.basic_attack_cooldown))
+                    self.basic_attack_animation_speed = DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
                     self.attacks[4].cooldown = self.basic_attack_cooldown
                     self.attacks_special[4].cooldown = self.basic_attack_cooldown
@@ -884,7 +873,7 @@ class Player(pygame.sprite.Sprite):
         # Clamp current values
         self.health = min(self.health, self.max_health)
         self.mana = min(self.mana, self.max_mana)
-        self.basic_attack_animation_speed = max(global_vars.MIN_ATTACK_SPEED, self.basic_attack_animation_speed)
+        self.basic_attack_animation_speed = max(10, min(1000, self.basic_attack_animation_speed))
         # Reapply hero-specific (e.g., arrow_stuck)
         if hasattr(self, 'arrow_stuck_damage'):
             # reapply bonus
@@ -892,10 +881,10 @@ class Player(pygame.sprite.Sprite):
 
 
         # get final attack speed with bonuses
-        # self.get_current_atk_speed = self.basic_attack_animation_speed
+        self.get_current_atk_speed = self.basic_attack_animation_speed
         
-    # def get_atk_speed(self): # pls dont change this variable
-    #     return self.get_current_atk_speed # im tired debugging
+    def get_atk_speed(self): # pls dont change this variable
+        return self.get_current_atk_speed # im tired debugging
      
 
         # print(self.basic_attack_damage)
@@ -1504,7 +1493,7 @@ class Player(pygame.sprite.Sprite):
             value = attr['value']
             color = attr['color']
 
-            text = font.render(str(int(value)), True, color)
+            text = font.render(str(value), True, color)
 
             icon_y = posy + (text.get_height() - icon.get_height()) // 2
 
@@ -1571,7 +1560,7 @@ class Player(pygame.sprite.Sprite):
                 {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
             ]
         
-        
+
         font = global_vars.get_font(20)
         p1_x = self.player_1_x
         p1_y = self.player_1_y

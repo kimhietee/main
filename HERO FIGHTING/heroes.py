@@ -430,7 +430,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Draw scaled cooldown text
-                font = global_vars.get_font(self.cooldown_font_size)
+                font = global_vars.get_font(self.cooldown_font_size * (1 if not is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
                 remaining_ms = max(0, self.cooldown - self.time_since_use())
                 cooldown_time = max(0, remaining_ms // 1000)
@@ -1918,12 +1918,12 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 20% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 35, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 63, , Trait: 15% hp regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, , Trait: 15% mana, reduce",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%->20% mana, cost/delay",
     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23, , Trait: 15% cd reduce",
+    "Yurei": "Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% cd reduce",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5-10% stat,potency"
 }
 
@@ -2606,7 +2606,7 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_2_SELECTED_HERO = Forest_Ranger
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

@@ -82,9 +82,17 @@ class Water_Princess(Player):
         self.base_mana_regen = 6.05 # 6.53
         self.base_attack_damage = 0.0 # 2.0
 
+        self.base_attack_speed = 80
+        self.base_attack_time = 3200
+
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.05 + 48 * 0.01 = 6.53
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 20 * 0.1 = 2.0
+
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)

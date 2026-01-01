@@ -166,6 +166,8 @@ class Fire_Wizard(Player):
         # fire wizard update 12/9/25
         # trait: dmg_mult 20% -> 10% (20% is not actually implemented, too OP)
         # Skill 2: reverted back to original version with rework
+
+        #update
         
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
@@ -184,11 +186,18 @@ class Fire_Wizard(Player):
         self.base_mana_regen = 5.3 # +0.4 = 5.7
         self.base_attack_damage = 0.1 # +2.6 = 2.7
 
+        self.base_attack_speed = 100
+        self.base_attack_time = 1700
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.3 + 40 * 0.01 = 5.7
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.1 + 26 * 0.1 = 2.7
         
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
+
         #2 attack per basic attack (5.6 DPS)
         # Base Stats
         self.max_health = self.strength * self.str_mult #40 * 5 = 200HP (max)
@@ -201,13 +210,11 @@ class Fire_Wizard(Player):
         
         # BASIC_ATK_DAMAGE2
 
+        
         # Player Position
         self.x = 50
         self.y = 50
         self.width = 200
-
-        self.base_attack_speed = 300
-        self.base_attack_time = 1700
 
         #mana cost
         self.atk1_mana_cost = 50
@@ -672,6 +679,8 @@ class Fire_Wizard(Player):
                                 )
                             attack_display.add(attack)
                         self.mana -= 0
+                        self.attacks[4].cooldown = self.basic_attack_cooldown
+                        self.attacks_special[4].cooldown = self.basic_attack_cooldown
                         self.attacks[4].last_used_time = current_time
                         self.running = False
                         self.basic_attacking = True
@@ -891,31 +900,31 @@ class Fire_Wizard(Player):
         
         # Attack Speed Statuses for Fire Wizard (sorted alphabetically)
 
-        # Base and Bonus Attack Speed Variables
-        print(f"base_attack_speed: {self.base_attack_speed}")  # 300 (fire wizard specific)
-        print(f"base_attack_time: {self.base_attack_time}")    # 1700 (milliseconds)
-        print(f"bonus_attack_speed_flat: {self.bonus_attack_speed_flat}")  # 0
-        print(f"bonus_attack_speed_per: {self.bonus_attack_speed_per}")    # 0.0
+        # # Base and Bonus Attack Speed Variables
+        # print(f"base_attack_speed: {self.base_attack_speed}")  # 300 (fire wizard specific)
+        # print(f"base_attack_time: {self.base_attack_time}")    # 1700 (milliseconds)
+        # print(f"bonus_attack_speed_flat: {self.bonus_attack_speed_flat}")  # 0
+        # print(f"bonus_attack_speed_per: {self.bonus_attack_speed_per}")    # 0.0
 
-        # Calculated Attack Speed Values
-        print(f"attack_speed (effective): {self.attack_speed}")  # Calculated via calculate_effective_as()
-        print(f"basic_attack_cooldown: {self.basic_attack_cooldown}")  # Calculated via calculate_basic_attack_interval()
-        print(f"basic_attack_animation_speed: {self.basic_attack_animation_speed}")  # Calculated based on attack speed
+        # # Calculated Attack Speed Values
+        # print(f"attack_speed (effective): {self.attack_speed}")  # Calculated via calculate_effective_as()
+        # print(f"basic_attack_cooldown: {self.basic_attack_cooldown}")  # Calculated via calculate_basic_attack_interval()
+        # print(f"basic_attack_animation_speed: {self.basic_attack_animation_speed}")  # Calculated based on attack speed
 
-        # Timing and State Variables
-        print(f"last_basic_attack_time: {self.last_basic_attack_time}")  # Timestamp of last basic attack
+        # # Timing and State Variables
+        # print(f"last_basic_attack_time: {self.last_basic_attack_time}")  # Timestamp of last basic attack
 
-        # Related Constants (from global_vars)
-        print(f"AGILITY_AS_BONUS: {global_vars.AGILITY_AS_BONUS}")  # 1 (+1 AS per agility point)
-        print(f"BASIC_ATK_COOLDOWN: {global_vars.BASIC_ATK_COOLDOWN}")  # 500 (fallback cooldown in ms)
-        print(f"DEFAULT_ANIMATION_SPEED: {global_vars.DEFAULT_ANIMATION_SPEED}")  # 120 (frames per second)
-        print(f"MAX_ATTACK_SPEED: {global_vars.MAX_ATTACK_SPEED}")  # 700 (fastest cap)
-        print(f"MIN_ATTACK_SPEED: {global_vars.MIN_ATTACK_SPEED}")  # 20 (slowest cap)
+        # # Related Constants (from global_vars)
+        # print(f"AGILITY_AS_BONUS: {global_vars.AGILITY_AS_BONUS}")  # 1 (+1 AS per agility point)
+        # print(f"BASIC_ATK_COOLDOWN: {global_vars.BASIC_ATK_COOLDOWN}")  # 500 (fallback cooldown in ms)
+        # print(f"DEFAULT_ANIMATION_SPEED: {global_vars.DEFAULT_ANIMATION_SPEED}")  # 120 (frames per second)
+        # print(f"MAX_ATTACK_SPEED: {global_vars.MAX_ATTACK_SPEED}")  # 700 (fastest cap)
+        # print(f"MIN_ATTACK_SPEED: {global_vars.MIN_ATTACK_SPEED}")  # 20 (slowest cap)
 
-        # Method Results
-        print(f"calculate_effective_as(): {self.calculate_effective_as()}")  # Current effective attack speed
-        print(f"calculate_basic_attack_interval(): {self.calculate_basic_attack_interval()}")  # Current interval in ms
-        print(f"can_basic_attack(): {self.can_basic_attack()}")  # Boolean: ready to attack?
+        # # Method Results
+        # print(f"calculate_effective_as(): {self.calculate_effective_as()}")  # Current effective attack speed
+        # print(f"calculate_basic_attack_interval(): {self.calculate_basic_attack_interval()}")  # Current interval in ms
+        # print(f"can_basic_attack(): {self.can_basic_attack()}")  # Boolean: ready to attack?
          
         
         if not self.is_dead():

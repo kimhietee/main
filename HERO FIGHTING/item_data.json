@@ -129,7 +129,7 @@
       "name": "Spirit Feather",
       "image_path": "assets/item icons/in use/Icons_11.png",
       "bonus_type": ["move_speed_per", "atk_speed_flat"],
-      "bonus_value": [0.1, 150.0]
+      "bonus_value": [0.1, 50.0]
     },
     {
       "name": "Cheese",
@@ -142,13 +142,13 @@
       "name": "The Great Hilt",
       "image_path": "assets/item icons/2 Icons with back/Icons_23.png",
       "bonus_type": ["atk_flat", "move_speed_per", "atk_speed_flat"],
-      "bonus_value": [0.1, 0.05, 50.0]
+      "bonus_value": [0.1, 0.05, 20.0]
     },
     {
       "name": "Flower Locket",
       "image_path": "assets/item icons/in use/Icons_13.png",
       "bonus_type": ["hp_regen_per", "mana_regen_per", "move_speed_per", "atk_speed_flat", "int_flat"],
-      "bonus_value": [0.02, 0.02, 0.02, 100.0, 4.0]
+      "bonus_value": [0.02, 0.02, 0.02, 30.0, 4.0]
     },
     {
       "name": "Machete",

@@ -83,17 +83,25 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 13 #(13*4=52)
+        self.agility = 24 #(13*4=52)
 
 
 
         self.base_health_regen = 0.85 # 1.23
         self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
-        self.base_attack_damage = 0.0 # 1.3
+        self.base_attack_damage = 0.0 # 4.8
+
+        self.base_attack_speed = 110
+        self.base_attack_time = 1700
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 38 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.1 + 40 * 0.01 = 5.5
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 13 * 0.1 = 1.3
+
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)

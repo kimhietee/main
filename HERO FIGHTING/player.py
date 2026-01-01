@@ -116,6 +116,10 @@ class Player(pygame.sprite.Sprite):
         self.max_temp_hp = 0
         self.temp_hp = self.max_temp_hp
 
+        self.has_immortality = False
+        self.immortality_activated = False
+        self.immortality_duration = 0
+
 
         self.str_mult = 5
         self.int_mult = 5
@@ -733,6 +737,9 @@ class Player(pygame.sprite.Sprite):
                 # print('addeddd')
                 self.temp_hp += val
                 self.max_temp_hp = self.temp_hp
+            if typ == "immortality":
+                self.has_immortality = True
+                self.immortality_duration += val * 1000
                 # print('temp hp:', self.temp_hp)
         # Apply percentages (multiplicative)
 
@@ -1860,6 +1867,9 @@ class Player(pygame.sprite.Sprite):
         
         
         if self.health <= 0:
+            # not if self has immortality item
+            # if self.immortality_activated:
+            #     pass
             self.health = 0
             self.winner = 2 if self.player_type == 1 else 1
 
@@ -1903,6 +1913,7 @@ class Player(pygame.sprite.Sprite):
         return -1
 
     def take_damage(self, damage, add_mana_to_self=False, enemy:object=None, add_mana_to_enemy=False, mana_multiplier=1):
+        health_limit = 0 # used by immortality
         if self.is_dead():
             return
         if self.damage_reduce > 0:
@@ -1914,9 +1925,6 @@ class Player(pygame.sprite.Sprite):
             self.temp_hp -= temp_absorb
             self.display_damage(damage)
             damage -= temp_absorb
-        
-        self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
-        # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 
         # adds mana to the attacker
         if add_mana_to_self and enemy is not None:
@@ -1925,7 +1933,17 @@ class Player(pygame.sprite.Sprite):
         # adds mana to the attacked player (which is self)
         if add_mana_to_enemy:
             self.add_mana(damage, mana_mult=mana_multiplier)
+        
+        # immune to damage
+        if self.has_immortality:
+            if damage >= self.health: # check if dmg can kill hero
+                self.immortality_activated = True
+                health_limit = 1
 
+        self.health = max(health_limit, self.health - damage)  # Ensure health doesn't go below 0
+        # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
+
+        
         if self.health <= 0:
             self.die()  # Trigger the death process
             self.play_death_animation()  # Play death animation
@@ -1949,7 +1967,7 @@ class Player(pygame.sprite.Sprite):
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
             enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
-        else: #add mana to the attacked player, called by take_special
+        else: #add mana to the attacked player, called by take_special?
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
             enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
 
@@ -2596,6 +2614,39 @@ class Player(pygame.sprite.Sprite):
                                 sound=(False, None, None, None), kill_collide=False,
                                 follow=(False, True), follow_self=True, follow_offset=(0,50)
                             ))
+
+                
+                if 'immortality' in item.bonus_type or self.immortality_activated:
+                    # heal_mult = item.info['heal_when_low']
+                    
+                    if self.immortality_activated and current_time - item.last_used >= item.cooldown:
+                        heal_amount = self.strength * heal_mult
+                        self.take_heal(heal_amount)
+                        item.last_used = current_time
+                        # Display attack animation for the item
+                        if item.attack_frames:
+                            from heroes import Attack_Display
+                            attack_display.add(Attack_Display(
+                                x=self.rect.centerx, y=self.rect.centery,
+                                frames=item.attack_frames,
+                                frame_duration=item.attack_frame_duration,
+                                repeat_animation=item.attack_repeat,
+                                dmg=0, final_dmg=0,
+                                who_attacks=self, who_attacked=self.enemy,
+                                speed=0, moving=False, heal=False,
+                                continuous_dmg=False, per_end_dmg=(False, False),
+                                disable_collide=True, stun=(False, 0),
+                                sound=(False, None, None, None), kill_collide=False,
+                                follow=(False, True), follow_self=True, follow_offset=(0,50)
+                            ))
+
+                    if self.immortality_activated and pygame.time.get_ticks() >= self.immortality_duration:
+                        self.immortality_activated = False
+
+
+
+
+
                 # -----------------------------------------------------------------------------------------------------
                 # elif True:
                 #     pass

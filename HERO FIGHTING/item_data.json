@@ -134,8 +134,8 @@
     {
       "name": "Cheese",
       "image_path": "assets/item icons/2 Icons with back/Icons_12.png",
-      "bonus_type": ["sp_increase_per", "all_stats_per"],
-      "bonus_value": [0.4, 0.5],
+      "bonus_type": ["sp_increase_per"],
+      "bonus_value": [0.4],
       "description": "Special meter fills 40% faster."
     },
     {
@@ -185,6 +185,21 @@
       "bonus_type": ["extra_temp_hp"],
       "bonus_value": [40.0],
       "description": "Grants 40 temporary HP that absorbs@damage before affecting real health."
+    },
+    {
+      "name": "Immortal Relic",
+      "image_path": "assets/item icons/2 Icons with back/Icons_06.png",
+      "bonus_type": ["immortality"],
+      "bonus_value": [ 1 ],
+      "description": "Upon taking damage that would cause death,@the hero becomes immune to all damage for@7 seconds.@@Cooldown: 240s",
+      "cooldown": 120,
+      "attack_frames": "assets/attacks_item/Last Breath/image_",
+      "attack_count": 8,
+      "attack_frame_duration": 125,
+      "attack_repeat": 5,
+      "starts_at_zero": true,
+      "size": 2,
+      "sound_path": "pass muna bro"
     }
     
   ]

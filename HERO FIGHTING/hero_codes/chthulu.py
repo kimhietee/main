@@ -537,7 +537,7 @@ class Chthulu(Player):
 
         # Health bar position (centered)
         bar_x = self.hitbox_rect.centerx - bar_width // 2
-        bar_y = self.hitbox_rect.top 
+        bar_y = self.hitbox_rect.top  
 
         # Background (black bar)
         pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))

@@ -1,4 +1,3 @@
-
 '''
 step 1: copy hero
 
@@ -1604,6 +1603,7 @@ class Item:
             # Ability
             "heal_when_low": "Convalescent",
             "extra_temp_hp": "Absorption",
+            "immortality": "Immortality",
 
 
             # Health / Mana
@@ -1784,6 +1784,7 @@ for item in item_data["items"]:
         size=item.get("size", 1),
         sound_path=item.get("sound_path")
     ))
+
 
 
 # items = [
@@ -2949,7 +2950,7 @@ def player_selection():
                     
 
                     hero2_group.add(
-                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(0))
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(10))
                     )
 
                     hero1_group.add(hero1)

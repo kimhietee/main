@@ -205,7 +205,7 @@ class RectButton:
         self.x = x
         self.y = y
         self.width = width
-        self.height_from_B = height
+        self.height_from_B = height + height_position
         self.height = height
 
         self.button_clicked = False
@@ -379,7 +379,7 @@ class ModalObject:
             )
 
         self.button_gap = button_gap
-        self.button_bottom_gap = button_bottom_gap
+        self.button_bottom_gap = size[1] * button_bottom_gap
         self.hovered = False
         self.selected = False
    
@@ -438,8 +438,8 @@ class ModalObject:
 
         self.profile_rect.center = center
         self.decor_rect.move_ip(dx, dy)
-        self.button1.set_position((center[0] * (1-(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B)))
-        self.button2.set_position((center[0] * (1+(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B))) # Assuming ImageButton has set_position # Full (x, y) with offset
+        self.button1.set_position((center[0] * (1-(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap))
+        self.button2.set_position((center[0] * (1+(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap)) # Assuming ImageButton has set_position # Full (x, y) with offset
         # If associated item needs to follow (e.g., for tooltip alignment)
         # if hasattr(self.class_item, 'set_position'):
         #     self.class_item.set_position(center)

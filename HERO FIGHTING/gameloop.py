@@ -1242,6 +1242,7 @@ def campaign():
                             40, 
                             0)
     
+
     userreg_but2 = RectButton(width*0.8 - int(login_button_width/2), 
                             height*2, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
@@ -1254,8 +1255,8 @@ def campaign():
 
 
 
-    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5)
-    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5)
+    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0)
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5)
     
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 

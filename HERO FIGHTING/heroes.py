@@ -1,4 +1,3 @@
-
 '''
 step 1: copy hero
 
@@ -430,7 +429,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Draw scaled cooldown text
-                font = global_vars.get_font(self.cooldown_font_size)
+                font = global_vars.get_font(self.cooldown_font_size * (1 if not is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
                 remaining_ms = max(0, self.cooldown - self.time_since_use())
                 cooldown_time = max(0, remaining_ms // 1000)
@@ -1604,6 +1603,7 @@ class Item:
             # Ability
             "heal_when_low": "Convalescent",
             "extra_temp_hp": "Absorption",
+            "immortality": "Immortality",
 
 
             # Health / Mana
@@ -1786,6 +1786,7 @@ for item in item_data["items"]:
     ))
 
 
+
 # items = [
 #     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", 
 #          ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08]),  # Stats clear → no desc needed
@@ -1918,12 +1919,12 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 20% spell dmg",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 35, , Trait: 20%->30% mana, regen",
-    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 63, , Trait: 15% hp regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 13, , Trait: 15% mana, reduce",
+    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% mana, regen",
+    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% hp regen",
+    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% mana, reduce",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%->20% mana, cost/delay",
     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% lifesteal, 20% atk speed, 200%+ mana refund",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 23, , Trait: 15% cd reduce",
+    "Yurei": "Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% cd reduce",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5-10% stat,potency"
 }
 
@@ -2606,7 +2607,7 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_2_SELECTED_HERO = Forest_Ranger
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
@@ -2949,7 +2950,7 @@ def player_selection():
                     
 
                     hero2_group.add(
-                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(1))
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(10))
                     )
 
                     hero1_group.add(hero1)

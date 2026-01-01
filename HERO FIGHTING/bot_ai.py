@@ -56,6 +56,8 @@ def create_bot(selected_hero, player_type, enemy):
 
             self.bot_default_font = pygame.font.SysFont('Serif', 30)
 
+            self.disabled_random_unstuck_direction = False
+
             # Retargeting config: policy can be 'closest', 'random' or 'focus'
             # You can set `global_vars.BOT_RETARGET_POLICY = 'closest'` to change default.
             self.retarget_policy = getattr(global_vars, 'BOT_RETARGET_POLICY', 'closest')
@@ -2473,8 +2475,9 @@ def create_bot(selected_hero, player_type, enemy):
             if (self.unstuck_mode or self.edge_escape_mode):
                 # if not any([self.attacking1, self.attacking2, self.attacking3, self.sp_attacking]):
                 #     self.unface_enemy()
-                self.handle_movement()  # Only movement during escape
                 self.cast_skills()
+                self.handle_movement()  # Only movement during escape
+                
                 
                 return
             

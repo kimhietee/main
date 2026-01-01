@@ -82,9 +82,17 @@ class Water_Princess(Player):
         self.base_mana_regen = 6.05 # 6.53
         self.base_attack_damage = 0.0 # 2.0
 
+        self.base_attack_speed = 80
+        self.base_attack_time = 3200
+
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.05 + 48 * 0.01 = 6.53
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 20 * 0.1 = 2.0
+
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
@@ -801,7 +809,7 @@ class Water_Princess(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [
                             (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.atk_instance[0]),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.atk_instance[1]),
@@ -834,6 +842,7 @@ class Water_Princess(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -1159,7 +1168,7 @@ class Water_Princess(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [
                             (200, self.basic_atk2, self.basic_atk2_flipped, 30, (50, 60, 0.4, 0.2), self.basic_attack_damage*self.special_instance[0],(False, 1, 1)),
                             (1000, self.basic_slash, self.basic_slash_flipped, 100, (70, 80, 0.8, 0.6), self.basic_attack_damage*self.special_instance[1],(False, 1, 1)),
@@ -1193,6 +1202,7 @@ class Water_Princess(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
 
                         # print("Attack executed")
                     else:

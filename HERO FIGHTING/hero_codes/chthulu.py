@@ -71,12 +71,19 @@ class Chthulu(Player):
 
         self.base_health_regen = 0.9 # 1.3
         self.base_mana_regen = 4.9 # 5.3
-        self.base_attack_damage = 1.0 # ? 
+        self.base_attack_damage = 2.5 # ? 
+
+        self.base_attack_speed = 100
+        self.base_attack_time = 1900
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.9 + 40 * 0.01 = 1.3
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 40 * 0.01 = 5.8
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 1.0 + 25 * 0.15 = 4.75
 
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
@@ -510,8 +517,41 @@ class Chthulu(Player):
         # self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
         # self.default_atk_speed = self.basic_attack_animation_speed
 
+    def update_hitbox(self):
+        # Center the hitbox inside the player's main rect
+        self.hitbox_rect.center = (self.rect.midbottom[0], self.rect.midbottom[1] - 90)
 
+    def draw_health_bar(self, screen):
+        """Draws a small health bar 10px above the player's hitbox."""
+        bar_width = 50
+        bar_height = 6
 
+        # Health ratio (0.0 to 1.0)
+        hp_ratio = max(0, min(1, self.health / self.max_health))
+
+        # Calculate extension for temp_hp
+        if self.max_health > 0:
+            extension_width = int((self.max_temp_hp / self.max_health) * bar_width)
+        else:
+            extension_width = 0
+
+        # Health bar position (centered)
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        bar_y = self.hitbox_rect.top  
+
+        # Background (black bar)
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+
+        # Foreground (green health)
+        green_width = int(bar_width * hp_ratio)
+        pygame.draw.rect(screen, green, (bar_x, bar_y, green_width, bar_height))
+
+        # Temp HP (gold extension)
+        if self.max_temp_hp > 0:
+            temp_ratio = max(0, min(1, self.temp_hp / self.max_temp_hp))
+            temp_width = int(temp_ratio * extension_width)
+            pygame.draw.rect(screen, gold, (bar_x + green_width, bar_y, temp_width, bar_height))
+            
     def run_animation(self, animation_speed=0):
         if not self.flying:
             if self.facing_right:
@@ -767,7 +807,7 @@ class Chthulu(Player):
 
             if not self.is_dead():
                 if basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                                 x=self.rect.centerx + 110 if self.facing_right else self.rect.centerx - 110,
                                 y=self.rect.centery + 10,
@@ -795,6 +835,7 @@ class Chthulu(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -1025,7 +1066,7 @@ class Chthulu(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                                 x=self.rect.centerx + 110 if self.facing_right else self.rect.centerx - 110,
                                 y=self.rect.centery + 10,
@@ -1053,6 +1094,7 @@ class Chthulu(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
 
                         # print("Attack executed")
                     else:

@@ -83,17 +83,25 @@ class Wind_Hashashin(Player):
         # stat
         self.strength = 38
         self.intelligence = 40
-        self.agility = 13 #(13*4=52)
+        self.agility = 24 #(13*4=52)
 
 
 
         self.base_health_regen = 0.85 # 1.23
         self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
-        self.base_attack_damage = 0.0 # 1.3
+        self.base_attack_damage = 0.0 # 4.8
+
+        self.base_attack_speed = 110
+        self.base_attack_time = 1700
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 38 * 0.01 = 1.2
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.1 + 40 * 0.01 = 5.5
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 13 * 0.1 = 1.3
+
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
 
         # Base Stats
         self.max_health = (self.strength * self.str_mult)
@@ -639,7 +647,7 @@ class Wind_Hashashin(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [0, 300]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
@@ -671,6 +679,7 @@ class Wind_Hashashin(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass
@@ -887,7 +896,7 @@ class Wind_Hashashin(Player):
                     # print('Skill 4 used')
 
                 elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks_special[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         for i in [0, 300]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
@@ -924,6 +933,7 @@ class Wind_Hashashin(Player):
                         self.player_basic_index = 0
                         self.player_basic_index_flipped = 0
                         self.basic_sound.play()
+                        self.last_basic_attack_time = current_time
                         # print("Attack executed")
                     else:
                         pass

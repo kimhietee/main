@@ -206,8 +206,6 @@ waterfall_day_bg = AnimatedBackground(
     size="full"
 )
 
-
-
 waterfall_rainy_bg = AnimatedBackground(
     r"assets\backgrounds\animated_bg\Waterfall - Rainy\\",
     9,
@@ -236,8 +234,8 @@ green_bg = AnimatedBackground(
     size="full"
 )
 
-Sword_campaign = AnimatedBackground(
-    "assets/backgrounds/animated_bg/Campaign",
+sword_campaign = AnimatedBackground(
+    r"assets\backgrounds\animated_bg\blue_bg\\",
     250,
     size="full"
 )

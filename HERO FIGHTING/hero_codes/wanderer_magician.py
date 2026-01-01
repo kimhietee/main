@@ -79,15 +79,19 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
         self.base_health_regen = 0.6 # 1.0
         self.base_mana_regen = 6.75 # 
-        self.base_attack_damage = 0.0 # 2.0
+        self.base_attack_damage = 0.2 # 3.7
+
+        self.base_attack_speed = 100
+        self.base_attack_time = 1600
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.6 + 40 * 0.01 = 1.0
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #6.75 + 36 * 0.01 = 7.01
         self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.0 + 35 * 0.1 = 3.5
 
-
-        self.health_regen = self.regen_per_second(1.0)
-        self.mana_regen = self.regen_per_second(7.0)
+        # Recalculate attack speed variables for fire wizard's base stats
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_cooldown = self.calculate_basic_attack_interval()
+        self.basic_attack_animation_speed = global_vars.DEFAULT_ANIMATION_SPEED / (self.attack_speed / self.base_attack_speed)
         
         self.base_max_mana = self.intelligence * self.int_mult
         
@@ -561,7 +565,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     # print('Skill 4 used')
 
                 elif not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.attacks[4].is_ready():
+                    if self.mana >= 0 and self.can_basic_attack():
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + random.randint(0, 40),
@@ -590,6 +594,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         self.player_atk1_index_flipped = 0
 
                         self.basic_attacking = True
+                        self.last_basic_attack_time = current_time
                         # print(self.basic_attack_animation_speed)
 
                         # Experiment Codes
@@ -799,7 +804,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     # print('Skill 4 used')
 
             if not self.is_dead() and not self.jumping and basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                if self.mana >= 0 and self.attacks_special[4].is_ready():
+                if self.mana >= 0 and self.can_basic_attack():
                     for i in [(500, random.randint(0, 30)), (700, random.randint(0, 30)), (900, random.randint(0, 30))]:
                         attack = Attack_Display(
                             x=self.rect.centerx,
@@ -853,6 +858,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     self.player_atk1_index_flipped = 0
                     
                     self.basic_attacking = True
+                    self.last_basic_attack_time = current_time
 
                     # print("Attack executed")
                 else:

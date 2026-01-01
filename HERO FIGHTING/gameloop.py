@@ -1305,9 +1305,9 @@ def campaign():
         
 
         if not load_sword_campaign_bg:
-            Animate_BG.Sword_campaign.load_frames_type2()
+            Animate_BG.sword_campaign.load_frames_type2()
             load_sword_campaign_bg = True
-        Animate_BG.Sword_campaign.display(screen, speed=10)
+        Animate_BG.sword_campaign.display(screen, speed=10)
         
 
         #typing indicator

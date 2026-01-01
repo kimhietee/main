@@ -341,7 +341,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = ""):
         """
         Args:
             image: str path or Surface
@@ -389,15 +389,16 @@ class ModalObject:
         self.move_speed = 0.1
         # print(self.original_pos)
         self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
-        self.button1 = buttons[0]
-        self.button2 = buttons[1]
+        if len(buttons) > 1:
+            self.button1 = buttons[0]
+            self.button2 = buttons[1]
             
         self.inputobject = inputobject
 
 
         self.shake_count = 0
         self.shake_dir = False
-
+        self.title = Title
 
     def shake_enable(self):
         gap = 0.1 if self.shake_dir else -0.1
@@ -503,7 +504,7 @@ class ModalObject:
         # if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
         #         self.hovered = True
         #         if mouse_pressed[0]:
-        create_title('Register', g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
+        create_title(self.title, g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
         #             self.can_move = False
         #             self.selected = True
 

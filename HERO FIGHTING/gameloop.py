@@ -1255,8 +1255,8 @@ def campaign():
 
 
 
-    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0)
-    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5)
+    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0, Title = "Register")
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Register")
     
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 
@@ -1655,10 +1655,34 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 # ---------------------END--------------------------------------------------
 
 
+    
+
+    
+
+    userreg_but1 = RectButton(width*0.5 - int(80/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                                (50, 255, 255), "Cancel",    
+                            80, 
+                            40, 
+                            0)
+    
+
+    userreg_but2 = RectButton(width*0.8 - int(80/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), "Confirm", 
+                            
+                            80, 
+                            40, 
+                            0)
 
 
-
-
+    keyswap_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7), buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Key Already in Use")
+    
+    
     while True:
        
 
@@ -1901,6 +1925,8 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                            
                                     else:
                                         draw_black_screen(0.5)
+                                        keyswap_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
+                                        print("watatas")
                                         display_confirmation = True
                                         can_click = False
                                         opacity = 0.8
@@ -2035,15 +2061,16 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
         
 
         draw_black_screen(opacity)
-
+        keyswap_modal.update(mouse_pos, mouse_press, None, max_selected=1)
 
         if display_confirmation:
             # print("display choice")
             display_keyswap_confirmation(True)
             
             
-            show_confirmation_modals()
-  
+            # show_confirmation_modals()
+            
+            # print("Ni saka dapat ni")
         swapconfirm_yes.draw(screen, mouse_pos)
         swapconfirm_no.draw(screen, mouse_pos)
 

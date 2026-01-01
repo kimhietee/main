@@ -37,10 +37,10 @@ class Yurei(Player):
         
         self.base_health_regen = 0.75 # 1.11
         self.base_mana_regen = 5.5 # 5.9
-        self.base_attack_damage = 0.5 # 4.2
+        self.base_attack_damage = 0.5 # 3.8
 
         self.base_attack_speed = 100
-        self.base_attack_time = 1700
+        self.base_attack_time = 1500
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.75 + 36 * 0.01 = 1.11
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.5 + 40 * 0.01 = 5.9

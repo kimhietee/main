@@ -74,7 +74,7 @@ class Chthulu(Player):
         self.base_attack_damage = 2.5 # ? 
 
         self.base_attack_speed = 100
-        self.base_attack_time = 1700
+        self.base_attack_time = 1900
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.9 + 40 * 0.01 = 1.3
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 40 * 0.01 = 5.8
@@ -517,8 +517,41 @@ class Chthulu(Player):
         # self.haste_value = DEFAULT_ANIMATION_SPEED #(120) #default, change in skill 1 config
         # self.default_atk_speed = self.basic_attack_animation_speed
 
+    def update_hitbox(self):
+        # Center the hitbox inside the player's main rect
+        self.hitbox_rect.center = (self.rect.midbottom[0], self.rect.midbottom[1] - 90)
 
+    def draw_health_bar(self, screen):
+        """Draws a small health bar 10px above the player's hitbox."""
+        bar_width = 50
+        bar_height = 6
 
+        # Health ratio (0.0 to 1.0)
+        hp_ratio = max(0, min(1, self.health / self.max_health))
+
+        # Calculate extension for temp_hp
+        if self.max_health > 0:
+            extension_width = int((self.max_temp_hp / self.max_health) * bar_width)
+        else:
+            extension_width = 0
+
+        # Health bar position (centered)
+        bar_x = self.hitbox_rect.centerx - bar_width // 2
+        bar_y = self.hitbox_rect.top 
+
+        # Background (black bar)
+        pygame.draw.rect(screen, black, (bar_x, bar_y, bar_width, bar_height))
+
+        # Foreground (green health)
+        green_width = int(bar_width * hp_ratio)
+        pygame.draw.rect(screen, green, (bar_x, bar_y, green_width, bar_height))
+
+        # Temp HP (gold extension)
+        if self.max_temp_hp > 0:
+            temp_ratio = max(0, min(1, self.temp_hp / self.max_temp_hp))
+            temp_width = int(temp_ratio * extension_width)
+            pygame.draw.rect(screen, gold, (bar_x + green_width, bar_y, temp_width, bar_height))
+            
     def run_animation(self, animation_speed=0):
         if not self.flying:
             if self.facing_right:

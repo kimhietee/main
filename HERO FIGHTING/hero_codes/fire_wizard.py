@@ -898,8 +898,6 @@ class Fire_Wizard(Player):
     
     def update(self):
         
-        # Attack Speed Statuses for Fire Wizard (sorted alphabetically)
-
         # # Base and Bonus Attack Speed Variables
         # print(f"base_attack_speed: {self.base_attack_speed}")  # 300 (fire wizard specific)
         # print(f"base_attack_time: {self.base_attack_time}")    # 1700 (milliseconds)

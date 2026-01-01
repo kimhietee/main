@@ -614,7 +614,7 @@ class Player(pygame.sprite.Sprite):
         # Apply flats first
         for typ, val in bonuses.items():
             # print(typ, "hp_regen_flat")
-            print(bonuses)
+            # print(bonuses)
             if "_flat" in typ:
                 # print(typ)
                 base_stat = typ.replace("_flat", "")
@@ -730,10 +730,10 @@ class Player(pygame.sprite.Sprite):
 
             # Abilities
             if typ == "extra_temp_hp":
-                print('addeddd')
+                # print('addeddd')
                 self.temp_hp += val
                 self.max_temp_hp = self.temp_hp
-                print('temp hp:', self.temp_hp)
+                # print('temp hp:', self.temp_hp)
         # Apply percentages (multiplicative)
 
             if "_per" in typ:
@@ -1549,15 +1549,15 @@ class Player(pygame.sprite.Sprite):
         # print(self.temp_hp)
 
         self.attack_stats = [
-                {'icon': self.strength_attribute_icon, 'value': self.attack_speed, 'color': white},
-                {'icon': self.intelligence_attribute_icon, 'value': self.basic_attack_cooldown, 'color': 'Blue'},
-                {'icon': self.agility_attribute_icon, 'value': self.basic_attack_damage, 'color': red}
+                {'icon': self.strength_attribute_icon, 'value': f'{self.attack_speed:.0f}', 'color': white},
+                {'icon': self.intelligence_attribute_icon, 'value': f'{f'{self.basic_attack_cooldown / 1000:.2f}'}s', 'color': 'Blue'},
+                {'icon': self.agility_attribute_icon, 'value': f'{self.basic_attack_damage:.1f}', 'color': red}
             ]
         
         self.attribute_stats = [
-                {'icon': self.strength_attribute_icon, 'value': self.strength, 'color': red},
-                {'icon': self.intelligence_attribute_icon, 'value': self.intelligence, 'color': cyan2},
-                {'icon': self.agility_attribute_icon, 'value': self.agility, 'color': green}
+                {'icon': self.strength_attribute_icon, 'value': f'{self.strength:.0f}', 'color': red},
+                {'icon': self.intelligence_attribute_icon, 'value': f'{self.intelligence:.0f}', 'color': cyan2},
+                {'icon': self.agility_attribute_icon, 'value': f'{self.agility:.0f}', 'color': green}
             ]
         
 
@@ -2636,7 +2636,7 @@ class Player(pygame.sprite.Sprite):
 
             # if being alived, 
             if not self.is_dead() and getattr(self, "hitbox_removed", True):
-                self.hitbox_rect.size = self.prev_hitbox_rect
+                self.hitbox_rect.size = self.prev_hitbox_size
                 self.hitbox_removed = False
 
 
@@ -2653,13 +2653,14 @@ class Player(pygame.sprite.Sprite):
             # Update the player status (health and mana bars)
             self.player_status(self.health, self.mana, self.special)
 
+        self.update_hitbox()
+
         # update neccesities
         if global_vars.DRAW_DISTANCE:
             self.draw_distance(self.enemy)
         if global_vars.SHOW_HITBOX:
             
             self.draw_hitbox(screen)
-        self.update_hitbox()
 
         
         # -----------------------------

@@ -574,7 +574,13 @@ def game(bg=None):
 
 
 
+    # Add tracking variables for hero damage and attack counts
+    hero1_damage = 0
+    hero2_damage = 0
+    hero1_attacks = 0
+    hero2_attacks = 0
 
+    # Modify the game loop to track damage and attacks
     while True:
         # print(main.hero1.mana)
             
@@ -859,6 +865,19 @@ def game(bg=None):
         else:
             pause(mouse_pos, mouse_press)
 
+        # Track hero1's attacks and damage
+        if main.hero1.basic_attacking:
+            hero1_damage += main.hero1.basic_attack_damage
+            hero1_attacks += 1
+
+        # Track hero2's attacks and damage
+        if main.hero2.basic_attacking:
+            hero2_damage += main.hero2.basic_attack_damage
+            hero2_attacks += 1
+
+        # Log the damage and attack counts for comparison
+        print(f"Hero1 - Total Damage: {hero1_damage}, Total Attacks: {hero1_attacks}")
+        print(f"Hero2 - Total Damage: {hero2_damage}, Total Attacks: {hero2_attacks}")
 
         
 

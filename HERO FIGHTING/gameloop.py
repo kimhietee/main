@@ -6,8 +6,8 @@ import time
 
 
 
-import random 
-from global_vars import (IMMEDIATE_RUN,
+import random
+from global_vars import (IMMEDIATE_RUN, FONT_PATH,
     width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon,
     white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
     DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size,
@@ -27,7 +27,7 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo, ModalObject
+from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title
 import heroes as main
 
 
@@ -118,11 +118,7 @@ width_half = width*0.45
 
 
 
-def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
-    title = pygame.transform.rotozoom(font.render(f'{text}', global_vars.TEXT_ANTI_ALIASING, color), angle, scale)
-    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
 
-    screen.blit(title, title_rect)
 
 
 
@@ -1197,8 +1193,13 @@ def campaign():
     global load_sword_campaign_bg
     username_input = ""
     password_input = ""
+    usernamereg_input = ""
+    passwordreg_input = ""
     username_clicked = False
     password_clicked = False
+    usernamereg_clicked = False
+    passwordreg_clicked = False
+
     login_button_width = width * 0.4
     login_button_height = 50
     username_limit_char = [1, 20]
@@ -1207,8 +1208,76 @@ def campaign():
     typing = False
     font = global_vars.get_font(60)
 
-    register_modal = ModalObject((width * 0.5, height * 2),(width*0.5,height*0.7), b1text = "Back", b2text = "Register")
+    
+    
     # register_modal.set_position((width * 0.5, height * 0.5))
+
+    userreg = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+    passreg = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+    
+
+    userreg_but1 = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            80, 
+                            40, 
+                            0)
+    
+
+    userreg_but2 = RectButton(width*0.8 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            80, 
+                            40, 
+                            0)
+
+
+
+    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0)
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5)
+    
+    
+    Username = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*0.4, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+        
+    Password = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*0.6, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+                            (50, 255, 255), ("*" * len(password_input)) + (("|" if typing else "") if password_clicked and len(password_input) <= password_limit_char[1] else ""), 
+                            login_button_width, 
+                            login_button_height, 
+                            0)
+    
+    
     while True:
 
         Username = RectButton(width*0.5 - int(login_button_width/2), 
@@ -1250,7 +1319,7 @@ def campaign():
         else: 
             typing = False
 
-
+        # print(register_modal.selected)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1263,16 +1332,41 @@ def campaign():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
-                if Username.is_clicked(event.pos):
+                if Username.is_clicked(event.pos) and not register_modal.selected:
                     username_clicked = not username_clicked
                     password_clicked = False
-                if Password.is_clicked(event.pos):
+                if Password.is_clicked(event.pos) and not register_modal.selected:
                     password_clicked = not password_clicked
                     username_clicked = False
-                if login_button.is_clicked(event.pos):
 
+                if userreg.is_clicked(event.pos) and register_modal.selected:
+                    usernamereg_clicked = not usernamereg_clicked
+                    passwordreg_clicked = False
+                if passreg.is_clicked(event.pos) and register_modal.selected:
+                    passwordreg_clicked = not passwordreg_clicked
+                    usernamereg_clicked = False
+
+                if reg_register.is_clicked(event.pos) and register_modal.selected:
+                    if len(usernamereg_input) >= username_limit_char[0] and len(usernamereg_input) <= username_limit_char[1]:
+                            if len(passwordreg_input) >= password_limit_char[0] and len(passwordreg_input) <= password_limit_char[1]:
+                                Save.register(usernamereg_input, Save.hash_pw(passwordreg_input))
+                                Save.show_all_user()
+                                print("Registered Successfully")
+                                register_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
+                            else:
+                                print("Passowrd too short")
+                                register_modal.shake(5)
+                    else:
+                        print("Username too short")
+                        register_modal.shake(5)
+
+
+                        
+                if login_button.is_clicked(event.pos) and not register_modal.selected:
+                
                     if len(username_input) == 0:
                         print("Please Enter Username")
+                        
 
                     else:
                         user = Save.login_check(username_input)
@@ -1283,13 +1377,23 @@ def campaign():
                                 print("LOGIN COMPLETE")
                             else:
                                 print("wrong password")
+                                
 
-                if register_button.is_clicked(event.pos):
+
+
+                if register_button.is_clicked(event.pos) and not register_modal.selected:
                     print("register")
-                    register_modal.set_position(((width * 0.5),(height * 0.5)))
-                    
+                    register_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
+                    usernamereg_clicked = False
+                    passwordreg_clicked = False
+                    password_clicked = False
+                    username_clicked = False
+                    password_input = ""
+                    username_input = ""
+                    usernamereg_input = ""
+                    passwordreg_input = ""
 
-            if username_clicked:
+            if username_clicked and not register_modal.selected:
                 if event.type == pygame.KEYDOWN:
                     print("Key down")
                     if event.key == pygame.K_BACKSPACE:
@@ -1303,7 +1407,7 @@ def campaign():
                     else:
                         print("max character reached!")
 
-            if password_clicked:
+            if password_clicked and not register_modal.selected:
                 if event.type == pygame.KEYDOWN:
                     print("Key down")
                     if event.key == pygame.K_BACKSPACE:
@@ -1316,10 +1420,47 @@ def campaign():
                         print(event.unicode)
                     else:
                         print("max character reached!")
-            
+
+
+            if usernamereg_clicked and register_modal.selected:
+                if event.type == pygame.KEYDOWN:
+                    print("Key down")
+                    if event.key == pygame.K_BACKSPACE:
+                        usernamereg_input = usernamereg_input[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        print("Username entered:", usernamereg_input)
+                
+                    elif len(usernamereg_input) <= username_limit_char[1]:
+                        usernamereg_input += event.unicode
+                        print(event.unicode)
+                    else:
+                        print("max character reached!")
+
+            if passwordreg_clicked and register_modal.selected:
+                if event.type == pygame.KEYDOWN:
+                    print("Key down")
+                    if event.key == pygame.K_BACKSPACE:
+                        passwordreg_input = passwordreg_input[:-1]
+                    elif event.key == pygame.K_RETURN:
+                        print("Username entered:", passwordreg_input)
+
+                    elif len(passwordreg_input) <= password_limit_char[1]:
+                        passwordreg_input += event.unicode
+                        print(event.unicode)
+                    else:
+                        print("max character reached!")
         
+
+
+        Username.text = username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else "")
         
+        Password.text = ("*" * len(password_input)) + (("|" if typing else "") if password_clicked and len(password_input) <= password_limit_char[1] else "")
         
+        userreg.text = usernamereg_input + (("|" if typing else "") if usernamereg_clicked and len(usernamereg_input) <= username_limit_char[1] else "")
+        
+        passreg.text = ("*" * len(passwordreg_input)) + (("|" if typing else "") if passwordreg_clicked and len(passwordreg_input) <= password_limit_char[1] else "")
+        
+
         
         draw_black_screen(0.5,size=(width*0.2, height * 0.2, width*0.6, height*0.6))
 
@@ -1328,12 +1469,19 @@ def campaign():
         create_title('Username', font , 0.5, height * 0.35, angle=0, x_offset=width*0.74)
         create_title('Password', font , 0.5, height * 0.55, angle=0, x_offset=width*0.74)
 
+      
+
         Password.update(mouse_pos, password_clicked)
         Password.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         Username.update(mouse_pos, username_clicked)
         Username.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
+        userreg.update(mouse_pos, usernamereg_clicked)
+        passreg.update(mouse_pos, passwordreg_clicked)
+
+        # userreg.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        # print(userreg)
         login_button.draw(screen, mouse_pos)
         register_button.draw(screen, mouse_pos)
         
@@ -1403,6 +1551,28 @@ swapconfirm_no = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
+reg_back = ImageButton(
+            image_path=text_box_img,
+            pos=(center_pos[0] * 0.8, height * 3),
+            scale=1,
+            text="Back",
+            font_path=FONT_PATH,
+            font_size=font_size,
+            text_color='white',
+            text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+        )
+
+reg_register = ImageButton(
+            image_path=text_box_img,
+            pos=(center_pos[0] * 1.2, height * 3),
+            scale=1,
+            text="Register",
+            font_path=FONT_PATH,
+            font_size=font_size,
+            text_color='white',
+            text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+        )
+        
 
 
 
@@ -1958,17 +2128,6 @@ def display_keyswap_confirmation(condition):
         swapconfirm_no.rect = swapconfirm_no.image.get_rect(center=((width/2 - width*0.08),(height*1.2)))
 
 
-
-def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
-    base_opacity = 255 * opacity
-    rect = pygame.Rect(pygame.Rect(size[0], size[1], size[2], size[3]))
-    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-
-    # Fill it with the color + alpha
-    overlay.fill((color[0],color[1],color[2], base_opacity))
-
-    # Blit it on the target surface
-    screen.blit(overlay, rect.topleft)
 
 
 #---------------------------------------END-----------------------------------------

@@ -68,6 +68,13 @@ def register(username, password):
     except sqlite3.IntegrityError:
         print("Username already exists")
 
+def show_all_user():
+    cursor.execute("SELECT * FROM users")
+    print(cursor.fetchall())
+    
 
 def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
+
+
+print(cursor.fetchall)

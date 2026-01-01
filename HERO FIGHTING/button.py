@@ -1,12 +1,31 @@
 import pygame
-from global_vars import get_font
+from global_vars import get_font, screen, width, height, white, TEXT_ANTI_ALIASING
 import math
+import time
+def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
+    base_opacity = 255 * opacity
+    rect = pygame.Rect(pygame.Rect(size[0], size[1], size[2], size[3]))
+    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+
+    # Fill it with the color + alpha
+    overlay.fill((color[0],color[1],color[2], base_opacity))
+
+    # Blit it on the target surface
+    screen.blit(overlay, rect.topleft)
+
+def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
+    title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
+    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
+
+    screen.blit(title, title_rect)
+
 
 class ImageButton:
     def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True, y_margin=0):
         # Load and scale the image
         
         self.hover_pos = pos
+        
         self.hover_move = hover_move
         self.fku = fku
         self.scale_val = scale_val
@@ -20,7 +39,7 @@ class ImageButton:
         self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
         self.image.set_alpha(int(self.alpha[0] * 255))
         self.rect = self.image.get_rect(center=pos)
-
+        self.height_from_B = self.rect[3]
         self.text_anti_alias = text_anti_alias
     
         
@@ -60,6 +79,8 @@ class ImageButton:
         dy = center[1] - self.rect.centery - self.y_margin
 
         #----------
+
+
         self.rect.move_ip(dx, dy)
         self.hover_pos = (center[0], center[1] + self.y_margin)
         # self.text_rect.move_ip(dx, dy)
@@ -181,8 +202,11 @@ class RectButton:
         self.text = text
         self.height_position = height_position
         self.rect_color = self.color
-        
-
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height_from_B = height + height_position
+        self.height = height
 
         self.button_clicked = False
         self.button_hovered = False
@@ -190,6 +214,14 @@ class RectButton:
         self.done_clicking = False
         self.enabled = False
     
+
+        
+
+    def set_position(self, pos: tuple):
+        self.rect = pygame.Rect(pos[0] - self.width/2, pos[1], self.width, self.height)
+
+
+
     def draw(self, screen:pygame.Surface, text_anti_alias):
         pygame.draw.rect(screen, self.rect_color, self.rect)
         self.text_surf = self.font.render(self.text, text_anti_alias, 'white')
@@ -309,7 +341,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120), b1text = "", b2text = ""):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2):
         """
         Args:
             image: str path or Surface
@@ -327,7 +359,7 @@ class ModalObject:
         # original = (100, 900)
 
         # Determine size
-      
+        self.size = size
         profile_size = size
         # decor_size = [size[0], size[1]]
         decor_offset = [12, 12]
@@ -346,43 +378,42 @@ class ModalObject:
             *size
             )
 
-        
-        self.can_move_back = False
-        self.can_move = True
+        self.button_gap = button_gap
+        self.button_bottom_gap = size[1] * button_bottom_gap
         self.hovered = False
         self.selected = False
-        self.move_variable = False
-        self.move_back_variable = False
+   
 
         self.original_pos = center_pos
         self.target_pos = center_pos
         self.move_speed = 0.1
         # print(self.original_pos)
         self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
-        self.button1 = ImageButton(
-            image_path=g.text_box_img,
-            pos=(center_pos[0] * 0.9, center_pos[1]),
-            scale=0.5,
-            text=b1text,
-            font_path=g.FONT_PATH,
-            font_size=g.font_size * 0.75,
-            text_color='white',
-            text_anti_alias=g.TEXT_ANTI_ALIASING
-        )
+        self.button1 = buttons[0]
+        self.button2 = buttons[1]
+            
+        self.inputobject = inputobject
 
-        self.button2 = ImageButton(
-            image_path=g.text_box_img,
-            pos=(center_pos[0] * 1.1, center_pos[1]),
-            scale=0.5,
-            text=b2text,
-            font_path=g.FONT_PATH,
-            font_size=g.font_size * 0.75,
-            text_color='white',
-            text_anti_alias=g.TEXT_ANTI_ALIASING
-        )
-        
-        
-    def set_position(self, new_center, instant=False):
+
+        self.shake_count = 0
+        self.shake_dir = False
+
+
+    def shake_enable(self):
+        gap = 0.1 if self.shake_dir else -0.1
+        self.target_pos = (self.target_pos[0] * (1 + gap), self.target_pos[1])
+        self.shake_dir = not self.shake_dir
+        print(gap)
+        print(self.target_pos)
+
+
+    def shake(self, times):
+        self.move_speed = 0.5
+        print('waw')
+        self.shake_count = times
+        self.shake_enable()
+    
+    def set_position(self, new_center, instant=False, selectedval:bool = False):
         """
         Move the selector to a new center position.
         
@@ -390,7 +421,7 @@ class ModalObject:
             new_center (tuple): New (x, y) center.
             instant (bool): If True, snap immediately (bypass lerp).
         """
-     
+        self.selected = selectedval
         if instant:
             self.target_pos = new_center
             self._apply_position(new_center)
@@ -398,7 +429,8 @@ class ModalObject:
             self.target_pos = new_center
 
     def _apply_position(self, center):
-        print(center)
+        # print(center)
+        
         """Internal: Sync all rects to given center."""
         dx = center[0] - self.profile_rect.centerx
         dy = center[1] - self.profile_rect.centery
@@ -406,43 +438,38 @@ class ModalObject:
 
         self.profile_rect.center = center
         self.decor_rect.move_ip(dx, dy)
-        self.button1.set_position((center[0] * 0.9, center[1] + 200))
-        self.button2.set_position((center[0] * 1.1, center[1] + 200))  # Assuming ImageButton has set_position # Full (x, y) with offset
+        self.button1.set_position((center[0] * (1-(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap))
+        self.button2.set_position((center[0] * (1+(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap)) # Assuming ImageButton has set_position # Full (x, y) with offset
         # If associated item needs to follow (e.g., for tooltip alignment)
         # if hasattr(self.class_item, 'set_position'):
         #     self.class_item.set_position(center)
-
-
-    def enable_movement(self):
-        """Allow movement after animation completes."""
-        while self.move_variable:
-            if not self.can_move and not self.can_move_back:
-                        self.can_move_back = True
-            self.move_variable = False
-
-        while self.move_back_variable:
-            if not self.can_move_back and not self.can_move:
-                        self.can_move = True
-            self.move_back_variable = False
-            print(self.can_move, self.can_move_back)
-
-
-
+        print(center[1])
+        for num, i in enumerate(self.inputobject):
+                i.set_position((center[0], center[1]*0.8 + 100 * num))
+                # print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
+                i.draw(screen, g.TEXT_ANTI_ALIASING)
+  
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=g.MAX_ITEM):
         # Smooth movement toward target
         
+
         if self.profile_rect.center != self.target_pos:
             
+
             current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
 
             # If very close, snap exactly to avoid drift
             if abs(dx) <= 2 and abs(dy) <= 2:
-                # print("Snapped")
-                self._apply_position(self.target_pos)
-                self.enable_movement()
+                print("Snapped")
 
+                self._apply_position(self.target_pos)
+                if self.shake_count:
+                    self.shake_count -= 1
+                    self.shake_enable()
+
+                # self.enable_movement()
             else:
                 # Normal smooth movement
                 # print(dx, dy)
@@ -467,41 +494,53 @@ class ModalObject:
         # can_select = selected_count < max_selected
 
 
-
+        for i in self.inputobject:
+                # i.set_position(self.profile_rect.center)
+                i.draw(screen, g.TEXT_ANTI_ALIASING)
         # if not self.selected:
         self.button1.draw(g.screen, mouse_pos)
         self.button2.draw(g.screen, mouse_pos)
-        if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
-                self.hovered = True
-                if mouse_pressed[0]:
+        # if self.decor_rect.collidepoint(mouse_pos) and self.can_move:
+        #         self.hovered = True
+        #         if mouse_pressed[0]:
+        create_title('Register', g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
+        #             self.can_move = False
+        #             self.selected = True
 
-                    self.can_move = False
-                    self.selected = True
 
-
-                    self.move_variable = True
+        #             self.move_variable = True
                     
 
-
-                    highlight_pos = (
-                        self.original_pos[0] + self.highlight_offset[0],
-                        self.original_pos[1] + self.highlight_offset[1]
-                    )
-                    self.set_position(highlight_pos)
-                    self.hovered = False
+        #             highlight_pos = (
+        #                 self.original_pos[0] + self.highlight_offset[0],
+        #                 self.original_pos[1] + self.highlight_offset[1]
+        #             )
+        #             self.set_position(highlight_pos)
+        #             self.hovered = False
+        # # else:
+        # #         self.hovered = False
         # else:
-        #         self.hovered = False
-        else:
-            # Show and handle deselect button
+        #     # Show and handle deselect button
             
-            if mouse_pressed[0] and self.button2.is_clicked(mouse_pos) and self.can_move_back:
-                self.move_back_variable = True
-                self.can_move_back = False
-                print(self.can_move_back)
+        if mouse_pressed[0] and self.button1.is_clicked(mouse_pos):
+                # self.move_back_variable = True
+                # self.can_move_back = False
+                # print(self.can_move_back)
+                self.move_speed = 0.1
                 self.set_position(self.original_pos)
-                # self.selected = False
-                print(self.target_pos)
+                self.selected = False
                 
+                # print(self.target_pos)
+        if mouse_pressed[0] and self.button2.is_clicked(mouse_pos):
+                # self.move_back_variable = True
+                # self.can_move_back = False
+                # print(self.can_move_back)
+                # self.set_position(self.original_pos)
+                # self.selected = False
+                # print(self.target_pos)
+                pass
+    
+
 
 
 
@@ -513,8 +552,8 @@ class ModalObject:
         # pygame.draw.rect(g.screen, color, self.decor_rect)
         # g.screen.blit(self.profile_rect, self.profile_rect)
         pygame.draw.rect(g.screen, (0, 0, 0), self.profile_rect)
-
-
+        # draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
+        
     def draw_icon(self, center_pos, small=False, hero_sp=False):
         """
         Draw small or large icon with black border (used in-game).

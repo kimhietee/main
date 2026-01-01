@@ -1231,7 +1231,32 @@ def campaign():
                             login_button_height, 
                             0)
     
-    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register])
+
+    userreg_but1 = RectButton(width*0.5 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            80, 
+                            40, 
+                            0)
+    
+    userreg_but2 = RectButton(width*0.8 - int(login_button_width/2), 
+                            height*2, 
+                            r'assets\font\slkscr.ttf', int(height * 0.05), 
+
+                            (50, 255, 255), username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else ""), 
+                            
+                            80, 
+                            40, 
+                            0)
+
+
+
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5)
+    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5)
+    
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 
                             height*0.4, 
@@ -1510,7 +1535,7 @@ swapconfirm_no = ImageButton(
 
 reg_back = ImageButton(
             image_path=text_box_img,
-            pos=(center_pos[0] * 0.8, center_pos[1] * 3),
+            pos=(center_pos[0] * 0.8, height * 3),
             scale=1,
             text="Back",
             font_path=FONT_PATH,
@@ -1521,7 +1546,7 @@ reg_back = ImageButton(
 
 reg_register = ImageButton(
             image_path=text_box_img,
-            pos=(center_pos[0] * 1.2, center_pos[1] * 3),
+            pos=(center_pos[0] * 1.2, height * 3),
             scale=1,
             text="Register",
             font_path=FONT_PATH,

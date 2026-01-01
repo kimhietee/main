@@ -25,6 +25,7 @@ class ImageButton:
         # Load and scale the image
         
         self.hover_pos = pos
+        
         self.hover_move = hover_move
         self.fku = fku
         self.scale_val = scale_val
@@ -38,7 +39,7 @@ class ImageButton:
         self.image = pygame.transform.rotozoom(self.original_image, 0, scale)
         self.image.set_alpha(int(self.alpha[0] * 255))
         self.rect = self.image.get_rect(center=pos)
-
+        self.height_from_B = self.rect[3]
         self.text_anti_alias = text_anti_alias
     
         
@@ -204,6 +205,7 @@ class RectButton:
         self.x = x
         self.y = y
         self.width = width
+        self.height_from_B = height
         self.height = height
 
         self.button_clicked = False
@@ -216,7 +218,7 @@ class RectButton:
         
 
     def set_position(self, pos: tuple):
-        self.rect = pygame.Rect(pos[0] - width*0.2 , pos[1], self.width, self.height)
+        self.rect = pygame.Rect(pos[0] - self.width/2, pos[1], self.width, self.height)
 
 
 
@@ -339,7 +341,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[]):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2):
         """
         Args:
             image: str path or Surface
@@ -357,7 +359,7 @@ class ModalObject:
         # original = (100, 900)
 
         # Determine size
-      
+        self.size = size
         profile_size = size
         # decor_size = [size[0], size[1]]
         decor_offset = [12, 12]
@@ -376,7 +378,8 @@ class ModalObject:
             *size
             )
 
- 
+        self.button_gap = button_gap
+        self.button_bottom_gap = button_bottom_gap
         self.hovered = False
         self.selected = False
    
@@ -435,12 +438,12 @@ class ModalObject:
 
         self.profile_rect.center = center
         self.decor_rect.move_ip(dx, dy)
-        self.button1.set_position((center[0] * 0.8, center[1] + 200))
-        self.button2.set_position((center[0] * 1.2, center[1] + 200))  # Assuming ImageButton has set_position # Full (x, y) with offset
+        self.button1.set_position((center[0] * (1-(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B)))
+        self.button2.set_position((center[0] * (1+(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B))) # Assuming ImageButton has set_position # Full (x, y) with offset
         # If associated item needs to follow (e.g., for tooltip alignment)
         # if hasattr(self.class_item, 'set_position'):
         #     self.class_item.set_position(center)
-
+        print(center[1])
         for num, i in enumerate(self.inputobject):
                 i.set_position((center[0], center[1]*0.8 + 100 * num))
                 # print((self.profile_rect.centerx, self.profile_rect.centery - 50 * num))
@@ -523,8 +526,10 @@ class ModalObject:
                 # self.move_back_variable = True
                 # self.can_move_back = False
                 # print(self.can_move_back)
+                self.move_speed = 0.1
                 self.set_position(self.original_pos)
                 self.selected = False
+                
                 # print(self.target_pos)
         if mouse_pressed[0] and self.button2.is_clicked(mouse_pos):
                 # self.move_back_variable = True

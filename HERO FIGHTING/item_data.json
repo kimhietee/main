@@ -73,7 +73,7 @@
       "name": "Energy Booster",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_12.png",
       "bonus_type": ["all_stats_flat"],
-      "bonus_value": [4.0]
+      "bonus_value": [5.0]
     },
     {
       "name": "Mana Essence",

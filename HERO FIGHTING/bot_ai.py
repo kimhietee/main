@@ -1664,7 +1664,7 @@ def create_bot(selected_hero, player_type, enemy):
                     }
                 },
 
-                'Soul_Destroyer': {
+                'Chthulu': {
                     'default_timer': 1,
                     'timer_slow_decrease': 2,
 
@@ -1892,8 +1892,8 @@ def create_bot(selected_hero, player_type, enemy):
                 self.hero_bot = 'Forest_Ranger'
             elif selected_hero.__name__ == 'Onre' and 'Onre' in self.hero_data:
                 self.hero_bot = 'Onre'
-            elif selected_hero.__name__ == 'Soul_Destroyer' and 'Soul_Destroyer' in self.hero_data:
-                self.hero_bot = 'Soul_Destroyer'
+            elif selected_hero.__name__ == 'Chthulu' and 'Chthulu' in self.hero_data:
+                self.hero_bot = 'Chthulu'
             else:
                 # self.hero.bot = selected_hero.__name__
                 self.hero_bot = 'Fire_Wizard' # default

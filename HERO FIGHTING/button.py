@@ -342,7 +342,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = "", opacity = 1):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = "", description = " ", opacity = 1):
         """
         Args:
             image: str path or Surface
@@ -365,7 +365,7 @@ class ModalObject:
         profile_size = size
         # decor_size = [size[0], size[1]]
         decor_offset = [12, 12]
-      
+        self.description = description
         # self.profile = pygame.transform.scale(original, profile_size)
         # self.ingame_profile = pygame.transform.scale(original, (25, 25))  # always keep small version
 
@@ -509,7 +509,7 @@ class ModalObject:
         create_title(self.title, g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
         #             self.can_move = False
         #             self.selected = True
-
+        create_title(self.description, g.get_font(60) , 0.8, self.profile_rect.centery, angle=0, x_offset= self.profile_rect.centerx * 2)
 
         #             self.move_variable = True
                     

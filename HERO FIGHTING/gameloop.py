@@ -112,8 +112,8 @@ h_gap = 0.133
 base_width = 0.1
 base_height = 0.33
 
-button_width = 60
-button_height = 60
+button_width = width * 0.046875
+button_height = button_width
 width_half = width*0.45
 
 
@@ -1518,7 +1518,7 @@ def campaign():
 keybinds = ImageButton(
     image_path=text_box_img,
     pos=(width/2 + width*0.08, height*0.9),
-    scale=0.8,
+    scale=0.8 * (width/1280),
     text='Save Keys',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
@@ -1530,7 +1530,7 @@ keybinds = ImageButton(
 reset_keybinds = ImageButton(
     image_path=text_box_img,
     pos=(width/2 - width*0.08, height*0.9),
-    scale=0.8,
+    scale = 0.8 * (width/1280),
     text='Default Keys',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
@@ -1690,9 +1690,9 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             height*2, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
 
-                                (50, 255, 255), "Cancel",    
-                            80, 
-                            40, 
+                                (255, 50, 50), "Cancel",    
+                            button_width * 3, 
+                            button_height, 
                             0)
     
 
@@ -1700,14 +1700,14 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             height*2, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
 
-                            (50, 255, 255), "Confirm", 
+                            (50, 255, 50), "Confirm", 
                             
-                            80, 
-                            40, 
+                            button_height * 3, 
+                            button_height, 
                             0)
 
 
-    keyswap_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7), buttons = [keyswap_cancel, keyswap_replace], button_gap = 0.5, Title = "Key Already in Use", opacity = 0.8)
+    keyswap_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7), buttons = [keyswap_cancel, keyswap_replace], button_gap = 0.5, Title = "Key Already in Use", opacity = 0.8, description = "Bind Hotkey?")
     
     
     while True:
@@ -2026,7 +2026,8 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
         temp_button.update(mouse_pos, False)
 
 
-
+        keyswap_cancel.update(mouse_pos, False)
+        keyswap_replace.update(mouse_pos, False)
 
 
 

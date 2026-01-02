@@ -432,7 +432,7 @@ class Attacks:
                 font = global_vars.get_font(self.cooldown_font_size * (1 if not is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
                 remaining_ms = max(0, self.cooldown - self.time_since_use())
-                cooldown_time = max(0, remaining_ms // 1000)
+                cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if is_basic_attack else  max(0, remaining_ms // 1000)
                 cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
@@ -808,11 +808,11 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         
         if self.who_attacks.lifesteal > 0 and not self.who_attacks.is_dead():
             lifesteal_amount = damage_amount * self.who_attacks.lifesteal
-            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+            self.who_attacks.take_heal(lifesteal_amount) #min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
         if self.who_attacks.lifesteal < 0 and not self.who_attacks.is_dead():
             # damages the attacker if lifesteal is less than 0
             lifesteal_amount = damage_amount * self.who_attacks.lifesteal
-            self.who_attacks.health = min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
+            self.who_attacks.take_damage(abs(lifesteal_amount)) #min(self.who_attacks.max_health, self.who_attacks.health + lifesteal_amount)
             # print('hp reduced', self.who_attacks.lifesteal, damage_amount, self.who_attacks.lifesteal* damage_amount)
             # print(self.who_attacks.health, lifesteal_amount, self.who_attacks.health-lifesteal_amount)
     def _apply_heal(self, heal_amount):
@@ -1543,7 +1543,7 @@ item_data = loader.loadFile(item_data)
 # print(item_data["items"])
 
 class Item:
-    def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, size=1, sound_path=None):
+    def __init__(self, name, image_path, bonus_type, bonus_value, description="", cooldown=0, attack_frames=None, attack_count=None, attack_frame_duration=100, attack_repeat=1, starts_at_zero=False, size=1, sound_path=None, frame_type="frames"):
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(), (75, 75))
         self.bonus_type = bonus_type  # list, e.g., ["str_per", "str_flat", "hp_regen_per"]
@@ -1560,7 +1560,11 @@ class Item:
 
         # Attack display properties
         if attack_frames is not None: # load frames if provided
-            self.attack_frames = self.load_img_frames(attack_frames, attack_count, starts_at_zero, size)
+            print(attack_count)
+            print(frame_type, 'asd')
+            if attack_count == "immortality_count": # THERES NO OTHER WAY :(
+                attack_count = (5, 10)
+            self.attack_frames = self.load_img_frames_v2(attack_frames, attack_count, starts_at_zero, size, frame_type)
         self.attack_frame_duration = attack_frame_duration
         self.attack_repeat = attack_repeat
 
@@ -1569,18 +1573,43 @@ class Item:
         # Auto-generate display_info (user-friendly strings)
         self.display_info = self.generate_display_info()
 
-    def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
+    
+    def load_img_frames_v2(self, folder:str, count:int | tuple, starts_at_zero=False, size=1, typ='frames', flipped=False, rotate=0):
+        ''' Can be used as loading attack frames and loading a spritesheet, provided that count is tuple
+        
+        - folder: path of single frame, without the numbering.
+        
+                if spritesheet, provide the spritesheet path (typ != 'frames')
+        - count: int if typ == 'frames' (frame count)
+
+                tuple if typ == 'spritesheet' (column, rows)
         '''
-        assets\characters\Fire wizard\slash pngs\Attack_1_1.png
-        assets\characters\Fire wizard\slash pngs\Attack_1_2.png
-        '''
-        images = []
-        for i in range(count):
-            img_path = (fr'{folder}{i + 1 - starts_at_zero}.png')
-            image = pygame.image.load(img_path).convert_alpha()
-            image = pygame.transform.rotozoom(image, 0, size)
-            images.append(image)
-        return images
+        if typ == "frames":
+            print(count, typ)
+            images = []
+            for i in range(count):
+                img_path = (fr'{folder}{i + 1 - starts_at_zero}.png')
+                image = pygame.transform.flip(pygame.image.load(img_path).convert_alpha(), flipped, False)
+                image = pygame.transform.rotozoom(image, 0, size)
+                images.append(image)
+            return images
+            
+        else: # spritesheeet
+            from heroes import load_attack, load_attack_flipped 
+            if not flipped: # normal
+                return load_attack(
+                    filepath=folder,
+                    columns=count[0], 
+                    rows=count[1], 
+                    scale=size, 
+                    rotation=rotate)
+            else:
+                return load_attack_flipped(
+                    filepath=folder,
+                    columns=count[0], 
+                    rows=count[1], 
+                    scale=size, 
+                    rotation=rotate)
     
     def time_since_use(self):
         """Return milliseconds elapsed since last use, excluding paused durations."""
@@ -1638,7 +1667,11 @@ class Item:
         }
         
         # Types that are abilities and should not show values
-        ability_types = {"heal_when_low": "passive"}
+        ability_types = {
+            "heal_when_low": "passive",
+            "immortality": "passive",
+
+                         }
         
         info_list = []
         for typ, val in self.info.items():
@@ -1678,7 +1711,7 @@ class Item:
                 text = font.render("ready", True, green)
                 screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
 
-    def update(self, position, line_break_every=5, use_literal=False, character_limit=100):
+    def update(self, position, line_break_every=5, use_literal=False, character_limit=1000):
         '''line_break_every = simply dont put arrow at the bonus.'''
         if use_literal:
             # Option 1: Literal values (no %)
@@ -1782,7 +1815,8 @@ for item in item_data["items"]:
         attack_repeat=item.get("attack_repeat", 1),
         starts_at_zero=item.get("starts_at_zero", False),
         size=item.get("size", 1),
-        sound_path=item.get("sound_path")
+        sound_path=item.get("sound_path"),
+        frame_type=item.get("frame_type")
     ))
 
 
@@ -2950,7 +2984,7 @@ def player_selection():
                     
 
                     hero2_group.add(
-                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(10))
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1) for _ in range(0))
                     )
 
                     hero1_group.add(hero1)

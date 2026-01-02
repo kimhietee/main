@@ -2409,6 +2409,7 @@ def reset_all():
         hero.x_pos = global_vars.X_POS_SPACING + random.randint(-20, 20) if hero.player_type == 1 else global_vars.DEFAULT_X_POS
         hero.y_pos = global_vars.DEFAULT_Y_POS
         
+        hero.immortality_activated = False
         # Reset item cooldowns
         for item in hero.items:
             item.last_used = -item.cooldown if item.cooldown > 0 else 0

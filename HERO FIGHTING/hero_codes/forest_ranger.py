@@ -1322,6 +1322,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
     def update(self):
         
         # print(self.stunned)
+        current_time_ticks = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
 
         # print(self.distance_covered)
         if not self.is_dead():
@@ -1429,7 +1430,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.attacks[4].cooldown = self.basic_attack_cooldown
             self.attacks_special[4].cooldown = self.basic_attack_cooldown
             self.was_hasted = False
-        if self.atk_hasted and pygame.time.get_ticks() >= self.atk_haste_duration:
+        if self.atk_hasted and current_time_ticks >= self.atk_haste_duration:
             self.atk_hasted = False
 
         # atk3

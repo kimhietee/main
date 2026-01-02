@@ -169,7 +169,7 @@
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_04.png",
       "bonus_type": ["heal_when_low", "all_stats_flat"],
       "bonus_value": [1.0, 1],
-      "description": "When health falls below 10%, instantly@restores health equal@to Strength.@@Cooldown: 120s",
+      "description": "When health falls below 10%, instantly@restores health equal to Strength.@@Cooldown: 120s",
       "cooldown": 120,
       "attack_frames": "assets/attacks_item/Last Breath/image_",
       "attack_count": 8,
@@ -177,7 +177,8 @@
       "attack_repeat": 5,
       "starts_at_zero": true,
       "size": 2,
-      "sound_path": "pass muna bro"
+      "sound_path": "pass muna bro",
+      "frame_type": "frames"
     },
     {
       "name": "Unwavering Banner",
@@ -187,19 +188,20 @@
       "description": "Grants 40 temporary HP that absorbs@damage before affecting real health."
     },
     {
-      "name": "Immortal Relic",
-      "image_path": "assets/item icons/2 Icons with back/Icons_06.png",
+      "name": "Ancient Elixir",
+      "image_path": "assets/item icons/2 Icons with back/Icons_35.png",
       "bonus_type": ["immortality"],
-      "bonus_value": [ 1 ],
-      "description": "Upon taking damage that would cause death,@the hero becomes immune to all damage for@7 seconds.@@Cooldown: 240s",
-      "cooldown": 120,
-      "attack_frames": "assets/attacks_item/Last Breath/image_",
-      "attack_count": 8,
-      "attack_frame_duration": 125,
-      "attack_repeat": 5,
+      "bonus_value": [1],
+      "description": "When taking damage that can kill the hero, becomes@immune to all damage for 7 seconds. Health@reduced to 1 if activated.@@Cooldown: 240s",
+      "cooldown": 240,
+      "attack_frames": "assets\\attacks_item\\Immortality Elixir\\activation_frames.PNG",
+      "attack_count": "immortality_count",
+      "attack_frame_duration": 70,
+      "attack_repeat": 2,
       "starts_at_zero": true,
-      "size": 2,
-      "sound_path": "pass muna bro"
+      "size": 0.7,
+      "sound_path": "pass muna bro",
+      "frame_type": "spritesheet"
     }
     
   ]

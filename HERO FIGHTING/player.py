@@ -178,6 +178,22 @@ class Player(pygame.sprite.Sprite):
             (attr_size[0], attr_size[1])
         )
 
+        # Strength icon
+        self.attack_speed_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\atk spd icon.png').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+        # Agility icon
+        self.attack_time_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\atk time icon.png').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+        # Intelligence icon
+        self.attack_damage_icon = pygame.transform.scale(
+            pygame.image.load(r'assets\icons\atk dmg icon.png').convert_alpha(),
+            (attr_size[0], attr_size[1])
+        )
+
         
         # Base Stats
         self.max_health = 0
@@ -738,8 +754,9 @@ class Player(pygame.sprite.Sprite):
                 self.temp_hp += val
                 self.max_temp_hp = self.temp_hp
             if typ == "immortality":
-                self.has_immortality = True
-                self.immortality_duration += val * 1000
+                pass
+                # self.has_immortality = val
+                # self.immortality_duration += val * 1000
                 # print('temp hp:', self.temp_hp)
         # Apply percentages (multiplicative)
 
@@ -1065,11 +1082,11 @@ class Player(pygame.sprite.Sprite):
 
                 tuple if typ == 'spritesheet' (column, rows)
         '''
-        if typ == 'frames':
+        if typ == "frames":
             images = []
             for i in range(count):
-                img_path = (fr'{folder}{i + 1 - starts_at_zero}.png') 
-                image = pygame.image.load(img_path).convert_alpha()
+                img_path = (fr'{folder}{i + 1 - starts_at_zero}.png')
+                image = pygame.transform.flip(pygame.image.load(img_path).convert_alpha(), flipped, False)
                 image = pygame.transform.rotozoom(image, 0, size)
                 images.append(image)
             return images
@@ -1090,6 +1107,7 @@ class Player(pygame.sprite.Sprite):
                     rows=count[1], 
                     scale=size, 
                     rotation=rotate)
+            
     def load_img_frames(self, folder, count, starts_at_zero=False, size=1):
         '''
         assets\characters\Fire wizard\slash pngs\Attack_1_1.png
@@ -1554,11 +1572,11 @@ class Player(pygame.sprite.Sprite):
 
     def player_status(self, health, mana, special):
         # print(self.temp_hp)
-
+        orange = 'orange'
         self.attack_stats = [
-                {'icon': self.strength_attribute_icon, 'value': f'{self.attack_speed:.0f}', 'color': white},
-                {'icon': self.intelligence_attribute_icon, 'value': f'{f'{self.basic_attack_cooldown / 1000:.2f}'}s', 'color': 'Blue'},
-                {'icon': self.agility_attribute_icon, 'value': f'{self.basic_attack_damage:.1f}', 'color': red}
+                {'icon': self.attack_speed_icon, 'value': f'{self.attack_speed:.0f}', 'color': orange},
+                {'icon': self.attack_time_icon, 'value': f'{f'{self.basic_attack_cooldown / 1000:.2f}'}s', 'color': orange},
+                {'icon': self.attack_damage_icon, 'value': f'{self.basic_attack_damage:.1f}', 'color': orange}
             ]
         
         self.attribute_stats = [
@@ -1860,16 +1878,13 @@ class Player(pygame.sprite.Sprite):
         
         self.draw_stats(screen,
                         self.attack_stats,
-                        posy=30,
+                        posy=20,
                         gap=25,
                         icon_gap=6
                         )
         
         
         if self.health <= 0:
-            # not if self has immortality item
-            # if self.immortality_activated:
-            #     pass
             self.health = 0
             self.winner = 2 if self.player_type == 1 else 1
 
@@ -1912,8 +1927,44 @@ class Player(pygame.sprite.Sprite):
                     return -1
         return -1
 
+    def can_die(self, damage):
+        '''returns true if the damage taken can kill the player.'''
+        return damage >= self.health
+    
     def take_damage(self, damage, add_mana_to_self=False, enemy:object=None, add_mana_to_enemy=False, mana_multiplier=1):
-        health_limit = 0 # used by immortality
+        # immune to damage
+        if self.immortality_activated:
+            self.display_damage(damage, interval=30, color=gold, size=30)  # Optional feedback
+            return
+        
+        current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000
+        
+        if self.can_die(damage) and not self.immortality_activated:
+            for item in self.items:
+                if 'immortality' in item.bonus_type and current_time - item.last_used >= item.cooldown: # check if dmg can kill hero
+                    self.immortality_activated = True
+                    self.immortality_duration = (current_time * 1000) + 7000
+                    item.last_used = current_time
+                
+                    if item.attack_frames:
+                        from heroes import Attack_Display
+                        attack_display.add(Attack_Display(
+                            x=self.rect.centerx, y=self.rect.top,
+                            frames=item.attack_frames,
+                            frame_duration=item.attack_frame_duration,
+                            repeat_animation=item.attack_repeat,
+                            dmg=0, final_dmg=0,
+                            who_attacks=self, who_attacked=self.enemy,
+                            speed=0, moving=False, heal=False,
+                            continuous_dmg=False, per_end_dmg=(False, False),
+                            disable_collide=True, stun=(False, 0),
+                            sound=(False, None, None, None), kill_collide=False,
+                            follow=(False, True), follow_self=True, follow_offset=(0,50)
+                        ))
+                    self.health = 1
+                    return
+            
+
         if self.is_dead():
             return
         if self.damage_reduce > 0:
@@ -1934,13 +1985,9 @@ class Player(pygame.sprite.Sprite):
         if add_mana_to_enemy:
             self.add_mana(damage, mana_mult=mana_multiplier)
         
-        # immune to damage
-        if self.has_immortality:
-            if damage >= self.health: # check if dmg can kill hero
-                self.immortality_activated = True
-                health_limit = 1
 
-        self.health = max(health_limit, self.health - damage)  # Ensure health doesn't go below 0
+
+        self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 
         
@@ -2588,8 +2635,9 @@ class Player(pygame.sprite.Sprite):
             self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
             self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 
+            current_time_ticks = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
             # Check for heal_when_low items
-            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000
+            current_time = pygame.time.get_ticks() / 1000 - global_vars.PAUSED_TOTAL_DURATION / 1000 # CHECKS SECONDS (NOT GAME TICKS)
             for item in self.items:
                 # -----------------------------------------------------------------------------------------------------
                 if 'heal_when_low' in item.bonus_type:
@@ -2598,7 +2646,7 @@ class Player(pygame.sprite.Sprite):
                         heal_amount = self.strength * heal_mult
                         self.take_heal(heal_amount)
                         item.last_used = current_time
-                        # Display attack animation for the item
+
                         if item.attack_frames:
                             from heroes import Attack_Display
                             attack_display.add(Attack_Display(
@@ -2614,34 +2662,12 @@ class Player(pygame.sprite.Sprite):
                                 sound=(False, None, None, None), kill_collide=False,
                                 follow=(False, True), follow_self=True, follow_offset=(0,50)
                             ))
+            
 
-                
-                if 'immortality' in item.bonus_type or self.immortality_activated:
-                    # heal_mult = item.info['heal_when_low']
-                    
-                    if self.immortality_activated and current_time - item.last_used >= item.cooldown:
-                        heal_amount = self.strength * heal_mult
-                        self.take_heal(heal_amount)
-                        item.last_used = current_time
-                        # Display attack animation for the item
-                        if item.attack_frames:
-                            from heroes import Attack_Display
-                            attack_display.add(Attack_Display(
-                                x=self.rect.centerx, y=self.rect.centery,
-                                frames=item.attack_frames,
-                                frame_duration=item.attack_frame_duration,
-                                repeat_animation=item.attack_repeat,
-                                dmg=0, final_dmg=0,
-                                who_attacks=self, who_attacked=self.enemy,
-                                speed=0, moving=False, heal=False,
-                                continuous_dmg=False, per_end_dmg=(False, False),
-                                disable_collide=True, stun=(False, 0),
-                                sound=(False, None, None, None), kill_collide=False,
-                                follow=(False, True), follow_self=True, follow_offset=(0,50)
-                            ))
+            if self.immortality_activated and current_time_ticks >= self.immortality_duration:
+                self.immortality_activated = False
 
-                    if self.immortality_activated and pygame.time.get_ticks() >= self.immortality_duration:
-                        self.immortality_activated = False
+            # print(current_time_ticks, self.immortality_duration, self.immortality_activated)
 
 
 

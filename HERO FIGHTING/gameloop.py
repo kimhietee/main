@@ -1359,6 +1359,7 @@ def campaign():
                                 Save.show_all_user()
                                 print("Registered Successfully")
                                 register_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
+                                register_modal.selected = False
                             else:
                                 print("Passowrd too short")
                                 register_modal.shake(5)
@@ -1493,7 +1494,9 @@ def campaign():
         register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
+
         draw_black_screen(register_opacity)
+
         register_modal.update(mouse_pos, mouse_press, None, max_selected=1)
         
 
@@ -1683,7 +1686,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
 
     
 
-    userreg_but1 = RectButton(width*0.5 - int(80/2), 
+    keyswap_cancel = RectButton(width*0.5 - int(80/2), 
                             height*2, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
 
@@ -1693,7 +1696,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             0)
     
 
-    userreg_but2 = RectButton(width*0.8 - int(80/2), 
+    keyswap_replace = RectButton(width*0.8 - int(80/2), 
                             height*2, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
 
@@ -1704,7 +1707,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                             0)
 
 
-    keyswap_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7), buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Key Already in Use")
+    keyswap_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7), buttons = [keyswap_cancel, keyswap_replace], button_gap = 0.5, Title = "Key Already in Use", opacity = 0.8)
     
     
     while True:
@@ -1781,12 +1784,13 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                     new_key = temporary_list
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if swapconfirm_yes.is_clicked(mouse_pos):
+
+                if keyswap_replace.is_clicked(mouse_pos):
                                 display_keyswap_confirmation(False)
                                 indexed = key_store.index(key_name)
                                 temp = new_key[detect.index(True)]
                                 new_key[detect.index(True)] = (pygame.key.key_code(key_name), key_name)
-                                
+                                keyswap_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
 
                                 if no_swap:
                                     new_key[indexed] = (200, " ")
@@ -1805,7 +1809,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                     display_confirmation = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if swapconfirm_no.is_clicked(mouse_pos):
+                if keyswap_cancel.is_clicked(mouse_pos):
                     can_click = True
                     display_keyswap_confirmation(False)
                     opacity = 0
@@ -1951,7 +1955,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                                         draw_black_screen(0.5)
                                         keyswap_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
                                         print("watatas")
-                                        display_confirmation = True
+                                        display_confirmation = not True
                                         can_click = False
                                         opacity = 0.8
                                         

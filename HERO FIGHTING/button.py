@@ -2,6 +2,7 @@ import pygame
 from global_vars import get_font, screen, width, height, white, TEXT_ANTI_ALIASING
 import math
 import time
+
 def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
     base_opacity = 255 * opacity
     rect = pygame.Rect(pygame.Rect(size[0], size[1], size[2], size[3]))
@@ -341,7 +342,7 @@ class ModalObject:
 
     DESELECT_Y_OFFSET = -45
 
-    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = ""):
+    def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = "", opacity = 1):
         """
         Args:
             image: str path or Surface
@@ -359,6 +360,7 @@ class ModalObject:
         # original = (100, 900)
 
         # Determine size
+        self.opacity = opacity
         self.size = size
         profile_size = size
         # decor_size = [size[0], size[1]]
@@ -552,8 +554,13 @@ class ModalObject:
         color = g.gold if self.selected else g.white if self.hovered else g.black
         # pygame.draw.rect(g.screen, color, self.decor_rect)
         # g.screen.blit(self.profile_rect, self.profile_rect)
-        pygame.draw.rect(g.screen, (0, 0, 0), self.profile_rect)
+        # pygame.draw.rect(g.screen, (0, 0, 0, 0), self.profile_rect)
         # draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
+        overlay = pygame.Surface(self.profile_rect.size, pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 255 * self.opacity))  # RGBA (alpha = 120)
+
+        g.screen.blit(overlay, self.profile_rect.topleft)
+
         
     def draw_icon(self, center_pos, small=False, hero_sp=False):
         """

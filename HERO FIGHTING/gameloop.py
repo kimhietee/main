@@ -1255,8 +1255,8 @@ def campaign():
 
 
 
-    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0, Title = "Register")
-    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Register")
+    register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0, Title = "Register")
+    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Register")
     
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 
@@ -1276,10 +1276,10 @@ def campaign():
                             login_button_width, 
                             login_button_height, 
                             0)
-    
+    register_opacity = 0
     
     while True:
-
+        
         Username = RectButton(width*0.5 - int(login_button_width/2), 
                             height*0.4, 
                             r'assets\font\slkscr.ttf', int(height * 0.05), 
@@ -1320,6 +1320,12 @@ def campaign():
             typing = False
 
         # print(register_modal.selected)
+
+        if register_modal.selected:
+            register_opacity = 0.5
+        else:
+            register_opacity = 0
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1384,6 +1390,7 @@ def campaign():
                 if register_button.is_clicked(event.pos) and not register_modal.selected:
                     print("register")
                     register_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
+                    
                     usernamereg_clicked = False
                     passwordreg_clicked = False
                     password_clicked = False
@@ -1486,11 +1493,11 @@ def campaign():
         register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
-
+        draw_black_screen(register_opacity)
         register_modal.update(mouse_pos, mouse_press, None, max_selected=1)
         
 
-
+        
         # print("campaign")
         pygame.display.update()
         main.clock.tick(main.FPS)

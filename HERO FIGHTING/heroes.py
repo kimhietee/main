@@ -2001,15 +2001,15 @@ class PlayerSelector:
     Clickable selector for heroes, items, or maps with smooth movement on select.
     """
     # Default sizes
-    PROFILE_SIZE = (75, 75)        # Heroes
-    INGAME_SIZE = (50, 50)         # Items (your old size)
-    DECOR_SIZE_LARGE = (85, 85)
-    DECOR_OFFSET_LARGE = (42, 42)
-    DECOR_SIZE_SMALL = (60, 60)
-    DECOR_OFFSET_SMALL = (30, 30)
-    DECOR_SIZE_SMALLEST = (30, 30)
+    PROFILE_SIZE = (width * 0.05859375, width * 0.05859375)        # Heroes 75, 75
+    INGAME_SIZE = (width * 0.0390625, width * 0.0390625)         # Items (your old size)
+    DECOR_SIZE_LARGE = (width * 0.06640625, width * 0.06640625)    
+    DECOR_OFFSET_LARGE = (width * 0.0328125, width * 0.0328125)
+    DECOR_SIZE_SMALL = (width * 0.046875, width * 0.046875)
+    DECOR_OFFSET_SMALL = (width * 0.0234375, width * 0.0234375) # 30, 30
+    DECOR_SIZE_SMALLEST = (width * 0.0234375, width * 0.0234375)  # 30, 30
 
-    DESELECT_Y_OFFSET = -45
+    DESELECT_Y_OFFSET = - (height * 0.0625)
 
     def __init__(self, image, center_pos, class_item, small=False, custom_size=None, custom_border=(15,15)):
         """
@@ -2460,22 +2460,25 @@ def player_selection():
 
     #upper position PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)
     #p1
-    addd=10
-    yposlower=75
-    yposupper=200
-    xpos1=width - int(75 * 7)+addd # 535
-    xpos2=width - int(75 * 5.5)+addd # 422
-    xpos3=width - int(75 * 4)+addd #310
-    xpos4=width - int(75 * 2.5)+addd #197
-    xpos5=width - int(75)+addd #85
+    addd=width * 0.0079#10 
+    # yposlower=75
+    # yposupper=200
+
+    yposlower=(height * 0.10417 ) #75
+    yposupper=(height * 0.2778) #200
+
+    xpos1=width - int(yposlower * 7)+addd # 535
+    xpos2=width - int(yposlower * 5.5)+addd # 422
+    xpos3=width - int(yposlower * 4)+addd #310
+    xpos4=width - int(yposlower * 2.5)+addd #197
+    xpos5=width - int(yposlower)+addd #85
 
     #difference 112.5
     # last is only 75 position for xpos4
 
     #p2
     temp_icon = r'assets\hero profiles\temp.jpg'
-    yposlower=75
-    yposupper=200
+    
     # Heroes (large icons — default size)
 
     p1_select = []
@@ -2728,7 +2731,7 @@ def player_selection():
                 if selector.is_selected(): # when hero selection
                     PLAYER_1_SELECTED_HERO = selector.get_associated()
                     if selector.selected:
-                        selector.set_position((75, height-50))
+                        selector.set_position((75, height- (height * 0.07)))
 
                     # Draw item selection
                     for item in p1_items:
@@ -2737,7 +2740,7 @@ def player_selection():
                             if item in equipped_items.item:
                                 continue
                             indexed = len(equipped_items.item)
-                            item.set_position((item_equip_hashmap[indexed], height-100))
+                            item.set_position((item_equip_hashmap[indexed], height-(height * 0.139)))
                             equipped_items.add(item)
                             
                         equipped_items.update()

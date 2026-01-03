@@ -729,7 +729,7 @@ def game(bg=None):
             # Animate_BG.dark_forest_bg.display(screen)
             
             run_background(main.map_selected)
-            draw_black_screen(0.5,size=(0, 0, width, height*0.18))
+            draw_black_screen(0.4,size=(0, 0, width, height*0.165))
             # main.screen.blit(background, (0, -(720*1.05 - 720)))
 
             draw_grid(screen) if global_vars.SHOW_GRID else None

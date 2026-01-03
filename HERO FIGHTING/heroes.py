@@ -2507,8 +2507,8 @@ def player_selection():
     
 
     # positioning
-    upper=550
-    item_gap_x = 75
+    upper=height * 0.76
+    item_gap_x = width * 0.05859375 
     item_gap_y = 100
 
     item_spacing_w = 6
@@ -2959,6 +2959,8 @@ def player_selection():
                             if global_vars.SINGLE_MODE_ACTIVE:
                                 if global_vars.toggle_hero3:
                                     hero3.items.append(item.get_associated())
+
+
 
 
                     if global_vars.SINGLE_MODE_ACTIVE:

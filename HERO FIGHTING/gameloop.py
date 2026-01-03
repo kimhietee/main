@@ -153,6 +153,8 @@ menu_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
+
+
 login_button = ImageButton(
     image_path=text_box_img,
     pos=(width * 0.6, height * 0.85),
@@ -264,6 +266,16 @@ control_button = ImageButton(
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+Login_option = ImageButton(
+    image_path=text_box_img,
+    pos=(100, height * 0.85),
+    scale=scale * 0.8,
+    text='LOGIN',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
@@ -1143,7 +1155,13 @@ def menu():
                     # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
                     # campaign()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if Login_option.is_clicked(event.pos):
+                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
+                    fade(Animate_BG.waterfall_day_bg.frames[0], login, 300, True)
+                    # campaign()
                     
+
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -1168,7 +1186,7 @@ def menu():
         control_button.draw(main.screen,mouse_pos)
 
         settings_button.draw(main.screen,mouse_pos)
-
+        Login_option.draw(main.screen, mouse_pos)
         
 
 
@@ -1183,14 +1201,16 @@ def menu():
         pygame.display.update()
         main.clock.tick(main.FPS)
 
-
-
-
-load_sword_campaign_bg = False
 def campaign():
+    pass
+
+
+load_sword_login_bg = False
+
+def login():
 
     #variables
-    global load_sword_campaign_bg
+    global load_sword_login_bg
     username_input = ""
     password_input = ""
     usernamereg_input = ""
@@ -1304,10 +1324,10 @@ def campaign():
         # key_press = pygame.key.get_pressed()
         
 
-        if not load_sword_campaign_bg:
-            Animate_BG.sword_campaign.load_frames_type2()
-            load_sword_campaign_bg = True
-        Animate_BG.sword_campaign.display(screen, speed=10)
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
         
 
         #typing indicator
@@ -1494,6 +1514,8 @@ def campaign():
         register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
+        
+
 
         draw_black_screen(register_opacity)
 

@@ -2051,6 +2051,7 @@ class PlayerSelector:
             self.profile_rect.centery - decor_offset[1],
             *decor_size
         )
+        
         self.can_move_back = False
         self.can_move = True
         self.hovered = False

@@ -1711,7 +1711,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
     
     
     while True:
-       
+        # print(keyswap_modal.disable_action)
 
         draw_black_screen(opacity)
         keys = pygame.key.get_pressed()
@@ -1914,7 +1914,7 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             if any(detect):
                 key_store = [x[1].upper() for x in new_key]
                 for key_index in (key.status):
-                    if keys[key_index] == True:
+                    if keys[key_index] == True and can_click:
                         # print([x[1].upper() for x in new_key])
                         key_name = pygame.key.name(key_index).upper()
                         # if key_name == "UP":

@@ -2051,7 +2051,7 @@ class PlayerSelector:
             self.profile_rect.centery - decor_offset[1],
             *decor_size
         )
-        
+
         self.can_move_back = False
         self.can_move = True
         self.hovered = False
@@ -2603,13 +2603,13 @@ def player_selection():
 
     # Maps (custom large size)
     map_select = [
-        PlayerSelector(waterfall_icon, (75*2, height - (75*6)), Animate_BG.waterfall_bg, custom_size=(200, 125)),
+        PlayerSelector(waterfall_icon, (width*0.1172, height - (75*6)), Animate_BG.waterfall_bg, custom_size=(200, 125)),
         PlayerSelector(lava_icon, (width/2 - (55 * 3), height - (75*6)), Animate_BG.lava_bg, custom_size=(200, 125)),
         PlayerSelector(dark_forest_icon, (width/2 + (55 * 3), height - (75*6)), Animate_BG.dark_forest_bg, custom_size=(200, 125)),
-        PlayerSelector(trees_icon, (width - (75 * 2), height - (75*6)), Animate_BG.trees_bg, custom_size=(200, 125)),
-        PlayerSelector(global_vars.mountains_icon, (75*2, height - (75*3)), Animate_BG.mountains_bg, custom_size=(200, 125)),
-        PlayerSelector(global_vars.sunset_icon, (width/2 - (55 * 3), height - (75*3)), Animate_BG.sunset_bg, custom_size=(200, 125)),
-        PlayerSelector(global_vars.city_icon, (width/2 + (55 * 3), height - (75*3)), Animate_BG.city_bg, custom_size=(200, 125)),
+        PlayerSelector(trees_icon, (width * 0.8828, height - (75*6)), Animate_BG.trees_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.mountains_icon, (width*0.1172, height - (75*3)), Animate_BG.mountains_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.sunset_icon, (width/2 - (width*0.1289), height - (75*3)), Animate_BG.sunset_bg, custom_size=(200, 125)),
+        PlayerSelector(global_vars.city_icon, (width/2 + (width*0.1289), height - (75*3)), Animate_BG.city_bg, custom_size=(200, 125)),
     ]
 
 

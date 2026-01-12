@@ -38,7 +38,8 @@ class Phantom_Assassin(Player):
         self.width = 200
         self.y_visual_offset = 108
 
-        self.char_size = 1.4
+        self.char_size = 1.4    
+
 
         # ----- Hero Specifications -----
         # Stats
@@ -84,8 +85,8 @@ class Phantom_Assassin(Player):
         #       *refer to the Player's existing variables, or create one if not enough
         #   - [0] = damage, [1] = final damage (applies at last frame)
         self.base_damage = {
-            'atk1dmg': (10, 0),
-            'atk2dmg': (15, 0),
+            'atk1dmg': (15, 0),
+            'atk2dmg': (15, 5), # [1] is 2x dmg
             'atk3dmg': (10, 0),
             'atk4dmg': (10, 0),
             # For projectile damage
@@ -158,7 +159,7 @@ class Phantom_Assassin(Player):
             'atk3frames': atk3[1][0] * atk3[1][1], # 30
             'atk4frames': atk4[1][0] * atk4[1][1], # 6
             'atk5frames': atk5[1][0] * atk5[1][1], # 20
-            'atk6frames': atk6[1][0] * atk6[1][1], # 15
+            'atk6frames': (atk6[1][0] * atk6[1][1]) - 1, # 14 # -1 frame is deleted
             'atk7frames': atk7[1][0] * atk7[1][1], # 10
         }
 
@@ -202,8 +203,14 @@ class Phantom_Assassin(Player):
 
         self.atk5 = self.load_img_frames_v2(atk5[0], atk5[1], atk5[2], atk5[3], atk5[4], atk5[5])
         self.atk6 = self.load_img_frames_v2(atk6[0], atk6[1], atk6[2], atk6[3], atk6[4], atk6[5])
+        self.atk6.pop(-2)
         self.atk7 = self.load_img_frames_v2(atk7[0], atk7[1], atk7[2], atk7[3], atk7[4], atk7[5])
         
+        self.blank_frame = [
+            pygame.transform.rotozoom(
+            pygame.image.load(r"assets\attacks\forest ranger\atk4\blank frame\beam_extension_effect_10.png").convert_alpha(),
+            angle=0, scale=1.0)
+            ]
 
         # Load Character Frames (search for the correct method to use in the base class (Player))
         self.player_jump = self.load_img_frames_v2(jumping_animation[0], jumping_animation[1], jumping_animation[2], self.char_size, jumping_animation[3])
@@ -258,16 +265,16 @@ class Phantom_Assassin(Player):
         # inherited
         self.atk1_damage = (
             self.base_damage['atk1dmg'][0],
-            self.base_damage['atk1dmg'][0])
+            self.base_damage['atk1dmg'][1])
         self.atk2_damage = (
             self.base_damage['atk2dmg'][0] / self.attack_frames['atk2frames'],
-            self.base_damage['atk2dmg'][0])
+            self.base_damage['atk2dmg'][1])
         self.atk3_damage = (
             self.base_damage['atk3dmg'][0] / self.attack_frames['atk3frames'],
-            self.base_damage['atk3dmg'][0])
+            self.base_damage['atk3dmg'][1])
         self.sp_damage = (
             self.base_damage['atk4dmg'][0] / self.attack_frames['atk4frames'],
-            self.base_damage['atk4dmg'][0])
+            self.base_damage['atk4dmg'][1])
         # For projectile damage
         # self.sample = self.base_damage['atk4dmg'][0]
 
@@ -548,6 +555,56 @@ class Phantom_Assassin(Player):
                         hitbox_scale_x=0.4,
                         hitbox_scale_y=0.4
                         ))
+                    
+
+                    
+
+
+                    # BLANK FRAME
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', 0, True),
+                        y=self.attack_position(self.rect, 'y', 0, False),
+                        frames=self.attack_frame_count(self.blank_frame),
+                        frame_duration=30,
+                        repeat_animation=10,
+                        speed=0,
+                        dmg=self.atk2_damage[1],
+                        final_dmg=0,
+                        who_attacks=self,
+                        who_attacked=self.enemy,
+                        moving=True,
+                        delay=(True, 500),
+                        sound=(True, self.sound2, None, None),
+                        follow=(False,True),
+                        follow_self=True,
+
+                        hitbox_scale_x=0.2,
+                        hitbox_scale_y=0.4,
+
+                        spawn_attack={
+                            'use_attack_onhit_pos': True,
+
+                            'attack_kwargs': {
+                                'frames': self.atk6,
+                                'frame_duration': 1000 / self.attack_frames['atk6frames'],
+                                'repeat_animation': 1,
+                                'speed': 0,
+                                'dmg': self.atk2_damage[0],
+                                'final_dmg': self.atk2_damage[1], # also used by blank frame
+                                'who_attacks': self,
+                                'who_attacked': self.target,
+                                'moving': False,
+                                'sound': (True, self.sound2, None, None),
+                                'delay': (True, 1000),
+                                'stop_movement': (True, 1, 2),
+                                'follow': (False, True),
+                                'follow_offset': (0, 20),
+                                'hitbox_scale_x': 0.3,
+                                'hitbox_scale_y': 0.4,
+                            }
+                        }
+                        ))
+                    
                     self.consume_mana(self.attacks, 1)
                     self.reset_skill_cooldown(self.attacks, 1, current_time)
                     self.modify_current_state(
@@ -722,7 +779,7 @@ class Phantom_Assassin(Player):
         elif self.attacking1:
             self.atk1_animation()
         elif self.attacking2:
-            self.trigger_dash('attacking2', speed=20, max_distance=200, delay=500)
+            self.trigger_dash('attacking2', speed=30, max_distance=300, delay=500)
 
             self.atk2_animation()
         elif self.attacking3:

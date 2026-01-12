@@ -128,14 +128,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         # real mana cost is commented
-        self.atk1_mana_cost = 120 #100
+        self.atk1_mana_cost = 110 #100
         self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
         self.sp_mana_cost = 220 #120
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 10000 + 5000 # 12 seconds
+        self.atk1_cooldown = 8000 + 5000 # 13 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000

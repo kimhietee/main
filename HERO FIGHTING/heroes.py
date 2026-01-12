@@ -2002,7 +2002,7 @@ Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 20% Spell Damage",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% Mana, Regen",
-    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Health Regen",
+    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana, Reduction",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%/20% Mana, Cost and Delay",
     "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 15% Lifesteal, 20% Base Attack Speed, 200%+ Mana Refund",

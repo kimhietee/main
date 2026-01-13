@@ -467,10 +467,9 @@ class Player(pygame.sprite.Sprite):
         self.perform_dash = False
 
         self.DEBUG_DASH = True
+        
 
-
-
-    def trigger_dash(self, attacking:str, speed:int, max_distance:int, delay:int=0, facing:bool=True, forced:tuple[bool | str]=(False, 'left')):
+    def trigger_dash(self, attacking:str, speed:int, max_distance:int, delay:int=0, facing:bool=True, reverse:bool=False, forced:tuple[bool | str]=(False, 'left')):
         """Handles dash movement when dash is activated.
 
         Guide:
@@ -505,6 +504,7 @@ class Player(pygame.sprite.Sprite):
                 self.dash_start_time = 0
                 self.dash_delay_triggered = False
                 self.dash_distance_covered = 0
+                self.reset_dash()
                 # print('end')
                 setattr(self, attacking, False)
             else:
@@ -984,12 +984,25 @@ class Player(pygame.sprite.Sprite):
                             self.sp_atk2_damage = (self.sp_atk2_damage[0] * (1 + val), self.sp_atk2_damage[1] * (1 + val))
                         else:
                             self.sp_atk2_damage *= (1 + val)
+
+                    if hasattr(self, 'sp_atk3_damage'): # also for water princess (only single)
+                        if isinstance(self.sp_atk3_damage, tuple):
+                            self.sp_atk3_damage = (self.sp_atk3_damage[0] * (1 + val), self.sp_atk3_damage[1] * (1 + val))
+                        else:
+                            self.sp_atk3_damage *= (1 + val)
+
+                    if hasattr(self, 'sp_atk4_damage'): # also for water princess (only single)
+                        if isinstance(self.sp_atk4_damage, tuple):
+                            self.sp_atk4_damage = (self.sp_atk4_damage[0] * (1 + val), self.sp_atk4_damage[1] * (1 + val))
+                        else:
+                            self.sp_atk4_damage *= (1 + val)
+
+
+
                     if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
                         self.sp_atk2_damage_2nd = (self.sp_atk2_damage_2nd[0] * (1 + val), self.sp_atk2_damage_2nd[1] * (1 + val))
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
                         self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
-                    if hasattr(self, 'sp_atk3_damage'): # For water princess
-                        self.sp_atk3_damage = (self.sp_atk3_damage[0] * (1 + val), self.sp_atk3_damage[1] * (1 + val))
                 # For spell damage ^^^ -----------------------------------------------------
 
         # Caps and safety
@@ -2647,6 +2660,19 @@ class Player(pygame.sprite.Sprite):
             final_position = position + offset
         return final_position
     
+    def dmg_per_frame(self, total_dmg, frames):
+        '''calculates damage per frame based on how many frames the attack has.'''
+        return total_dmg / max(1, len(frames))
+
+    def count_atk_frames(self, frames):
+        '''counts how many frames in a single attack list.'''
+        return len(frames)
+    
+    def directional_speed(self, speed):
+        '''Automatically computes speed if facing right or not.
+        
+        Can be negative value if reversing.'''
+        return speed if self.facing_right else -speed
     def is_skill_ready(self, attack_mode, skill):
         '''Check if skill is ready and have enough mana to use.
 

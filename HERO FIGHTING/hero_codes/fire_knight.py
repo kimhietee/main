@@ -93,7 +93,7 @@ class Fire_Knight(Player):
         self.intelligence = 36
         self.agility = 33 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
-        self.base_health_regen = 1.1 # 1.52
+        self.base_health_regen = 0.8 # 1.22 + 15%
         self.base_mana_regen = 4.85 # 5.21
         self.base_attack_damage = 3.4 # 6.7
 
@@ -464,7 +464,7 @@ class Fire_Knight(Player):
         # self.health_detect = 0
 
         #health = 20, if health > prev health = prev health - health 
-        self.health_regen = self.health_regen + (self.health_regen*0.15)
+        # self.health_regen = self.health_regen + (self.health_regen*0.15)
 
 
     

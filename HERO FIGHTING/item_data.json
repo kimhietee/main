@@ -218,7 +218,7 @@
       "name": "Last Breath",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_04.png",
       "bonus_type": ["heal_when_low", "all_stats_flat"],
-      "bonus_value": [1.0, 1],
+      "bonus_value": [1.0, 2],
       "description": "When health falls below 10%, instantly@restores health equal to Strength.@@Cooldown: 120s",
       "cooldown": 120,
       "attack_frames": "assets/attacks_item/Last Breath/image_",
@@ -234,8 +234,8 @@
       "name": "Unwavering Banner",
       "image_path": "assets/item icons/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp", "hp_flat"],
-      "bonus_value": [40.0, 10.0],
-      "description": "Grants 40 temporary HP that absorbs@damage before affecting real health."
+      "bonus_value": [50.0, 10.0],
+      "description": "Grants 50 temporary HP that absorbs@damage before affecting real health."
     },
     {
       "name": "Ancient Elixir",
@@ -243,7 +243,7 @@
       "bonus_type": ["immortality"],
       "bonus_value": [1],
       "description": "When taking damage that can kill the hero, becomes@immune to all damage for 7 seconds. Health is@reduced to 1 if activated.@@Cooldown: 240s",
-      "cooldown": 240,
+      "cooldown": 200,
       "attack_frames": "assets\\attacks_item\\Immortality Elixir\\activation_frames.PNG",
       "attack_count": "immortality_count",
       "attack_frame_duration": 70,
@@ -257,7 +257,7 @@
       "name": "Wrench of Protection",
       "image_path": "assets/item icons/2 Icons with back/Icons_34.png",
       "bonus_type": ["temp_hp_increase", "hp_regen_flat", "dmg_reduce_per"],
-      "bonus_value": [10, 0.1, 0.02],
+      "bonus_value": [10, 0.05, 0.02],
       "description": "Periodically grants 10 temporary HP that@absorbs damage for every 30 seconds.@@Cooldown: 30s",
       "cooldown": 30,
       "attack_frames": "assets\\attacks_item\\Wrench of Protection\\activation_frames.PNG",

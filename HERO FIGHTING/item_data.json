@@ -81,8 +81,8 @@
     {
       "name": "Elixir",
       "image_path": "assets/item icons/in use/Icons_30.png",
-      "bonus_type": ["hp_regen_flat", "mana_regen_flat"],
-      "bonus_value": [0.2, 0.2]
+      "bonus_type": ["hp_regen_flat", "mana_regen_flat", "move_speed_per"],
+      "bonus_value": [0.3, 0.3, 0.05]
     },
     {
       "name": "Energy Booster",
@@ -106,26 +106,29 @@
       "name": "Mana Leech",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_21.png",
       "bonus_type": ["mana_burn_flat", "mana_burn_flat_dmg_per"],
-      "bonus_value": [5, 0.15],
-      "description": "Burns 5 mana for every attack dealt to enemy.@Additionally, deals 15% of burned mana as damage."
+      "bonus_value": [5, 0.10],
+      "description": "Burns 5 mana for every attack dealt to enemy.@Additionally, deals 10% of burned mana as damage."
     },
     {
       "name": "Crimson Crystal",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_24.png",
-      "bonus_type": ["spell_dmg_per", "mana_reduce_per", "cd_reduce_per"],
-      "bonus_value": [0.15, 0.05, 0.05]
+      "bonus_type": ["spell_dmg_per"],
+      "bonus_value": [0.2],
+      "description": "Increases spell damage output to@enemy."
     },
     {
       "name": "Red Crystal",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_06.png",
-      "bonus_type": ["mana_reduce_per", "cd_reduce_per", "spell_dmg_per"],
-      "bonus_value": [0.15, 0.05, 0.05]
+      "bonus_type": ["mana_reduce_per"],
+      "bonus_value": [0.2],
+      "description": "Reduces mana cost of all spells."
     },
     {
       "name": "Ruby",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_07.png",
-      "bonus_type": ["cd_reduce_per", "mana_reduce_per", "spell_dmg_per"],
-      "bonus_value": [0.15, 0.05, 0.05]
+      "bonus_type": ["cd_reduce_per"],
+      "bonus_value": [0.2],
+      "description": "Reduces cooldown time of all spells."
     },
     {
       "name": "Princess Necklace",
@@ -167,7 +170,6 @@
       "bonus_type": ["move_speed_per", "atk_speed_flat"],
       "bonus_value": [0.1, 50.0]
     },
-    
     {
       "name": "The Great Hilt",
       "image_path": "assets/item icons/2 Icons with back/Icons_23.png",
@@ -203,8 +205,8 @@
       "image_path": "assets/item icons/2 Icons with back/Icons_36.png",
       "bonus_type": ["spawn_flame"],
       "bonus_value": [1],
-      "description": "Spawns flame around the hero.@@Total Damage: 10@Duration: 5s@Cooldown: 5s",
-      "cooldown": 5,
+      "description": "Spawns flame around the hero.@@Total Damage: 10@Duration: 5s@Cooldown: 10s",
+      "cooldown": 10,
       "attack_frames": "assets\\attacks_item\\Burning Desire\\activation_frames.png",
       "attack_count": "spawn_flame_count",
       "attack_frame_duration": 78.12, 
@@ -235,14 +237,14 @@
       "image_path": "assets/item icons/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp", "hp_flat"],
       "bonus_value": [50.0, 10.0],
-      "description": "Grants 50 temporary HP that absorbs@damage before affecting real health."
+      "description": "Grants 50 temporary HP that absorbs@damage."
     },
     {
       "name": "Ancient Elixir",
       "image_path": "assets/item icons/2 Icons with back/Icons_35.png",
-      "bonus_type": ["immortality"],
-      "bonus_value": [1],
-      "description": "When taking damage that can kill the hero, becomes@immune to all damage for 7 seconds. Health is@reduced to 1 if activated.@@Cooldown: 240s",
+      "bonus_type": ["immortality", "mana_flat", "mana_regen_flat"],
+      "bonus_value": [1, 10, 0.2],
+      "description": "When taking lethal damage, becomes@immune to all damage for 7 seconds.@@Cooldown: 240s",
       "cooldown": 200,
       "attack_frames": "assets\\attacks_item\\Immortality Elixir\\activation_frames.PNG",
       "attack_count": "immortality_count",
@@ -258,7 +260,7 @@
       "image_path": "assets/item icons/2 Icons with back/Icons_34.png",
       "bonus_type": ["temp_hp_increase", "hp_regen_flat", "dmg_reduce_per"],
       "bonus_value": [10, 0.05, 0.02],
-      "description": "Periodically grants 10 temporary HP that@absorbs damage for every 30 seconds.@@Cooldown: 30s",
+      "description": "Grants 10 temporary HP every 30 seconds.@@Cooldown: 30s",
       "cooldown": 30,
       "attack_frames": "assets\\attacks_item\\Wrench of Protection\\activation_frames.PNG",
       "attack_count": "temp_hp_count",

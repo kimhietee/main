@@ -4,7 +4,7 @@ step 1: copy hero
 step 2: set unique values like animation frames, sound, constants,
         input position, frame duration, repeats on attacks using Attack_Display
 (this step takes a while and confusing since you need to path images correctly)
-
+                                                                            
 step 3: on player selection function,
         create new value on the p1/p2_select lists using PlayerSelector class.
         Last image pathing, for the profile image 
@@ -637,10 +637,15 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         """
 
     def __init__(self, x, y, frames:pygame.Surface=list, frame_duration=100, repeat_animation=1, dmg=0, final_dmg=0, who_attacks:object=None, who_attacked:object=None,
-                speed=0,  moving=False, heal=False,
-                continuous_dmg=False, per_end_dmg=(False, False),
-                disable_collide=False, stun=(False, 0),
-                sound=(False, None, None, None), kill_collide=False,
+                speed=0,  
+                moving=False, 
+                heal=False,
+                continuous_dmg=False, 
+                per_end_dmg=(False, False),
+                disable_collide=False, 
+                stun=(False, 0),
+                sound=(False, None, None, None), 
+                kill_collide=False,
                 follow=(False, False), delay=(False, 0), follow_offset=(0, 0), repeat_sound=False, follow_self=False, use_live_position_on_delay=False,
                 hitbox_scale_x=0.6, hitbox_scale_y=0.6,
                 hitbox_offset_x=0, hitbox_offset_y=0, heal_enemy=False, self_kill_collide=False, self_moving=False,
@@ -1676,7 +1681,6 @@ class Item:
             "immortality": "Immortality",
             "temp_hp_increase": "Safeguard",
 
-
             # Health / Mana
             "hp_per": "Max HP",
             "hp_flat": "Max HP",
@@ -1710,14 +1714,16 @@ class Item:
             "mana_burn_per_dmg": "Mana Burn to Damage",
             "mana_burn_flat": "Mana Burn",
             "mana_burn_flat_dmg_per": "Mana Burn to Damage", # force display at percentage
-            "spell_lifesteal_per": "Spell Lifesteal"
+            "spell_lifesteal_per": "Spell Lifesteal",
+            "spawn_flame": "Heat Wave"
         }
         
         # Types that are abilities and should not show values
         ability_types = {
             "heal_when_low": "passive",
             "immortality": "passive",
-            "temp_hp_increase": "passive"
+            "temp_hp_increase": "passive",
+            "spawn_flame": "passive"
 
                          }
         
@@ -2005,7 +2011,7 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana, Reduction",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%/20% Mana, Cost and Delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 15% Lifesteal, 20% Base Attack Speed, 200%+ Mana Refund",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% Lifesteal, 20% Base Attack Speed, 200%+ Mana Refund",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% Cooldown Reduction",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5%/10% Stat,Potency",
     "Phantom Assassin": "Strength: 40, Intelligence: 40, Agility: 30, , Trait: 0",

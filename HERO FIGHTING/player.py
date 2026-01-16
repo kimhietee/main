@@ -459,6 +459,8 @@ class Player(pygame.sprite.Sprite):
         # self.detect_ground = DEFAULT_Y_POS
         # '''Limit where player detects the ground at y level.'''
 
+        self.hitbox_removed = False
+
 
         self.get_last_position = 0
         self.dash_distance_covered = 0
@@ -466,8 +468,24 @@ class Player(pygame.sprite.Sprite):
         self.dash_delay_triggered = False
         self.perform_dash = False
 
+        # to detect
+        self.dashing = True
+
         self.DEBUG_DASH = True
         
+    def i_frames(self):
+        if self.dashing:
+            if not self.hitbox_removed:
+                self.prev_hitbox_size = self.hitbox_rect.size
+                self.hitbox_rect.size = (0, 0)
+                self.hitbox_removed = True
+        else:
+            if self.hitbox_removed:
+                self.hitbox_rect.size = self.prev_hitbox_size
+                self.hitbox_removed = False
+
+
+
 
     def trigger_dash(self, attacking:str, speed:int, max_distance:int, delay:int=0, facing:bool=True, reverse:bool=False, forced:tuple[bool | str]=(False, 'left')):
         """Handles dash movement when dash is activated.
@@ -504,10 +522,12 @@ class Player(pygame.sprite.Sprite):
                 self.dash_start_time = 0
                 self.dash_delay_triggered = False
                 self.dash_distance_covered = 0
+                self.dashing = False
                 self.reset_dash()
                 # print('end')
                 setattr(self, attacking, False)
             else:
+                self.dashing = True
                 if facing:
                     self.x_pos += (speed if self.facing_right else -speed)
                 elif forced[0]:
@@ -516,6 +536,7 @@ class Player(pygame.sprite.Sprite):
             # print(self.get_last_position, get_current_position, dash_distance_covered)
 
     def reset_dash(self):
+        self.dashing = False
         self.get_last_position = 0
         self.dash_start_time = 0
         self.dash_delay_triggered = False
@@ -3067,13 +3088,15 @@ class Player(pygame.sprite.Sprite):
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
 
-            if getattr(self, "hitbox_removed", False):
-                # Restore previous hitbox size
-                self.hitbox_rect.size = self.prev_hitbox_size
-                self.hitbox_removed = False
+            # do not reset if dashing
+            if not self.dashing:
+                if self.hitbox_removed:
+                    # Restore previous hitbox size
+                    self.hitbox_rect.size = self.prev_hitbox_size
+                    self.hitbox_removed = False
 
         elif self.is_dead():
-            if not getattr(self, "hitbox_removed", False):
+            if not self.hitbox_removed:
                 # Capture previous hitbox size
                 self.prev_hitbox_size = self.hitbox_rect.size
                 self.hitbox_rect.size = (0, 0)
@@ -3081,7 +3104,7 @@ class Player(pygame.sprite.Sprite):
 
 
             # if being alived, 
-            if not self.is_dead() and getattr(self, "hitbox_removed", True):
+            if not self.is_dead() and  self.hitbox_removed:
                 self.hitbox_rect.size = self.prev_hitbox_size
                 self.hitbox_removed = False
 

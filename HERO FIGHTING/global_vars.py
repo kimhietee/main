@@ -13,7 +13,7 @@ clock = pygame.time.Clock()
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 
 screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
-screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
+# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
 
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
@@ -44,7 +44,7 @@ random_pick_p1 = False
 random_pick_p2 = False 
 
 
-MAIN_VOLUME = 0.05
+MAIN_VOLUME = 0.8
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
 MAX_ITEM = 4
@@ -54,7 +54,7 @@ item_equip_hashmap = [(x*x_gap)-21 for x in range(2,MAX_ITEM+2)]
 
 
 hitboxanddistance = False
-show_bot_skills = False
+show_bot_skills = True
 show_bot_stats = True
 
 SINGLE_MODE_ACTIVE = False # constant

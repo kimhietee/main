@@ -904,7 +904,7 @@ class Wind_Hashashin(Player):
                         for i in [0, 300]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
-                                y=self.rect.centery + 50,
+                                y=self.rect.centery + 15,
                                 frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
                                 frame_duration=BASIC_FRAME_DURATION / 2,
                                 repeat_animation=2,
@@ -925,8 +925,8 @@ class Wind_Hashashin(Player):
 
                                 hitbox_scale_y=0.4,
                                 hitbox_scale_x=0.4,
-                                hitbox_offset_x=170,
-                                hitbox_offset_y=60
+                                # hitbox_offset_x=70,
+                                hitbox_offset_y=40
                                 ,is_basic_attack=True
                                 )
                             attack_display.add(attack)

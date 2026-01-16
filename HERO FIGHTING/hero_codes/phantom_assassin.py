@@ -50,7 +50,7 @@ class Phantom_Assassin(Player):
         self.agility = 30
 
         self.base_health_regen = 0.8
-        self.base_mana_regen = 5.3
+        self.base_mana_regen = 5.5
         self.base_attack_damage = 0.3
 
         self.base_attack_speed = 110
@@ -60,25 +60,25 @@ class Phantom_Assassin(Player):
         self.min_animation_speed = 50
         self.attack_speed_modifier = 1.2
         
-        self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 70
-        self.atk3_mana_cost = 120
-        self.sp_mana_cost = 200
+        self.atk1_mana_cost = 40
+        self.atk2_mana_cost = 60
+        self.atk3_mana_cost = 90
+        self.sp_mana_cost = 120
         
-        self.atk1_cooldown = 10000
-        self.atk2_cooldown = 16000
-        self.atk3_cooldown = 22000
-        self.atk4_cooldown = 60000
+        self.atk1_cooldown = 8000
+        self.atk2_cooldown = 15000
+        self.atk3_cooldown = 20000
+        self.atk4_cooldown = 30000
 
-        self.sp_atk1_mana_cost = 50
-        self.sp_atk2_mana_cost = 80
-        self.sp_atk3_mana_cost = 120
-        self.sp_atk4_mana_cost = 200
+        self.sp_atk1_mana_cost = 40
+        self.sp_atk2_mana_cost = 60
+        self.sp_atk3_mana_cost = 90
+        self.sp_atk4_mana_cost = 120
 
-        self.special_atk1_cooldown = 12000
-        self.special_atk2_cooldown = 20000
-        self.special_atk3_cooldown = 22000
-        self.special_atk4_cooldown = 70000
+        self.special_atk1_cooldown = 8000
+        self.special_atk2_cooldown = 15000
+        self.special_atk3_cooldown = 20000
+        self.special_atk4_cooldown = 30000
 
         
 
@@ -87,15 +87,15 @@ class Phantom_Assassin(Player):
         #       *refer to the Player's existing variables, or create one if not enough
         #   - [0] = damage, [1] = final damage (applies at last frame)
         self.base_damage = {
-            'atk1dmg': (12, 0),
-            'atk2dmg': (10, 5), 
-            'atk3dmg': (15, 5), # [1] is 2x dmg (25 dmg)
-            'atk4dmg': (60, 0),
+            'atk1dmg': (12, 0), # 12
+            'atk2dmg': (14, 5), # 19
+            'atk3dmg': (20, 5), # [1] is 2x dmg (30 dmg)
+            'atk4dmg': (40, 0), #
 
-            'atk5dmg': (9, 0), # 18
-            'atk6dmg': (14, 8),
-            'atk7dmg': (20, 5),
-            'atk8dmg': (70, 0),
+            'atk5dmg': (9, 0), # 12 + 9 = 21 
+            'atk6dmg': (15, 10), # 25
+            'atk7dmg': (25, 5), # 35
+            'atk8dmg': (45, 0), # 
 
             # For projectile damage
             #'sample': 20
@@ -190,15 +190,15 @@ class Phantom_Assassin(Player):
         
         # Skill Icons Source
         default_skill_size = (ICON_WIDTH, ICON_HEIGHT) #touple type shi
-        sk_1 = [r'assets\skill icons\onre\magic-summon-circle-purple-magic-footage-162703660_iconl.jpg', default_skill_size]
-        sk_2 = [r'assets\skill icons\onre\person-fade-away-green-fog-260nw-2585215663.jpg', default_skill_size]
-        sk_3 = [r'assets\skill icons\onre\a.jpg', default_skill_size]
-        sk_4 = [r'assets\skill icons\onre\dark-silhouette-woman-windblown-hair-her-form-dissolving-chaotic-cloud-black-dust-dissolves-violently-particles-393542673.jpg', default_skill_size]
-        sp = [r'assets\skill icons\onre\aa.jpg', default_skill_size]
-        sp_sk_1 = [r'assets\skill icons\onre\magic-summon-circle-purple-magic-footage-162703660_iconl.jpg', default_skill_size]
-        sp_sk_2 = [r'assets\skill icons\onre\person-fade-away-green-fog-260nw-2585215663.jpg', default_skill_size]
-        sp_sk_3 = [r'assets\skill icons\onre\a.jpg', default_skill_size]
-        sp_sk_4 = [r'assets\skill icons\onre\dark-silhouette-woman-windblown-hair-her-form-dissolving-chaotic-cloud-black-dust-dissolves-violently-particles-393542673.jpg', default_skill_size]
+        sk_1 = [r'assets\skill icons\phantom_assassin\1.jpg', default_skill_size]
+        sk_2 = [r'assets\skill icons\phantom_assassin\2.jpg', default_skill_size]
+        sk_3 = [r'assets\skill icons\phantom_assassin\3.jpg', default_skill_size]
+        sk_4 = [r'assets\skill icons\phantom_assassin\4.jpg', default_skill_size]
+        sp = [r'assets\skill icons\phantom_assassin\sp.jpg', default_skill_size]
+        sp_sk_1 = [r'assets\skill icons\phantom_assassin\1 sp.jpg', default_skill_size]
+        # sp_sk_2 = [r'assets\skill icons\phantom_assassin\2 sp.jpg', default_skill_size]
+        sp_sk_3 = [r'assets\skill icons\phantom_assassin\3 sp.jpg', default_skill_size]
+        sp_sk_4 = [r'assets\skill icons\phantom_assassin\4 sp.jpg', default_skill_size]
 
         skill_1_icon = self.load_img_scaled(sk_1[0], sk_1[1])
         skill_2_icon = self.load_img_scaled(sk_2[0], sk_2[1])
@@ -206,7 +206,7 @@ class Phantom_Assassin(Player):
         skill_4_icon = self.load_img_scaled(sk_4[0], sk_4[1])
         special_icon = self.load_img_scaled(sp[0], sp[1])
         special_skill_1_icon = self.load_img_scaled(sp_sk_1[0], sp_sk_1[1])
-        special_skill_2_icon = self.load_img_scaled(sp_sk_2[0], sp_sk_2[1])
+        special_skill_2_icon = skill_2_icon # same
         special_skill_3_icon = self.load_img_scaled(sp_sk_3[0], sp_sk_3[1])
         special_skill_4_icon = self.load_img_scaled(sp_sk_4[0], sp_sk_4[1])
         
@@ -661,7 +661,7 @@ class Phantom_Assassin(Player):
                                 'dmg': self.atk2_damage[0],
                                 'final_dmg': self.atk2_damage[1], # also used by blank frame
                                 'who_attacks': self,
-                                'who_attacked': self.target,
+                                'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound2, None, None),
                                 'delay': (True, 500),
@@ -727,7 +727,7 @@ class Phantom_Assassin(Player):
                                 'dmg': self.sp_atk2_damage[0],
                                 'final_dmg': self.sp_atk2_damage[1], # also used by blank frame
                                 'who_attacks': self,
-                                'who_attacked': self.target,
+                                'who_attacked': self.enemy,
                                 'moving': True,
                                 'continuous_dmg': True,
                                 'sound': (True, self.sound2, None, None),

@@ -101,11 +101,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100
-        self.base_attack_time = 1700
+        self.base_attack_time = 1900
 
         self.base_animation_speed = 100
         self.min_animation_speed = 10
-        self.attack_speed_modifier = 1.3
+        self.attack_speed_modifier = 1.1
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
@@ -477,7 +477,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Trait: + 20% attack speed
         self.basic_attack_animation_speed = self.basic_attack_animation_speed-(self.basic_attack_animation_speed*0.2)
         # Trait: + 15% lifesteal
-        self.lifesteal = 0.15
+        self.lifesteal = 0.10
         # Trait : + (some values)% mana refund if hits enemy
 
         self.atk_hasted = False
@@ -1311,17 +1311,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # print("Run Animation Index:", self.player_run_index)
 
      
-    def trigger_dash(self): # this thing so buggy, fix this soon
-        if self.distance_covered >= self.max_distance:
-            self.distance_covered = 0
-        else:
-            if self.facing_right:
-                self.x_pos += self.dash_speed
-                self.distance_covered += self.dash_speed
-            elif not self.facing_right:
-                self.x_pos -= self.dash_speed
-                self.distance_covered += self.dash_speed
-            
 
     def update(self):
         
@@ -1335,16 +1324,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         if self.is_dead():
             self.play_death_animation()
         elif self.attacking1:
-            self.activate_dash = True
-            if self.distance_covered >= self.max_distance:
-                self.attacking1 = False
-                self.distance_covered = 0
-                self.activate_dash = False
-                
-                
-            else: 
-                if self.activate_dash:
-                    self.trigger_dash()
+            self.trigger_dash('attacking1', speed=6, max_distance=300, delay=100)
+            
             self.atk1_animation()
         elif self.jumping:
             self.jump_animation()
@@ -1361,6 +1342,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         else:
             self.simple_idle_animation(RUNNING_ANIMATION_SPEED)
+
+
 
         # Apply gravity
         self.y_velocity += DEFAULT_GRAVITY
@@ -1513,8 +1496,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             # self.y_velocity -= DEFAULT_GRAVITY  # optional: cancel gravity impulse if you want freeze in air
 
         # print(self.mana_burn_flat, self.mana_burn_per)
+
+        # self.i_frames()
+
         super().update()
-                    #self.apply_item_bonuses()
+
+
+                        #self.apply_item_bonuses()
         # print(self.basic_attack_damage)
                 # self.max_mana = min(200, self.max_mana + 10)
 

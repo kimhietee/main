@@ -388,6 +388,18 @@ class Player(pygame.sprite.Sprite):
         self.target = None
 
 
+        skill1_name = "Skill name 1"
+        skill2_name = "Skill name 2"
+        skill3_name = "Skill name 3"
+        skill4_name = "Skill name 4"
+
+        self.skill_name = '@'
+
+        self.skill_name.join([skill1_name, skill2_name, skill3_name, skill4_name])
+            
+        self.skill_desc = ''''''
+
+
         #Attack-------------------------------------------------------------
 
         basic_slash = [r'assets\attacks\Basic Attack\1', BASIC_SLASH_ANIMATION, 1]
@@ -2219,7 +2231,9 @@ class Player(pygame.sprite.Sprite):
         if self.is_dead():
             return
         self.health = max(0, self.health + heal)
-        self.display_damage(heal, color=green, health_modify=True)
+
+        # no need to display, auto detects it anyways
+        # self.display_damage(heal, color=green, health_modify=True)
 
     def take_temp_hp(self, temp_heal): # add health
         if self.is_dead():
@@ -3073,27 +3087,18 @@ class Player(pygame.sprite.Sprite):
             else:
                 if not self.special_active:
                     for attack in self.attacks:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
+                        attack.update(screen, self.mana, self.special, self.player_type, player=self, mouse_pos=pygame.mouse.get_pos())
                 else:
                     for attack in self.attacks_special:
-                        attack.draw_skill_icon(screen, self.mana, self.special, self.player_type, player=self)
-
-                if not self.special_active:
-                    for mana in self.attacks:
-                        mana.draw_mana_cost(screen, self.mana)
-                else:
-                    for mana in self.attacks_special:
-                        mana.draw_mana_cost(screen, self.mana)
+                        attack.update(screen, self.mana, self.special, self.player_type, player=self, mouse_pos=pygame.mouse.get_pos())
 
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
 
-            # do not reset if dashing
-            if not self.dashing:
-                if self.hitbox_removed:
-                    # Restore previous hitbox size
-                    self.hitbox_rect.size = self.prev_hitbox_size
-                    self.hitbox_removed = False
+            if self.hitbox_removed:
+                # Restore previous hitbox size
+                self.hitbox_rect.size = self.prev_hitbox_size
+                self.hitbox_removed = False
 
         elif self.is_dead():
             if not self.hitbox_removed:
@@ -3150,7 +3155,7 @@ class Player(pygame.sprite.Sprite):
         self.calculate_effective_as()
         self.calculate_basic_attack_interval()
 
-
+        
         # if self.perform_dash:
         #     self.trigger_dash('attacking2', speed=20, max_distance=300, delay=500)
 

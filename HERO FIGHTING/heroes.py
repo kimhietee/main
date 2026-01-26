@@ -307,7 +307,8 @@ class Attacks:
     '''
     
 
-    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', special_skill=False):
+    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', special_skill=False,
+                 skill_name='', skill_stats='', skill_desc=''):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
@@ -332,6 +333,14 @@ class Attacks:
         self.special_y_offset = int(self.skill_rect.height * 0.35)
 
         self.button_icon = pygame.image.load(r'assets\icons\button.png').convert_alpha()
+
+        self.hovered = False
+
+        self.skill_count:int = -1
+        self.skill_name:str = skill_name
+        self.skill_stats:str = skill_stats
+        self.skill_desc:str = skill_desc
+
 
     def reduce_cd(self, val=False):
         if val:
@@ -514,9 +523,6 @@ class Attacks:
             self.skill_rect.bottom + 5  # Position below the skill icon
         ))
 
-
-        
-
     def draw_mana_cost(self, screen, mana):
         if not self.special_skill:
             mana_font = global_vars.get_font(self.mana_font_size)
@@ -528,6 +534,59 @@ class Attacks:
                 self.skill_rect.top - self.mana_y_offset
             ))
 
+    def set_skill_count(self, n):
+        self.skill_count = n
+
+    def display_info(self, screen, mouse_pos, skill_count, skill_name, skill_stats, skill_desc):
+        if self.skill_rect.collidepoint(mouse_pos):
+            self.hovered = True
+        else:
+            self.hovered = False
+
+            # wrapped = []
+            # for i in range(0, len(skill_stats)):
+            #     chunk = skill_stats[i:i]
+            #     # Prepend '@-> ' to all but the first in the chunk
+            #     chunk = [chunk[0]] + [f"@-> {entry}" for entry in chunk[1:]]
+            #     wrapped.append(' '.join(chunk))
+            # skill_stats = wrapped  # Now list of grouped strings
+
+        # Build full lines list: Name first, then stats, then desc (each as separate lines)
+        full_lines = [skill_name + skill_stats]
+        
+        full_lines += [""]  # Empty line spacer
+        # Split desc into lines if long (e.g., every 40 chars)
+        desc_words = skill_desc.split()
+        desc_lines = []
+        current_line = ""
+        for word in desc_words:
+            if len(current_line) + len(word) + 1:  # Char limit per line
+                desc_lines.append(current_line.strip())
+                current_line = word
+            else:
+                current_line += " " + word
+        if current_line:
+            desc_lines.append(current_line.strip())
+        full_lines += desc_lines
+
+        if self.hovered:
+            info_bubble = ImageBro(
+                    image_path=text_box_img,
+                    pos=mouse_pos,
+                    text=f"{skill_name}, {skill_stats}, {skill_desc}",
+                    font_path=global_vars.FONT_PATH,
+                    font_size=font_size * 1.05,
+                    text_color='green',
+                    player_info=True,
+                    text_scale=1.3,  # Full size
+                    anchor='midbottom'
+                )
+            info_bubble.drawing_info(screen)
+
+    def update(self, screen, mana, special=0, player_type=0, player=None, skill_name='', skill_desc='', mouse_pos=None):
+        self.draw_skill_icon(screen, mana, special, player_type, player=player)
+        self.draw_mana_cost(screen, mana)
+        self.display_info(screen, mouse_pos, self.skill_count, self.skill_name, self.skill_stats, self.skill_desc)
 
 class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should handle the visual representation and animation of an attack. Here's the corrected version:
    
@@ -1724,8 +1783,7 @@ class Item:
             "immortality": "passive",
             "temp_hp_increase": "passive",
             "spawn_flame": "passive"
-
-                         }
+            }
         
         info_list = []
         for typ, val in self.info.items():
@@ -1875,6 +1933,8 @@ for item in item_data["items"]:
 
 
 
+
+
 # items = [
 #     Item("War Helmet", r"assets\item icons\in use\Icons_40.png", 
 #          ["str_per", "str_flat", "hp_regen_per"], [0.1, 1.0, 0.08]),  # Stats clear → no desc needed
@@ -2006,7 +2066,7 @@ Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 20% Spell Damage",
+    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 10% Spell Damage",
     "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% Mana, Regen",
     "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana, Reduction",

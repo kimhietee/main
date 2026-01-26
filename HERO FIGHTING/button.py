@@ -333,11 +333,11 @@ class ModalObject:
     """
     # Default sizes
     PROFILE_SIZE = (75, 75)        # Heroes
-    INGAME_SIZE = (50, 50)         # Items (your old size)
+    INGAME_SIZE = (50, 50)          # Items (your old size)
     DECOR_SIZE_LARGE = (85, 85)
     DECOR_OFFSET_LARGE = (42, 42)
     DECOR_SIZE_SMALL = (60, 60)
-    DECOR_OFFSET_SMALL = (30, 30)
+    DECOR_OFFSET_SMALL = (30,30)
     DECOR_SIZE_SMALLEST = (30, 30)
 
     DESELECT_Y_OFFSET = -45

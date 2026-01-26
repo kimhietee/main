@@ -142,8 +142,20 @@ x = {}
 for i, v in enumerate(skills):
     x[i] = v
 
-pprint(x)
-print(random.seed(12))
+# pprint(x)
+# print(random.seed(12))
+
+
+def test():
+    x = []
+    for i in range(0, 3):
+        pass
+
+asd = "Hello World HAHA."
+
+print(asd.split())
+
+
 
 
 # print('asd')

@@ -54,7 +54,7 @@ class Phantom_Assassin(Player):
         self.base_attack_damage = 0.3
 
         self.base_attack_speed = 110
-        self.base_attack_time = 1500
+        self.base_attack_time = 1600
         
         self.base_animation_speed = 120
         self.min_animation_speed = 50
@@ -374,7 +374,10 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.mana_cost_list[0],
-                cooldown = self.atk1_cooldown
+                cooldown = self.atk1_cooldown,
+                skill_name="Slasher",
+                skill_stats="?@,@,asd@Damage:12@Mana Cost:40",
+                skill_desc="Slashes enemy with@ moving slash facing."
             ),
             Attacks(
                 skill_rect = self.skill_2_rect,
@@ -420,6 +423,10 @@ class Phantom_Assassin(Player):
                 cooldown=DEFAULT_SPECIAL_SKILL_COOLDOWN,
             )
         ]
+     
+        for n, atk in enumerate(self.attacks):
+            atk.skill_count = n
+
 
         # --------------- Special Skills ---------------
         self.attacks_special = [
@@ -845,7 +852,7 @@ class Phantom_Assassin(Player):
                                 'dmg': self.atk3_damage[0],
                                 'final_dmg': self.atk3_damage[1], # also used by blank frame
                                 'who_attacks': self,
-                                'who_attacked': self.target,
+                                'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound3, None, None),
                                 'delay': (True, 500),
@@ -940,7 +947,7 @@ class Phantom_Assassin(Player):
                                 'dmg': self.sp_atk3_damage[0],
                                 'final_dmg': self.sp_atk3_damage[1], # also used by blank frame
                                 'who_attacks': self,
-                                'who_attacked': self.target,
+                                'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound3, None, None),
                                 'delay': (True, 500),

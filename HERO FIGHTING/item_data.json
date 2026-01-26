@@ -24,16 +24,16 @@
       "name": "Undead Marrow",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_40.png",
       "bonus_type": ["lifesteal_per"],
-      "bonus_value": [0.18],
-      "description": "Heals the attacker for 18% of the@attack damage dealt to enemy."
+      "bonus_value": [0.2],
+      "description": "Heals the attacker for 20% of the@attack damage dealt to enemy."
 
     },
     {
       "name": "Enchanted Bracelet",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_39.png",
       "bonus_type": ["spell_lifesteal_per"],
-      "bonus_value": [0.18],
-      "description": "Heals the attacker for 18% of the@spell damage dealt to enemy."
+      "bonus_value": [0.2],
+      "description": "Heals the attacker for 20% of the@spell damage dealt to enemy."
 
     },
     {
@@ -140,7 +140,7 @@
       "name": "Corrupted Booster",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_35.png",
       "bonus_type": ["health_cost_per", "spell_dmg_per"],
-      "bonus_value": [0.15, 0.25],
+      "bonus_value": [0.15, 0.3],
       "description": "Increases damage dealt to enemy but the@percentage of damage dealt costs health."
     },
     {
@@ -221,7 +221,7 @@
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_04.png",
       "bonus_type": ["heal_when_low", "all_stats_flat"],
       "bonus_value": [1.0, 2],
-      "description": "When health falls below 10%, instantly@restores health equal to Strength.@@Cooldown: 120s",
+      "description": "When health falls below 10%, instantly@restores health equal to Strength.@@Cooldown: 100s",
       "cooldown": 120,
       "attack_frames": "assets/attacks_item/Last Breath/image_",
       "attack_count": 8,
@@ -236,20 +236,20 @@
       "name": "Unwavering Banner",
       "image_path": "assets/item icons/2 Icons with back/Icons_05.png",
       "bonus_type": ["extra_temp_hp", "hp_flat"],
-      "bonus_value": [50.0, 10.0],
-      "description": "Grants 50 temporary HP that absorbs@damage."
+      "bonus_value": [40.0, 10.0],
+      "description": "Grants 40 temporary HP that absorbs@damage."
     },
     {
       "name": "Ancient Elixir",
       "image_path": "assets/item icons/2 Icons with back/Icons_35.png",
       "bonus_type": ["immortality", "mana_flat", "mana_regen_flat"],
       "bonus_value": [1, 10, 0.2],
-      "description": "When taking lethal damage, becomes@immune to all damage for 7 seconds.@@Cooldown: 240s",
+      "description": "When taking lethal damage, becomes@immune to all damage for 5 seconds.@@Cooldown: 200s",
       "cooldown": 200,
       "attack_frames": "assets\\attacks_item\\Immortality Elixir\\activation_frames.PNG",
       "attack_count": "immortality_count",
-      "attack_frame_duration": 70,
-      "attack_repeat": 2,
+      "attack_frame_duration": 100,
+      "attack_repeat": 1,
       "starts_at_zero": true,
       "size": 0.7,
       "sound_path": "pass muna bro",
@@ -259,8 +259,8 @@
       "name": "Wrench of Protection",
       "image_path": "assets/item icons/2 Icons with back/Icons_34.png",
       "bonus_type": ["temp_hp_increase", "hp_regen_flat", "dmg_reduce_per"],
-      "bonus_value": [10, 0.05, 0.02],
-      "description": "Grants 10 temporary HP every 30 seconds.@@Cooldown: 30s",
+      "bonus_value": [5, 0.1, 0.05],
+      "description": "Grants 5 temporary HP every 30 seconds.@@Cooldown: 30s",
       "cooldown": 30,
       "attack_frames": "assets\\attacks_item\\Wrench of Protection\\activation_frames.PNG",
       "attack_count": "temp_hp_count",

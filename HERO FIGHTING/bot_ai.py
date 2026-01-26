@@ -34,9 +34,9 @@ def create_bot(selected_hero, player_type, enemy):
             # self.strength += self.strength
             # self.intelligence += self.intelligence
             # self.agility += self.agility
-            from heroes import items #make a button hard mode
+            import heroes #make a button hard mode
             if global_vars.all_items:
-                self.items = items # from heroes.py
+                self.items = heroes.items # from heroes.py
 
             
 

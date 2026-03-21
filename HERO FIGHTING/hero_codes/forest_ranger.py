@@ -471,8 +471,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             'attacking1': True,   
             'attacking2': False,  
             'attacking3': True,  
-            'sp_attacking': True, 
-            'dashing': True       
+            'sp_attacking': True,   
         }
    
         # Regen Rate

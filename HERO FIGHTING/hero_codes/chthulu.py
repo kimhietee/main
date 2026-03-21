@@ -506,8 +506,7 @@ class Chthulu(Player):
             'attacking1': False,   
             'attacking2': False,  
             'attacking3': False,  
-            'sp_attacking': False, 
-            'dashing': False       
+            'sp_attacking': False,    
         }
 
         # Regen Rate

@@ -376,8 +376,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
             'attacking1': False,   
             'attacking2': False,  
             'attacking3': False,  
-            'sp_attacking': True, 
-            'dashing': False       
+            'sp_attacking': True,    
         }
    
         # Regen Rate

@@ -534,7 +534,6 @@ class Yurei(Player):
             'attacking2': False,  
             'attacking3': True,  
             'sp_attacking': False, 
-            'dashing': False       
         }
    
         # Regen Rate

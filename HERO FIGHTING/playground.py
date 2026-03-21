@@ -126,7 +126,7 @@ list2 = ['e', 'f', 'g', 'h']
 
 # print(5 - -2)
 
-print(f'{23.1122038601983:.2f}')
+# print(f'{23.1122038601983:.2f}')
 
 qwe = 123
 
@@ -151,12 +151,32 @@ def test():
     for i in range(0, 3):
         pass
 
-asd = "Hello World HAHA."
+# asd = "Hello World HAHA."
 
-print(asd.split())
+# print(asd.split())
 
 
+def pass_finder(password:str):
+    """Max numerical password: 3 digits"""
+    import time
 
+    # password = input("Password: ")
+    interval = 0.05
+    time_took = 0
+
+    for i in range(1000):
+        guess = str(i).zfill(3)
+        # print('Trying', guess)
+        # time.sleep(interval)
+        time_took += interval
+
+        if guess == password:
+            print("Password Found > o <")
+            print("The Password is: ", guess)
+            print("ETA: ", f"{time_took:.2f}s")
+            break
+
+pass_finder("999")
 
 # print('asd')
 # print(items*2)

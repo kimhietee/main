@@ -527,6 +527,15 @@ class Yurei(Player):
                 mana=self.mana
             )
         )
+
+        # Define which skills have i-frames (invulnerability)
+        self.skill_iframes_config = {
+            'attacking1': False,   
+            'attacking2': False,  
+            'attacking3': True,  
+            'sp_attacking': False, 
+            'dashing': False       
+        }
    
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION

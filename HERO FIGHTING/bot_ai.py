@@ -27,16 +27,17 @@ botchance = Chance(0.3)
 def create_bot(selected_hero, player_type, enemy):
     global Bot
     class Bot(selected_hero):
-        def __init__(self, player, enemy):
+        def __init__(self, player:None, enemy):
             super().__init__(player_type, enemy)
             self.enemy = enemy # Used for player
-            self.player = player # Used for bot logic
+            self.player = None # Used for bot logic
             # self.strength += self.strength
             # self.intelligence += self.intelligence
             # self.agility += self.agility
             import heroes #make a button hard mode
             if global_vars.all_items:
-                self.items = heroes.items # from heroes.py
+                import copy
+                self.items = [copy.copy(item) for item in heroes.items] # Create copies of all items
 
             
 
@@ -126,15 +127,15 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
                                     bot.mana >= bot.attacks[0].mana_cost * 2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                     # random.random() < 0.6
                                 ),
 
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() < 50 and 
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy() and(
                                     bot.mana >= bot.attacks[0].mana_cost * 2 or
                                     botchance.update(50)
@@ -143,7 +144,7 @@ def create_bot(selected_hero, player_type, enemy):
 
                                 lambda bot: (not bot.special_active and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(20)
                                 ),
 
@@ -152,14 +153,14 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() >= 40 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_distance <= 100 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(55)
                                 ),
 
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() <= 40 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 )
                             ]
@@ -172,33 +173,33 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() >= 70 and
                                     self.mana >= self.attacks[1].mana_cost * 1.333 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() < 70 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 ),
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() >= 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     (width / 2 - 150 < bot.x_pos < width / 2 + 150) and
                                     botchance.update(70)
                                 ),
 
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() <= 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     (width / 2 - 250 < bot.x_pos < width / 2 + 250) and
                                     botchance.update(70)
                                 )
@@ -212,21 +213,21 @@ def create_bot(selected_hero, player_type, enemy):
                             'require_all': False,
                             'conditions': [
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_distance <= 125 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_hp_percent() >= 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.mana >= bot.attacks[1].mana_cost * 1.3 and
                                     botchance.update(70)
                                 ),
 
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_distance <= 125 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_hp_percent() < 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(65)
                                 ),
 
@@ -234,15 +235,15 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance <= 125 and
                                     bot.is_facing_from_enemy() and
                                     bot.bot_hp_percent() < 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
 
                                 # sp logic
                                 lambda bot: (bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 )
                             ]
@@ -253,15 +254,15 @@ def create_bot(selected_hero, player_type, enemy):
                             'require_all': False,
                             'conditions': [
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_distance <= 250 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                     ),  # always cast when in range
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                 )
                             ]
@@ -333,7 +334,7 @@ def create_bot(selected_hero, player_type, enemy):
                         # 'attack_distance': 800, # basic attack if below this distance 
                     },
                     
-                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                    'skills': { # (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
                             'cast_range': 800, # casts the skill if below this distance, only if all conditions are met
@@ -344,19 +345,19 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() >= 70 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_distance <= 650 and
-                                    bot.player.jumping == True and
+                                    bot.target.jumping == True and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.5 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 ),
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.bot_hp_percent() < 50 and 
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy() and(
                                     bot.mana >= bot.attacks[0].mana_cost * 2 or
                                     botchance.update(10) or
-                                    (bot.player.jumping == True and bot.is_facing_from_enemy()) or
+                                    (bot.target.jumping == True and bot.is_facing_from_enemy()) or
                                     bot.enemy_distance <= 400
                                     )
                                 ),
@@ -365,7 +366,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.is_facing_from_enemy() and
                                     botchance.update(20) and
                                     bot.mana >= bot.attacks[0].mana_cost * 2.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.enemy_distance <= 200
                                 ),
 
@@ -373,17 +374,17 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() > 60 and 
                                     bot.is_facing_from_enemy() and
-                                    bot.player.jumping == True and
+                                    bot.target.jumping == True and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.3 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.enemy_distance <= 200 and
                                     botchance.update(50)
                                 ),
                                 lambda bot: (bot.special_active and
                                     bot.is_facing_from_enemy() and
-                                    bot.player.jumping == True and
+                                    bot.target.jumping == True and
                                     bot.enemy_distance <= 150 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(75)
                                 )
 
@@ -445,38 +446,38 @@ def create_bot(selected_hero, player_type, enemy):
                             'require_all': False,
                             'conditions': [
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.bot_hp_percent() >= 75 and
                                     bot.enemy_distance >= 600 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.3 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 ),
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() < 80 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40) and
                                     bot.enemy_distance >= 300
                                 ),
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 75 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.3 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(30)
                                 ),
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() < 30 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(30) and
                                     bot.enemy_distance >= 300
                                 ),
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 40 and
                                     botchance.update(20) and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.enemy_distance >= 750
                                 ),
 
@@ -486,24 +487,24 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() > 50 and
                                     bot.enemy_distance >= 300 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(15)
                                 ),
                                 lambda bot: (bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() <= 40 and
                                     bot.bot_hp_percent() > 30 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(30)
                                 ),
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() <= 40 and
                                     bot.bot_hp_percent() <= 30 and
                                     bot.enemy_distance >= 500 and
-                                    bot.player.jumping == True and
+                                    bot.target.jumping == True and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 )
                                 
@@ -517,7 +518,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_distance > 1000 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.bot_hp_percent() > 99
                                 ),
 
@@ -525,14 +526,14 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() > 50 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_distance > 800 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() < 50 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_distance > 600 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
 
@@ -541,7 +542,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() <= 60 and
                                     bot.is_facing_from_enemy() and
                                     bot.enemy_distance > 600 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                             ]
@@ -609,14 +610,14 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 lambda bot: (not bot.special_active and
                                     all(not bot.attacks[i].is_ready() for i in range(1, 3)) and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 ),
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
                                     all(not bot.attacks_special[i].is_ready() for i in range(2, 3)) and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 )
                             ]
@@ -628,17 +629,17 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 # Combination 1: combo with 2nd skill
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() >= 60 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.attacks[2].is_ready()
                                 ),
 
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() >= 70 and
                                     bot.mana >= bot.attacks[1].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
 
@@ -646,26 +647,26 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() < 70 and
                                     bot.enemy_hp_percent() >= 40 and
                                     bot.mana >= bot.attacks[1].mana_cost * 1.3 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(30)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() < 40 and
                                     bot.mana >= bot.attacks[1].mana_cost * 1.4 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 40 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 
@@ -673,7 +674,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() >= 50 and 
                                     not bot.attacks_special[3].is_ready() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 ),
 
@@ -682,12 +683,12 @@ def create_bot(selected_hero, player_type, enemy):
                                     not bot.attacks_special[3].is_ready() and
                                     not bot.attacks_special[2].is_ready() and
                                     bot.mana >= bot.attacks[1].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(40)
                                 ),
 
                                 lambda bot: (bot.special_active and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.bot_hp_percent() < 30 and
                                     botchance.update(80)
                                 )
@@ -700,25 +701,25 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 # Combination 1: combo with 2nd skill
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() >= 60 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks[1].is_ready()
                                 ),
 
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() >= 50 and
                                     not bot.attacks[1].is_ready() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.1 and
                                     botchance.update(40)
                                 ),
 
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_hp_percent() < 50 and
                                     not bot.attacks[1].is_ready() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.2 and
                                     botchance.update(50)
                                 ),
@@ -726,14 +727,14 @@ def create_bot(selected_hero, player_type, enemy):
                                 #sp logic
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks_special[3].is_ready() and
                                     botchance.update(50)
                                 ),
 
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() < 30 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks_special[3].is_ready() and
                                     botchance.update(70)
                                 )
@@ -746,14 +747,14 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 lambda bot: (not bot.special_active and
                                     bot.mana >= bot.attacks[2].mana_cost * 1.05 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks[2].is_ready()
                                 ),
 
                                 #sp logic
                                 lambda bot: (bot.special_active
                                 ) and
-                                    not bot.player.sp_attacking
+                                    not bot.target.sp_attacking
                                 
 
                             ]
@@ -832,10 +833,10 @@ def create_bot(selected_hero, player_type, enemy):
                                 bot.state == 'escape' and 
                                         bot.bot_hp_percent() >= 85 and
                                         self.mana >= self.attacks[0].mana_cost * 1.3 and
-                                        (bot.player.attacking1 or
-                                        bot.player.attacking2 or
-                                        bot.player.attacking3 or
-                                        bot.player.sp_attacking
+                                        (bot.target.attacking1 or
+                                        bot.target.attacking2 or
+                                        bot.target.attacking3 or
+                                        bot.target.sp_attacking
                                 ) and
                                 botchance.update(90)
                             ),
@@ -853,7 +854,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (
                                     not bot.special_active and
                                     bot.state == 'chase' and
-                                    bot.player.jumping and
+                                    bot.target.jumping and
                                     bot.enemy_distance > 500 and
                                     self.mana >= self.attacks[0].mana_cost * 2 and
                                     botchance.update(60)
@@ -870,7 +871,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 # random cast
                                 lambda bot: (
                                     not bot.special_active and
-                                    bot.player.jumping and
+                                    bot.target.jumping and
                                     bot.enemy_distance > 100 and
                                     self.mana >= self.attacks[0].mana_cost * 2 and
                                     botchance.update(50)
@@ -908,7 +909,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() > 50 and
                                     bot.enemy_hp_percent() > 50 and
                                     self.mana >= self.attacks[1].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
                                 # Use skill 2 to finish off low HP enemy
@@ -917,14 +918,14 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance <= 80 and
                                     bot.enemy_hp_percent() < 30 and
                                     self.mana >= self.attacks[1].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Special active: use skill 2 more aggressively
                                 lambda bot: (
                                     bot.special_active and
                                     self.mana >= self.attacks[1].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 )
                             ]
@@ -940,7 +941,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance <= 125 and
                                     bot.bot_hp_percent() > 60 and
                                     self.mana >= self.attacks[2].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
                                 # death chase
@@ -948,21 +949,21 @@ def create_bot(selected_hero, player_type, enemy):
                                     not bot.special_active and
                                     bot.enemy_distance <= 130 and
                                     bot.bot_hp_percent() <= 60 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                                 # Special active: use skill 3 for aggressive attacks
                                 lambda bot: (
                                     bot.special_active and
                                     bot.bot_hp_percent() >= 30 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 ),
                                 #try to kill
                                 lambda bot: (
                                     bot.special_active and
                                     bot.enemy_hp_percent() < 30 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 )
                             ]
@@ -976,7 +977,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (
                                     bot.enemy_distance > 1000 and
                                     bot.enemy_hp_percent() < 30 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
                                 # Use skill 4 to pressure enemy at long range
@@ -984,13 +985,13 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance > 800 and
                                     bot.enemy_hp_percent() < 60 and
                                     self.mana >= self.attacks[3].mana_cost * 1.1 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                                 # Always consider skill 4 if enemy is within range
                                 lambda bot: (
                                     bot.enemy_distance <= 1000 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 )
                             ]
@@ -1057,7 +1058,7 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() >= 70 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks[3].is_ready() and(
                                     bot.mana >= bot.attacks[0].mana_cost * 1.5 or
                                     botchance.update(20)
@@ -1068,7 +1069,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() <= 70 and
                                     bot.mana >= bot.attacks[0].mana_cost * 1.30 and
                                     bot.bot_hp_percent() > bot.enemy_hp_percent() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     not bot.attacks[3].is_ready() and
                                     botchance.update(60)
                                 ),
@@ -1076,14 +1077,14 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() <= 40 and
                                     bot.bot_hp_percent() > bot.enemy_hp_percent() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
 
                                 # sp logic
                                 lambda bot: (bot.special_active and
                                     bot.enemy_distance >= 30 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(50)
                                 )
                             ]
@@ -1097,7 +1098,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance <= 500 and
                                     bot.enemy_hp_percent() >= 70 and
                                     self.mana >= self.attacks[1].mana_cost * 1.2 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy() and
                                     not bot.attacks[3].is_ready() and
                                     botchance.update(60)
@@ -1108,7 +1109,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_hp_percent() < 70 and
                                     bot.is_facing_from_enemy() and
                                     not bot.attacks[3].is_ready() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
 
@@ -1116,7 +1117,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.enemy_hp_percent() <= 30 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1124,14 +1125,14 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() > 30 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
 
                                 lambda bot: (bot.special_active and
                                     bot.enemy_hp_percent() <= 30 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 )
                                 
@@ -1177,16 +1178,16 @@ def create_bot(selected_hero, player_type, enemy):
                             'require_all': False,
                             'conditions': [
                                 lambda bot: (not bot.special_active and
-                                    (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                                    (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                     bot.enemy_distance <= 150 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                     ),
 
                                 #sp logic
                                 lambda bot: (bot.special_active and
                                     bot.is_facing_from_enemy() and 
-                                    not bot.player.sp_attacking
+                                    not bot.target.sp_attacking
                                 )
                             ]
                         },
@@ -1244,7 +1245,7 @@ def create_bot(selected_hero, player_type, enemy):
                         'escape_distance': 200
                     },
                     
-                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                    'skills': { # (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
                             'cast_range': 800,
@@ -1295,7 +1296,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 100 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.atk_hasted
                                 ),
                                 # Prefer not to buff
@@ -1309,16 +1310,16 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 500 and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.sp_attacking) and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
                                 # Shoot if possible and enemy is while attacking
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance >= 100 and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.sp_attacking) and
                                     bot.is_facing_from_enemy() and
                                     botchance.update(90)
                                 ),
@@ -1328,7 +1329,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 100 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.atk_hasted
                                 ),
                                 # Casual skill
@@ -1336,14 +1337,14 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 100 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Very casual skill, if enemy is casting
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() < 50 and
                                     bot.is_facing_from_enemy() and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking)
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.sp_attacking)
                                 ),
 
                                 
@@ -1361,7 +1362,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 200 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Slightly far, will try to hit
@@ -1369,7 +1370,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance >= 280 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1378,20 +1379,20 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Not preferably far but possible
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
                                 # Will cast anyways
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                 ),
                                 
@@ -1404,10 +1405,10 @@ def create_bot(selected_hero, player_type, enemy):
                             'conditions': [
                                 # Casual skill, casts if enemy is using skill (can't be avoided)
                                 lambda bot: (not bot.special_active and
-                                    ((bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) or
+                                    ((bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.sp_attacking) or
                                     (bot.bot_hp_percent() < 50) or
                                      bot.bot_hp_percent() < 20 and 
-                                    not bot.player.sp_attacking
+                                    not bot.target.sp_attacking
                                     ) 
                                 ),
                                 lambda bot: (not bot.special_active and
@@ -1474,7 +1475,7 @@ def create_bot(selected_hero, player_type, enemy):
                         'escape_distance': 300
                     },
                     
-                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                    'skills': { # (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
                             'cast_range': 50,
@@ -1484,23 +1485,23 @@ def create_bot(selected_hero, player_type, enemy):
                                 # Casual buff
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                                 # Immediate buff if enemy is far
                                 lambda bot: (not bot.special_active and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.bot_hp_percent() >= 50
                                 ),
                                 # Intermediate buff
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Buff for escape
                                 lambda bot: (not bot.special_active and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.bot_hp_percent() < 50
                                 ),
 
@@ -1519,7 +1520,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 # Trick skill while buffed
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.invisible
                                 ),
                                 # Prefer not to buff
@@ -1528,7 +1529,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.enemy_distance <= 500 and
                                     not bot.invisible and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                                 # If far, try to shoot, and if enemy is casting
@@ -1536,23 +1537,23 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 500 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
                                 # Punish enemy when they are casting/attacking: high priority
                                 lambda bot: (not bot.special_active and
-                                    (bot.player.sp_attacking or bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.basic_attacking) and
+                                    (bot.target.sp_attacking or bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.basic_attacking) and
                                     bot.enemy_distance >= 100 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(95)
                                 ),
                                 # Shoot if possible and enemy is while attacking
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance >= 100 and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3) and
-                                    not bot.player.sp_attacking and
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3) and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1591,12 +1592,12 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance <= 300 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Interrupt enemy casting / special – use silence when enemy is attacking
                                 lambda bot: (not bot.special_active and
-                                    (bot.player.sp_attacking or bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.basic_attacking) and
+                                    (bot.target.sp_attacking or bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.basic_attacking) and
                                     bot.enemy_distance <= 350 and
                                     botchance.update(95)
                                 ),
@@ -1605,7 +1606,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance <= 5000 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1614,20 +1615,20 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Not preferably far but possible
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
                                 # Will cast anyways
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                 ),
                                 
@@ -1710,7 +1711,7 @@ def create_bot(selected_hero, player_type, enemy):
                         'escape_distance': 300
                     },
                     
-                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                    'skills': { # (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
                             'cast_range': 500,
@@ -1732,14 +1733,14 @@ def create_bot(selected_hero, player_type, enemy):
                                 # Trick skill while buffed
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
-                                    not bot.player.sp_attacking
+                                    not bot.target.sp_attacking
                                 ),
                                 # Prefer not to buff
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance <= 500 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(70)
                                 ),
                                 # If far, try to shoot, and if enemy is casting
@@ -1747,15 +1748,15 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance >= 500 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
                                 # Shoot if possible and enemy is while attacking
                                 lambda bot: (not bot.special_active and
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance >= 100 and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3) and
-                                    not bot.player.sp_attacking and
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3) and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1793,7 +1794,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() >= 50 and
                                     bot.enemy_distance <= 300 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Slightly far, will try to hit
@@ -1801,7 +1802,7 @@ def create_bot(selected_hero, player_type, enemy):
                                     bot.bot_hp_percent() < 50 and
                                     bot.enemy_distance <= 5000 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(90)
                                 ),
 
@@ -1810,20 +1811,20 @@ def create_bot(selected_hero, player_type, enemy):
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(80)
                                 ),
                                 # Not preferably far but possible
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() >= 50 and
                                     bot.is_facing_from_enemy() and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     botchance.update(60)
                                 ),
                                 # Will cast anyways
                                 lambda bot: (bot.special_active and
                                     bot.bot_hp_percent() < 50 and
-                                    not bot.player.sp_attacking and
+                                    not bot.target.sp_attacking and
                                     bot.is_facing_from_enemy()
                                 ),
                                 
@@ -1837,7 +1838,7 @@ def create_bot(selected_hero, player_type, enemy):
                                 # True,
                                 # Prefer to use ultimate-like skill when special is ready and enemy is low
                                 lambda bot: (not bot.special_active and
-                                    (bot.player.attacking1 or bot.player.attacking2 or bot.player.attacking3 or bot.player.sp_attacking) and
+                                    (bot.target.attacking1 or bot.target.attacking2 or bot.target.attacking3 or bot.target.sp_attacking) and
                                     botchance.update(95)
                                 ),
                                 lambda bot: (bot.special_ready() and
@@ -1923,7 +1924,7 @@ def create_bot(selected_hero, player_type, enemy):
                         'escape_distance': 100
                     },
                     
-                    'skills': { # (not bot.player.attacking1 and not bot.player.attacking2 and not bot.player.attacking3) and
+                    'skills': { # (not bot.target.attacking1 and not bot.target.attacking2 and not bot.target.attacking3) and
                                 # the code above prevent the bot from using skill when the enemy is currently attacking, this can avoid the bot from using skills unneccesarily. only use when needed
                         'skill_1': {
                             'cast_range': 200,
@@ -2122,8 +2123,8 @@ def create_bot(selected_hero, player_type, enemy):
 
             self.print_timer = IntervalExecutor(0.5)
 
-            self.enemy_on_right = self.x_pos < self.player.x_pos
-            self.enemy_on_left = self.x_pos > self.player.x_pos
+            self.enemy_on_right = 0
+            self.enemy_on_left = 0
 
             
             
@@ -2157,7 +2158,9 @@ def create_bot(selected_hero, player_type, enemy):
             return type_1 if self.health >= self.health_high_prio else type_2
 
         def enemy_hp_percent(self):
-            return (self.player.health / self.player.max_health) * 100 if self.player.max_health > 0 else 100 # Calculate the enemy's health percentage
+            if self.target is not None:
+                return (self.target.health / self.target.max_health) * 100 if self.target.max_health > 0 else 100 # Calculate the enemy's health percentage
+            return 100
 
         def bot_hp_percent(self):
             return (self.health / self.max_health) * 100 if self.max_health > 0 else 100 # Calculate the bot's health percentage
@@ -2386,9 +2389,9 @@ def create_bot(selected_hero, player_type, enemy):
 
                     if self.disabled_random_unstuck_direction:
                         # Move away from the enemy (player)
-                        if self.x_pos < self.player.x_pos:
+                        if self.x_pos < self.target.x_pos:
                             self.botkey_left = True
-                        elif self.x_pos > self.player.x_pos:
+                        elif self.x_pos > self.target.x_pos:
                             self.botkey_right = True
                     else:
                         # Default random movement
@@ -2587,8 +2590,8 @@ def create_bot(selected_hero, player_type, enemy):
         def handle_special(self):
             if self.special_ready():
                 facing_condition = (
-                    (self.x_pos > self.player.x_pos and not self.facing_right) or
-                    (self.x_pos < self.player.x_pos and self.facing_right)
+                    (self.x_pos > self.target.x_pos and not self.facing_right) or
+                    (self.x_pos < self.target.x_pos and self.facing_right)
                 )
                 # One liner gets me freaking confused, I'm gonna do it normal way bruh
                 if (self.special_in_range and facing_condition and (self.mana / self.max_mana >= self.special_threshold)):
@@ -2830,8 +2833,8 @@ def create_bot(selected_hero, player_type, enemy):
         enemies = [e for e in enemies if e is not None and not e.is_dead()]
 
         if not enemies:
-            self.target = None
-            return None
+            self.target = self
+            return self.target
 
         if len(enemies) == 1:
             self.target = enemies[0]
@@ -2864,7 +2867,7 @@ def create_bot(selected_hero, player_type, enemy):
     def bot_ensure_target(self):
         """Ensure the bot always has a valid target."""
         if not hasattr(self, "target") or self.target is None or self.target.is_dead():
-            bot_select_target(self)
+            self.select_target()
 
         
     Bot.select_target = bot_select_target

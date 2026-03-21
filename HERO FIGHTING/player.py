@@ -481,20 +481,42 @@ class Player(pygame.sprite.Sprite):
         self.perform_dash = False
 
         # to detect
-        self.dashing = True
+        self.dashing = False
 
         self.DEBUG_DASH = True
+
+        self.skill_iframes_config = {
+            'attacking1': False,   
+            'attacking2': False,  
+            'attacking3': False,  
+            'sp_attacking': False, 
+            'dashing': False       
+        }
+        # Turns to true if iframes is on, disabling auto restore hitbox while alive.
+        self.iframes_tr = False
+        # show logs
+        self.DEBUG_IFRAMES = False
+
+    
+    
+
+    # def i_frames(self):
+    #     # Check for attack iframes for specific heroes and skills
+    #     attack_iframe = False
+    #     if self.__class__.__name__ == 'Forest_Ranger' and (self.attacking1 or self.sp_attacking):
+    #         attack_iframe = True
+    #     elif self.__class__.__name__ == 'Wind_Hashashin' and (self.sp_attacking):
+    #         attack_iframe = True
         
-    def i_frames(self):
-        if self.dashing:
-            if not self.hitbox_removed:
-                self.prev_hitbox_size = self.hitbox_rect.size
-                self.hitbox_rect.size = (0, 0)
-                self.hitbox_removed = True
-        else:
-            if self.hitbox_removed:
-                self.hitbox_rect.size = self.prev_hitbox_size
-                self.hitbox_removed = False
+    #     if self.dashing or attack_iframe:
+    #         if not self.hitbox_removed:
+    #             self.prev_hitbox_size = self.hitbox_rect.size
+    #             self.hitbox_rect.size = (0, 0)
+    #             self.hitbox_removed = True
+    #     else:
+    #         if self.hitbox_removed:
+    #             self.hitbox_rect.size = self.prev_hitbox_size
+    #             self.hitbox_removed = False
 
 
 
@@ -3067,15 +3089,65 @@ class Player(pygame.sprite.Sprite):
 
         # print(current_time_ticks, self.immortality_duration, self.immortality_activated)
 
-                
+    def show_skill_info(self, screen, mouse_pos):
+        for attack in self.attacks:
+            attack.display_info(screen, mouse_pos)
+
+
+    def remove_hitbox(self):
+        '''removes hitbox from the player'''
+        if not self.hitbox_removed:
+            self.prev_hitbox_size = self.hitbox_rect.size
+            self.hitbox_rect.size = (0, 0)
+            self.hitbox_removed = True
+            # print('removed hitbox!')
+
+    def restore_hitbox(self):
+        '''restores hitbox from the player'''
+        if self.hitbox_removed:
+            self.hitbox_rect.size = self.prev_hitbox_size
+            self.hitbox_removed = False
+            # print('restored hitbox!')
+
+
+    def i_frames(self):
+        """
+        Manage i-frames (invulnerability) based on skill_iframes_config.
+        Only removes hitbox for skills that have i-frames enabled.
+        """
+        self.iframes_tr = False
+        
+        # Check which attack state is active and if it has i-frames enabled
+        if self.attacking1 and self.skill_iframes_config.get('attacking1', False):
+            self.iframes_tr = True
+        elif self.attacking2 and self.skill_iframes_config.get('attacking2', False):
+            self.iframes_tr = True
+        elif self.attacking3 and self.skill_iframes_config.get('attacking3', False):
+            self.iframes_tr = True
+        elif self.sp_attacking and self.skill_iframes_config.get('sp_attacking', False):
+            self.iframes_tr = True
+        elif self.dashing and self.skill_iframes_config.get('dashing', False):
+            self.iframes_tr = True
+        
+        # Remove or restore hitbox based on i-frame status
+        if self.iframes_tr:
+            self.remove_hitbox()
+            if hasattr(self, 'DEBUG_IFRAMES') and self.DEBUG_IFRAMES:
+                print(f'[I-FRAMES] Active - attacking1:{self.attacking1}, attacking2:{self.attacking2}, attacking3:{self.attacking3}, sp_attacking:{self.sp_attacking}, dashing:{self.dashing}')
+        else:
+            self.restore_hitbox()
+
     # Phased out code (since I don't use super.init)
     def update(self):
+        self.i_frames()
         """Base player update: handles universal effects."""
         self.draw_movement_status(screen)
         if not self.is_dead():
-            self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
-            self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
-            self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
+            # will not show if iframes is triggered (since the bar is bugged, moves it to the center of the hero) (I prefer to show it anyways as is on the spot)
+            if not self.iframes_tr:
+                self.draw_health_bar(screen) if global_vars.SHOW_MINI_HEALTH_BAR else None
+                self.draw_mana_bar(screen) if global_vars.SHOW_MINI_MANA_BAR else None
+                self.draw_special_bar(screen) if global_vars.SHOW_MINI_SPECIAL_BAR else None
 
             # -----------------------------------------------------------------------------------------------------
             self.item_activation(self.rect)
@@ -3095,10 +3167,12 @@ class Player(pygame.sprite.Sprite):
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
 
-            if self.hitbox_removed:
-                # Restore previous hitbox size
-                self.hitbox_rect.size = self.prev_hitbox_size
-                self.hitbox_removed = False
+            # auto restore hitbox while alive, (except for iframes)
+            if not self.iframes_tr:
+                if self.hitbox_removed:
+                    # Restore previous hitbox size
+                    self.hitbox_rect.size = self.prev_hitbox_size
+                    self.hitbox_removed = False
 
         elif self.is_dead():
             if not self.hitbox_removed:
@@ -3154,6 +3228,8 @@ class Player(pygame.sprite.Sprite):
 
         self.calculate_effective_as()
         self.calculate_basic_attack_interval()
+
+        # self.i_frames()
 
         
         # if self.perform_dash:

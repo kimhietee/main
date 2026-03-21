@@ -2,6 +2,7 @@ import pygame
 from global_vars import get_font, screen, width, height, white, TEXT_ANTI_ALIASING
 import math
 import time
+import global_vars
 
 def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
     base_opacity = 255 * opacity
@@ -644,4 +645,102 @@ class ModalObject:
                 #     anchor='bottomright'
                 # )
                 # info_bubble.drawing_info(g.screen)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class DisplaySkillInfo:
+    """
+    Only for displaying information when hovering the skills icon in game.
+
+    Args:
+
+        image_path - asd
+    """
+    def __init__(self, image_path, pos, text, font_path, font_size, text_color='white',
+                 padding=(20, 20), min_size=(150, 100), player_info=False, anchor='topleft',
+                 fixed_size=None, text_scale=1.0):  # <-- NEW: text_scale
+        """
+        Args:
+            text_scale: float multiplier for font_size (e.g., 0.8 = 80% size)
+            fixed_size: (w, h) for manual background size
+        """
+        self.original_bg = pygame.image.load(image_path).convert_alpha()
+        
+        # Effective font size
+        effective_font_size = int(font_size * text_scale)
+        self.font = global_vars.get_font(effective_font_size)
+        self.text_color = text_color
+        self.padding = padding
+
+        # Text processing
+        # handles , and @ separator
+        self.text_lines = []
+        def parse_block(block):
+            """Split one block into sublines using @"""
+            return block.split('@') if isinstance(block, str) else [str(block)]
+
+        if isinstance(text, str):
+            # Major sections split by comma
+            sections = text.split(',')
+            for sec in sections:
+                self.text_lines.extend(parse_block(sec.strip()))
+
+        elif isinstance(text, (list, tuple)):
+            for entry in text:
+                self.text_lines.extend(parse_block(entry))
+
+        # Space after title if multi-line
+        if len(self.text_lines) > 1:
+            self.text_lines.insert(1, '')
+
+        self.rendered_lines = [
+            self.font.render(line, global_vars.TEXT_ANTI_ALIASING, text_color)
+            for line in self.text_lines
+        ]
+
+        # Size logic
+        if fixed_size:
+            final_w, final_h = fixed_size
+            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+        else:
+            # Auto-size with better width
+            if self.rendered_lines:
+                content_w = max(line.get_width() for line in self.rendered_lines)
+                content_h = sum(line.get_height() for line in self.rendered_lines) + 10 * (len(self.rendered_lines) - 1)
+            else:
+                content_w = content_h = 0
+            
+            needed_w = content_w + padding[0] * 2
+            needed_h = content_h + padding[1] * 2
+            
+            # Wider default for better readability
+            final_w = max(needed_w, min_size[0] + 50, self.original_bg.get_width())  # +50 for comfort
+            final_h = max(needed_h, min_size[1], self.original_bg.get_height())
+            
+            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+
+        # Positioning
+        self.rect = self.background.get_rect()
+        setattr(self.rect, anchor, pos)
+        self.rect.clamp_ip(screen.get_rect())
+
+    def drawing_info(self, screen):
+        screen.blit(self.background, self.rect)
+        
+        y = self.rect.top + self.padding[1]
+        for line_surf in self.rendered_lines:
+            x = self.rect.left + self.padding[0]
+            screen.blit(line_surf, (x, y))
+            y += line_surf.get_height() + 10
     

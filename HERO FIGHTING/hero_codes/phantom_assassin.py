@@ -375,9 +375,9 @@ class Phantom_Assassin(Player):
                 # ----------------------
                 mana_cost = self.mana_cost_list[0],
                 cooldown = self.atk1_cooldown,
-                skill_name="Slasher",
-                skill_stats="?@,@,asd@Damage:12@Mana Cost:40",
-                skill_desc="Slashes enemy with@ moving slash facing."
+                skill_name="Void Slash",
+                skill_stats="- Damage:12@- Mana Cost:40",
+                skill_desc="Damages enemies hit in vicinity.@- Distance: Short"
             ),
             Attacks(
                 skill_rect = self.skill_2_rect,
@@ -473,6 +473,15 @@ class Phantom_Assassin(Player):
                 skill_img=self.basic_icon,   
             )
         ]
+
+        # Define which skills have i-frames (invulnerability)
+        self.skill_iframes_config = {
+            'attacking1': False,   
+            'attacking2': False,  
+            'attacking3': False,  
+            'sp_attacking': True, 
+            'dashing': False       
+        }
 
         self.skill_1 = self.attacks[0]
         self.skill_2 = self.attacks[1]
@@ -1221,7 +1230,7 @@ class Phantom_Assassin(Player):
 
 
     def update(self):
-
+       
         
         if not self.is_dead():
             self.player_death_index = 0
@@ -1235,12 +1244,10 @@ class Phantom_Assassin(Player):
         elif self.attacking1:
             self.atk1_animation()
         elif self.attacking2:
-            self.trigger_dash('attacking3', speed=-7, max_distance=200, delay=100)
-
+            self.trigger_dash('attacking2', speed=-7, max_distance=200, delay=100)
             self.atk2_animation()
         elif self.attacking3:
-            self.trigger_dash('attacking2', speed=30, max_distance=300, delay=500)
-
+            self.trigger_dash('attacking3', speed=30, max_distance=300, delay=500)
             self.atk3_animation()
         elif self.sp_attacking:
             self.y_velocity = -2.5
@@ -1258,7 +1265,8 @@ class Phantom_Assassin(Player):
 
 
 
-            
+        # if self.dashing:
+        #     print('DASSSHING!')
         # print(self.dash_delay_triggered)
 
         # Apply gravity

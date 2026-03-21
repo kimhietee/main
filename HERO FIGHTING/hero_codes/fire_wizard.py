@@ -462,6 +462,15 @@ class Fire_Wizard(Player):
             )
         )
 
+        # Define which skills have i-frames (invulnerability)
+        self.skill_iframes_config = {
+            'attacking1': False,   
+            'attacking2': False,  
+            'attacking3': False,  
+            'sp_attacking': True, 
+            'dashing': False       
+        }
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame

@@ -579,7 +579,10 @@ def game(bg=None):
     
 
 
-
+    for p1 in main.hero1_group:
+        p1.x_pos = random.randint(50, 100)
+    for p2 in main.hero2_group:
+        p2.x_pos = random.randint(width-100, width-50)
 
 
 
@@ -805,27 +808,39 @@ def game(bg=None):
             x = 0
 
             
+            
 
+            
             # Update and draw Fire Wizard
+            main.hero2_group.draw(main.screen)
+            main.hero2_group.update()
+            
+
             main.hero1_group.draw(main.screen)
             main.hero1_group.update()
+            for hero in main.hero1_group:
+                hero.show_skill_info(main.screen, mouse_pos)
+
 
             #draw summon
             global_vars.summon_display.draw(main.screen)
             global_vars.summon_display.update()
+
+            # Update anddddddddddddd draw attacks
+            attack_display.update()
+            attack_display.draw(main.screen)
             
 
             # Update and draw Wanderer Magician
             # main.hero3_group.draw(main.screen)
             # main.hero3_group.update()
             # if not main.hero2.is_dead():
-            
-            main.hero2_group.draw(main.screen)
-            main.hero2_group.update()
+            if hero2 is not None:
+                if hero2.target is not None:
+                    print(hero2.target.name, hero2.target.player_type, 'hero2')
+            # {("Burner"), ("damage") ("$damage", "red")}
 
-            # Update anddddddddddddd draw attacks
-            attack_display.update()
-            attack_display.draw(main.screen)
+            
             if global_vars.SINGLE_MODE_ACTIVE:
                 if global_vars.HERO1_BOT:
                     main.hero1.bot_logic()  # Add bot logic for 
@@ -2438,6 +2453,21 @@ def reset_all():
         for item in hero.items:
             item.last_used = -item.cooldown if item.cooldown > 0 else 0
         
+        # Reset bot-specific attributes to ensure proper restart
+        if hasattr(hero, 'target'):
+            hero.target = None  # Force re-target selection on next update
+        if hasattr(hero, 'botkey_skill1'):
+            # Reset all bot input keys
+            hero.botkey_skill1 = hero.botkey_skill2 = hero.botkey_skill3 = hero.botkey_skill4 = False
+            hero.botkey_right = hero.botkey_left = hero.botkey_jump = False
+            hero.botkey_attack = False
+            hero.botkey_special = False
+            hero.forcemove_left = hero.forcemove_right = False
+        if hasattr(hero, 'state'):
+            hero.state = ''  # Reset bot state machine
+        if hasattr(hero, 'attack_state'):
+            hero.attack_state = ''
+        
     attack_display.empty()
 
     # # reset cd
@@ -2545,7 +2575,6 @@ def settings(in_game=False):
     show_mana_bar = RectButton(width*0.7, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Mana Bar")
     show_special_bar = RectButton(width*0.9, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Special Bar")
     
-
     # text anti-alias
 
 

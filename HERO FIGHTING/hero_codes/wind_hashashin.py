@@ -80,6 +80,8 @@ class Wind_Hashashin(Player):
 
         self.hitbox_rect = pygame.Rect(0, 0, 50, 80)
 
+        
+
         # stat
         self.strength = 38
         self.intelligence = 40
@@ -431,6 +433,18 @@ class Wind_Hashashin(Player):
         )
 
 
+        # Define which skills have i-frames (invulnerability)
+        self.skill_iframes_config = {
+            'attacking1': False,   
+            'attacking2': False,  
+            'attacking3': False,  
+            'sp_attacking': True, 
+            'dashing': False       
+        }
+        
+        
+
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
@@ -446,16 +460,18 @@ class Wind_Hashashin(Player):
         self.atk3_move_speed = 4
 
         # Skill 1  configuration
-        self.default_dash_speed = 12
-        self.default_max_distance = 500
+        # abandoned for inconsistency
+        # self.default_dash_speed = 12
+        # self.default_max_distance = 500
 
-        self.special_dash_speed = 15
-        self.special_max_distance = 800
+        # self.special_dash_speed = 15
+        # self.special_max_distance = 800
 
-        self.activate_dash = False
-        self.distance_covered = 0
-        self.dash_speed = 5
-        self.max_distance = 600 #(400 -> 600)
+        # self.activate_dash = False
+        # self.distance_covered = 0
+        # self.dash_speed = 5
+        # self.max_distance = 600 #(400 -> 600)
+
 
         
     
@@ -963,16 +979,20 @@ class Wind_Hashashin(Player):
     #         self.jumping = True
     #         self.y_velocity = (DEFAULT_JUMP_FORCE * 0.5)
 
-    def trigger_dash(self): # this thing so buggy, fix this soon
-        if self.distance_covered < self.max_distance:
-            if self.facing_right:
-                self.x_pos += self.dash_speed
-                self.distance_covered += self.dash_speed
-            elif not self.facing_right:
-                self.x_pos -= self.dash_speed
-                self.distance_covered += self.dash_speed
-        else:
-            self.distance_covered = 0
+
+    
+
+    # abandoned for inconsistency
+    # def trigger_dash(self): # this thing so buggy, fix this soon
+    #     if self.distance_covered < self.max_distance:
+    #         if self.facing_right:
+    #             self.x_pos += self.dash_speed
+    #             self.distance_covered += self.dash_speed
+    #         elif not self.facing_right:
+    #             self.x_pos -= self.dash_speed
+    #             self.distance_covered += self.dash_speed
+    #     else:
+    #         self.distance_covered = 0
         # print(self.distance_covered)
         
     
@@ -982,7 +1002,6 @@ class Wind_Hashashin(Player):
     
     
     def update(self):
-        
 
 
          
@@ -998,22 +1017,26 @@ class Wind_Hashashin(Player):
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
         elif self.attacking1: # fixing the damn bug for this hero
-            self.activate_dash = True
+            # self.activate_dash = True
             
-            if not self.special_active:
-                self.dash_speed = self.default_dash_speed
-                self.max_distance = self.default_max_distance
-            else:
-                self.dash_speed = self.special_dash_speed
-                self.max_distance = self.special_max_distance
+            # if not self.special_active:
+            #     self.dash_speed = self.default_dash_speed
+            #     self.max_distance = self.default_max_distance
+            # else:
+            #     self.dash_speed = self.special_dash_speed
+            #     self.max_distance = self.special_max_distance
 
-            if self.distance_covered >= self.max_distance:
-                self.activate_dash = False
-                self.attacking1 = False
-                self.distance_covered = 0
-            else: 
-                if self.activate_dash:
-                    self.trigger_dash()
+            # if self.distance_covered >= self.max_distance:
+            #     self.activate_dash = False
+            #     self.attacking1 = False
+            #     self.distance_covered = 0
+            # else: 
+            #     if self.activate_dash:
+            #         self.trigger_dash()
+            if not self.special_active:
+                self.trigger_dash('attacking1', speed=12, max_distance=500, delay=0)
+            else:
+                self.trigger_dash('attacking1', speed=15, max_distance=800, delay=0)
             self.atk1_animation()  
 
         elif self.jumping:
@@ -1094,5 +1117,7 @@ class Wind_Hashashin(Player):
                 if self.special <= 0:
                     self.special_active = False
 
+        # if self.dashing:
+        #     print('DASSSHING!')
         # print(self.target) #good
         super().update()

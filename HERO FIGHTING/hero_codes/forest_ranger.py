@@ -376,7 +376,11 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Haste',
+                skill_stats='12',
+                skill_desc='Speeds up attack speed and@movement speed. :)'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
@@ -462,6 +466,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 mana=self.mana
             )
         )
+
+        self.skill_iframes_config = {
+            'attacking1': True,   
+            'attacking2': False,  
+            'attacking3': True,  
+            'sp_attacking': True, 
+            'dashing': True       
+        }
    
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
@@ -1325,7 +1337,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.play_death_animation()
         elif self.attacking1:
             self.trigger_dash('attacking1', speed=6, max_distance=300, delay=100)
-            
             self.atk1_animation()
         elif self.jumping:
             self.jump_animation()

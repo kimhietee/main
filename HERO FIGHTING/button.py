@@ -651,7 +651,17 @@ class ModalObject:
 
 
 
-
+# forest_ranger_basic_skill = DisplaySkillInfo(
+#     image_path=text_box_img,
+#     pos=mouse_pos,  # Will be updated based on skill icon position
+#     skill_name=self.skill_name,
+#     skill_icon_path=self.skill_img,
+#     stats=self.skill_stats,
+#     info_text=self.skill_desc,
+#     font_path=global_vars.FONT_PATH,
+#     font_size=12,
+#     anchor='midbottom'
+# )
 
 
 
@@ -661,86 +671,433 @@ class ModalObject:
 
 class DisplaySkillInfo:
     """
-    Only for displaying information when hovering the skills icon in game.
+    Enhanced skill info display with icon, name, stats, and description.
+    Shows custom formatted information when hovering over skill icons in game.
 
     Args:
-
-        image_path - asd
+        image_path: Path to background image
+        pos: (x, y) position tuple
+        skill_name: Name of the skill (displayed in larger font)
+        skill_icon_path: Optional path to skill icon (displayed 75% smaller)
+        stats: Optional dict of {stat_name: (value, color)} for stats display
+               Colors: 'red', 'white', 'cyan', 'green' (default: 'red')
+        info_text: Optional info description text with @ as manual line breaker
+        font_path: Path to font file
+        font_size: Base font size
+        text_color: Default text color (default: 'white')
+        padding: (pad_x, pad_y) tuple (default: (20, 20))
+        min_size: Minimum (width, height) (default: (150, 100))
+        anchor: Position anchor like 'topleft', 'topright' (default: 'topleft')
+        fixed_size: Optional (width, height) for manual sizing
+        text_scale: Font size multiplier (default: 1.0)
     """
-    def __init__(self, image_path, pos, text, font_path, font_size, text_color='white',
-                 padding=(20, 20), min_size=(150, 100), player_info=False, anchor='topleft',
-                 fixed_size=None, text_scale=1.0):  # <-- NEW: text_scale
+    
+    # Color palette
+    COLOR_MAP = {
+        'red': (220, 50, 50),
+        'white': (215, 215, 215),
+        'cyan': (0, 255, 255),
+        'green': (100, 200, 100),
+        'blueviolet': (138,43,226),
+        'magenta': (255,0,255)
+    }
+    
+    def __init__(self, image_path, pos, skill_name, font_path=None, font_size=16, 
+                 skill_icon_path=None, stats=None, info_text=None,
+                 text_color='white', padding=(20, 20), min_size=(150, 100), 
+                 anchor='topleft', fixed_size=None, text_scale=1.0):
         """
-        Args:
-            text_scale: float multiplier for font_size (e.g., 0.8 = 80% size)
-            fixed_size: (w, h) for manual background size
+        Initialize enhanced skill info display.
         """
         self.original_bg = pygame.image.load(image_path).convert_alpha()
-        
-        # Effective font size
-        effective_font_size = int(font_size * text_scale)
-        self.font = global_vars.get_font(effective_font_size)
-        self.text_color = text_color
         self.padding = padding
+        self.anchor = anchor
+        self.pos = pos
+        
+        # Font setup (title larger, base default, stats smaller)
+        self.base_font_size = int(font_size * text_scale)
+        self.font = global_vars.get_font(self.base_font_size, font_path) if font_path else global_vars.get_font(self.base_font_size)
+        self.font_large = global_vars.get_font(int(self.base_font_size * 1.4), font_path) if font_path else global_vars.get_font(int(self.base_font_size * 1.5))
+        self.font_small = global_vars.get_font(int(self.base_font_size * 0.92), font_path) if font_path else global_vars.get_font(int(self.base_font_size * 0.9))
+        self.text_color = self._parse_color(text_color)
+        
+        # Load and process skill icon
+        self.skill_icon = None
+        self.icon_scaled = None
+        if skill_icon_path:
+            try:
+                if isinstance(skill_icon_path, pygame.Surface):
+                    self.skill_icon = skill_icon_path
+                else:
+                    self.skill_icon = pygame.image.load(skill_icon_path).convert_alpha()
+                # Scale icon to 75% of original size
+                icon_size = int(self.skill_icon.get_width() * 0.75), int(self.skill_icon.get_height() * 0.75)
+                self.icon_scaled = pygame.transform.smoothscale(self.skill_icon, icon_size)
+            except Exception as exc:
+                print('DisplaySkillInfo icon load error:', exc)
+                self.skill_icon = None
+                self.icon_scaled = None
 
-        # Text processing
-        # handles , and @ separator
-        self.text_lines = []
-        def parse_block(block):
-            """Split one block into sublines using @"""
-            return block.split('@') if isinstance(block, str) else [str(block)]
+        # Title + icon row
+        self.title_surface = self.font_large.render(skill_name if skill_name else "", global_vars.TEXT_ANTI_ALIASING, self.text_color) if skill_name else None
+        self.max_content_width = 0
+        self.total_content_height = 0
 
-        if isinstance(text, str):
-            # Major sections split by comma
-            sections = text.split(',')
-            for sec in sections:
-                self.text_lines.extend(parse_block(sec.strip()))
+        icon_w, icon_h = (0, 0)
+        if self.icon_scaled:
+            icon_w, icon_h = self.icon_scaled.get_size()
 
-        elif isinstance(text, (list, tuple)):
-            for entry in text:
-                self.text_lines.extend(parse_block(entry))
+        title_w = self.title_surface.get_width() if self.title_surface else 0
+        title_h = self.title_surface.get_height() if self.title_surface else 0
 
-        # Space after title if multi-line
-        if len(self.text_lines) > 1:
-            self.text_lines.insert(1, '')
+        self.first_row_height = max(icon_h, title_h)
+        self.first_row_width = (icon_w + 10 + title_w) if self.icon_scaled and self.title_surface else max(icon_w, title_w)
 
-        self.rendered_lines = [
-            self.font.render(line, global_vars.TEXT_ANTI_ALIASING, text_color)
-            for line in self.text_lines
-        ]
+        self.max_content_width = self.first_row_width
+        self.total_content_height = self.first_row_height
 
-        # Size logic
+        # Stats list
+        self.stat_surfaces = []
+        if stats and isinstance(stats, dict):
+            if self.stat_surfaces:
+                pass
+            for stat_name, stat_data in stats.items():
+                if isinstance(stat_data, tuple) or isinstance(stat_data, list):
+                    stat_value, stat_color = stat_data
+                else:
+                    stat_value = stat_data
+                    stat_color = 'red'
+
+                color = self._parse_color(stat_color)
+                stat_name_surf = self.font_small.render(f"{stat_name}: ", global_vars.TEXT_ANTI_ALIASING, self.text_color)
+                stat_value_surf = self.font_small.render(str(stat_value), global_vars.TEXT_ANTI_ALIASING, color)
+                self.stat_surfaces.append((stat_name_surf, stat_value_surf))
+
+                row_width = stat_name_surf.get_width() + stat_value_surf.get_width()
+                self.max_content_width = max(self.max_content_width, row_width)
+                self.total_content_height += stat_name_surf.get_height() + 3
+
+        # Info text
+        self.info_lines = []
+        if info_text and isinstance(info_text, str):
+            info_lines = [line.strip() for line in info_text.split('@') if line.strip()]
+            for line in info_lines:
+                info_surf = self.font.render(line, global_vars.TEXT_ANTI_ALIASING, self.text_color)
+                self.info_lines.append(info_surf)
+                self.max_content_width = max(self.max_content_width, info_surf.get_width())
+                self.total_content_height += info_surf.get_height() + 5
+
+        # gap between sections
+        if self.stat_surfaces and self.info_lines:
+            self.total_content_height += 2
+        
+        # Calculate background size
         if fixed_size:
             final_w, final_h = fixed_size
-            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
         else:
-            # Auto-size with better width
-            if self.rendered_lines:
-                content_w = max(line.get_width() for line in self.rendered_lines)
-                content_h = sum(line.get_height() for line in self.rendered_lines) + 10 * (len(self.rendered_lines) - 1)
-            else:
-                content_w = content_h = 0
-            
-            needed_w = content_w + padding[0] * 2
-            needed_h = content_h + padding[1] * 2
-            
-            # Wider default for better readability
-            final_w = max(needed_w, min_size[0] + 50, self.original_bg.get_width())  # +50 for comfort
-            final_h = max(needed_h, min_size[1], self.original_bg.get_height())
-            
-            self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+            needed_w = self.max_content_width + padding[0] * 2
+            needed_h = self.total_content_height + padding[1] * 2
 
-        # Positioning
+            final_w = max(needed_w, min_size[0])
+            final_h = max(needed_h, min_size[1])
+
+        self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+
+        # Position
         self.rect = self.background.get_rect()
         setattr(self.rect, anchor, pos)
         self.rect.clamp_ip(screen.get_rect())
-
+    
+    def _parse_color(self, color):
+        """Convert color name or tuple to RGB tuple."""
+        if isinstance(color, str):
+            return self.COLOR_MAP.get(color.lower(), (255, 255, 255))
+        return color
+    
     def drawing_info(self, screen):
+        """Draw the skill info box with icon + title row, then stats/info below."""
         screen.blit(self.background, self.rect)
-        
+
         y = self.rect.top + self.padding[1]
-        for line_surf in self.rendered_lines:
-            x = self.rect.left + self.padding[0]
-            screen.blit(line_surf, (x, y))
-            y += line_surf.get_height() + 10
+        x_base = self.rect.left + self.padding[0]
+
+        # 1) First row: icon + title
+        x = x_base
+        if self.icon_scaled:
+            icon_y = y + (self.first_row_height - self.icon_scaled.get_height()) // 2
+            screen.blit(self.icon_scaled, (x, icon_y))
+            x += self.icon_scaled.get_width() + 10
+
+        if self.title_surface:
+            title_y = y + (self.first_row_height - self.title_surface.get_height()) // 2
+            screen.blit(self.title_surface, (x, title_y))
+
+        y += self.first_row_height
+
+        # 2) Stats lines below
+        if self.stat_surfaces:
+            y += 10
+            for stat_name_surf, stat_value_surf in self.stat_surfaces:
+                screen.blit(stat_name_surf, (x_base, y))
+                screen.blit(stat_value_surf, (x_base + stat_name_surf.get_width(), y))
+                y += stat_name_surf.get_height() + 3
+
+        # 3) Info text lines below
+        if self.info_lines:
+            y += 10
+            for info_surf in self.info_lines:
+                screen.blit(info_surf, (x_base, y))
+                y += info_surf.get_height() + 5
+
+
+# ============================================================================
+# USAGE EXAMPLES FOR DisplaySkillInfo
+# ============================================================================
+"""
+EXAMPLE 1: Basic skill info with icon, name, and stats
+---------------------------------------------------
+# Create skill info display with defaults
+skill_info = DisplaySkillInfo(
+    image_path='assets/text_box.png',
+    pos=(400, 300),
+    skill_name='Fireball',
+    skill_icon_path='assets/skill_icons/fireball.png',
+    stats={
+        'Damage': (50, 'red'),
+        'Cooldown': ('3s', 'white'),
+        'Mana': (20, 'cyan')
+    },
+    info_text='A powerful fire spell @ that damages enemies @ in a small area',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12
+)
+
+# Draw when hovering
+skill_info.drawing_info(screen)
+
+
+EXAMPLE 2: Custom colors for stats
+-----------------------------------
+# Available colors: 'red', 'white', 'cyan', 'green'
+skill_info = DisplaySkillInfo(
+    image_path='assets/text_box.png',
+    pos=(400, 300),
+    skill_name='Healing Light',
+    skill_icon_path='assets/skill_icons/heal.png',
+    stats={
+        'Healing': (30, 'green'),      # Green for healing
+        'Range': ('5m', 'white'),
+        'Cast Time': ('2s', 'white'),
+        'Cooldown': ('5s', 'red')      # Red for cooldown
+    },
+    info_text='Restore health to an ally @ Radius: 3 meters',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12
+)
+
+
+EXAMPLE 3: No icon, just name and stats
+----------------------------------------
+skill_info = DisplaySkillInfo(
+    image_path='assets/text_box.png',
+    pos=(400, 300),
+    skill_name='Ice Spike',
+    stats={
+        'Damage': (35, 'cyan'),
+        'Cost': (15, 'cyan')
+    },
+    info_text='Create a spike of ice @ that pierces through enemies',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12
+)
+
+
+EXAMPLE 4: Advanced example with all features
+----------------------------------------------
+skill_info = DisplaySkillInfo(
+    image_path='assets/text_box.png',
+    pos=(mouse_pos[0], mouse_pos[1] - 200),  # Follow mouse
+    skill_name='Meteor Strike',
+    skill_icon_path='assets/skill_icons/meteor.png',
+    stats={
+        'Damage': (100, 'red'),
+        'AoE': ('8m', 'white'),
+        'Cast': ('1.5s', 'white'),
+        'Cost': (50, 'cyan'),
+        'CD': ('10s', 'red')
+    },
+    info_text='Summon meteors from the sky @ Devastating area damage @ @ Line breaks can be added multiple times',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    padding=(25, 20),
+    anchor='center'  # Center the tooltip at mouse position
+)
+
+
+KEY FEATURES:
+=============
+1. SKILL ICON (75% smaller):
+   - Pass skill_icon_path to display skill icon
+   - Icon is automatically scaled to 75% of original size
+   - Centered horizontally in the info box
+
+2. SKILL NAME (Larger Font):
+   - Large font (130% of base size)
+   - Displayed first in the info
+
+3. STATS DICTIONARY:
+   - Format: {'stat_name': (value, color)}
+   - Colors: 'red', 'white', 'cyan', 'green'
+   - Multiple stats can have different colors
+   - Stats appear after name and icon
+   - One space (10px) before stats section
+
+4. INFO TEXT with @ Line Breaker:
+   - Use @ to manually break lines
+   - Example: 'This is line 1 @ This is line 2'
+   - One space (10px) before info section
+
+5. AUTOMATIC SIZING:
+   - Automatically sizes based on content width
+   - Use fixed_size=(width, height) to override
+   - min_size parameter sets minimum dimensions
+
+6. POSITIONING:
+   - anchor options: 'topleft', 'topright', 'bottomleft', 'bottomright', 'center'
+   - Position is automatically clamped to screen boundaries
+   - Perfect for tooltips that follow mouse
+
+
+COLOR OPTIONS REFERENCE:
+=======================
+- 'red':   (220, 50, 50)       # For damage, cooldowns, negatives
+- 'white': (255, 255, 255)     # For neutral stats
+- 'cyan':  (0, 255, 255)       # For mana, energy costs
+- 'green': (100, 200, 100)     # For healing, buffs, positives
+"""
+
+# ============================================================================
+# FOREST RANGER SKILL EXAMPLES (Sample Implementation)
+# ============================================================================
+"""
+# These are example instances for Forest Ranger skill tooltips.
+# Add these to your gameloop.py or wherever skill icons are displayed.
+
+# SKILL 1: Piercing Shots (Basic Attack)
+forest_ranger_basic_skill = DisplaySkillInfo(
+    image_path='assets/UI/text_box_skill.png',
+    pos=(0, 0),  # Will be updated based on skill icon position
+    skill_name='Piercing Shots',
+    skill_icon_path='assets/skill_icons/forest_ranger/basic_attack.png',
+    stats={
+        'Damage': (18, 'red'),
+        'Attack Speed': ('6 frames', 'white'),
+        'Range': ('Long', 'white')
+    },
+    info_text='Fire multiple arrows at enemies @ Arrows can stick and damage again @ High attack speed ranger attack',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    anchor='topleft'
+)
+
+# SKILL 2: Power Shot (ATK1)
+forest_ranger_atk1_skill = DisplaySkillInfo(
+    image_path='assets/UI/text_box_skill.png',
+    pos=(0, 0),
+    skill_name='Power Shot',
+    skill_icon_path='assets/skill_icons/forest_ranger/power_shot.png',
+    stats={
+        'Damage': (12, 'red'),
+        'Cooldown': ('4 frames', 'white'),
+        'Type': ('Single Hit', 'white')
+    },
+    info_text='A powerful charged shot @ Deals moderate damage in a straight line',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    anchor='topleft'
+)
+
+# SKILL 3: Explosive Volley (ATK2)
+forest_ranger_atk2_skill = DisplaySkillInfo(
+    image_path='assets/UI/text_box_skill.png',
+    pos=(0, 0),
+    skill_name='Explosive Volley',
+    skill_icon_path='assets/skill_icons/forest_ranger/explosive_volley.png',
+    stats={
+        'Damage': (35, 'red'),
+        'Cooldown': ('40 frames', 'red'),
+        'Area': ('Large', 'white'),
+        'Cost': ('30 Mana', 'cyan')
+    },
+    info_text='Launch a barrage of explosive arrows @ Covers wide area with high damage @ Long cooldown but devastating impact',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    anchor='topleft'
+)
+
+# SKILL 4: Trueshot (ATK3)
+forest_ranger_atk3_skill = DisplaySkillInfo(
+    image_path='assets/UI/text_box_skill.png',
+    pos=(0, 0),
+    skill_name='Trueshot',
+    skill_icon_path='assets/skill_icons/forest_ranger/trueshot.png',
+    stats={
+        'Damage': (28, 'red'),
+        'Cooldown': ('10 frames', 'white'),
+        'Critical': ('High', 'red'),
+        'Cost': ('20 Mana', 'cyan')
+    },
+    info_text='A perfectly aimed shot that never misses @ High critical chance @ Excellent for finishing weak enemies',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    anchor='topleft'
+)
+
+# SKILL 5: Forest's Wrath (Special)
+forest_ranger_special_skill = DisplaySkillInfo(
+    image_path='assets/UI/text_box_skill.png',
+    pos=(0, 0),
+    skill_name=\"Forest's Wrath\",
+    skill_icon_path='assets/skill_icons/forest_ranger/forest_wrath.png',
+    stats={
+        'Damage': (55, 'red'),
+        'Duration': ('8 seconds', 'white'),
+        'Cost': ('60 Special', 'cyan'),
+        'Effect': ('AoE', 'green')
+    },
+    info_text='Summon the power of the ancient forest @ Rains arrows down on all enemies @ Scales with Intelligence and Mana',
+    font_path='assets/fonts/myfont.ttf',
+    font_size=12,
+    anchor='topleft'
+)
+
+
+# USAGE IN GAMELOOP:
+# ==================
+# In your game loop, when hovering over Forest Ranger skills:
+#
+# if skill_icon_rect.collidepoint(mouse_pos):
+#     # Update position to follow skill icon
+#     forest_ranger_basic_skill.rect.topleft = (skill_icon_x - 200, skill_icon_y - 50)
+#     forest_ranger_basic_skill.drawing_info(screen)
+#
+# Or for dynamic positioning:
+#
+# class SkillTooltip:
+#     def __init__(self, skill_info, skill_icon_rect):
+#         self.skill_info = skill_info
+#         self.skill_icon_rect = skill_icon_rect
+#     
+#     def update_position(self, mouse_pos):
+#         if self.skill_icon_rect.collidepoint(mouse_pos):
+#             # Position tooltip relative to icon
+#             pos = (self.skill_icon_rect.right + 10, self.skill_icon_rect.top - 10)
+#             self.skill_info.rect.topleft = pos
+#             self.skill_info.rect.clamp_ip(screen.get_rect())
+#             return True
+#         return False
+#     
+#     def draw(self, screen):
+#         self.skill_info.drawing_info(screen)
+"""
     

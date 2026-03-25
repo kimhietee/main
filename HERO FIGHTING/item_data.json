@@ -206,7 +206,7 @@
       "bonus_type": ["spawn_flame"],
       "bonus_value": [1],
       "description": "Spawns flame around the hero.@@Total Damage: 10@Duration: 5s@Cooldown: 10s",
-      "cooldown": 10,
+      "cooldown": 8,
       "attack_frames": "assets\\attacks_item\\Burning Desire\\activation_frames.png",
       "attack_count": "spawn_flame_count",
       "attack_frame_duration": 78.12, 

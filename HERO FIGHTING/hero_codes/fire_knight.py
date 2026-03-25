@@ -454,7 +454,7 @@ class Fire_Knight(Player):
         self.skill_iframes_config = {
             'attacking1': False,   
             'attacking2': False,  
-            'attacking3': True,  
+            'attacking3': False,  
             'sp_attacking': True,     
         }
 

@@ -103,9 +103,12 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_attack_speed = 100
         self.base_attack_time = 1900
 
+        # skill info
         self.base_animation_speed = 100
         self.min_animation_speed = 10
         self.attack_speed_modifier = 1.1
+        self.root_duration = 1500
+
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
@@ -135,23 +138,45 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 8000 + 5000 # 13 seconds
+        self.atk1_cooldown = 10000 + 5000 # 15 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
         self.sp_cooldown_for_special = 90000
         self.atk3_cooldown_for_special = 25000
 
-        self.atk1_damage = (0, 0) # buff
-        self.atk2_damage = (10/8, 2) # roots arrow +50 mana
-        self.atk3_damage = (15/8, 5) # green roots +70 mana
-        self.sp_damage = (30/5, 0) # beam +150 mana
+        self.raw_atk1_dmg = 0
+        self.raw_atk2_dmg = 10
+        self.raw_atk3_dmg = 15
+        self.raw_atk4_dmg = 30
+        
+        self.atk1_ani_count = 45
+        self.atk2_ani_count = 8
+        self.atk3_ani_count = 8
+        self.atk4_ani_count = 5
+        # --------------------------
+        self.raw_sp_atk1_dmg = 0
+        self.raw_sp_atk2_dmg = 10
+        self.raw_sp_atk2_dmg_2nd = 5
+        self.raw_sp_atk3_dmg = 25
+        self.raw_sp_atk4_dmg = 70
+        
+        self.sp_atk1_ani_count = 45
+        self.sp_atk2_ani_count = 8
+        self.sp_atk2_ani_count_2nd = 45
+        self.sp_atk3_ani_count = 18
+        self.sp_atk4_ani_count = 30
+
+        self.atk1_damage = (self.raw_atk1_dmg, 0) # buff
+        self.atk2_damage = (self.raw_atk2_dmg / self.atk2_ani_count, 2) # roots arrow +50 mana
+        self.atk3_damage = (self.raw_atk3_dmg / self.atk3_ani_count, 5) # green roots +70 mana
+        self.sp_damage = (self.raw_atk4_dmg / self.atk4_ani_count, 0) # beam +150 mana
 
         #special
-        self.sp_atk2_damage_2nd = (5/8, 0) # poison arrow +30 mana
-        self.atk2_damage_2nd = (10/45, 0) # poison 2nd +30 mana
-        self.sp_atk3_damage = (25/18, 0) # arrow rain roots +100 mana
-        self.sp_damage_2nd = (70/30, 0) # laser beam +170 mana
+        self.sp_atk2_damage_2nd = (self.raw_sp_atk2_dmg_2nd / self.sp_atk2_ani_count, 0) # poison arrow +30 mana
+        self.atk2_damage_2nd = (self.raw_sp_atk2_dmg / self.sp_atk2_ani_count_2nd, 0) # poison 2nd +30 mana
+        self.sp_atk3_damage = (self.raw_sp_atk3_dmg / self.sp_atk3_ani_count, 0) # arrow rain roots +100 mana
+        self.sp_damage_2nd = (self.raw_sp_atk4_dmg / self.sp_atk4_ani_count, 0) # laser beam +170 mana
 
         # self.damage_to_heal_percentage =
 
@@ -369,6 +394,23 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[1]
 
+        # haste base bonus
+        self.haste_duration = 5000
+        self.haste_attack_speed = 300
+        self.special_haste_attack_speed = 350
+        self.haste_move_speed = 1.5
+
+        # for i in range(4):
+        #     if hasattr(self.atk2_damage):
+        #         if type(self.atk2_damage[0]) == float:
+        #             # check if this is really float from dividing numbers
+        #             # getattr(self, 'kimhite')
+        #             getattr(self, 'skill2_dmg', self.atk2_damage[0]*atk2[1])
+        #         else:
+        #             getattr(self, 'skill2_dmg', self.atk2_damage[0])
+
+        
+        
         # Skills
         self.attacks = [
             Attacks(
@@ -379,29 +421,65 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 mana=self.mana,
 
                 skill_name='Haste',
-                skill_stats='12',
-                skill_desc='Speeds up attack speed and@movement speed. :)'
-            ),
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Invulnerability': ['True', 'green'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
+                    # 'Attack Speed': (300, 'white'),
+                    # 'Move Speed': ('+ 50%', 'white')
+                    
+                },
+                # skill_desc='Increases attack speed and movement speed for a@short duration. Dodges most spells when casting.@- Attack Speed: +300@- Move Speed: +50%@- Duration: 5s'
+                skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
+            ), 
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.atk2_damage[0]*atk2[1], self.atk2_damage[1]]
+
+                skill_name='Magic Arrow',
+        
+                skill_stats={
+                    'Damage': [(self.atk2_damage[0]*8 + self.atk2_damage[1]), 'red'],
+                    'Mana Cost': [self.atk2_mana_cost, 'cyan'],
+                    'Cooldown': [f'{self.atk2_cooldown / 1000}s', 'white'],
+                },
+                skill_desc=f'Roots the enemy hit with single attack.@- Duration: {self.root_duration/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Trueshot',
+                skill_stats={
+                    'Damage': (12, 'red'),
+                    'Cooldown': ('4 frames', 'white'),
+                    'Type': ('Single Hit', 'white')
+                },
+                # skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
+                skill_desc='A perfectly aimed shot that never misses@High critical chance@Excellent for finishing weak enemies'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.skill_4_rect,
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name="Forest's Wrath",
+                skill_stats={
+                    'Damage': (12, 'red'),
+                    'Cooldown': ('4 frames', 'white'),
+                    'Type': ('Single Hit', 'white')
+                },
+                skill_desc='Summon the power of the ancient forest@Rains arrows down on all enemies@Scales with Intelligence and Mana'
             )
         ]
 
@@ -411,7 +489,15 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Piercing Shots',
+                skill_stats={
+                    'Damage': (12, 'red'),
+                    'Cooldown': ('4 frames', 'white'),
+                    'Type': ('Single Hit', 'white')
+                },
+                skill_desc='Fire multiple arrows at enemies@Arrows can stick and damage again@High attack speed ranger attack'
             )
         )
 
@@ -422,9 +508,26 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=special_icon,
                 cooldown=0,
                 mana=0,
-                special_skill=True
+                special_skill=True,
+                skill_name='Activate Special',
+                skill_stats={
+                    'Attack Increase': (12, 'red'),
+                    'Cooldown': ('4 frames', 'white'),
+                    'Type': ('Single Hit', 'white')
+                },
+                skill_desc='Provides unique buffs and abilities to hero.'
+            
             )
         )
+
+
+
+
+
+
+
+
+
 
         self.attacks_special = [
             Attacks(
@@ -432,28 +535,67 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_rect=self.special_skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Haste',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Invulnerability': ('True', 'green'),
+                    'Mana Cost': [self.atk1_mana_cost, 'cyan'],
+                    'Cooldown': [f'{self.atk1_cooldown / 1000}s', 'white'],
+                    # 'Attack Speed': (300, 'white'),
+                    # 'Move Speed': ('+ 50%', 'white')
+                    
+                },
+                skill_desc=f'Rolls forward and grants a buff that greatly increases@attack and move speed. Dodges most spells when casting.@- Attack Speed: + {self.special_haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.special_skill_2_rect,
                 skill_img=special_skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Explosive Volley',
+                skill_stats={
+                    'Damage': (35, 'red'),
+                    'Cooldown': ('40 frames', 'red'),
+                    'Area': ('Large', 'white'),
+                    'Cost': ['30 Mana', 'cyan']
+                },
+                skill_desc='Launch a barrage of explosive arrows@Covers wide area with high damage@Long cooldown but devastating impact'
             ),
             Attacks(
                 mana_cost=self.atk3_mana_cost_for_special,
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown_for_special,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Trueshot',
+                skill_stats={
+                    'Damage': (28, 'red'),
+                    'Cooldown': ('10 frames', 'white'),
+                    'Critical': ('High', 'red'),
+                    'Cost': ['20 Mana', 'cyan']
+                },
+                skill_desc='A perfectly aimed shot that never misses@High critical chance@Excellent for finishing weak enemies'
             ),
             Attacks(
                 mana_cost=self.sp_mana_cost_for_special,
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown_for_special,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name="Forest's Wrath",
+                skill_stats={
+                    'Damage': (55, 'red'),
+                    'Duration': ('8 seconds', 'white'),
+                    'Cost': ['60 Special', 'cyan'],
+                    'Effect': ('AoE', 'green')
+                },
+                skill_desc='Summon the power of the ancient forest@Rains arrows down on all enemies@Scales with Intelligence and Mana'
             )
         ]
 
@@ -463,7 +605,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Piercing Shots',
+                skill_stats={
+                    'Damage': (55, 'red'),
+                    'Duration': ('8 seconds', 'white'),
+                    'Cost': ['60 Special', 'cyan'],
+                    'Effect': ('AoE', 'green')
+                },
+                skill_desc='Fire multiple arrows at enemies@Arrows can stick and damage again@High attack speed ranger attack'
             )
         )
 
@@ -509,6 +660,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         # initialize current attack speed snapshot from base value
         self.get_current_atk_speed = self.basic_attack_animation_speed
+
+        
         
 
     # Will modify the attack speed of forest ranger when basic attacking
@@ -635,8 +788,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                         if not self.atk_hasted:
                             self.atk_hasted = True
-                            self.haste_value = 300  # Attack speed bonus
-                            self.atk_haste_duration = (pygame.time.get_ticks() + 611.11) + 5000
+                            self.haste_value = self.haste_attack_speed  # Attack speed bonus
+                            self.atk_haste_duration = (pygame.time.get_ticks() + 611.11) + self.haste_duration
                             self.default_atk_speed = self.basic_attack_animation_speed  # Store the current attack speed as default
                         
  
@@ -680,7 +833,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             'attack_kwargs': {
                                 'frames': self.atk2 if self.facing_right else self.atk2_flipped,
-                                'frame_duration': 187.5, # Root for 1.5s
+                                'frame_duration': self.root_duration / len(self.atk2), # Root for 1.5s
                                 'repeat_animation': 1,
                                 'speed': 0,
                                 'dmg': self.atk2_damage[0],
@@ -984,8 +1137,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                         if not self.atk_hasted:
                             self.atk_hasted = True
-                            self.haste_value = 350  # Attack speed bonus
-                            self.atk_haste_duration = (pygame.time.get_ticks() + 611.11) + 5000
+                            self.haste_value = self.special_haste_attack_speed  # Attack speed bonus
+                            self.atk_haste_duration = (pygame.time.get_ticks() + 611.11) + self.haste_duration
                             self.default_atk_speed = self.basic_attack_animation_speed  # Store the current attack speed as default
 
                         # print("Attack executed")
@@ -1411,7 +1564,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # print(self.basic_attack_animation_speed)
         if self.atk_hasted and not self.was_hasted:
             self.bonus_attack_speed_flat += self.haste_value
-            self.speed = self.default_speed * 1.5  # increase move speed
+            self.speed = self.default_speed * self.haste_move_speed  # increase move speed
             self.attack_speed = self.calculate_effective_as()
             self.basic_attack_cooldown = self.calculate_basic_attack_interval()
             self.basic_attack_animation_speed = self.calculate_attack_animation_speed()

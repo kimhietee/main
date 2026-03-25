@@ -307,7 +307,7 @@ class Attacks:
     '''
 
 
-    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', special_skill=False,
+    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:special_skill=False,
                  skill_name='', skill_stats='', skill_desc=''):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
@@ -338,7 +338,7 @@ class Attacks:
 
         self.skill_count:int = -1
         self.skill_name:str = skill_name
-        self.skill_stats:str = skill_stats
+        self.skill_stats:dict = skill_stats
         self.skill_desc:str = skill_desc
 
 
@@ -537,57 +537,57 @@ class Attacks:
     def set_skill_count(self, n):
         self.skill_count = n
 
+    def update_stat_info(self):
+        '''updates the latest mana cost and cooldown'''
+        for name, value in self.skill_stats.items():
+            if name == 'Mana Cost':
+                self.skill_stats['Mana Cost'][0] = self.mana_cost
+            if name == 'Cooldown':
+                if type(self.skill_stats['Cooldown']) == list:
+                    self.skill_stats['Cooldown'][0] = f'{self.cooldown / 1000}s'
+            if name == 'Damage':
+                if type(self.skill_stats['Damage']) == list:
+                    self.skill_stats['Damage'][0] = f'{self.cooldown / 1000}s'
     def display_info(self, screen, mouse_pos):
         if self.skill_rect.collidepoint(mouse_pos):
             self.hovered = True
         else:
             self.hovered = False
 
-            # wrapped = []
-            # for i in range(0, len(skill_stats)):
-            #     chunk = skill_stats[i:i]
-            #     # Prepend '@-> ' to all but the first in the chunk
-            #     chunk = [chunk[0]] + [f"@-> {entry}" for entry in chunk[1:]]
-            #     wrapped.append(' '.join(chunk))
-            # skill_stats = wrapped  # Now list of grouped strings
+        # text = [
+        #     self.skill_name,
+        #     self.skill_stats,
+        #     self.skill_desc
+        # ]
 
-        # Build full lines list: Name first, then stats, then desc (each as separate lines)
-        # full_lines = [skill_name + skill_stats]
-        
-        # full_lines += [""]  # Empty line spacer
-        # # Split desc into lines if long (e.g., every 40 chars)
-        # desc_words = skill_desc.split()
-        # desc_lines = []
-        # current_line = ""
-        # for word in desc_words:
-        #     if len(current_line) + len(word) + 1:  # Char limit per line
-        #         desc_lines.append(current_line.strip())
-        #         current_line = word
-        #     else:
-        #         current_line += " " + word
-        # if current_line:
-        #     desc_lines.append(current_line.strip())
-        # full_lines += desc_lines
-
-        text = [
-            self.skill_name,
-            self.skill_stats,
-            self.skill_desc
-        ]
+        self.update_stat_info()
 
         if self.hovered:
-            info_bubble = ImageBro(
-                    image_path=text_box_img,
-                    pos=mouse_pos,
-                    text=text,
-                    font_path=global_vars.FONT_PATH,
-                    font_size=font_size * 1.05,
-                    text_color='green',
-                    player_info=True,
-                    text_scale=1.3,  # Full size
-                    anchor='midbottom'
-                )
-            info_bubble.drawing_info(screen)
+            from button import DisplaySkillInfo
+            self.info_bubble = DisplaySkillInfo(
+                image_path=text_box_img,
+                pos=mouse_pos,  # Will be updated based on skill icon position
+                skill_name=self.skill_name,
+                skill_icon_path=self.skill_img,
+                stats=self.skill_stats,
+                info_text=self.skill_desc,
+                font_path=global_vars.FONT_PATH,
+                font_size=font_size * 1.2,
+                anchor='midbottom'
+            )
+            # info_bubble = ImageBro(
+            #         image_path=text_box_img,
+            #         pos=mouse_pos,
+            #         text=text,
+            #         font_path=global_vars.FONT_PATH,
+            #         font_size=font_size * 1.05,
+            #         text_color='green',
+            #         player_info=True,
+            #         text_scale=1.3,  # Full size
+            #         anchor='midbottom'
+            #     )
+                
+            # info_bubble.drawing_info(screen)
 
     def update(self, screen, mana, special=0, player_type=0, player=None, skill_name='', skill_desc='', mouse_pos=None):
         self.draw_skill_icon(screen, mana, special, player_type, player=player)
@@ -2872,7 +2872,7 @@ def player_selection():
     
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Phantom_Assassin
+            PLAYER_1_SELECTED_HERO = Forest_Ranger
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
@@ -3265,8 +3265,11 @@ def player_selection():
                     # --- Apply items to team 1 ---
                     for h in hero1_group:
                         # If all_items is on and this is a bot, don't clear/override items
-                        if not (global_vars.all_items and hasattr(h, 'botkey_skill1')):
-                            h.items = []
+
+                        # uncomment to allow player1 bots to have same settings as player2 bots
+                        # if not (global_vars.all_items and hasattr(h, 'botkey_skill1')):
+                        #     h.items = []
+                        h.items = []
 
                     for item in p1_items:
                         if item.is_selected():
@@ -3294,37 +3297,6 @@ def player_selection():
                     for h in hero2_group:
                         h.apply_item_bonuses()
 
-                    # hero1_group.add(
-                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1),
-                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1),
-                    #     create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, hero1)(hero1, hero1)
-                    # )
-
-                    # hero2_group.add(
-                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2),
-                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2),
-                    #     create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, hero2)(hero2, hero2)
-                    # )
-                    
-                    # for item in p2_items:
-                    #     if item.is_selected():
-                    #         for i in hero2_group:
-                    #             i.items.append(item.get_associated())
-                    # for i in hero2_group:
-                    #     i.apply_item_bonuses()
-                    #     i.enemy = [hero1]
-                    #     for x in hero1_group:
-                    #         x.enemy.append(i)
-
-                    # for item in p1_items:
-                    #     if item.is_selected():
-                    #         for i in hero1_group:
-                    #             i.items.append(item.get_associated())
-                    # for i in hero1_group:
-                    #     i.apply_item_bonuses()
-                    #     i.enemy = [hero2]
-                    #     for x in hero2_group:
-                    #         x.enemy.append(i)
 
                     
                     # In single player mode, add hero3 to hero2_group as another enemy
@@ -3341,9 +3313,9 @@ def player_selection():
                     print('reprint')
                     # for r in hero1.enemy:
                     #     print(r.__class__.__name__)
-                    for r in hero2.enemy:
-                        print(r.name, r.player_type)
-                    print('---')
+                    # for r in hero2.enemy:
+                    #     print(r.name, r.player_type)
+                    # print('---')
                     # print(hero2.target.name, hero2.target.player_type, 'hero2')
                     # print(hero1.name, hero1.player_type, 'hero1')
                     # print(hero2.enemy)

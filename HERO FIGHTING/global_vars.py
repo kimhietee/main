@@ -301,7 +301,7 @@ def load_font(font_path, size):
         return None
 
 SHOW_MINI_HEALTH_BAR = True
-SHOW_MINI_MANA_BAR = False
+SHOW_MINI_MANA_BAR = True
 SHOW_MINI_SPECIAL_BAR = False
 
 

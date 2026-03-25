@@ -176,7 +176,19 @@ def pass_finder(password:str):
             print("ETA: ", f"{time_took:.2f}s")
             break
 
-pass_finder("999")
+# pass_finder("999")
+
+
+
+# skill_stats={
+#     'Damage': (5, 'red'),
+#     'Mana Cost': (40, 'cyan'),
+#     'Cooldown': (f'3s', 'white'),
+# }
+
+# print(skill_stats)
+# for i,v in skill_stats:
+#     print(i)
 
 # print('asd')
 # print(items*2)

@@ -820,6 +820,8 @@ def game(bg=None):
             main.hero1_group.update()
             for hero in main.hero1_group:
                 hero.show_skill_info(main.screen, mouse_pos)
+            for hero in main.hero2_group:
+                hero.show_skill_info(main.screen, mouse_pos)
 
 
             #draw summon

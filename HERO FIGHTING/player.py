@@ -3090,8 +3090,19 @@ class Player(pygame.sprite.Sprite):
         # print(current_time_ticks, self.immortality_duration, self.immortality_activated)
 
     def show_skill_info(self, screen, mouse_pos):
-        for attack in self.attacks:
-            attack.display_info(screen, mouse_pos)
+        if not self.special_active:
+            for attack in self.attacks:
+                attack.display_info(screen, mouse_pos)
+            for attack in self.attacks:
+                if attack.hovered:
+                    attack.info_bubble.drawing_info(screen)
+        else:
+            for attack in self.attacks_special:
+                attack.display_info(screen, mouse_pos)
+            for attack in self.attacks_special:
+                if attack.hovered:
+                    attack.info_bubble.drawing_info(screen)
+            
 
 
     def remove_hitbox(self):
@@ -3163,7 +3174,8 @@ class Player(pygame.sprite.Sprite):
                 else:
                     for attack in self.attacks_special:
                         attack.update(screen, self.mana, self.special, self.player_type, player=self, mouse_pos=pygame.mouse.get_pos())
-
+                    
+                
             
             self.handle_speed() # thit shii finally worked! (coder: kimhietee)
 

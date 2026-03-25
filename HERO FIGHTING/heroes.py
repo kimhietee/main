@@ -307,13 +307,15 @@ class Attacks:
     '''
 
 
-    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:special_skill=False,
-                 skill_name='', skill_stats='', skill_desc=''):
+    def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:list=[0,0], special_skill=False,
+                 skill_name='', skill_stats='', skill_desc='', ):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
         self.cooldown = cooldown
         self.mana = mana  # Not used
+        self.damage = damage[0] + damage[1] # total raw damage
+        # self.hero = hero
         # Internally store raw last-used timestamp and a snapshot of paused-total at that moment
         self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
         self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
@@ -539,15 +541,20 @@ class Attacks:
 
     def update_stat_info(self):
         '''updates the latest mana cost and cooldown'''
-        for name, value in self.skill_stats.items():
-            if name == 'Mana Cost':
-                self.skill_stats['Mana Cost'][0] = self.mana_cost
-            if name == 'Cooldown':
-                if type(self.skill_stats['Cooldown']) == list:
-                    self.skill_stats['Cooldown'][0] = f'{self.cooldown / 1000}s'
-            if name == 'Damage':
-                if type(self.skill_stats['Damage']) == list:
-                    self.skill_stats['Damage'][0] = f'{self.cooldown / 1000}s'
+        if type(self.skill_stats) == dict:
+            for name, value in self.skill_stats.items():
+                if name == 'Mana Cost':
+                    self.skill_stats['Mana Cost'][0] = self.mana_cost
+                if name == 'Cooldown':
+                    if type(self.skill_stats['Cooldown']) == list:
+                        self.skill_stats['Cooldown'][0] = f'{self.cooldown / 1000}s'
+                if name == 'Damage':
+                    if type(self.skill_stats['Damage']) == list:
+                        self.skill_stats['Damage'][0] = self.damage
+                    # else: # for basic attack damage, don't use list
+                    #     if self.hero is not None:
+                    #         self.skill_stats['Damage'] = [self.hero.basic_attack_damage+123, 'red']
+
     def display_info(self, screen, mouse_pos):
         if self.skill_rect.collidepoint(mouse_pos):
             self.hovered = True

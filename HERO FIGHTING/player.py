@@ -1058,6 +1058,12 @@ class Player(pygame.sprite.Sprite):
                         self.sp_atk2_damage_2nd = (self.sp_atk2_damage_2nd[0] * (1 + val), self.sp_atk2_damage_2nd[1] * (1 + val))
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
                         self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
+
+                    # apply damage buff for skill info
+                    num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
+                    for i in range(num_skills):
+                        self.attacks[i].damage = float(f'{(self.attacks[i].damage * (1 + val)):.2f}')
+                        self.attacks_special[i].damage = float(f'{self.attacks_special[i].damage * (1 + val):.2}')
                 # For spell damage ^^^ -----------------------------------------------------
 
         # Caps and safety

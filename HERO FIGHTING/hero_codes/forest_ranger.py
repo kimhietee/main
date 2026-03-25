@@ -107,7 +107,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_animation_speed = 100
         self.min_animation_speed = 10
         self.attack_speed_modifier = 1.1
-        self.root_duration = 1500
+        self.root_duration_atk2 = 1500
+        self.root_duration_atk3 = 2000
+        self.poison_duration_1 = 1000
+        self.poison_duration_2 = 2000
+        self.poison_slow_1 = 0.2
+        self.poison_slow_2 = 0.5
+        self.root_duration_sp_atk3 = 2000
+
 
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
@@ -148,7 +155,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.raw_atk1_dmg = 0
         self.raw_atk2_dmg = 10
         self.raw_atk3_dmg = 15
-        self.raw_atk4_dmg = 30
+        self.raw_atk4_dmg = 40
         
         self.atk1_ani_count = 45
         self.atk2_ani_count = 8
@@ -423,6 +430,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_name='Haste',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
+                    'Type': ['Buff', 'white'],
                     'Invulnerability': ['True', 'green'],
                     'Mana Cost': [0, 'cyan'],
                     'Cooldown': [0, 'white'],
@@ -439,16 +447,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
                 mana=self.mana,
-                damage=[self.atk2_damage[0]*atk2[1], self.atk2_damage[1]]
+                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
 
                 skill_name='Magic Arrow',
-        
                 skill_stats={
-                    'Damage': [(self.atk2_damage[0]*8 + self.atk2_damage[1]), 'red'],
-                    'Mana Cost': [self.atk2_mana_cost, 'cyan'],
-                    'Cooldown': [f'{self.atk2_cooldown / 1000}s', 'white'],
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                skill_desc=f'Roots the enemy hit with single attack.@- Duration: {self.root_duration/1000}s'
+                skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Duration: {self.root_duration_atk2/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
@@ -456,15 +464,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
                 mana=self.mana,
+                damage=[self.raw_atk3_dmg, self.atk3_damage[1]],
 
-                skill_name='Trueshot',
+                skill_name='Arrow Volley',
                 skill_stats={
-                    'Damage': (12, 'red'),
-                    'Cooldown': ('4 frames', 'white'),
-                    'Type': ('Single Hit', 'white')
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                # skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
-                skill_desc='A perfectly aimed shot that never misses@High critical chance@Excellent for finishing weak enemies'
+                skill_desc=f'Enroots enemies hit within the area.@- Duration: {self.root_duration_atk3/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -472,14 +481,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
                 mana=self.mana,
+                damage=[self.raw_atk4_dmg, self.sp_damage[1]],
 
-                skill_name="Forest's Wrath",
+                skill_name='Powershot',
                 skill_stats={
-                    'Damage': (12, 'red'),
-                    'Cooldown': ('4 frames', 'white'),
-                    'Type': ('Single Hit', 'white')
+                    'Lv': [1, 'blueviolet'],
+                    'Invulnerability': ['True', 'green'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                skill_desc='Summon the power of the ancient forest@Rains arrows down on all enemies@Scales with Intelligence and Mana'
+                skill_desc=f'Charges up the bow to release a powerful laser beam.'
             )
         ]
 
@@ -490,14 +502,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana,
+                # hero=self,
 
-                skill_name='Piercing Shots',
+                skill_name='Basic Attack',
                 skill_stats={
-                    'Damage': (12, 'red'),
-                    'Cooldown': ('4 frames', 'white'),
-                    'Type': ('Single Hit', 'white')
+                    'Type': ['Basic Attack', 'white'],
+                    'Ability': ['Splinter', 'green'],
                 },
-                skill_desc='Fire multiple arrows at enemies@Arrows can stick and damage again@High attack speed ranger attack'
+                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks deals damage when special is active.@Some spells can have this ability.@- Damage: 30% of basic attack '
             )
         )
 
@@ -511,9 +523,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 special_skill=True,
                 skill_name='Activate Special',
                 skill_stats={
-                    'Attack Increase': (12, 'red'),
-                    'Cooldown': ('4 frames', 'white'),
-                    'Type': ('Single Hit', 'white')
+                    'Type': ['Special', 'white'],
+                    'Attack Increase': ['20%', 'green'],
+                    'Move Speed': ['60%', 'green'],
+                    'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
             
@@ -540,11 +553,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_name='Haste',
                 skill_stats={
                     'Lv': [2, 'magenta'],
+                    'Type': ['Buff', 'white'],
                     'Invulnerability': ('True', 'green'),
                     'Mana Cost': [self.atk1_mana_cost, 'cyan'],
                     'Cooldown': [f'{self.atk1_cooldown / 1000}s', 'white'],
-                    # 'Attack Speed': (300, 'white'),
-                    # 'Move Speed': ('+ 50%', 'white')
                     
                 },
                 skill_desc=f'Rolls forward and grants a buff that greatly increases@attack and move speed. Dodges most spells when casting.@- Attack Speed: + {self.special_haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
@@ -555,15 +567,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=special_skill_2,
                 cooldown=self.atk2_cooldown,
                 mana=self.mana,
+                damage=[self.raw_sp_atk2_dmg + self.raw_sp_atk2_dmg_2nd, self.atk2_damage_2nd[1] + self.sp_atk2_damage_2nd[1]],
 
-                skill_name='Explosive Volley',
+                skill_name='Magic Arrow',
                 skill_stats={
-                    'Damage': (35, 'red'),
-                    'Cooldown': ('40 frames', 'red'),
-                    'Area': ('Large', 'white'),
-                    'Cost': ['30 Mana', 'cyan']
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                skill_desc='Launch a barrage of explosive arrows@Covers wide area with high damage@Long cooldown but devastating impact'
+                skill_desc=f'Poisons the enemy hit with single attack. Slows@enemy after the poison attack. Counts as basic@attack.@- Poison Slow: {(1 - self.poison_slow_1)*100}%/{(1 - self.poison_slow_2)*100}%@- Poison Duration: {self.poison_duration_1/1000}s/{self.poison_duration_2/1000}s'
             ),
             Attacks(
                 mana_cost=self.atk3_mana_cost_for_special,
@@ -571,15 +584,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown_for_special,
                 mana=self.mana,
+                damage=[self.raw_sp_atk3_dmg, self.sp_atk3_damage[1]],
 
-                skill_name='Trueshot',
+                skill_name='Raining Arroww',
                 skill_stats={
-                    'Damage': (28, 'red'),
-                    'Cooldown': ('10 frames', 'white'),
-                    'Critical': ('High', 'red'),
-                    'Cost': ['20 Mana', 'cyan']
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                skill_desc='A perfectly aimed shot that never misses@High critical chance@Excellent for finishing weak enemies'
+                skill_desc=f'Shoots barrage of arrows towards the enemy. Enroots the@enemy hit with raining arrows.@- Duration: {self.root_duration_atk3/1000}s'
             ),
             Attacks(
                 mana_cost=self.sp_mana_cost_for_special,
@@ -587,15 +601,18 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown_for_special,
                 mana=self.mana,
+                damage=[self.raw_sp_atk4_dmg, self.sp_damage_2nd[1]],
 
-                skill_name="Forest's Wrath",
+                skill_name='Death Beam',
                 skill_stats={
-                    'Damage': (55, 'red'),
-                    'Duration': ('8 seconds', 'white'),
-                    'Cost': ['60 Special', 'cyan'],
-                    'Effect': ('AoE', 'green')
+                    'Lv': [2, 'magenta'],
+                    'Type': ['Spell', 'white'],
+                    'Invulnerability': ['True', 'green'],
+                    'Damage': [0 , 'red'],
+                    'Mana Cost': [0, 'cyan'],
+                    'Cooldown': [0, 'white'],
                 },
-                skill_desc='Summon the power of the ancient forest@Rains arrows down on all enemies@Scales with Intelligence and Mana'
+                skill_desc=f'Releases a deadly laser beam that deals@significant amount of damage to a large area.'
             )
         ]
 
@@ -607,21 +624,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana,
 
-                skill_name='Piercing Shots',
+                skill_name='Basic Attack',
                 skill_stats={
-                    'Damage': (55, 'red'),
-                    'Duration': ('8 seconds', 'white'),
-                    'Cost': ['60 Special', 'cyan'],
-                    'Effect': ('AoE', 'green')
+                    'Type': ['Basic Attack', 'white'],
+                    'Ability': ['Splinter', 'green'],
                 },
-                skill_desc='Fire multiple arrows at enemies@Arrows can stick and damage again@High attack speed ranger attack'
+                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks can deal damage.@Some spells can have this ability@- Damage: 30% of basic attack '
             )
         )
 
         self.skill_iframes_config = {
             'attacking1': True,   
             'attacking2': False,  
-            'attacking3': True,  
+            'attacking3': False,  
             'sp_attacking': True,   
         }
    
@@ -833,7 +848,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             'attack_kwargs': {
                                 'frames': self.atk2 if self.facing_right else self.atk2_flipped,
-                                'frame_duration': self.root_duration / len(self.atk2), # Root for 1.5s
+                                'frame_duration': self.root_duration_atk2 / len(self.atk2), # Root for 1.5s
                                 'repeat_animation': 1,
                                 'speed': 0,
                                 'dmg': self.atk2_damage[0],
@@ -959,26 +974,30 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             add_mana=True,
                             mana_mult=self.sp_mana_refund,
                             
+                            # NO HEAL :( 
+                            # need fixing because can't heal when invulnerable
                             # heals self if it hits enemy  (only heal for 50% of damage)
-                            spawn_attack= {
-                                'attack_kwargs': {
-                                    'x': self.rect.centerx,
-                                    'y': self.rect.centery,
-                                    'frames': self.blank_frame,
-                                    'frame_duration': 50, # slow for 1s (second / frames)
-                                    'repeat_animation': 1,
-                                    'speed': 0,
-                                    'dmg': (self.sp_damage[0]*5)*0.5,
-                                    'final_dmg': 0,
-                                    'heal': True,
-                                    'who_attacks': self,
-                                    'who_attacked': self.enemy,
-                                    'moving': False,
-                                    'sound': (False, self.atk2_sound, None, None),
-                                    'follow': (False, True),
-                                    'follow_self': True
-                                    }
-                                }
+                            # spawn_attack= {
+                            #     'attack_kwargs': {
+                            #         'x': self.rect.centerx,
+                            #         'y': self.rect.centery,
+                            #         'frames': self.blank_frame,
+                            #         'frame_duration': 100, # slow for 1s (second / frames)
+                            #         'repeat_animation': 1,
+                            #         'speed': 0,
+                            #         'dmg': (self.sp_damage[0]*self.atk4_ani_count)*0.5,
+                            #         'final_dmg': 0,
+                            #         'heal': True,
+                            #         'who_attacks': self,
+                            #         'who_attacked': self.enemy,
+                            #         'moving': False,
+                            #         'sound': (False, self.atk2_sound, None, None),
+                            #         'follow': (False, True),
+                            #         'follow_self': True,
+                            #         # 'delay': (True, 1400),
+
+                            #         }
+                            #     }
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
@@ -1181,7 +1200,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             'attack_kwargs': {
                                 'frames': self.sp_atk2 if self.facing_right else self.sp_atk2_flipped,
-                                'frame_duration': 125, # slow for 1s (second / frames)
+                                'frame_duration': self.poison_duration_1 / len(self.sp_atk2), # slow for 1s (second / frames)
                                 'repeat_animation': 1,
                                 'speed': 0,
                                 'dmg': self.sp_atk2_damage_2nd[0],
@@ -1191,7 +1210,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'moving': False,
                                 'sound': (True, self.atk2_sound, None, None),
                                 'delay': (False, 0),
-                                'stop_movement': (True, 3, 2, 0.2),
+                                'stop_movement': (True, 3, 2, self.poison_slow_1),
                                 'follow': (True, False),
                                 # Use a conservative follow vertical offset; avoid sampling target hitbox at cast time
                                 'follow_offset': (-30 if self.facing_right else 30, (random.randint(30, 45))),
@@ -1204,7 +1223,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                                                 'attack_kwargs': {
                                                     'frames': self.atk2_sp_poison,
-                                                    'frame_duration': 40, # slow 2s (second / frames)
+                                                    'frame_duration': self.poison_duration_2 / len(self.atk2_sp_poison), # slow 2s (second / frames)
                                                     'repeat_animation': 1,
                                                     'speed': 0,
                                                     'dmg': self.atk2_damage_2nd[0],
@@ -1213,7 +1232,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     # Defer who_attacked resolution to collision time
                                                     'sound': (True, self.atk2_sound, None, None),
                                                     'delay': (True, 1050),
-                                                    'stop_movement': (True, 3, 2, 0.5),
+                                                    'stop_movement': (True, 3, 2, self.poison_slow_2),
                                                     'follow': (False, True),
                                                     # Avoid using target hitbox at cast; keep vertical small
                                                     'follow_offset': (0, (random.randint(30, 45))),
@@ -1281,7 +1300,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             x=target,
                             y=DEFAULT_Y_POS - 100,
                             frames=self.sp_atk3,
-                            frame_duration=111.111,
+                            frame_duration=self.root_duration_sp_atk3 / len(self.sp_atk3), # root 2 seconds 18 frames
                             repeat_animation=1,
                             dmg=self.sp_atk3_damage[0],
                             final_dmg=self.sp_atk3_damage[1],
@@ -1359,26 +1378,29 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             add_mana=True,
                             mana_mult=self.sp_mana_refund_2nd,
 
+                            # no heal cuz of bug :(
                             # heals self if it hits enemy once (once only 50% dmg) only heals 50% now! update!
-                            spawn_attack= {
-                                'attack_kwargs': {
-                                    'x': self.rect.centerx,
-                                    'y': self.rect.centery,
-                                    'frames': self.blank_frame,
-                                    'frame_duration': 50, # slow for 1s (second / frames)
-                                    'repeat_animation': 1,
-                                    'speed': 0,
-                                    'dmg': (self.sp_damage_2nd[0]*30)*0.5,
-                                    'final_dmg': 0,
-                                    'heal': True,
-                                    'who_attacks': self,
-                                    'who_attacked': self.enemy,
-                                    'moving': False,
-                                    'sound': (False, self.atk2_sound, None, None),
-                                    'follow': (False, True),
-                                    'follow_self': True
-                                    }
-                                }
+                            # spawn_attack= {
+                            #     'attack_kwargs': {
+                            #         'x': self.rect.centerx,
+                            #         'y': self.rect.centery,
+                            #         'frames': self.blank_frame,
+                            #         'frame_duration': 1000, # slow for 1s (second / frames)
+                            #         'repeat_animation': 1,
+                            #         'speed': 0,
+                            #         'dmg': (self.sp_damage_2nd[0]*30)*0.5,
+                            #         'final_dmg': 0,
+                            #         'heal': True,
+                            #         'who_attacks': self,
+                            #         'who_attacked': self.enemy,
+                            #         'moving': False,
+                            #         'sound': (False, self.atk2_sound, None, None),
+                            #         'follow': (False, True),
+                            #         'follow_self': True,
+                            #         # 'delay': (True, 4200),
+
+                            #         }
+                            #     }
                             )
                         attack_display.add(attack)
                         self.mana -=  self.attacks_special[3].mana_cost
@@ -1604,7 +1626,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,
                     y=DEFAULT_Y_POS-20,
                     frames=self.atk3 if self.facing_right else self.atk3_flipped,
-                    frame_duration=250,
+                    frame_duration=self.root_duration_atk3 / len(self.atk3),
                     repeat_animation=1,
                     speed=5 if self.facing_right else -5,
                     dmg=self.atk3_damage[0],

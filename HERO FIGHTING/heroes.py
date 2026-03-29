@@ -308,14 +308,14 @@ class Attacks:
 
 
     def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:list=[0,0], special_skill=False,
-                 skill_name='', skill_stats='', skill_desc='', ):
+                 skill_name='', skill_stats='', skill_desc='', hero=None):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
         self.cooldown = cooldown
         self.mana = mana  # Not used
         self.damage = damage[0] + damage[1] # total raw damage
-        # self.hero = hero
+        self.hero = hero  # Store hero reference for dynamic values
         # Internally store raw last-used timestamp and a snapshot of paused-total at that moment
         self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
         self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
@@ -540,20 +540,26 @@ class Attacks:
         self.skill_count = n
 
     def update_stat_info(self):
-        '''updates the latest mana cost and cooldown'''
+        '''updates the latest mana cost and cooldown.
+        
+        if damage is set to 0, auto calculate damage. 
+        
+        if damage is "PerSecond", multiply value by 60.'''
         if type(self.skill_stats) == dict:
             for name, value in self.skill_stats.items():
-                if name == 'Mana Cost':
-                    self.skill_stats['Mana Cost'][0] = self.mana_cost
-                if name == 'Cooldown':
-                    if type(self.skill_stats['Cooldown']) == list:
-                        self.skill_stats['Cooldown'][0] = f'{self.cooldown / 1000}s'
                 if name == 'Damage':
                     if type(self.skill_stats['Damage']) == list:
-                        self.skill_stats['Damage'][0] = self.damage
-                    # else: # for basic attack damage, don't use list
+                        if self.skill_stats['Damage'][0] == "PerSecond":
+                            self.skill_stats['Damage'][0] = self.damage * global_vars.FPS
+                        else:
+                            self.skill_stats['Damage'][0] = self.damage
+                    # else: # for basic attack damage, don't use list (im confused)
                     #     if self.hero is not None:
                     #         self.skill_stats['Damage'] = [self.hero.basic_attack_damage+123, 'red']
+        
+            # by default
+            self.skill_stats['Mana Cost'] = [self.mana_cost, 'cyan']
+            self.skill_stats['Cooldown'] = [f'{self.cooldown / 1000:.1f}s', 'white']
 
     def display_info(self, screen, mouse_pos):
         if self.skill_rect.collidepoint(mouse_pos):
@@ -2870,7 +2876,7 @@ def player_selection():
     def get_name(v:str):
         r = v.split('_')
         if len(r) == 2:
-            return r[0] + (' ' + r[1])
+            return r[0] + (' '  + r[1])
         elif len(r) == 3:
             return r[0] +  (' ' + r[1]) +  (' ' + r[2])
         else:
@@ -2879,8 +2885,8 @@ def player_selection():
     
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Forest_Ranger
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_1_SELECTED_HERO = Fire_Wizard
+            PLAYER_2_SELECTED_HERO = Forest_Ranger
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

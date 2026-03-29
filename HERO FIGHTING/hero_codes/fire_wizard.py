@@ -218,6 +218,27 @@ class Fire_Wizard(Player):
         
         # BASIC_ATK_DAMAGE2
 
+        FIREBALL_SIZE = 64
+        self.FIREBALL_FRAME_DURATION = 100
+        self.fireball_hitbox_size_modifier = 0.4
+        self.fireball_hitbox_size = FIREBALL_SIZE * self.fireball_hitbox_size_modifier
+
+        self.fireball_speed = 6
+        self.special_fireball_speed = 7
+        self.special_fireball_count = [-50, 0, 50, 100]
+        
+        self.fireball_frames = 10
+        
+        # self.fireball_duration = self.fireball_frames * self.FIREBALL_FRAME_DURATION
+
+
+        self.fire_repeat_default = 6
+        self.fire_duration = 20000 / self.fire_repeat_default
+        self.special_fire_duration = 15000 / self.fire_repeat_default
+        self.special_fire_damage_mult = 0.5
+        self.fire_count = [60*2, 120*2, 180*2]
+        self.special_fire_count = [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]
+
         
         # Player Position
         self.x = 50
@@ -237,12 +258,24 @@ class Fire_Wizard(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
         self.atk2_cooldown_sp = 5000 + 13000
+
+        self.raw_atk1_dmg = 13
+        self.raw_atk2_dmg = 20
+        self.raw_atk3_dmg = 40
+        self.raw_atk4_dmg = 50
+        
+        self.atk1_ani_count = None
+        self.atk2_ani_count = 53
+        self.atk3_ani_count = 34
+        self.atk4_ani_count = 28
+        # --------------------------
+
         #FORMULA = DESIRED DMG / TOTAL FRAME EX. dmg=25/34 == 0.6944
         self.damage_list = [
-            (13, 0),
-            (20/53, 0), #total damage=130
-            (40/34, 0),
-            (50/28, 10)
+            (self.raw_atk1_dmg, 0),
+            (self.raw_atk2_dmg/self.atk2_ani_count, 0), #total damage=130
+            (self.raw_atk3_dmg/self.atk3_ani_count, 0),
+            (self.raw_atk4_dmg/self.atk4_ani_count, 10)
         ]
         self.atk1_damage = self.damage_list[0]
         self.atk2_damage = self.damage_list[1]
@@ -253,6 +286,11 @@ class Fire_Wizard(Player):
         self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
         self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
         self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+
+        self.raw_atk1_dmg = self.atk1_damage[0] + self.atk1_damage[1]
+        self.raw_atk2_dmg = self.atk2_damage[0] + self.atk2_damage[1]
+        self.raw_atk3_dmg = self.atk3_damage[0] + self.atk3_damage[1]
+        self.raw_atk4_dmg = self.sp_damage[0] + self.sp_damage[1]
 
         # Player Animation Source
         basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', FIRE_WIZARD_BASIC_COUNT, 1]
@@ -364,6 +402,8 @@ class Fire_Wizard(Player):
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        self.fireball_hitbox_size = self.calculate_hitbox_size(self.atk1, self.fireball_hitbox_size_modifier)
+        self.fireball_distance = self.calculate_attack_range(self.fireball_hitbox_size, self.fireball_speed, self.fireball_frames, self.FIREBALL_FRAME_DURATION)
 
         # Skills
         self.attacks = [
@@ -372,28 +412,61 @@ class Fire_Wizard(Player):
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
+
+                skill_name='Inferno Flames',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Sets the ground on fire, dealing half@damage per second when in contact.@-Duration: '
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk3_dmg, self.atk3_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.skill_4_rect,
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk4_dmg, self.sp_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             )
         ]
 
@@ -403,7 +476,12 @@ class Fire_Wizard(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
             )
         )
 
@@ -414,7 +492,15 @@ class Fire_Wizard(Player):
                 skill_img=special_icon,
                 cooldown=0,
                 mana=0,
-                special_skill=True
+                special_skill=True,
+                skill_name='Activate Special',
+                skill_stats={
+                    'Type': ['Special', 'white'],
+                    'Attack Increase': ['20%', 'green'],
+                    'Move Speed': ['+ 10', 'green'],
+                    'Duration': ['30', 'white']
+                },
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         )
 
@@ -427,28 +513,60 @@ class Fire_Wizard(Player):
                 skill_rect=self.special_skill_1_rect,
                 skill_img=special_skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.atk2_mana_cost_sp,
                 skill_rect=self.special_skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown_sp,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=int(self.mana_cost_list[2] - (self.mana_cost_list[2] * 0.2)),
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=int(self.mana_cost_list[3] - (self.mana_cost_list[3] * 0.2)),
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             )
         ]
 
@@ -458,7 +576,12 @@ class Fire_Wizard(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
             )
         )
 
@@ -515,9 +638,9 @@ class Fire_Wizard(Player):
                             x=self.rect.centerx - 20 if self.facing_right else self.rect.centerx + 20,
                             y=self.rect.centery + 30,
                             frames=self.atk1 if self.facing_right else self.atk1_flipped,
-                            frame_duration=100,
+                            frame_duration=self.FIREBALL_FRAME_DURATION,
                             repeat_animation=1,
-                            speed=6 if self.facing_right else -6,
+                            speed=self.fireball_speed if self.facing_right else -self.fireball_speed,
                             dmg=self.atk1_damage[0],
                             final_dmg=self.atk1_damage[1],
                             who_attacks=self,
@@ -526,8 +649,8 @@ class Fire_Wizard(Player):
                             delay=(True, 800),
                             sound=(True, self.atk1_sound, None, None),
 
-                            hitbox_scale_x=0.4
-                            ,hitbox_scale_y=0.4
+                            hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                            hitbox_scale_y=self.fireball_hitbox_size_modifier
                             ) # Replace with the target
                         attack_display.add(attack)
                         self.mana -= self.attacks[0].mana_cost
@@ -565,13 +688,13 @@ class Fire_Wizard(Player):
                         #         ) # Replace with the target
                         #     attack_display.add(attack)
 
-                        for i in [60*2, 120*2, 180*2]:
+                        for i in self.fire_count:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
                                 y=self.rect.centery + 30,
                                 frames=self.atk2,
-                                frame_duration=62.893, # 20seconds total #3.33 seconds each
-                                repeat_animation=6,
+                                frame_duration=self.fire_duration / len(self.atk2), # 20seconds total #3.33 seconds each
+                                repeat_animation=self.fire_repeat_default,
                                 speed=5 if self.facing_right else -5,
                                 dmg=self.atk2_damage[0],
                                 final_dmg=self.atk2_damage[1],
@@ -730,21 +853,25 @@ class Fire_Wizard(Player):
                     if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [-50, 0, 50, 100]:
+                        for i in self.special_fireball_count:
                             attack = Attack_Display(
                                 x=self.rect.centerx - i if self.facing_right else self.rect.centerx + i,
                                 y=self.rect.centery - i,
                                 frames=self.atk1 if self.facing_right else self.atk1_flipped,
-                                frame_duration=100,
+                                frame_duration=self.FIREBALL_FRAME_DURATION,
                                 repeat_animation=1,
-                                speed=7 if self.facing_right else -7,
+                                speed=self.special_fireball_speed if self.facing_right else -self.special_fireball_speed,
                                 dmg=self.atk1_damage[0]/3,
                                 final_dmg=self.atk1_damage[1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 moving=True,
+                                
                             sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 800)) # Replace with the target
+                            delay=(True, 800),
+                            
+                            hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                            hitbox_scale_y=self.fireball_hitbox_size_modifier) # Replace with the target
                             attack_display.add(attack)
                             
 
@@ -754,13 +881,16 @@ class Fire_Wizard(Player):
                                 frames=self.atk1_flipped if self.facing_right else self.atk1,
                                 frame_duration=100,
                                 repeat_animation=1,
-                                speed=-7 if self.facing_right else 7,
+                                speed=-self.special_fireball_speed if self.facing_right else self.special_fireball_speed,
                                 dmg=self.atk1_damage[0]/6,
                                 final_dmg=self.atk1_damage[1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 moving=True,
-                            delay=(True, 800)) # Replace with the target
+                            delay=(True, 800),
+                            
+                            hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                            hitbox_scale_y=self.fireball_hitbox_size_modifier) # Replace with the target
                             attack_display.add(attack2)
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
@@ -780,16 +910,15 @@ class Fire_Wizard(Player):
                     if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]:
+                        for i in self.special_fire_count:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
                                 y=self.rect.centery + 30,
                                 frames=self.atk2,
-                                frame_duration=47.16, # 15 seconds = damage / 2
-                                repeat_animation=6,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0]/2,
-                                final_dmg=self.atk2_damage[1]/2,
+                                frame_duration=self.special_fire_duration, # 15 seconds = damage / 2
+                                repeat_animation=self.fire_repeat_default,
+                                dmg=self.atk2_damage[0]*self.special_fire_damage_mult,
+                                final_dmg=self.atk2_damage[1]*self.special_fire_damage_mult,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                             delay=(True, 800)) # Replace with the target

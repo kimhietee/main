@@ -432,13 +432,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     'Lv': [1, 'blueviolet'],
                     'Type': ['Buff', 'white'],
                     'Invulnerability': ['True', 'green'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                     # 'Attack Speed': (300, 'white'),
                     # 'Move Speed': ('+ 50%', 'white')
                     
                 },
-                # skill_desc='Increases attack speed and movement speed for a@short duration. Dodges most spells when casting.@- Attack Speed: +300@- Move Speed: +50%@- Duration: 5s'
                 skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
             ), 
             Attacks(
@@ -453,8 +450,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Duration: {self.root_duration_atk2/1000}s'
             ),
@@ -470,8 +465,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Enroots enemies hit within the area.@- Duration: {self.root_duration_atk3/1000}s'
             ),
@@ -488,8 +481,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     'Lv': [1, 'blueviolet'],
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Charges up the bow to release a powerful laser beam.'
             )
@@ -506,7 +497,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                 skill_name='Basic Attack',
                 skill_stats={
-                    'Type': ['Basic Attack', 'white'],
+                    'Type': ['Ranged', 'white'],
                     'Ability': ['Splinter', 'green'],
                 },
                 skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks deals damage when special is active.@Some spells can have this ability.@- Damage: 30% of basic attack '
@@ -525,7 +516,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Type': ['Special', 'white'],
                     'Attack Increase': ['20%', 'green'],
-                    'Move Speed': ['60%', 'green'],
+                    'Move Speed': ['+ 10', 'green'],
                     'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
@@ -554,9 +545,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Type': ['Buff', 'white'],
-                    'Invulnerability': ('True', 'green'),
-                    'Mana Cost': [self.atk1_mana_cost, 'cyan'],
-                    'Cooldown': [f'{self.atk1_cooldown / 1000}s', 'white'],
+                    'Invulnerability': ['True', 'green'],
                     
                 },
                 skill_desc=f'Rolls forward and grants a buff that greatly increases@attack and move speed. Dodges most spells when casting.@- Attack Speed: + {self.special_haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
@@ -573,8 +562,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Poisons the enemy hit with single attack. Slows@enemy after the poison attack. Counts as basic@attack.@- Poison Slow: {(1 - self.poison_slow_1)*100}%/{(1 - self.poison_slow_2)*100}%@- Poison Duration: {self.poison_duration_1/1000}s/{self.poison_duration_2/1000}s'
             ),
@@ -590,8 +577,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Shoots barrage of arrows towards the enemy. Enroots the@enemy hit with raining arrows.@- Duration: {self.root_duration_atk3/1000}s'
             ),
@@ -606,11 +591,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_name='Death Beam',
                 skill_stats={
                     'Lv': [2, 'magenta'],
-                    'Type': ['Spell', 'white'],
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
-                    'Mana Cost': [0, 'cyan'],
-                    'Cooldown': [0, 'white'],
                 },
                 skill_desc=f'Releases a deadly laser beam that deals@significant amount of damage to a large area.'
             )
@@ -1231,7 +1213,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     'who_attacks': self,
                                                     # Defer who_attacked resolution to collision time
                                                     'sound': (True, self.atk2_sound, None, None),
-                                                    'delay': (True, 1050),
+                                                    'delay': (True, 1100),
                                                     'stop_movement': (True, 3, 2, self.poison_slow_2),
                                                     'follow': (False, True),
                                                     # Avoid using target hitbox at cast; keep vertical small

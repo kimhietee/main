@@ -107,6 +107,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_animation_speed = 100
         self.min_animation_speed = 10
         self.attack_speed_modifier = 1.1
+        self.arrow_volley_offset = [100, 250, 400]
         self.root_duration_atk2 = 1500
         self.root_duration_atk3 = 2000
         self.poison_duration_1 = 1000
@@ -114,8 +115,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.poison_slow_1 = 0.2
         self.poison_slow_2 = 0.5
         self.root_duration_sp_atk3 = 2000
-
-
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
@@ -417,7 +416,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         #             getattr(self, 'skill2_dmg', self.atk2_damage[0])
 
         
-        
+        self.arrow_distance = self.calculate_attack_range(0, self.calculate_hitbox_size(self.base_arrow), 30, 1, 25*80)
+        # self.arrow_volley_distance = self.calculate_attack_range(self.arrow_volley_offset[-1], self.calculate_hitbox_size(self.atk2), speed=0, self.atk3_ani_count, 25*80)
+        self.arrow_volley_cast_range = self.arrow_volley_offset[-1]
         # Skills
         self.attacks = [
             Attacks(
@@ -436,7 +437,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     # 'Move Speed': ('+ 50%', 'white')
                     
                 },
-                skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
+                skill_desc=f'Rolls forward and grants a buff that increases attack@and move speed. Dodges most spells when casting.@Has no effect if buff is already active.@- Attack Speed: + {self.haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Buff duration: {self.haste_duration/1000}s'
             ), 
             Attacks(
                 mana_cost=self.mana_cost_list[1],
@@ -450,8 +451,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Distance': [self.arrow_distance, 'white']
                 },
-                skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Duration: {self.root_duration_atk2/1000}s'
+                skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Root duration: {self.root_duration_atk2/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
@@ -465,8 +467,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    # 'Cast Range': [self.arrow_volley_cast_range, 'white']
                 },
-                skill_desc=f'Enroots enemies hit within the area.@- Duration: {self.root_duration_atk3/1000}s'
+                skill_desc=f'Shoots 3 spiky arrows that enroots enemies@hit within the area while jumping.@- Max range: {self.arrow_volley_cast_range}@- Root duration: {self.root_duration_atk3/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -482,7 +485,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'Charges up the bow to release a powerful laser beam.'
+                skill_desc=f'Charges up the bow to release a powerful@laser beam.'
             )
         ]
 
@@ -499,6 +502,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Type': ['Ranged', 'white'],
                     'Ability': ['Splinter', 'green'],
+                    'Distance': [self.arrow_distance, 'white']
                 },
                 skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks deals damage when special is active.@Some spells can have this ability.@- Damage: 30% of basic attack '
             )
@@ -515,7 +519,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_name='Activate Special',
                 skill_stats={
                     'Type': ['Special', 'white'],
-                    'Attack Increase': ['20%', 'green'],
+                    'Attack Increase': [f'{(DEFAULT_BASIC_ATK_DMG_BONUS-1)*100}%', 'green'],
                     'Move Speed': ['+ 10', 'green'],
                     'Duration': ['30', 'white']
                 },
@@ -548,7 +552,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     'Invulnerability': ['True', 'green'],
                     
                 },
-                skill_desc=f'Rolls forward and grants a buff that greatly increases@attack and move speed. Dodges most spells when casting.@- Attack Speed: + {self.special_haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Duration: {self.haste_duration/1000}s'
+                skill_desc=f'Rolls forward and grants a buff that increases@attack and move speed. Dodges most spells when casting.@Has no effect if buff is already active.@- Attack Speed: + {self.special_haste_attack_speed}@- Move Speed: + {(self.haste_move_speed-1)*100}%@- Buff duration: {self.haste_duration/1000}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
@@ -562,8 +566,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
+                    'Distance': [self.arrow_distance, 'white']
                 },
-                skill_desc=f'Poisons the enemy hit with single attack. Slows@enemy after the poison attack. Counts as basic@attack.@- Poison Slow: {(1 - self.poison_slow_1)*100}%/{(1 - self.poison_slow_2)*100}%@- Poison Duration: {self.poison_duration_1/1000}s/{self.poison_duration_2/1000}s'
+                skill_desc=f'Poisons the enemy hit with single attack. Slows@enemy after the poison attack. Counts as basic@attack.@- Poison Slow: {(1 - self.poison_slow_1)*100}%/{(1 - self.poison_slow_2)*100}%@- Poison duration: {self.poison_duration_1/1000}s/{self.poison_duration_2/1000}s'
             ),
             Attacks(
                 mana_cost=self.atk3_mana_cost_for_special,
@@ -577,8 +582,9 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Type': ['Single Target', 'white'],
                 },
-                skill_desc=f'Shoots barrage of arrows towards the enemy. Enroots the@enemy hit with raining arrows.@- Duration: {self.root_duration_atk3/1000}s'
+                skill_desc=f'Shoots barrage of arrows to the closest enemy.@Enroots the enemy hit with raining arrows.@- Root duration: {self.root_duration_atk3/1000}s'
             ),
             Attacks(
                 mana_cost=self.sp_mana_cost_for_special,
@@ -610,6 +616,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Type': ['Basic Attack', 'white'],
                     'Ability': ['Splinter', 'green'],
+                    'Distance': [self.arrow_distance, 'white']
                 },
                 skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks can deal damage.@Some spells can have this ability@- Damage: 30% of basic attack '
             )
@@ -1411,7 +1418,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             frame_duration=2,
                             repeat_animation=2500,
                             speed=40 if self.facing_right else -40,
-                            dmg=self.basic_attack_damage*1.2, # +20% damage in special mode
+                            dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS, # +20% damage in special mode
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
@@ -1602,7 +1609,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             self.jumping = False # override jumping animation with attack animation
             # enemy_posx = (hero1.x_pos if self.player_type == 2 else hero2.x_pos)
             # enemy_posy = (hero1.rect.centery if self.player_type == 2 else hero2.rect.centery)
-            for i in [100,250,400]:
+            for i in self.arrow_volley_offset:
                 self.single_target()
                 attack = Attack_Display(
                     x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i,

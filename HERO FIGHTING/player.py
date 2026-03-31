@@ -2725,17 +2725,17 @@ class Player(pygame.sprite.Sprite):
 
     def calculate_hitbox_size(self, attack_surfaces:list[pygame.Surface], hitbox_modifier=0.6):
         hitbox_size = attack_surfaces[0].get_width() * hitbox_modifier
-        print(hitbox_size)
-        print(attack_surfaces[0].get_width())
-        print(hitbox_size/2)
+        # print(hitbox_size)
+        # print(attack_surfaces[0].get_width())
+        # print(hitbox_size/2)
         return hitbox_size/2
 
-    def calculate_attack_range(self, attack_hitbox_size, speed, frame_count, frame_duration, fps=global_vars.FPS):
+    def calculate_attack_range(self, cast_range, attack_hitbox_size, speed, frame_count, frame_duration, fps=global_vars.FPS):
         total_life_seconds = (frame_count * frame_duration) / 1000
         total_ticks = total_life_seconds * fps
         distance = speed * total_ticks
         
-        return int(distance + attack_hitbox_size)
+        return int(cast_range + distance + attack_hitbox_size)
     
     def dmg_per_frame(self, total_dmg, frames):
         '''calculates damage per frame based on how many frames the attack has.'''

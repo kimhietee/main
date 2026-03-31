@@ -542,17 +542,12 @@ class Attacks:
     def update_stat_info(self):
         '''updates the latest mana cost and cooldown.
         
-        if damage is set to 0, auto calculate damage. 
-        
-        if damage is "PerSecond", multiply value by 60.'''
+        if damage is set to 0, auto calculate damage.'''
         if type(self.skill_stats) == dict:
             for name, value in self.skill_stats.items():
                 if name == 'Damage':
                     if type(self.skill_stats['Damage']) == list:
-                        if self.skill_stats['Damage'][0] == "PerSecond":
-                            self.skill_stats['Damage'][0] = self.damage * global_vars.FPS
-                        else:
-                            self.skill_stats['Damage'][0] = self.damage
+                        self.skill_stats['Damage'][0] = round(self.damage, 2)
                     # else: # for basic attack damage, don't use list (im confused)
                     #     if self.hero is not None:
                     #         self.skill_stats['Damage'] = [self.hero.basic_attack_damage+123, 'red']

@@ -801,7 +801,7 @@ class DisplaySkillInfo:
             final_w = max(needed_w, min_size[0])
             final_h = max(needed_h, min_size[1])
 
-        self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h)))
+        self.background = pygame.transform.smoothscale(self.original_bg, (int(final_w), int(final_h*1.09)))
 
         # Position
         self.rect = self.background.get_rect()

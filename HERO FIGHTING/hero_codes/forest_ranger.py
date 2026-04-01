@@ -103,18 +103,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_attack_speed = 100
         self.base_attack_time = 1900
 
-        # skill info
-        self.base_animation_speed = 100
-        self.min_animation_speed = 10
-        self.attack_speed_modifier = 1.1
-        self.arrow_volley_offset = [100, 250, 400]
-        self.root_duration_atk2 = 1500
-        self.root_duration_atk3 = 2000
-        self.poison_duration_1 = 1000
-        self.poison_duration_2 = 2000
-        self.poison_slow_1 = 0.2
-        self.poison_slow_2 = 0.5
-        self.root_duration_sp_atk3 = 2000
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
         self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.4 + 52 * 0.01 = 5.92
@@ -150,6 +138,19 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.sp_cooldown = 30000
         self.sp_cooldown_for_special = 90000
         self.atk3_cooldown_for_special = 25000
+
+        # skill info
+        self.base_animation_speed = 100
+        self.min_animation_speed = 10
+        self.attack_speed_modifier = 1.1
+        self.arrow_volley_offset = [100, 250, 400]
+        self.root_duration_atk2 = 1500
+        self.root_duration_atk3 = 2000
+        self.poison_duration_1 = 1000
+        self.poison_duration_2 = 2000
+        self.poison_slow_1 = 0.2
+        self.poison_slow_2 = 0.5
+        self.root_duration_sp_atk3 = 2000
 
         self.raw_atk1_dmg = 0
         self.raw_atk2_dmg = 10
@@ -519,7 +520,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_name='Activate Special',
                 skill_stats={
                     'Type': ['Special', 'white'],
-                    'Attack Increase': [f'{(DEFAULT_BASIC_ATK_DMG_BONUS-1)*100}%', 'green'],
+                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100, 1)}%', 'green'],
                     'Move Speed': ['+ 10', 'green'],
                     'Duration': ['30', 'white']
                 },

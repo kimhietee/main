@@ -121,8 +121,33 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.atk3_cooldown = 17000  
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (0, 0)
-        self.atk2_damage = (20/40, 0) # 30 heal, slow -> 37 heal if special, quick
+        #skill info
+        self.starlight_chance = [1, 1, 1, 2, 2, 2, 2, 2, 3, 4]
+        self.starlight_mult = 3
+        self.starlight_frame_duration = 100
+        self.starlight_repeat = 5
+        self.starlight_speed = 7
+
+        self.raw_atk1_dmg = 2.5
+        self.raw_atk2_dmg = 20
+        self.raw_atk3_dmg = 26
+        self.raw_atk4_dmg = 55
+        
+        self.atk1_ani_count = WANDERER_MAGICIAN_ATK1
+        self.atk2_ani_count = WANDERER_MAGICIAN_ATK2
+        self.atk3_ani_count = WANDERER_MAGICIAN_ATK3
+        self.atk4_ani_count = WANDERER_MAGICIAN_SP
+        # --------------------------
+        self.raw_sp_atk3_dmg = 0
+        self.raw_sp_atk4_dmg = 0
+
+        self.sp_atk3_ani_count = WANDERER_MAGICIAN_SPECIAL_ATK3
+        self.sp_atk4_ani_count = 30
+
+
+
+        self.atk1_damage = (self.raw_atk1_dmg, 0)
+        self.atk2_damage = (self.raw_atk2_dmg/40, 0) # 30 heal, slow -> 37 heal if special, quick
         self.atk3_damage = (26/10, 8) #26
         self.sp_damage = (55, 0) # 68.75 is the special dmg 
         self.sp_damage_2nd = (5/16, 0.5) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
@@ -277,6 +302,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        self.starlight_hitbox_size = self.calculate_hitbox_size(self.atk1)
+        self.starlight_distance =self.calculate_attack_range(0, self.starlight_hitbox_size, self.starlight_speed, self.atk1_ani_count, self.starlight_frame_duration)
+        self.fireball_distance = 0
         # Skills
         self.attacks = [
             Attacks(
@@ -284,28 +312,61 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Starlight',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.starlight_distance, 'white']
+                },
+                skill_desc=f'Shoots a star in straight direction. Damage@is multiplied by random, then multiplied by 3@- Multiplier: 1/2/3/4@- Chances: 30%/50%/10%/10%'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.skill_4_rect,
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             )
         ]
 
@@ -315,7 +376,12 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon2,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
             )
         )
 
@@ -326,7 +392,15 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_img=special_icon,
                 cooldown=0,
                 mana=0,
-                special_skill=True
+                special_skill=True,
+                skill_name='Activate Special',
+                skill_stats={
+                    'Type': ['Special', 'white'],
+                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
+                    'Move Speed': ['+ 10', 'green'],
+                    'Duration': ['30', 'white']
+                },
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         )
 
@@ -336,28 +410,61 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_rect=self.special_skill_1_rect,
                 skill_img=special_skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.special_skill_2_rect,
                 skill_img=special_skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Fireball',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [self.fireball_distance, 'white']
+                },
+                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
             )
         ]
 
@@ -367,7 +474,12 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon2,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
             )
         )
         
@@ -442,10 +554,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             x=self.rect.centerx,
                             y=self.rect.centery + 30,
                             frames=self.atk1 if self.facing_right else self.atk1_flipped,
-                            frame_duration=100,
-                            repeat_animation=5,
-                            speed=7 if self.facing_right else -7,
-                            dmg=random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10]) * 3, #30% chance for non crit, 50% chance for crit 2x, 10% chance for super crit 3x and 10% change for super mega crit 4x
+                            frame_duration=self.starlight_frame_duration,
+                            repeat_animation=self.starlight_repeat,
+                            speed=self.starlight_speed if self.facing_right else -self.starlight_speed,
+                            dmg=(self.atk1_damage[0] * random.choice(self.starlight_chance)) * self.starlight_mult, #30% chance for non crit, 50% chance for crit 2x, 10% chance for super crit 3x and 10% change for super mega crit 4x
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,

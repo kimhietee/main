@@ -2617,7 +2617,6 @@ class Player(pygame.sprite.Sprite):
     def is_silenced(self):
         '''return true if silenced'''
         return self.silenced
-
     
     def can_move(self):
         """Return True if the player can move (not frozen or rooted or dead)."""

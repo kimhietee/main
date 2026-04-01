@@ -528,7 +528,7 @@ class Fire_Wizard(Player):
                 skill_name='Activate Special',
                 skill_stats={
                     'Type': ['Special', 'white'],
-                    'Attack Increase': [f'{(DEFAULT_BASIC_ATK_DMG_BONUS-1)*100}%', 'green'],
+                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
                     'Move Speed': ['+ 10', 'green'],
                     'Duration': ['30', 'white']
                 },

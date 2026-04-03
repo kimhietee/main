@@ -1059,11 +1059,32 @@ class Player(pygame.sprite.Sprite):
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
                         self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
 
+                    # -----------------------------------------------
+                    if hasattr(self, 'atk2_mana_refund'): # for forest ranger mana refund trait
+                        self.atk2_mana_refund *= (1 + val)
+                    if hasattr(self, 'atk3_mana_refund'): # for forest ranger mana refund trait
+                        self.atk3_mana_refund *= (1 + val)
+                    if hasattr(self, 'sp_mana_refund'): # for forest ranger mana refund trait
+                        self.sp_mana_refund *= (1 + val)
+
+                    if hasattr(self, 'sp_atk2_mana_refund_2nd'): # for forest ranger mana refund trait
+                        self.sp_atk2_mana_refund_2nd *= (1 + val)
+                    if hasattr(self, 'atk2_mana_refund_2nd'): # for forest ranger mana refund trait
+                        self.atk2_mana_refund_2nd *= (1 + val)
+                    if hasattr(self, 'sp_atk3_mana_refund'): # for forest ranger mana refund trait
+                        self.sp_atk3_mana_refund *= (1 + val)
+                    if hasattr(self, 'sp_mana_refund_2nd'): # for forest ranger mana refund trait
+                        self.sp_mana_refund_2nd *= (1 + val)
+                    
                     # apply damage buff for skill info
                     num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
                     for i in range(num_skills):
                         self.attacks[i].damage = float(f'{(self.attacks[i].damage * (1 + val)):.2f}')
                         self.attacks_special[i].damage = float(f'{self.attacks_special[i].damage * (1 + val):.2}')
+
+                        # For forest ranger mana trait, or if any has this.
+                        self.attacks[i].mana_refund = float(f'{(self.attacks[i].mana_refund * (1 + val)):.2f}')
+                        self.attacks_special[i].mana_refund = float(f'{self.attacks_special[i].mana_refund * (1 + val):.2}')
                 # For spell damage ^^^ -----------------------------------------------------
 
         # Caps and safety
@@ -2272,10 +2293,10 @@ class Player(pygame.sprite.Sprite):
     def add_mana(self, mana, enemy:object=None, mana_mult=1): # add mana
         if enemy is not None: #called by take damage, adds mana to attacker if enemy is not None
             enemy.mana = max(0, enemy.mana + (mana*mana_mult))
-            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
+            # enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
         else: #add mana to the attacked player, called by take_special?
             self.mana = max(0, self.mana + (mana*mana_mult)) # add mana to hero
-            enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
+            # enemy.display_damage(mana*mana_mult, color=cyan2, mana_modify=True)
 
     def take_special(self, amount):
         if self.is_dead():
@@ -2729,8 +2750,8 @@ class Player(pygame.sprite.Sprite):
         # print(hitbox_size/2)
         return hitbox_size/2
 
-    def calculate_attack_range(self, cast_range, attack_hitbox_size, speed, frame_count, frame_duration, fps=global_vars.FPS):
-        total_life_seconds = (frame_count * frame_duration) / 1000
+    def calculate_attack_range(self, cast_range, attack_hitbox_size, speed, frame_count, frame_duration, fps=global_vars.FPS, repeat=1):
+        total_life_seconds = (frame_count * (frame_duration * repeat)) / 1000
         total_ticks = total_life_seconds * fps
         distance = speed * total_ticks
         
@@ -2913,12 +2934,13 @@ class Player(pygame.sprite.Sprite):
             # Find closest enemy
             closest_enemy = None
             closest_distance = float('inf')
-            for enemy in self.enemy:
+            alive_enemies = [e for e in self.enemy if not e.is_dead()]
+            for enemy in alive_enemies:
                 distance = abs(self.rect.centerx - enemy.rect.centerx)
                 if distance < closest_distance:
                     closest_distance = distance
                     closest_enemy = enemy
-            self.target = closest_enemy if closest_enemy else random.choice(self.enemy)
+            self.target = closest_enemy if closest_enemy else random.choice(alive_enemies)
         else:
             # No enemies available, use random as fallback
             self.target = random.choice(self.enemy)

@@ -308,13 +308,14 @@ class Attacks:
 
 
     def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:list=[0,0], special_skill=False,
-                 skill_name='', skill_stats='', skill_desc='', hero=None):
+                 skill_name='', skill_stats='', skill_desc='', mana_refund=0, hero=None):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
         self.cooldown = cooldown
         self.mana = mana  # Not used
         self.damage = damage[0] + damage[1] # total raw damage
+        self.mana_refund = mana_refund # include display dynamic mana refund if the hero has this.
         self.hero = hero  # Store hero reference for dynamic values
         # Internally store raw last-used timestamp and a snapshot of paused-total at that moment
         self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
@@ -387,11 +388,11 @@ class Attacks:
         is_disabled_skill = is_frozen or is_silenced  # Skills blocked by both freeze and silence
         
         # Check if this is a basic attack by comparing with basic_icon_rect
-        is_basic_attack = False
+        self.is_basic_attack = False
         if player_type == 1:
-            is_basic_attack = self.skill_rect == hero1.basic_icon_rect
+            self.is_basic_attack = self.skill_rect == hero1.basic_icon_rect
         elif player_type == 2:
-            is_basic_attack = self.skill_rect == hero2.basic_icon_rect
+            self.is_basic_attack = self.skill_rect == hero2.basic_icon_rect
         
         # Determine the key to display based on the player type
         keybinds=key.read_settings()
@@ -414,7 +415,7 @@ class Attacks:
         # Existing logic for drawing the skill icon
         if not self.special_skill:
             # Determine if this skill icon is disabled (for basic attacks: only if frozen, for skills: if frozen or silenced)
-            current_is_disabled = is_disabled_basic if is_basic_attack else is_disabled_skill
+            current_is_disabled = is_disabled_basic if self.is_basic_attack else is_disabled_skill
             
             if current_is_disabled:
                 # If disabled, show darkened icon with red X (but only for skills, not basic attacks when just silenced)
@@ -425,7 +426,7 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
                 
                 # Draw red X to indicate skill is disabled (only for skills, not for basic attacks when just silenced)
-                if not (is_basic_attack and is_silenced and not is_frozen):  # Allow basic when just silenced
+                if not (self.is_basic_attack and is_silenced and not is_frozen):  # Allow basic when just silenced
                     x_font = global_vars.get_font(self.cooldown_font_size)
                     x_text = x_font.render('X', global_vars.TEXT_ANTI_ALIASING, (255, 0, 0))
                     screen.blit(x_text, (
@@ -440,10 +441,10 @@ class Attacks:
                 screen.blit(dark_overlay, self.skill_rect)
 
                 # Draw scaled cooldown text
-                font = global_vars.get_font(self.cooldown_font_size * (1 if not is_basic_attack else 0.8))
+                font = global_vars.get_font(self.cooldown_font_size * (1 if not self.is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
                 remaining_ms = max(0, self.cooldown - self.time_since_use())
-                cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if is_basic_attack else  max(0, remaining_ms // 1000)
+                cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if self.is_basic_attack else  max(0, remaining_ms // 1000)
                 cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
@@ -548,6 +549,13 @@ class Attacks:
                 if name == 'Damage':
                     if type(self.skill_stats['Damage']) == list:
                         self.skill_stats['Damage'][0] = round(self.damage, 2)
+                elif name == 'Heal':
+                    if type(self.skill_stats['Heal']) == list:
+                        self.skill_stats['Heal'][0] = round(self.damage, 2)
+                elif name == 'Mana Refund':
+                    if type(self.skill_stats['Mana Refund']) == list:
+                        self.skill_stats['Mana Refund'][0] = round(self.mana_refund, 1)
+
                     # else: # for basic attack damage, don't use list (im confused)
                     #     if self.hero is not None:
                     #         self.skill_stats['Damage'] = [self.hero.basic_attack_damage+123, 'red']
@@ -702,8 +710,8 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                     2 - When collides player, effect active, until attack ends (if hit once)
                     3 - Effect active, until attack ends (full duration)
                 * [3] – Slow Rate
-                    < 1.0 
-                    4 - Silence- Only if Status is slow
+                    < 1.0 (ex. 0.8 for 20% slow)
+                    - Only if Status is slow
 
         ? damage_mode - no use for now
         '''
@@ -728,7 +736,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 add_mana=False, add_mana_to_enemy=False, mana_mult=1,
                 reduce_mana=0,
                 damage_mode='single'#no use for now
-                , is_basic_attack=False#used to identify basic attacks for crit
+                ,is_basic_attack=False#used to identify basic attacks for crit
                 ):
         super().__init__()
         self.x = x
@@ -2881,7 +2889,7 @@ def player_selection():
     while True:
         if immediate_run: # DEV OPTION ONLY
             PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Fire_Wizard
+            PLAYER_2_SELECTED_HERO = Forest_Ranger
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

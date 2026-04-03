@@ -97,7 +97,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.agility = 30 # = 35
 
         self.base_health_regen = 0.8 # 1.12
-        self.base_mana_regen = 5.4 # 5.92
+        self.base_mana_regen =0# 5.4 # 5.92
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100
@@ -189,34 +189,38 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         self.arrow_stuck_duration = 5000
         self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
-        dmg_mult = 0
-        self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
-        self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
-        self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
-        self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+        # dmg_mult = 0
+        # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
+        # self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
+        # self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
+        # self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
 
         # (mana cost * multiplier) / skill total damage
         # ex. 100 / 0.5 = 50 / 10 = 5
         # (Skill mana cost / Desired mana refund) * attack total damage (modify the frames of attack)
         # mana refund for arrow is default at 2
-        sk1 = 0
-        sk2 = 50
-        sk3 = 70
-        sk4 = 100
+        self.mana_refund_multiplier = 1
+        # sk1 = 0
+        # sk2 = 50
+        # sk3 = 70
+        # sk4 = 100
 
-        sk2_sp = 30 #x2
-        sk3_sp = 100
-        sk4_sp = 130
-        # desired mana refund / skill damage (REAL)
-        self.atk2_mana_refund = (sk2) / (self.atk2_damage[0] * 8 + self.atk2_damage[1])
-        self.atk3_mana_refund = (sk3) / (self.atk3_damage[0] * 8 + self.atk3_damage[1])
-        self.sp_mana_refund = (sk4) / (self.sp_damage[0] * 5 + self.sp_damage[1])
+        # sk2_sp = 30 #x2
+        # sk3_sp = 100
+        # sk4_sp = 130
+        # self.basic_attack_mana_mult = 2
+        # # desired mana refund / skill damage (REAL)
+        # self.atk2_mana_refund = (sk2) / (self.atk2_damage[0] * self.atk2_ani_count + self.atk2_damage[1])
+        # self.atk3_mana_refund = (sk3) / (self.atk3_damage[0] * self.atk3_ani_count + self.atk3_damage[1])
+        # self.sp_mana_refund = (sk4) / (self.sp_damage[0] * self.atk4_ani_count + self.sp_damage[1])
 
-        self.sp_atk2_mana_refund_2nd = (sk2_sp) / (self.sp_atk2_damage_2nd[0] * 8 + self.sp_atk2_damage_2nd[1]) # poison arrow
-        self.atk2_mana_refund_2nd = (sk2_sp) / (self.atk2_damage_2nd[0] * 45 + self.atk2_damage_2nd[1]) # poison 2nd
-        self.sp_atk3_mana_refund = (sk3_sp) / (self.sp_atk3_damage[0] * 18 + self.sp_atk3_damage[1]) # arrow rain roots
-        self.sp_mana_refund_2nd = (sk4_sp) / (self.sp_damage_2nd[0] * 30 + self.sp_damage_2nd[1]) # laser beam
-
+        # self.sp_atk2_mana_refund_2nd = (sk2_sp) / (self.sp_atk2_damage_2nd[0] * self.sp_atk2_ani_count + self.sp_atk2_damage_2nd[1]) # poison arrow
+        # self.atk2_mana_refund_2nd = (sk2_sp) / (self.atk2_damage_2nd[0] * self.sp_atk2_ani_count_2nd + self.atk2_damage_2nd[1]) # poison 2nd
+        # self.sp_atk3_mana_refund = (sk3_sp) / (self.sp_atk3_damage[0] * self.sp_atk3_ani_count + self.sp_atk3_damage[1]) # arrow rain roots
+        # self.sp_mana_refund_2nd = (sk4_sp) / (self.sp_damage_2nd[0] * self.sp_atk4_ani_count + self.sp_damage_2nd[1]) # laser beam
+        # print(self.atk2_mana_refund)
+        # print(self.atk3_mana_refund)
+        # print(self.sp_mana_refund)
 
 
 
@@ -452,7 +456,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.arrow_distance, 'white']
+                    'Distance': [self.arrow_distance, 'white'],
+                    'Mana Refund': [f'{round(self.atk2_mana_refund, 2)}', 'green']
                 },
                 skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Root duration: {self.root_duration_atk2/1000}s'
             ),
@@ -468,6 +473,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Mana Refund': [f'{round(self.atk3_mana_refund, 2)}', 'green'],
                     # 'Cast Range': [self.arrow_volley_cast_range, 'white']
                 },
                 skill_desc=f'Shoots 3 spiky arrows that enroots enemies@hit within the area while jumping.@- Max range: {self.arrow_volley_cast_range}@- Root duration: {self.root_duration_atk3/1000}s'
@@ -485,6 +491,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     'Lv': [1, 'blueviolet'],
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
+                    'Mana Refund': [f'{round(self.sp_mana_refund, 2)}', 'green']
                 },
                 skill_desc=f'Charges up the bow to release a powerful@laser beam.'
             )
@@ -749,8 +756,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
                             repeat_animation=1,
                             speed=7 if self.facing_right else -7,
-                            dmg=0,
-                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
                             follow=(False,True),
@@ -770,9 +775,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             frames=self.blank_frame,
                             frame_duration=5000, # 5 seconds
                             repeat_animation=1,
-                            speed=0,
-                            dmg=0,
-                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=[self],
                             follow=(True,False),
@@ -811,6 +813,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                         self.single_target()
 
+                        # PROJECTILE ARROW
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + 60,
@@ -819,7 +822,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             repeat_animation=1000,
                             speed=30 if self.facing_right else -30,
                             dmg=self.basic_attack_damage,
-                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
                             moving=True,
@@ -831,11 +833,12 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=2,
+                            mana_mult=self.mana_refund_multiplier,
 
                             spawn_attack= {
                             'use_attack_onhit_pos': True,
 
+                            # ROOT
                             'attack_kwargs': {
                                 'frames': self.atk2 if self.facing_right else self.atk2_flipped,
                                 'frame_duration': self.root_duration_atk2 / len(self.atk2), # Root for 1.5s
@@ -852,7 +855,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 'follow': (True, False),
                                 'follow_offset': (-30 if self.facing_right else 30, random.randint(30, 45)),
                                 'add_mana': True,
-                                'mana_mult': self.atk2_mana_refund,
+                                'mana_mult': self.mana_refund_multiplier,
                                 'hitbox_scale_x': 0.3,
                                 'hitbox_scale_y': 0.3,
 
@@ -877,7 +880,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                         'follow': (False, True),
                                         'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                         'add_mana': True,
-                                        # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                        'mana_mult': self.mana_refund_multiplier, #self.sp_atk2_mana_refund_2nd,
                                         'hitbox_scale_x': 0.1,
                                         'hitbox_scale_y': 0.1,
                                     }
@@ -962,7 +965,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.10,
 
                             add_mana=True,
-                            mana_mult=self.sp_mana_refund,
+                            mana_mult=self.mana_refund_multiplier,
                             
                             # NO HEAL :( 
                             # need fixing because can't heal when invulnerable
@@ -1010,6 +1013,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                         self.single_target()
 
+                        # PROJECTILE ARROW
                         attack = Attack_Display(
                             x=self.rect.centerx,
                             y=self.rect.centery + 60,
@@ -1030,7 +1034,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=2,
+                            mana_mult=self.mana_refund_multiplier,
                             
                             # leave arrow bullets
                             spawn_attack= {
@@ -1052,8 +1056,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'stop_movement': (False, 3, 2, 0.2),
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
-                                    'add_mana': True,
-                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
@@ -1183,11 +1185,12 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=2,
+                            mana_mult=self.mana_refund_multiplier,
 
                             spawn_attack= {
                             'use_attack_onhit_pos': True,
 
+                            # POISON
                             'attack_kwargs': {
                                 'frames': self.sp_atk2 if self.facing_right else self.sp_atk2_flipped,
                                 'frame_duration': self.poison_duration_1 / len(self.sp_atk2), # slow for 1s (second / frames)
@@ -1205,12 +1208,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                 # Use a conservative follow vertical offset; avoid sampling target hitbox at cast time
                                 'follow_offset': (-30 if self.facing_right else 30, (random.randint(30, 45))),
                                 'add_mana': True,
-                                'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                'mana_mult': self.mana_refund_multiplier,
                                 'hitbox_scale_x': 0.3,
                                 'hitbox_scale_y': 0.3,
                                 'spawn_attack': {
                                                 'use_attack_onhit_pos': True,
 
+                                                # POISON 2
                                                 'attack_kwargs': {
                                                     'frames': self.atk2_sp_poison,
                                                     'frame_duration': self.poison_duration_2 / len(self.atk2_sp_poison), # slow 2s (second / frames)
@@ -1227,7 +1231,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                     # Avoid using target hitbox at cast; keep vertical small
                                                     'follow_offset': (0, (random.randint(30, 45))),
                                                     'add_mana': True,
-                                                    'mana_mult': self.atk2_mana_refund_2nd,
+                                                    'mana_mult': self.mana_refund_multiplier,
                                                     'hitbox_scale_x': 0.3,
                                                     'hitbox_scale_y': 0.3,
                                                     
@@ -1251,7 +1255,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'follow': (False, True),
                                                             'follow_offset': (random.randint(-30, 30), random.randint(-40, 80)),
                                                             'add_mana': True,
-                                                            # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                                            'mana_mult': self.mana_refund_multiplier, # self.sp_atk2_mana_refund_2nd,
                                                             'hitbox_scale_x': 0.1,
                                                             'hitbox_scale_y': 0.1,
                                                             }
@@ -1304,7 +1308,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_x=0.35,
                             hitbox_scale_y=1,
                             add_mana=True,
-                            mana_mult=self.sp_atk3_mana_refund,
+                            mana_mult=self.mana_refund_multiplier,
                                                         
                             # leave arrow bullets
                             spawn_attack= {
@@ -1327,7 +1331,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
-                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
+                                    'mana_mult': self.mana_refund_multiplier, #self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
@@ -1366,7 +1370,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=1,
 
                             add_mana=True,
-                            mana_mult=self.sp_mana_refund_2nd,
+                            mana_mult=self.mana_refund_multiplier,
 
                             # no heal cuz of bug :(
                             # heals self if it hits enemy once (once only 50% dmg) only heals 50% now! update!
@@ -1431,7 +1435,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=2,
+                            mana_mult=self.mana_refund_multiplier,
 
                             # leave arrow bullets
                             spawn_attack= {
@@ -1454,7 +1458,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
-                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
@@ -1633,7 +1636,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                     stop_movement=(True, 2, 1),
 
                     add_mana=True,
-                    mana_mult=self.atk3_mana_refund
+                    mana_mult=self.mana_refund_multiplier
                     ,
                     # leave arrow bullets
                             spawn_attack= {
@@ -1655,7 +1658,6 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
-                                    # 'mana_mult': self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }

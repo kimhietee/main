@@ -1,244 +1,82 @@
-from global_vars import (IMMEDIATE_RUN,
-    width, height, icon, FPS, clock, screen, hero1, hero2, fire_wizard_icon, wanderer_magician_icon, fire_knight_icon, wind_hashashin_icon, water_princess_icon, forest_ranger_icon, yurei_icon,
-    white, red, black, green, cyan2, gold, play_button_img, text_box_img, loading_button_img, menu_button_img,
-    waterfall_icon, lava_icon, dark_forest_icon, trees_icon, 
-    DEFAULT_WIDTH, DEFAULT_HEIGHT, scale, center_pos, font_size, BASIC_ATK_COOLDOWN, BASIC_FRAME_DURATION, BASIC_ATK_DAMAGE, BASIC_ATK_DAMAGE2, BASIC_ATK_DAMAGE3, BASIC_ATK_DAMAGE4,
-    DISABLE_HEAL_REGEN, DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION, BASIC_ATK_POSX, BASIC_ATK_POSX_END, BASIC_ATK_POSY, SPECIAL_MULTIPLIER, MAX_SPECIAL, SPECIAL_DURATION, DISABLE_SPECIAL_REDUCE,
-    LOW_HP, LITERAL_HEALTH_DEAD, SINGLE_MODE_ACTIVE, SHOW_HITBOX, DRAW_DISTANCE,
-    DEFAULT_CHAR_SIZE, DEFAULT_CHAR_SIZE_2, DEFAULT_ANIMATION_SPEED, DEFAULT_ANIMATION_SPEED_FOR_JUMPING,
-    JUMP_DELAY, RUNNING_SPEED, RUNNING_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
-    X_POS_SPACING, DEFAULT_X_POS, DEFAULT_Y_POS, SPACING_X, START_OFFSET_X, SKILL_Y_OFFSET,
-    ICON_WIDTH, ICON_HEIGHT, MAX_ITEM,
-    DEFAULT_GRAVITY, DEFAULT_JUMP_FORCE, JUMP_LOGIC_EXECUTE_ANIMATION,
-    WHITE_BAR_SPEED_HP, WHITE_BAR_SPEED_MANA, TEXT_DISTANCE_BETWEEN_STATUS_AND_TEXT,
-    PLAYER_1, PLAYER_2, PLAYER_1_SELECTED_HERO, PLAYER_2_SELECTED_HERO, PLAYER_1_ICON, PLAYER_2_ICON,
-    DISABLE_MANA_REGEN,
-    attack_display, MULT, dmg_mult,
-
-    ZERO_WIDTH, TOTAL_WIDTH
-)
-from heroes import Attacks, Attack_Display
-import heroes
-from player import Player
-import global_vars
 import pygame
-
-from summon import create_summon_bot
-from summons.skeleton import Skeleton
 import random
-
-# Animation Counts
-FIRE_WIZARD_BASIC_COUNT = 10
-FIRE_WIZARD_JUMP_COUNT = 6
-FIRE_WIZARD_RUN_COUNT = 8 
-FIRE_WIZARD_IDLE_COUNT = 7
-FIRE_WIZARD_ATK1_COUNT = 8
-FIRE_WIZARD_SP_COUNT = 14
-FIRE_WIZARD_DEATH_COUNT = 6
-
-FIRE_WIZARD_ATK1 = 12 - 2 # reduce frame
-FIRE_WIZARD_ATK2 = 53
-FIRE_WIZARD_ATK3 = 34
-FIRE_WIZARD_SP = 28
-# ---------------------
-# print((FIRE_WIZARD_ATK2 * 0.01) * 4 * 5)
-FIRE_WIZARD_ATK1_MANA_COST = 50
-FIRE_WIZARD_ATK2_MANA_COST = 80
-FIRE_WIZARD_ATK3_MANA_COST = 100
-FIRE_WIZARD_SP_MANA_COST = 200
-
-FIRE_WIZARD_ATK1_SIZE = 3
-FIRE_WIZARD_ATK2_SIZE = 0.3
-FIRE_WIZARD_ATK3_SIZE = 0.3
-FIRE_WIZARD_SP_SIZE = 1.3
+from player import Player
+from heroes import Attacks, Attack_Display
+import global_vars
+from global_vars import (
+    DEFAULT_CHAR_SIZE, DEFAULT_GRAVITY, X_POS_SPACING, START_OFFSET_X, 
+    SPACING_X, SKILL_Y_OFFSET, DEFAULT_X_POS, ICON_WIDTH, ICON_HEIGHT, 
+    BASIC_FRAME_DURATION, DEFAULT_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
+    SPECIAL_DURATION, MAX_SPECIAL, DISABLE_MANA_REGEN, DISABLE_HEAL_REGEN,
+    DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
+    RUNNING_ANIMATION_SPEED, attack_display, screen
+)
 
 class Fire_Wizard(Player):
-    # Update log for heroes
-
-        #wind hashashin
-        # Skill 1: (10, 0) = 10 -> (8, 0) = 8
-        # Skill 2: (35/45, 0):tornado = 5-6 + (15/15, 5):slash = 20 = 25-26 -> (35/45, 0):tornado = 5-6 + (12/15, 4):slash = 16 = 21-22
-        # Skill 3: (200/20, 25):whirl = 10 + (15/15, 5):slash = 10 = 30 -> (35/45, 0):whirl = 5-6 + (12/15, 4):slash = 16 = 26
-        # Skill 4: 18 * 4 = 72 -> 14.5 * 4 = 58
-
-        # Skill 1: 3 * 6:per smoke = 0-18 -> 2.4 * 6:per smoke = 0-14.4
-        # Skill 2: 30 -> 26
-        # Skill 3: 37 = 37
-        # Skill 4: 86 -> 69
-
-        #fire knight nerf
-        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
-        # Skill 2: (26/20, 2) = 30 -> (26/20, 2) = 28
-        # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
-        # Skill 4: 80 = 80
-
-        #Skill 4: 
-            # Swapped damage explosion
-        # (10/10, 50):start + (25/10, 5):explosion = 90
-        # -> (25/10, 5):start + (10/10, 45):explosion = 85
-
-
-
-        # Wind hashashin buff
-        # 8 -> 10 (dash speed and distance: 10 -> 12 (400 -> 500), sp: 12 -> 15 (600 -> 800))
-        # x slashes (both slashes) (12/15, 4) -> (13/15, 5) total=(23-24 dmg)
-        # 26 -> 28 (due to x slash)
-        # 58 -> 64 (16)
-
-        #fire knight nerf and wind hashashin buff
-        #fire knight:
-        # Trait: +20% Health Regen -> +15% Health Regen
-        # Intelligence: 40 = 40, 180 -> 200 (removed -20 max mana)
-        # Skill 1: 0
-        # Skill 2: cd 16s - > 20s, mana cost 80 -> 100
-        # Skill 3: cd 26s - > 30s, mana cost 140 -> 160
-        # Skill 4: mana cost 180 -> 200, dmg = (65/65, 15) = 80 -> (60/65, 15) = 75 
-        #            -> (25/10, 5):start = (10/10, 40):explosion = 80
-
-        #wind hashashin:
-        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
-        # Skill 2: (28/20, 2) = 30 -> (26/20, 2) = 28
-        # Skill 3: (35/60, 10) = 45 -> (35/60, 7) = 42
-        # Skill 4: 80 = 80
-
-        #fire knight buff/nerf
-        # Trait: +15% Health Regen -> +20% Health Regen
-        # Skill 1: (10/49, 2) = 12 -> (10/49, 1) = 11
-        # Skill 2: cd 20s - > 18s, mana cost 80 -> 100
-        # Skill 3: cd 30s - > 26s, mana cost 160 -> 150
-        # Skill 4: 0
-
-
-        #wanderer magician nerf
-        # special basic attack: (3.2/2.4)3 = 4 -> (3.2/2.5)3 = 3.84 per hit
-        # special skill 3:  Damage Multiplier 25% -> 15%
-
-        #fire knight nerf
-        # Trait: +20% Health Regen -> +15% Health Regen
-        # Skill 1: (10/49, 1) = 11 -> (10/49, 2) = 12
-        # Skill 4: (60/65, 15) = 75 -> (50/65, 15) = 65
-        # Special:
-        # Skill 4: (attack no longer stick to enemy)
-            # (25/10, 5):start = 30, (10/10, 40):explosion = 50 = 80 -> 
-            # (20/10, 5):start = 25, (40/10, 5):explosion = 45 = 80
-
-        # fire knight nerf
-        # Intelligence: 40 = 200 mana ->  Intelligence: 36 = 180 mana
-        # Skill 4: mana cost 200 -> 180
-        #           damage = 75 -> 65
-
-        # fire knight buff/update
-        # Skill 2: mana cost 100 -> 80
-        # SKill 4 hitbox modified
-        # Skill 4 special: total damage = 70(20,40,5,5) = 100 (30,60,5,5)
-        # 100 -> 80
-
-        # fire wizard buff
-        # Skill 4: damage (50/28, 10) = 60 -> (55/28, 10) -> 65
-        
-        # fire wizard update
-        # Skill 2: reworked skill, low cooldown, low damage, special not changed
-
-        # wanderer magician buff
-        # Agility: 32 -> 35
-        # Skill 1: mana cost 70 -> 65
-        # Skill 2: cooldown 29s -> 24s, (26/10, 8) = 34 -> (29/10, 8) = 37
-        # Skill 3: cooldown 26s -> 22s
-        # Skill 4 special: (4.5/16, 0) = 67.5 -> (5/16, 1) = 90
-
-        # forest ranger buff
-        # I forgot...
-
-        # fire wizard buff
-        # trait: dmg_mult 10% -> 20%
-        # Skill 2: mana cost 30 -> 15, cooldown 3s -> 1s
-
-        # wanderer magician buff
-        # Skill 2: cooldown 24s -> 22s, (15/40, 0)*2 = 30 heal -> (20/40, 0)*2 = 40 heal
-        # Skill 3: cooldown 22s -> 17s
-
-        # forest ranger nerf/buff
-        # Agility: 38 -> 35
-        # Strength: 33 -> 32
-        # trait: lifesteal: 0.15 -> 0.1
-        # arrow_stuck_damage: (self.basic_attack_damage * 0.3) - 0.05 = 1 ->  (self.basic_attack_damage * 0.5) - 0.25 = 1.5
-        # dash speed: 4 -> 5
-
-        # fire wizard update 12/9/25
-        # trait: dmg_mult 20% -> 10% (20% is not actually implemented, too OP)
-        # Skill 2: reverted back to original version with rework
-
-        #update
-        # water princess:
-        # Skill 1: mana cost 100 -> 40, cooldown 15s -> 5, damage/heal 5/20 -> 5/10
-        # reverted back to original
-        # Skill 1: mana cost 100 -> 80, cooldown 15s -> 10s, damage/heal 5/20 -> 10/20
-        
-
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
-        self.player_type = player_type # 1 for player 1, 2 for player 2
+        # ----- Core -----
+        self.player_type = player_type
         self.name = "Fire Wizard"
-
         self.hitbox_rect = pygame.Rect(0, 0, 50, 100)
-
-        # stat
+        self.x = 50
+        self.y = 50
+        self.width = 200
+        self.char_size = DEFAULT_CHAR_SIZE
+        
+        # ----- Hero Specifications -----
+        # Stats
         self.strength = 40
         self.intelligence = 40
         self.agility = 26 # real agility = 27
         
-        # hp = 1.0, mana = 6.0, atk = 0.1
-        self.base_health_regen = 0.8 # +0.4 = 1.2
-        self.base_mana_regen = 5.3 # +0.4 = 5.7
-        self.base_attack_damage = 0.1 # +2.6 = 2.7
+        self.base_health_regen = 0.8
+        self.base_mana_regen = 5.3
+        self.base_attack_damage = 0.1
 
         self.base_attack_speed = 100
         self.base_attack_time = 1750
-
+        
         self.base_animation_speed = 120
         self.min_animation_speed = 70
         self.attack_speed_modifier = 0.5
-
-        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 40 * 0.01 = 1.2
-        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence) #5.3 + 40 * 0.01 = 5.7
-        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True) # 0.1 + 26 * 0.1 = 2.7
         
-        # Recalculate attack speed variables for fire wizard's base stats
-        self.attack_speed = self.calculate_effective_as()
-        self.basic_attack_animation_speed = self.calculate_attack_animation_speed()
-
-        #2 attack per basic attack (5.6 DPS)
-        # Base Stats
-        self.max_health = self.strength * self.str_mult #40 * 5 = 200HP (max)
-        self.max_mana = self.intelligence * self.int_mult #40 * 5 = 200Mana (max)
-        self.health = self.max_health
-        self.mana = self.max_mana
-        # 1.4
-        # 5.9
-        # 4.05
+        # Costs & Cooldowns
+        self.atk1_mana_cost = 50
+        self.atk2_mana_cost = 75
+        self.atk3_mana_cost = 100
+        self.sp_mana_cost = 200
         
-        # BASIC_ATK_DAMAGE2
+        self.sp_atk1_mana_cost = 50
+        self.sp_atk2_mana_cost = 80
+        self.sp_atk3_mana_cost = 80  # 100 - 20%
+        self.sp_atk4_mana_cost = 160 # 200 - 20%
+        
+        self.atk1_cooldown = 7000
+        self.atk2_cooldown = 10000
+        self.atk3_cooldown = 26000
+        self.atk4_cooldown = 60000
+
+        self.special_atk1_cooldown = 7000
+        self.special_atk2_cooldown = 18000 # 5000 + 13000
+        self.special_atk3_cooldown = 26000
+        self.special_atk4_cooldown = 60000
+
+        # Projectile & Skill Settings
         self.fireball_cast_range = 20
         self.special_fireball_cast_range = 20
         self.fire_spire_cast_range = 120
         self.fireblast_cast_range = 200
 
-        FIREBALL_SIZE = 64
-        self.fireball_frame_duration = 100
-        self.fireball_hitbox_size_modifier = 0.4
-        self.fireball_hitbox_size = FIREBALL_SIZE * self.fireball_hitbox_size_modifier
-
         self.fireball_speed = 6
         self.special_fireball_speed = 7
-        self.special_fireball_offsets = [(0), (33), (67), (100)]
+        self.fire_spire_speed = 1
+        
+        self.fireball_frame_duration = 100
+        self.fireball_hitbox_size_modifier = 0.4
+        self.special_fireball_offsets = [0, 33, 67, 100]
         self.special_fireball_damage_mult = 0.33
         
-        self.fireball_frames = 10
-        
-        
-        # self.fireball_duration = self.fireball_frames * self.FIREBALL_FRAME_DURATION
-
-
         self.fire_repeat_default = 6
         self.fire_duration = 20000 / self.fire_repeat_default
         self.special_fire_duration = 15000 / self.fire_repeat_default
@@ -246,402 +84,253 @@ class Fire_Wizard(Player):
         self.special_fire_damage_mult = 0.5
         self.fire_count = [60*2, 120*2, 180*2]
         self.special_fire_count = [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]
+        
         self.fire_spire_repeat = 2
         self.fire_spire_frame_duration = 60
-        self.fire_spire_speed = 1
         self.fire_spire_damage_mult = 0.7
+        
         self.fire_blast_count = [-1000, -500, 0, 500, 1000]
         self.fire_blast_damage_mult = 0.9
-        
-        # Player Position
-        self.x = 50
-        self.y = 50
-        self.width = 200
 
-        #mana cost
-        self.atk1_mana_cost = 50
-        self.atk2_mana_cost = 75
-        self.atk3_mana_cost = 100
-        self.sp_mana_cost = 200
-        self.atk2_mana_cost_sp = 80
-        
-        #dmg
-        self.atk1_cooldown = 7000 # 7000
-        self.atk2_cooldown = 10000
-        self.atk3_cooldown = 26000
-        self.sp_cooldown = 60000
-        self.atk2_cooldown_sp = 5000 + 13000
-
-        self.raw_atk1_dmg = 13
-        self.raw_atk2_dmg = 20
-        self.raw_atk3_dmg = 40
-        self.raw_atk4_dmg = 50
-        self.raw_atk4_dmg_2nd = 10
-        
-        self.atk1_ani_count = self.fireball_frames
-        self.atk2_ani_count = FIRE_WIZARD_ATK2
-        self.atk3_ani_count = FIRE_WIZARD_ATK3
-        self.atk4_ani_count = FIRE_WIZARD_SP
-        # --------------------------
-        self.raw_sp_atk1_dmg = self.raw_atk1_dmg * self.special_fireball_damage_mult
-        self.raw_sp_atk2_dmg = self.raw_atk2_dmg * self.special_fire_damage_mult
-        self.raw_sp_atk3_dmg = self.raw_atk3_dmg * self.fire_spire_damage_mult
-        self.raw_sp_atk4_dmg = self.raw_atk4_dmg * self.fire_blast_damage_mult
-        self.raw_sp_atk4_dmg_2nd = self.raw_atk4_dmg_2nd * self.fire_blast_damage_mult
-
-        #FORMULA = DESIRED DMG / TOTAL FRAME EX. dmg=25/34 == 0.6944
-        self.damage_list = [
-            (self.raw_atk1_dmg, 0),
-            (self.raw_atk2_dmg/self.atk2_ani_count, 0), #total damage=130
-            (self.raw_atk3_dmg/self.atk3_ani_count, 0),
-            (self.raw_atk4_dmg/self.atk4_ani_count, self.raw_atk4_dmg_2nd)
-        ]
-        self.atk1_damage = self.damage_list[0]
-        self.atk2_damage = self.damage_list[1]
-        self.atk3_damage = self.damage_list[2]
-        self.sp_damage = self.damage_list[3] 
+        # Damage Setup (Applying the 10% multiplier directly here to match PA's static base_damage approach)
         dmg_mult = 0.1
-        self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
-        self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
-        self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
-        self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+        self.base_damage = {
+            'atk1dmg': (13 + (13 * dmg_mult), 0),
+            'atk2dmg': (20 + (20 * dmg_mult), 0),
+            'atk3dmg': (40 + (40 * dmg_mult), 0),
+            'atk4dmg': (50 + (50 * dmg_mult), 10 + (10 * dmg_mult)),
 
-        self.raw_atk1_dmg = self.raw_atk1_dmg + (self.raw_atk1_dmg * dmg_mult)
-        self.raw_atk2_dmg = self.raw_atk2_dmg + (self.raw_atk2_dmg * dmg_mult)
-        self.raw_atk3_dmg = self.raw_atk3_dmg + (self.raw_atk3_dmg * dmg_mult)
-        self.raw_atk4_dmg = self.raw_atk4_dmg + (self.raw_atk4_dmg * dmg_mult)
-        self.raw_sp_atk1_dmg = self.raw_sp_atk1_dmg + (self.raw_sp_atk1_dmg * dmg_mult)
-        self.raw_sp_atk2_dmg = self.raw_sp_atk2_dmg + (self.raw_sp_atk2_dmg * dmg_mult)
-        self.raw_sp_atk3_dmg = self.raw_sp_atk3_dmg + (self.raw_sp_atk3_dmg * dmg_mult)
-        self.raw_sp_atk4_dmg = self.raw_sp_atk4_dmg + (self.raw_sp_atk4_dmg * dmg_mult)
-        self.raw_sp_atk4_dmg_2nd = self.raw_sp_atk4_dmg_2nd + (self.raw_sp_atk4_dmg_2nd * dmg_mult)
+            'sp_atk1dmg': ((13 * self.special_fireball_damage_mult) * 1.1, 0),
+            'sp_atk2dmg': ((20 * self.special_fire_damage_mult) * 1.1, 0),
+            'sp_atk3dmg': ((40 * self.fire_spire_damage_mult) * 1.1, 0),
+            'sp_atk4dmg': ((50 * self.fire_blast_damage_mult) * 1.1, (10 * self.fire_blast_damage_mult) * 1.1)
+        }
 
-        # Player Animation Source
-        basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', FIRE_WIZARD_BASIC_COUNT, 1]
-        # basic_ani = [r'assets\characters\stickman\attack\Frame0', 6, 0]
-
+        # Sound Effects
+        sound1 = [r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3', 0.5]
+        sound2 = [r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3', 0.1]
+        sound3 = [r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3', 0.5]
+        sound4 = [r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3', 0.5]
         
-        jump_ani = [r'assets\characters\Fire wizard\jump pngs\Jump_', FIRE_WIZARD_JUMP_COUNT, 1]
-        run_ani = [r'assets\characters\Fire wizard\run pngs\Run_', FIRE_WIZARD_RUN_COUNT, 1]
-        idle_ani= [r'assets\characters\Fire wizard\idle pngs\image_0-', FIRE_WIZARD_IDLE_COUNT, 1]
-        atk1_ani= [r'assets\characters\Fire wizard\fireball pngs\image_0-', FIRE_WIZARD_ATK1_COUNT, 1]
-        sp_ani= [r'assets\characters\Fire wizard\flame jet pngs\image_0-', FIRE_WIZARD_SP_COUNT, 1]
-        death_ani= [r'assets\characters\Fire wizard\dead\tile00', FIRE_WIZARD_DEATH_COUNT, 1]
+        self.atk1_sound = self.load_sound(sound1[0])
+        self.atk2_sound = self.load_sound(sound2[0])
+        self.atk3_sound = self.load_sound(sound3[0])
+        self.sp_sound = self.load_sound(sound4[0])
+        
+        self.atk1_sound.set_volume(sound1[1] * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(sound2[1] * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(sound3[1] * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(sound4[1] * global_vars.MAIN_VOLUME)
 
-        # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3')
-        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.1 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        # Character Frame Source
+        basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', 10, 1]
+        jump_ani = [r'assets\characters\Fire wizard\jump pngs\Jump_', 6, 1]
+        run_ani = [r'assets\characters\Fire wizard\run pngs\Run_', 8, 1]
+        idle_ani= [r'assets\characters\Fire wizard\idle pngs\image_0-', 7, 1]
+        atk1_ani= [r'assets\characters\Fire wizard\fireball pngs\image_0-', 8, 1]
+        sp_ani= [r'assets\characters\Fire wizard\flame jet pngs\image_0-', 14, 1]
+        death_ani= [r'assets\characters\Fire wizard\dead\tile00', 6, 1]
 
-        # Player Skill Animations Source
-        atk1 = [r'assets\attacks\fire wizard\atk1', FIRE_WIZARD_ATK1, 1]
-        atk2 = [r'assets\attacks\fire wizard\atk2', FIRE_WIZARD_ATK2, 1]
-        atk3 = [r'assets\attacks\fire wizard\atk3\png_', FIRE_WIZARD_ATK3, 1]
-        sp = [r'assets\attacks\fire wizard\sp atk', FIRE_WIZARD_SP, 1]
+        # Attack Frame Source
+        atk1 = [r'assets\attacks\fire wizard\atk1', 10, 1, 3] # FIRE_WIZARD_ATK1 reduced from 12 to 10
+        atk2 = [r'assets\attacks\fire wizard\atk2', 53, 1, 0.3]
+        atk3 = [r'assets\attacks\fire wizard\atk3\png_', 34, 1, 0.3]
+        sp_atk = [r'assets\attacks\fire wizard\sp atk', 28, 1, 1.3]
 
-        self.bonus_type = "strength"
-        self.bonus_value = self.strength
+        self.attack_frames = {
+            'atk1frames': atk1[1],
+            'atk2frames': atk2[1],
+            'atk3frames': atk3[1],
+            'atk4frames': sp_atk[1],
+        }
 
-        # Player Skill Icons Source
-        skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\FireballIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_2 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\GlyphOfFireIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\RodOfPower29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\MeteorIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\kim special icon.png').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
+        # Load Attack Frames (Using Fire Wizard specific loading methods)
+        self.atk1 = self.load_img_frames_tile_method(atk1[0], atk1[1], atk1[2], atk1[3])
+        self.atk1_flipped = self.load_img_frames_flipped_tile_method(atk1[0], atk1[1], atk1[2], atk1[3])
+        self.atk2 = self.load_img_frames_numbering_method(atk2[0], atk2[1], atk2[2], atk2[3])
+        self.atk3 = self.load_img_frames_numbering_method_simple(atk3[0], atk3[1], atk3[2], atk3[3])
+        self.sp = self.load_img_frames_numbering_method(sp_atk[0], sp_atk[1], sp_atk[2], sp_atk[3])
 
-        special_skill_1 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\FlameReaveIcon29.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\SmiteIcon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4 = pygame.transform.scale(pygame.image.load(r'assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp').convert_alpha(), (ICON_WIDTH, ICON_HEIGHT))
-
-        # Player Icon Rects
-        if self.player_type == 1:
-            self.skill_1_rect = skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
-            self.skill_2_rect = skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
-            self.skill_3_rect = skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
-            self.skill_4_rect = skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
-
-            self.special_rect = special_icon.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 4 + 50, SKILL_Y_OFFSET))
-
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(X_POS_SPACING + START_OFFSET_X, SKILL_Y_OFFSET))
-            self.special_skill_2_rect = skill_2.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X, SKILL_Y_OFFSET))
-            self.special_skill_3_rect = special_skill_3.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 2, SKILL_Y_OFFSET))
-            self.special_skill_4_rect = special_skill_4.get_rect(center=(X_POS_SPACING + START_OFFSET_X + SPACING_X * 3, SKILL_Y_OFFSET))
-
-        elif self.player_type == 2:
-            self.special_rect = special_icon.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 4 - 50, SKILL_Y_OFFSET))
-
-            self.special_skill_1_rect = special_skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
-            self.special_skill_2_rect = skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
-            self.special_skill_3_rect = special_skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
-            self.special_skill_4_rect = special_skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
-
-            self.skill_1_rect = skill_1.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 3, SKILL_Y_OFFSET))
-            self.skill_2_rect = skill_2.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X * 2, SKILL_Y_OFFSET))
-            self.skill_3_rect = skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
-            self.skill_4_rect = skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
-
-        # Player Attack Animations Load
-        self.atk1 = self.load_img_frames_tile_method(atk1[0], atk1[1], atk1[2], FIRE_WIZARD_ATK1_SIZE)
-        self.atk1_flipped = self.load_img_frames_flipped_tile_method(atk1[0], atk1[1], atk1[2], FIRE_WIZARD_ATK1_SIZE)
-        self.atk2 = self.load_img_frames_numbering_method(atk2[0], atk2[1], atk2[2], FIRE_WIZARD_ATK2_SIZE)
-        self.atk3 = self.load_img_frames_numbering_method_simple(atk3[0], atk3[1], atk3[2], FIRE_WIZARD_ATK3_SIZE)
-        self.sp = self.load_img_frames_numbering_method(sp[0], sp[1], sp[2], FIRE_WIZARD_SP_SIZE)
-
-        # Player Animations Load
-        self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_basic_flipped = self.load_img_frames_flipped(basic_ani[0], basic_ani[1], basic_ani[2], DEFAULT_CHAR_SIZE)
-        # self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], 0.2)
-        # self.player_basic_flipped = self.load_img_frames_flipped(basic_ani[0], basic_ani[1], basic_ani[2], 0.2)
-
-        self.player_jump = self.load_img_frames(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_jump_flipped = self.load_img_frames_flipped(jump_ani[0], jump_ani[1], jump_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_idle = self.load_img_frames(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_idle_flipped = self.load_img_frames_flipped(idle_ani[0], idle_ani[1], idle_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_run = self.load_img_frames(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_run_flipped = self.load_img_frames_flipped(run_ani[0], run_ani[1], run_ani[2], DEFAULT_CHAR_SIZE)    
-        self.player_atk1 = self.load_img_frames(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_atk1_flipped = self.load_img_frames_flipped(atk1_ani[0], atk1_ani[1], atk1_ani[2], DEFAULT_CHAR_SIZE)  
+        # Load Character Frames
+        self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], self.char_size)
+        self.player_basic_flipped = self.load_img_frames_flipped(basic_ani[0], basic_ani[1], basic_ani[2], self.char_size)
+        
+        self.player_jump = self.load_img_frames(jump_ani[0], jump_ani[1], jump_ani[2], self.char_size)
+        self.player_jump_flipped = self.load_img_frames_flipped(jump_ani[0], jump_ani[1], jump_ani[2], self.char_size)
+        self.player_idle = self.load_img_frames(idle_ani[0], idle_ani[1], idle_ani[2], self.char_size)
+        self.player_idle_flipped = self.load_img_frames_flipped(idle_ani[0], idle_ani[1], idle_ani[2], self.char_size)
+        self.player_run = self.load_img_frames(run_ani[0], run_ani[1], run_ani[2], self.char_size)
+        self.player_run_flipped = self.load_img_frames_flipped(run_ani[0], run_ani[1], run_ani[2], self.char_size)    
+        self.player_atk1 = self.load_img_frames(atk1_ani[0], atk1_ani[1], atk1_ani[2], self.char_size)
+        self.player_atk1_flipped = self.load_img_frames_flipped(atk1_ani[0], atk1_ani[1], atk1_ani[2], self.char_size)  
         self.player_atk2 = self.player_atk1
         self.player_atk2_flipped = self.player_atk1_flipped
         self.player_atk3 = self.player_atk1
         self.player_atk3_flipped = self.player_atk1_flipped
-        self.player_sp = self.load_img_frames(sp_ani[0], sp_ani[1], sp_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_sp_flipped = self.load_img_frames_flipped(sp_ani[0], sp_ani[1], sp_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_death = self.load_img_frames(death_ani[0], death_ani[1], death_ani[2], DEFAULT_CHAR_SIZE)
-        self.player_death_flipped = self.load_img_frames_flipped(death_ani[0], death_ani[1], death_ani[2], DEFAULT_CHAR_SIZE)
+        self.player_sp = self.load_img_frames(sp_ani[0], sp_ani[1], sp_ani[2], self.char_size)
+        self.player_sp_flipped = self.load_img_frames_flipped(sp_ani[0], sp_ani[1], sp_ani[2], self.char_size)
+        self.player_death = self.load_img_frames(death_ani[0], death_ani[1], death_ani[2], self.char_size)
+        self.player_death_flipped = self.load_img_frames_flipped(death_ani[0], death_ani[1], death_ani[2], self.char_size)
 
         # Player Image and Rect
         self.image = self.player_idle[self.player_idle_index]
-        self.rect = self.image.get_rect(midbottom = (self.x_pos, self.y_pos)) #(for p1)
+        self.rect = self.image.get_rect(midbottom = (self.x_pos, self.y_pos))
+
+        # Application
+        self.max_health = self.strength * self.str_mult
+        self.max_mana = self.intelligence * self.int_mult
+        self.health = self.max_health
+        self.mana = self.max_mana
         
-        # Mana Values
-        self.mana_cost_list = [
-            self.atk1_mana_cost,
-            self.atk2_mana_cost,
-            self.atk3_mana_cost,
-            self.sp_mana_cost
-            ]
+        self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength)
+        self.mana_regen = self.calculate_regen(self.base_mana_regen, self.mana_regen_per_int, self.intelligence)
+        self.basic_attack_damage = self.calculate_regen(self.base_attack_damage, self.agi_mult, self.agility, basic_attack=True)
 
-        # Modify
-        self.lowest_mana_cost = self.mana_cost_list[0]
+        self.attack_speed = self.calculate_effective_as()
+        self.basic_attack_animation_speed = self.calculate_attack_animation_speed()
+        self.bonus_type = "strength"
+        self.bonus_value = self.strength
 
+        # Set to new hp/mana
+        self.white_health_p1 = self.health
+        self.white_mana_p1 = self.mana   
+        self.white_health_p2 = self.health
+        self.white_mana_p2 = self.mana 
+
+        # Inherited Attack Damages
+        self.atk1_damage = (self.base_damage['atk1dmg'][0], self.base_damage['atk1dmg'][1])
+        self.atk2_damage = (self.dmg_per_frame(self.base_damage['atk2dmg'][0], self.atk2), self.base_damage['atk2dmg'][1])
+        self.atk3_damage = (self.dmg_per_frame(self.base_damage['atk3dmg'][0], self.atk3), self.base_damage['atk3dmg'][1])
+        self.sp_damage = (self.dmg_per_frame(self.base_damage['atk4dmg'][0], self.sp), self.base_damage['atk4dmg'][1])
+        
+        self.sp_atk1_damage = (self.base_damage['sp_atk1dmg'][0], self.base_damage['sp_atk1dmg'][1])
+        self.sp_atk2_damage = (self.dmg_per_frame(self.base_damage['sp_atk2dmg'][0], self.atk2), self.base_damage['sp_atk2dmg'][1])
+        self.sp_atk3_damage = (self.dmg_per_frame(self.base_damage['sp_atk3dmg'][0], self.atk3), self.base_damage['sp_atk3dmg'][1])
+        self.sp_atk4_damage = (self.dmg_per_frame(self.base_damage['sp_atk4dmg'][0], self.sp), self.base_damage['sp_atk4dmg'][1])
+
+        # Distances 
         self.fireball_hitbox_size = self.calculate_hitbox_size(self.atk1, self.fireball_hitbox_size_modifier)
         self.fire_spire_hitbox_size = self.calculate_hitbox_size(self.atk3)
-        self.fireball_distance = self.calculate_attack_range(-self.fireball_cast_range, self.fireball_hitbox_size, self.fireball_speed, self.atk1_ani_count, self.fireball_frame_duration)
-        self.special_fireball_distance = self.calculate_attack_range(-self.special_fireball_cast_range, self.fireball_hitbox_size, self.special_fireball_speed, self.atk1_ani_count, self.fireball_frame_duration)
-        self.fire_spire_distance = self.calculate_attack_range(self.fire_spire_cast_range, self.fireball_hitbox_size, self.fire_spire_speed, self.atk3_ani_count, self.fire_spire_frame_duration)
+        
+        self.fireball_distance = self.calculate_attack_range(-self.fireball_cast_range, self.fireball_hitbox_size, self.fireball_speed, self.attack_frames['atk1frames'], self.fireball_frame_duration)
+        self.special_fireball_distance = self.calculate_attack_range(-self.special_fireball_cast_range, self.fireball_hitbox_size, self.special_fireball_speed, self.attack_frames['atk1frames'], self.fireball_frame_duration)
+        self.fire_spire_distance = self.calculate_attack_range(self.fire_spire_cast_range, self.fireball_hitbox_size, self.fire_spire_speed, self.attack_frames['atk3frames'], self.fire_spire_frame_duration)
 
+        # Skill Icons Load
+        skill_1_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\FireballIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        skill_2_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\GlyphOfFireIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        skill_3_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\RodOfPower29Icon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        skill_4_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\MeteorIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\kim special icon.png', (ICON_WIDTH, ICON_HEIGHT))
 
-        # Skills
+        special_skill_1_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\FlameReaveIcon29.webp', (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\SmiteIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp', (ICON_WIDTH, ICON_HEIGHT))
+
+        # Setup Skill Icon Rects natively like PA
+        self.setup_skill_icon_rects(
+            skill_icons=[skill_1_icon, skill_2_icon, skill_3_icon, skill_4_icon],
+            special_icon=special_icon,
+            special_skill_icons=[special_skill_1_icon, skill_2_icon, special_skill_3_icon, special_skill_4_icon],
+            x_pos_spacing = X_POS_SPACING,
+            start_offset_x = START_OFFSET_X,
+            spacing_x = SPACING_X,
+            skill_y_offset = SKILL_Y_OFFSET,
+            default_x_pos = DEFAULT_X_POS,
+        )
+
+        self.mana_cost_list = [self.atk1_mana_cost, self.atk2_mana_cost, self.atk3_mana_cost, self.sp_mana_cost]
+        self.special_mana_cost_list = [self.sp_atk1_mana_cost, self.sp_atk2_mana_cost, self.sp_atk3_mana_cost, self.sp_atk4_mana_cost]
+        self.lowest_mana_cost = self.mana_cost_list[0]
+
+        # --------------- Basic Skills ---------------
         self.attacks = [
             Attacks(
-                mana_cost=self.mana_cost_list[0],
-                skill_rect=self.skill_1_rect,
-                skill_img=skill_1,
-                cooldown=self.atk1_cooldown,
-                mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
-
+                skill_rect=self.skill_1_rect, skill_img=skill_1_icon, mana=self.mana,
+                mana_cost=self.mana_cost_list[0], cooldown=self.atk1_cooldown, damage=[self.base_damage['atk1dmg'][0], self.base_damage['atk1dmg'][1]],
                 skill_name='Fireball',
-                skill_stats={
-                    'Lv': [1, 'blueviolet'],
-                    'Damage': [0 , 'red'],
-                    'Distance': [self.fireball_distance, 'white']
-                },
-                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Distance': [self.fireball_distance, 'white']},
+                skill_desc='Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
-                mana_cost=self.mana_cost_list[1],
-                skill_rect=self.skill_2_rect,
-                skill_img=skill_2,
-                cooldown=self.atk2_cooldown,
-                mana=self.mana,
-                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
-
+                skill_rect=self.skill_2_rect, skill_img=skill_2_icon, mana=self.mana,
+                mana_cost=self.mana_cost_list[1], cooldown=self.atk2_cooldown, damage=[self.base_damage['atk2dmg'][0], self.base_damage['atk2dmg'][1]],
                 skill_name='Inferno Flames',
-                skill_stats={
-                    'Lv': [1, 'blueviolet'],
-                    'Damage': [0 , 'red'],
-                },
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red']},
                 skill_desc=f'Sets the ground on fire, dealing damage@to enemies when in contact. Flames lasts@{self.fire_repeat_default} instances, each lasts {self.fire_duration/1000:.1f} seconds.@- Fire count: {len(self.fire_count)}@- Total Duration: {(self.fire_duration*self.fire_repeat_default)/1000:.1f}'
             ),
             Attacks(
-                mana_cost=self.mana_cost_list[2],
-                skill_rect=self.skill_3_rect,
-                skill_img=skill_3,
-                cooldown=self.atk3_cooldown,
-                mana=self.mana,
-                damage=[self.raw_atk3_dmg, self.atk3_damage[1]],
-
+                skill_rect=self.skill_3_rect, skill_img=skill_3_icon, mana=self.mana,
+                mana_cost=self.mana_cost_list[2], cooldown=self.atk3_cooldown, damage=[self.base_damage['atk3dmg'][0], self.base_damage['atk3dmg'][1]],
                 skill_name='Incineration',
-                skill_stats={
-                    'Lv': [1, 'blueviolet'],
-                    'Damage': [0 , 'red'],
-                },
-                skill_desc=f'Ignites burst of fire on the ground,dealing@damage in a short amount of time.'
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red']},
+                skill_desc='Ignites burst of fire on the ground,dealing@damage in a short amount of time.'
             ),
             Attacks(
-                mana_cost=self.mana_cost_list[3],
-                skill_rect=self.skill_4_rect,
-                skill_img=skill_4,
-                cooldown=self.sp_cooldown,
-                mana=self.mana,
-                damage=[self.raw_atk4_dmg, self.sp_damage[1]],
-
+                skill_rect=self.skill_4_rect, skill_img=skill_4_icon, mana=self.mana,
+                mana_cost=self.mana_cost_list[3], cooldown=self.atk4_cooldown, damage=[self.base_damage['atk4dmg'][0], self.base_damage['atk4dmg'][1]],
                 skill_name='Fire Blast',
-                skill_stats={
-                    'Lv': [1, 'blueviolet'],
-                    'Damage': [0 , 'red'],
-                },
-                skill_desc=f'Casts fireblast on vicinity. Deals a massive@amount of damage to enemies in the area.'
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red']},
+                skill_desc='Casts fireblast on vicinity. Deals a massive@amount of damage to enemies in the area.'
+            ),
+            Attacks(
+                mana_cost=0, cooldown=self.basic_attack_cooldown, mana=self.mana,
+                skill_rect=self.basic_icon_rect, skill_img=self.basic_icon,   
+                skill_name='Basic Attack', skill_stats={'Type': ['Melee', 'white']}
+            ),
+            Attacks(
+                skill_rect=self.special_rect, skill_img=special_icon, mana=0, mana_cost=0, special_skill=True, cooldown=0,
+                skill_name='Activate Special',
+                skill_stats={'Type': ['Special', 'white'], 'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'], 'Move Speed': ['+ 10', 'green'], 'Duration': ['30', 'white']},
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         ]
 
-        self.attacks.append(
-            Attacks(
-                mana_cost=0,
-                skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon,
-                cooldown=self.basic_attack_cooldown,
-                mana=self.mana,
-
-                skill_name='Basic Attack',
-                skill_stats={
-                    'Type': ['Melee', 'white'],
-                },
-            )
-        )
-
-        self.attacks.append(
-            Attacks(
-                mana_cost=0,
-                skill_rect=self.special_rect,
-                skill_img=special_icon,
-                cooldown=0,
-                mana=0,
-                special_skill=True,
-                skill_name='Activate Special',
-                skill_stats={
-                    'Type': ['Special', 'white'],
-                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
-                    'Move Speed': ['+ 10', 'green'],
-                    'Duration': ['30', 'white']
-                },
-                skill_desc='Provides unique buffs and abilities to hero.'
-            )
-        )
-
-
-
-        #special
+        # --------------- Special Skills ---------------
         self.attacks_special = [
             Attacks(
-                mana_cost=self.mana_cost_list[0],
-                skill_rect=self.special_skill_1_rect,
-                skill_img=special_skill_1,
-                cooldown=self.atk1_cooldown,
-                mana=self.mana,
-                damage=[self.raw_sp_atk1_dmg, self.atk1_damage[1]],
-
+                skill_rect=self.special_skill_1_rect, skill_img=special_skill_1_icon, mana=self.mana,
+                mana_cost=self.special_mana_cost_list[0], cooldown=self.special_atk1_cooldown, damage=[self.base_damage['sp_atk1dmg'][0], self.base_damage['sp_atk1dmg'][1]],
                 skill_name='Fireball',
-                skill_stats={
-                    'Lv': [2, 'magenta'],
-                    'Damage': [0 , 'red'],
-                    'Distance': [self.special_fireball_distance, 'white']
-                },
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [self.special_fireball_distance, 'white']},
                 skill_desc=f'Casts a barrage of fireballs in a short@distance but damage is reduced. Enemies@hit are damaged.@- Fireball count: {len(self.special_fireball_offsets)}@- Damage per fireball: {self.special_fireball_damage_mult*100:.0f}%'
             ),
             Attacks(
-                mana_cost=self.atk2_mana_cost_sp,
-                skill_rect=self.special_skill_2_rect,
-                skill_img=skill_2,
-                cooldown=self.atk2_cooldown_sp,
-                mana=self.mana,
-                damage=[self.raw_sp_atk2_dmg, self.atk2_damage[1]],
-
+                skill_rect=self.special_skill_2_rect, skill_img=skill_2_icon, mana=self.mana,
+                mana_cost=self.special_mana_cost_list[1], cooldown=self.special_atk2_cooldown, damage=[self.base_damage['sp_atk2dmg'][0], self.base_damage['sp_atk2dmg'][1]],
                 skill_name='Inferno Flames',
-                skill_stats={
-                    'Lv': [2, 'magenta'],
-                    'Damage': [0 , 'red'],
-                },
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red']},
                 skill_desc=f'Sets the area on fire around you, dealing half@damage to enemies in larger area. Flames lasts@{self.fire_repeat_default} instances, each lasts {self.special_fire_duration/1000:.1f} seconds.@- Fire count: {len(self.special_fire_count)}@- Total Duration: {(self.special_fire_duration*self.fire_repeat_default)/1000:.1f}'
             ),
             Attacks(
-                mana_cost=int(self.mana_cost_list[2] - (self.mana_cost_list[2] * 0.2)),
-                skill_rect=self.special_skill_3_rect,
-                skill_img=special_skill_3,
-                cooldown=self.atk3_cooldown,
-                mana=self.mana,
-                damage=[self.raw_sp_atk3_dmg, self.atk3_damage[1]],
-
+                skill_rect=self.special_skill_3_rect, skill_img=special_skill_3_icon, mana=self.mana,
+                mana_cost=self.special_mana_cost_list[2], cooldown=self.special_atk3_cooldown, damage=[self.base_damage['sp_atk3dmg'][0], self.base_damage['sp_atk3dmg'][1]],
                 skill_name='Flame Spire',
-                skill_stats={
-                    'Lv': [2, 'magenta'],
-                    'Damage': [0 , 'red'],
-                    'Distance': [self.fire_spire_distance, 'white']
-                },
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [self.fire_spire_distance, 'white']},
                 skill_desc=f'Ignites a moving spire of fire on the ground,@dealing damage to enemies in its path. Repeats@{self.fire_spire_repeat} times.'
             ),
             Attacks(
-                mana_cost=int(self.mana_cost_list[3] - (self.mana_cost_list[3] * 0.2)),
-                skill_rect=self.special_skill_4_rect,
-                skill_img=special_skill_4,
-                cooldown=self.sp_cooldown,
-                mana=self.mana,
-                damage=[self.raw_sp_atk4_dmg, self.raw_sp_atk4_dmg_2nd],
-
+                skill_rect=self.special_skill_4_rect, skill_img=special_skill_4_icon, mana=self.mana,
+                mana_cost=self.special_mana_cost_list[3], cooldown=self.special_atk4_cooldown, damage=[self.base_damage['sp_atk4dmg'][0], self.base_damage['sp_atk4dmg'][1]],
                 skill_name='Fireblast',
-                skill_stats={
-                    'Lv': [2, 'magenta'],
-                    'Damage': [0 , 'red'],
-                },
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red']},
                 skill_desc=f'Casts multiple fireblasts in whole area.@- Fireblast count: {len(self.fire_blast_count)}@- Damage per fireblast: {self.fire_blast_damage_mult*100:.0f}%'
-
+            ),
+            Attacks(
+                mana_cost=0, cooldown=self.basic_attack_cooldown, mana=self.mana,
+                skill_rect=self.basic_icon_rect, skill_img=self.basic_icon,   
+                skill_name='Basic Attack', skill_stats={'Type': ['Melee', 'white']}
             )
         ]
 
-        self.attacks_special.append(
-            Attacks(
-                mana_cost=0,
-                skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon,
-                cooldown=self.basic_attack_cooldown,
-                mana=self.mana,
-                
-                skill_name='Basic Attack',
-                skill_stats={
-                    'Type': ['Melee', 'white'],
-                },
-            )
-        )
-
-        # Define which skills have i-frames (invulnerability)
         self.skill_iframes_config = {
             'attacking1': False,   
             'attacking2': False,  
             'attacking3': False,  
-            'sp_attacking': True,   
+            'sp_attacking': True,      
         }
 
-        # Regen Rate
-        self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
-        self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
-
-        # After Bar Reduces
-        self.white_health_p1 = self.health
-        self.white_mana_p1 = self.mana   
-        self.white_health_p2 = self.health
-        self.white_mana_p2 = self.mana   
-    
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
-        """The most crucial part of collecting user input.
-        - Processes player input each frame, handling movement and skill casting based on state."""
-        # ---------- Core ----------        
         self.keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
@@ -651,462 +340,252 @@ class Fire_Wizard(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0,
-                special_active_speed = 0.1,
-                jump_force = self.jump_force,
-                jump_force_modifier = 0
-                )
+                speed_modifier = 0, special_active_speed = 0.1, jump_force = self.jump_force, jump_force_modifier = 0)
             
         # ---------- Casting ----------
-        if self.is_frozen():
-            return
-        
-        if self.is_silenced() and not basic_hotkey:
-            return
-        
-        
-        if not self.special_active:
-            if not self.jumping and not self.is_dead():
-                if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >= self.attacks[0].mana_cost and self.attacks[0].is_ready():
-                        attack = Attack_Display(
-                            x=self.rect.centerx - self.fireball_cast_range if self.facing_right else self.rect.centerx + self.fireball_cast_range,
-                            y=self.rect.centery + 30,
-                            frames=self.atk1 if self.facing_right else self.atk1_flipped,
+        if self.is_frozen(): return
+        if self.is_silenced() and not basic_hotkey: return
+            
+        if self.is_pressing(hotkey1) and not self.is_busy_attacking():
+            if self.is_in_basic_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks, 0):
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', -self.fireball_cast_range, True),
+                        y=self.attack_position(self.rect, 'y', 30, False),
+                        frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
+                        frame_duration=self.fireball_frame_duration,
+                        repeat_animation=1,
+                        speed=self.fireball_speed if self.facing_right else -self.fireball_speed,
+                        dmg=self.atk1_damage[0],
+                        final_dmg=self.atk1_damage[1],
+                        who_attacks=self,
+                        who_attacked=self.enemy,
+                        moving=True,
+                        delay=(True, 800),
+                        sound=(True, self.atk1_sound, None, None),
+                        hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                        hitbox_scale_y=self.fireball_hitbox_size_modifier
+                    ))
+                    
+                    self.consume_mana(self.attacks, 0)
+                    self.reset_skill_cooldown(self.attacks, 0, current_time)
+                    self.modify_current_state(running=False, animation="attacking1", ani_index="player_atk1", ani_index_flipped="player_atk1")
+
+            elif self.is_in_special_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks_special, 0):
+                    for i, (x_off) in enumerate(self.special_fireball_offsets):
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', -x_off, True),
+                            y=self.rect.centery - random.randint(-50, 50),
+                            frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
                             frame_duration=self.fireball_frame_duration,
                             repeat_animation=1,
-                            speed=self.fireball_speed if self.facing_right else -self.fireball_speed,
-                            dmg=self.atk1_damage[0],
-                            final_dmg=self.atk1_damage[1],
+                            speed=self.special_fireball_speed if self.facing_right else -self.special_fireball_speed,
+                            dmg=self.sp_atk1_damage[0],
+                            final_dmg=self.sp_atk1_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
                             moving=True,
-                            delay=(True, 800),
                             sound=(True, self.atk1_sound, None, None),
-
+                            delay=(True, 750 + i * self.special_fire_delay_interval),
                             hitbox_scale_x=self.fireball_hitbox_size_modifier,
                             hitbox_scale_y=self.fireball_hitbox_size_modifier
-                            ) # Replace with the target
-                        attack_display.add(attack)
-                        self.mana -= self.attacks[0].mana_cost
-                        self.attacks[0].last_used_time = current_time
-                        self.running = False
-                        self.attacking1 = True
-                        self.player_atk1_index = 0
-                        self.player_atk1_index_flipped = 0
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")               
-                    # print('Skill 1 used')
+                        ))
+                    
+                    self.consume_mana(self.attacks_special, 0)
+                    self.reset_skill_cooldown(self.attacks_special, 0, current_time)
+                    self.modify_current_state(running=False, animation="attacking1", ani_index="player_atk1", ani_index_flipped="player_atk1")
 
-
-                elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >= self.attacks[1].mana_cost and self.attacks[1].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        # for i in [-200*3, -160*3, -120*3, -80*3, -40*3, 0, 40*3, 80*3, 120*3, 160*3, 200*3]:
-                        #     attack = Attack_Display(
-                        #         x=self.rect.centerx + 120 if self.facing_right else self.rect.centerx - 120, # in front of him
-                        #         y=self.rect.centery + 30,
-                        #         frames=self.atk2,
-                        #         frame_duration=62.893, # 20seconds total #3.33 seconds each
-                        #         repeat_animation=6,
-                        #         speed=5 if self.facing_right else -5,
-                        #         dmg=self.atk2_damage[0],
-                        #         final_dmg=self.atk2_damage[1],
-                        #         who_attacks=self,
-                        #         who_attacked=self.enemy,
-                        #         delay=(True, 800),
-                        #         sound=(True, self.atk2_sound, None, None),
-                        #         # stop_movement=(True,4,1)
-                        #         ) # Replace with the target
-                        #     attack_display.add(attack)
-
-                        for i in self.fire_count:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery + 30,
-                                frames=self.atk2,
-                                frame_duration=self.fire_duration / len(self.atk2), # 20seconds total #3.33 seconds each
-                                repeat_animation=self.fire_repeat_default,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.atk2_damage[0],
-                                final_dmg=self.atk2_damage[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                delay=(True, 800),
-                                sound=(True, self.atk2_sound, None, None)
-                                ) # Replace with the target
-                            attack_display.add(attack)
-
-                        self.mana -= self.attacks[1].mana_cost
-                        self.attacks[1].last_used_time = current_time
-                        self.running = False
-                        self.attacking2 = True
-                        self.player_atk2_index = 0
-                        self.player_atk2_index_flipped = 0
-                        
-                        
-
-                        # summon = create_summon_bot(Skeleton, self.player_type, self.enemy)
-                        # global_vars.summon_display.add(summon)
-
-                        
-                        # global_vars.assign_summon_enemy(self.player_type)
-                        # for hero in (hero1_group if self.player_type == 2 else hero2_group):
-                        #     hero.enemy = list(global_vars.summon_display)
-
-                        # for h in hero1_group:
-                        # h.enemy = list(hero2_group)
-
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")               
-                    # print('Skill 2 used')
-
-                elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >= self.attacks[2].mana_cost and self.attacks[2].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=self.rect.centerx + self.fire_spire_cast_range if self.facing_right else self.rect.centerx - self.fire_spire_cast_range, # in front of him
-                            y=self.rect.centery + 30,
-                            frames=self.atk3,
-                            frame_duration=self.fire_spire_frame_duration,
-                            repeat_animation=1,
-                            speed=0.5 if self.facing_right else -0.5,
-                            dmg=self.atk3_damage[0],
-                            final_dmg=self.atk3_damage[1],
+        elif self.is_pressing(hotkey2) and not self.is_busy_attacking():
+            if self.is_in_basic_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks, 1):
+                    for i in self.fire_count:
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', i, True),
+                            y=self.attack_position(self.rect, 'y', 30, False),
+                            frames=self.attack_frame_count(self.atk2),
+                            frame_duration=self.fire_duration / len(self.atk2),
+                            repeat_animation=self.fire_repeat_default,
+                            speed=5 if self.facing_right else -5,
+                            dmg=self.atk2_damage[0],
+                            final_dmg=self.atk2_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
                             delay=(True, 800),
-                            sound=(True, self.atk3_sound , None, None),
-                                # stop_movement=(True,3,1, 0.2)
-                            ) # Replace with the target
-                        attack_display.add(attack)
-                        self.mana -= self.attacks[2].mana_cost
-                        self.attacks[2].last_used_time = current_time
-                        self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                            sound=(True, self.atk2_sound, None, None)
+                        ))
+                    
+                    self.consume_mana(self.attacks, 1)
+                    self.reset_skill_cooldown(self.attacks, 1, current_time)
+                    self.modify_current_state(running=False, animation="attacking2", ani_index="player_atk2", ani_index_flipped="player_atk2")
+                    
+            elif self.is_in_special_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks_special, 1):
+                    for i in self.special_fire_count:
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', i, True),
+                            y=self.attack_position(self.rect, 'y', 30, False),
+                            frames=self.attack_frame_count(self.atk2),
+                            frame_duration=self.special_fire_duration / len(self.atk2),
+                            repeat_animation=self.fire_repeat_default,
+                            dmg=self.sp_atk2_damage[0],
+                            final_dmg=self.sp_atk2_damage[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            delay=(True, 800)
+                        ))
+                    self.atk2_sound.play()
+                    
+                    self.consume_mana(self.attacks_special, 1)
+                    self.reset_skill_cooldown(self.attacks_special, 1, current_time)
+                    self.modify_current_state(running=False, animation="attacking2", ani_index="player_atk2", ani_index_flipped="player_atk2")
 
-                        
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")   
-                    # print('Skill 3 used')
-                elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >=  self.attacks[3].mana_cost and self.attacks[3].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=self.rect.centerx + self.fireblast_cast_range if self.facing_right else self.rect.centerx - self.fireblast_cast_range, # in front of him
-                            y=self.rect.centery - 100,
-                            frames=self.sp,
+        elif self.is_pressing(hotkey3) and not self.is_busy_attacking():
+            if self.is_in_basic_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks, 2):
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', self.fire_spire_cast_range, True),
+                        y=self.attack_position(self.rect, 'y', 30, False),
+                        frames=self.attack_frame_count(self.atk3),
+                        frame_duration=self.fire_spire_frame_duration,
+                        repeat_animation=1,
+                        speed=0.5 if self.facing_right else -0.5,
+                        dmg=self.atk3_damage[0],
+                        final_dmg=self.atk3_damage[1],
+                        who_attacks=self,
+                        who_attacked=self.enemy,
+                        delay=(True, 800),
+                        sound=(True, self.atk3_sound, None, None)
+                    ))
+                    
+                    self.consume_mana(self.attacks, 2)
+                    self.reset_skill_cooldown(self.attacks, 2, current_time)
+                    self.modify_current_state(running=False, animation="attacking3", ani_index="player_atk3", ani_index_flipped="player_atk3")
+                    
+            elif self.is_in_special_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks_special, 2):
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', self.fire_spire_cast_range, True),
+                        y=self.attack_position(self.rect, 'y', 30, False),
+                        frames=self.attack_frame_count(self.atk3),
+                        frame_duration=self.fire_spire_frame_duration,
+                        repeat_animation=self.fire_spire_repeat,
+                        speed=self.fire_spire_speed if self.facing_right else -self.fire_spire_speed,
+                        dmg=self.sp_atk3_damage[0],
+                        final_dmg=self.sp_atk3_damage[1],
+                        who_attacks=self,
+                        who_attacked=self.enemy,
+                        moving=True,
+                        continuous_dmg=True,
+                        sound=(True, self.atk3_sound, None, None),
+                        delay=(True, 800)
+                    ))
+                    
+                    self.consume_mana(self.attacks_special, 2)
+                    self.reset_skill_cooldown(self.attacks_special, 2, current_time)
+                    self.modify_current_state(running=False, animation="attacking3", ani_index="player_atk3", ani_index_flipped="player_atk3")
+
+        elif self.is_pressing(hotkey4) and not self.is_busy_attacking():
+            if self.is_in_basic_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks, 3):
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', self.fireblast_cast_range, True),
+                        y=self.attack_position(self.rect, 'y', -100, False),
+                        frames=self.attack_frame_count(self.sp),
+                        frame_duration=80,
+                        repeat_animation=1,
+                        speed=5 if self.facing_right else -5,
+                        dmg=self.sp_damage[0],
+                        final_dmg=self.sp_damage[1],
+                        who_attacks=self,
+                        who_attacked=self.enemy,
+                        sound=(True, self.sp_sound, None, None)
+                    ))
+                    
+                    self.consume_mana(self.attacks, 3)
+                    self.reset_skill_cooldown(self.attacks, 3, current_time)
+                    self.modify_current_state(running=False, animation="sp_attacking", ani_index="player_sp", ani_index_flipped="player_sp")
+                    
+            elif self.is_in_special_mode() and not self.is_jumping():
+                if self.is_skill_ready(self.attacks_special, 3):
+                    for i in self.fire_blast_count:
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', i, True),
+                            y=self.attack_position(self.rect, 'y', -100, False),
+                            frames=self.attack_frame_count(self.sp),
                             frame_duration=80,
                             repeat_animation=1,
                             speed=5 if self.facing_right else -5,
-                            dmg=self.sp_damage[0],
-                            final_dmg=self.sp_damage[1],
+                            dmg=self.sp_atk4_damage[0],
+                            final_dmg=self.sp_atk4_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            sound=(True, self.sp_sound, None, None),
-                                # stop_movement=(True, 3, 3, 0.5)
-                            ) # Replace with the target
-                        attack_display.add(attack)
-                        self.mana -=  self.attacks[3].mana_cost
-                        self.attacks[3].last_used_time = current_time
-                        self.running = False
-                        self.sp_attacking = True
-                        self.player_sp_index = 0
-                        self.player_sp_index_flipped = 0
+                            sound=(True, self.sp_sound, None, None)
+                        ))
+                        
+                    self.consume_mana(self.attacks_special, 3)
+                    self.reset_skill_cooldown(self.attacks_special, 3, current_time)
+                    self.modify_current_state(running=False, animation="sp_attacking", ani_index="player_sp", ani_index_flipped="player_sp")
 
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")   
-                    # print('Skill 4 used')
-
-                elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.can_basic_attack():
-                        for i in [200, 900]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
-                                y=self.rect.centery + 40,
-                                frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
-                                frame_duration=BASIC_FRAME_DURATION,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.basic_attack_damage,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-
-                                sound=(True, self.basic_sound, None, None),
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
-                                moving=True,
-                                is_basic_attack=True
-                                )
-                            attack_display.add(attack)
-                        self.mana -= 0
-                        self.attacks[4].cooldown = self.basic_attack_cooldown
-                        self.attacks_special[4].cooldown = self.basic_attack_cooldown
-                        self.attacks[4].last_used_time = current_time
-                        self.running = False
-                        self.basic_attacking = True
-                        self.player_basic_index = 0
-                        self.player_basic_index_flipped = 0
-                        self.last_basic_attack_time = current_time
-                        # print("Attack executed")
-                    else:
-                        pass
-
-                elif special_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.special >= MAX_SPECIAL: # and self.attacks[5].special_is_ready(self.special)
-                        self.special_active = True
-                        self.special_sound.play()
-                    else:
-                        pass
-
-
-
-
-
-
-
-
-
-
-
-                    
-        else:
-            if not self.jumping and not self.is_dead():
-                if hotkey1 and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        for i, (x_off) in enumerate(self.special_fireball_offsets):
-                            attack = Attack_Display(
-                                x = self.rect.centerx - x_off if self.facing_right else self.rect.centerx + x_off,
-                                y = self.rect.centery - random.randint(-50, 50),
-                                frames=self.atk1 if self.facing_right else self.atk1_flipped,
-                                frame_duration=self.fireball_frame_duration,
-                                repeat_animation=1,
-                                speed=self.special_fireball_speed if self.facing_right else -self.special_fireball_speed,
-                                dmg=self.atk1_damage[0] * self.special_fireball_damage_mult,
-                                final_dmg=self.atk1_damage[1],
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                                moving=True,
-                                
-                            sound=(True, self.atk1_sound , None, None),
-                            delay=(True, 750+i*self.special_fire_delay_interval),
-                            
-                            hitbox_scale_x=self.fireball_hitbox_size_modifier,
-                            hitbox_scale_y=self.fireball_hitbox_size_modifier) # Replace with the target
-                            attack_display.add(attack)
-                            
-
-                            # attack2 = Attack_Display(
-                            #     x=self.rect.centerx + i*2 if self.facing_right else self.rect.centerx - i*2,
-                            #     y=self.rect.centery - i,
-                            #     frames=self.atk1_flipped if self.facing_right else self.atk1,
-                            #     frame_duration=100,
-                            #     repeat_animation=1,
-                            #     speed=-self.special_fireball_speed if self.facing_right else self.special_fireball_speed,
-                            #     dmg=self.atk1_damage[0]/6,
-                            #     final_dmg=self.atk1_damage[1],
-                            #     who_attacks=self,
-                            #     who_attacked=self.enemy,
-                            #     moving=True,
-                            # delay=(True, 800),
-                            
-                            # hitbox_scale_x=self.fireball_hitbox_size_modifier,
-                            # hitbox_scale_y=self.fireball_hitbox_size_modifier) # Replace with the target
-                            # attack_display.add(attack2)
-                        self.mana -=  self.attacks_special[0].mana_cost
-                        self.attacks_special[0].last_used_time = current_time
-                        self.running = False
-                        self.attacking1 = True
-                        self.player_atk1_index = 0
-                        self.player_atk1_index_flipped = 0
-
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")               
-                    # print('Skill 1 used')
-
-
-                elif hotkey2 and not self.attacking2 and not self.attacking1 and not self.attacking3 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        for i in self.special_fire_count:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery + 30,
-                                frames=self.atk2,
-                                frame_duration=self.special_fire_duration / len(self.atk2), # 15 seconds = damage / 2
-                                repeat_animation=self.fire_repeat_default,
-                                dmg=self.atk2_damage[0]*self.special_fire_damage_mult,
-                                final_dmg=self.atk2_damage[1]*self.special_fire_damage_mult,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                            delay=(True, 800)) # Replace with the target
-                            attack_display.add(attack)
-                        self.atk2_sound.play()
-                        self.mana -=  self.attacks_special[1].mana_cost
-                        self.attacks_special[1].last_used_time = current_time
-                        self.running = False
-                        self.attacking2 = True
-                        self.player_atk2_index = 0
-                        self.player_atk2_index_flipped = 0
-
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")               
-                    # print('Skill 2 used')
-
-                elif hotkey3 and not self.attacking3 and not self.attacking1 and not self.attacking2 and not self.sp_attacking and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[2].mana_cost and self.attacks_special[2].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        attack = Attack_Display(
-                            x=self.rect.centerx + self.fire_spire_cast_range if self.facing_right else self.rect.centerx - self.fire_spire_cast_range, # in front of him
-                            y=self.rect.centery + 30,
-                            frames=self.atk3,
-                            frame_duration=self.fire_spire_frame_duration,
-                            repeat_animation=self.fire_spire_repeat,
-                            speed=self.fire_spire_speed if self.facing_right else -self.fire_spire_speed,
-                            dmg=self.atk3_damage[0] * self.fire_spire_damage_mult,
-                            final_dmg=self.atk3_damage[1],
+        elif self.is_pressing(basic_hotkey) and not self.is_busy_attacking():
+            if self.is_in_basic_mode() and not self.is_jumping():
+                if self.can_basic_attack():
+                    for i in [200, 900]:
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', 40, True),
+                            y=self.attack_position(self.rect, 'y', 40, False),
+                            frames=self.attack_frame_count(self.basic_slash, self.basic_slash_flipped),
+                            frame_duration=BASIC_FRAME_DURATION,
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
                             moving=True,
-                            continuous_dmg=True,
-                            sound=(True, self.atk3_sound , None, None),
-                            delay=(True, 800)) # Replace with the target
-                        attack_display.add(attack)
-                        self.mana -=  self.attacks_special[2].mana_cost
-                        self.attacks_special[2].last_used_time = current_time
-                        self.running = False
-                        self.attacking3 = True
-                        self.player_atk3_index = 0
-                        self.player_atk3_index_flipped = 0
+                            delay=(True, self.calculate_attack_delay(i)),
+                            sound=(True, self.basic_sound, None, None),
+                            is_basic_attack=True
+                        ))
+                    self.consume_mana(self.attacks, 4)
+                    self.reset_skill_cooldown(self.attacks, 4, current_time)
+                    self.modify_current_state(running=False, animation="basic_attacking", ani_index="player_basic", ani_index_flipped="player_basic")
+                    self.modify_attack_state(current_time, 'basic')
+                    
+            elif self.is_in_special_mode() and not self.is_jumping():
+                if self.can_basic_attack(): # Reusing can_basic_attack since it relies on the unified basic attack timer
+                    for i in [200, 900]:
+                        attack_display.add(Attack_Display(
+                            x=self.attack_position(self.rect, 'x', 40, True),
+                            y=self.attack_position(self.rect, 'y', 40, False),
+                            frames=self.attack_frame_count(self.basic_slash, self.basic_slash_flipped),
+                            frame_duration=BASIC_FRAME_DURATION,
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            moving=True,
+                            delay=(True, self.calculate_attack_delay(i)),
+                            sound=(True, self.basic_sound, None, None),
+                            is_basic_attack=True
+                        ))
+                    self.consume_mana(self.attacks_special, 4)
+                    self.reset_skill_cooldown(self.attacks_special, 4, current_time)
+                    self.modify_current_state(running=False, animation="basic_attacking", ani_index="player_basic", ani_index_flipped="player_basic")
+                    self.modify_attack_state(current_time, 'basic')
 
-                        
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")   
-                    # print('Skill 3 used')
-                elif hotkey4 and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >=  self.attacks_special[3].mana_cost and self.attacks_special[3].is_ready():
-                        # Create an attack
-                        # print("Z key pressed")
-                        for i in self.fire_blast_count:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + i if self.facing_right else self.rect.centerx - i, # in front of him
-                                y=self.rect.centery - 100,
-                                frames=self.sp,
-                                frame_duration=80,
-                                repeat_animation=1,
-                                speed=5 if self.facing_right else -5,
-                                dmg=self.sp_damage[0] * self.fire_blast_damage_mult,
-                                final_dmg=self.sp_damage[1] * self.fire_blast_damage_mult,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-                            sound=(True, self.sp_sound , None, None)) # Replace with the target
-                            attack_display.add(attack)
-                        self.mana -=  self.attacks_special[3].mana_cost
-                        self.attacks_special[3].last_used_time = current_time
-                        self.running = False
-                        self.sp_attacking = True
-                        self.player_sp_index = 0
-                        self.player_sp_index_flipped = 0
+        elif self.is_pressing(special_hotkey) and not self.is_busy_attacking():
+            if self.special >= MAX_SPECIAL:
+                self.special_active = True
+                self.special_sound.play()
 
-                        # print("Attack executed")
-                    else:
-                        pass
-                        # print(f"Attack did not execute: {self.mana}:")   
-                    # print('Skill 4 used')
-
-                elif basic_hotkey and not self.sp_attacking and not self.attacking1 and not self.attacking2 and not self.attacking3 and not self.basic_attacking:
-                    if self.mana >= 0 and self.can_basic_attack():
-                        
-                        for i in [200, 900]:
-                            attack = Attack_Display(
-                                x=self.rect.centerx + 40 if self.facing_right else self.rect.centerx - 40,
-                                y=self.rect.centery + 40,
-                                frames=self.basic_slash if self.facing_right else self.basic_slash_flipped,
-                                frame_duration=BASIC_FRAME_DURATION,
-                                repeat_animation=1,
-                                speed=0,
-                                dmg=self.basic_attack_damage  * DEFAULT_BASIC_ATK_DMG_BONUS,
-                                final_dmg=0,
-                                who_attacks=self,
-                                who_attacked=self.enemy,
-
-                                sound=(True, self.basic_sound, None, None),
-                                delay=(True, self.basic_attack_animation_speed * (i / DEFAULT_ANIMATION_SPEED)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
-                                moving=True,
-                                is_basic_attack=True
-                                )
-                            attack_display.add(attack)
-                        self.mana -= 0
-                        self.attacks_special[4].last_used_time = current_time
-                        self.running = False
-                        self.basic_attacking = True
-                        self.player_basic_index = 0
-                        self.player_basic_index_flipped = 0
-                        self.last_basic_attack_time = current_time
-
-                        # print("Attack executed")
-                    else:
-                        pass
-
-                
-     
-            
-        
-    
     def update(self):
-        
-        # # Base and Bonus Attack Speed Variables
-        # print(f"base_attack_speed: {self.base_attack_speed}")  # 300 (fire wizard specific)
-        # print(f"base_attack_time: {self.base_attack_time}")    # 1700 (milliseconds)
-        # print(f"bonus_attack_speed_flat: {self.bonus_attack_speed_flat}")  # 0
-        # print(f"bonus_attack_speed_per: {self.bonus_attack_speed_per}")    # 0.0
-
-        # # Calculated Attack Speed Values
-        # print(f"attack_speed (effective): {self.attack_speed}")  # Calculated via calculate_effective_as()
-        # print(f"basic_attack_cooldown: {self.basic_attack_cooldown}")  # Calculated via calculate_basic_attack_interval()
-        # print(f"basic_attack_animation_speed: {self.basic_attack_animation_speed}")  # Calculated based on attack speed
-
-        # # Timing and State Variables
-        # print(f"last_basic_attack_time: {self.last_basic_attack_time}")  # Timestamp of last basic attack
-
-        # # Related Constants (from global_vars)
-        # print(f"AGILITY_AS_BONUS: {global_vars.AGILITY_AS_BONUS}")  # 1 (+1 AS per agility point)
-        # print(f"BASIC_ATK_COOLDOWN: {global_vars.BASIC_ATK_COOLDOWN}")  # 500 (fallback cooldown in ms)
-        # print(f"DEFAULT_ANIMATION_SPEED: {global_vars.DEFAULT_ANIMATION_SPEED}")  # 120 (frames per second)
-        # print(f"MAX_ATTACK_SPEED: {global_vars.MAX_ATTACK_SPEED}")  # 700 (fastest cap)
-        # print(f"MIN_ATTACK_SPEED: {global_vars.MIN_ATTACK_SPEED}")  # 20 (slowest cap)
-
-        # # Method Results
-        # print(f"calculate_effective_as(): {self.calculate_effective_as()}")  # Current effective attack speed
-        # print(f"calculate_basic_attack_interval(): {self.calculate_basic_attack_interval()}")  # Current interval in ms
-        # print(f"can_basic_attack(): {self.can_basic_attack()}")  # Boolean: ready to attack?
-         
-        
         if not self.is_dead():
             self.player_death_index = 0
             self.player_death_index_flipped = 0
+            
         if self.is_dead():
             self.play_death_animation()
         elif self.jumping:
@@ -1130,8 +609,6 @@ class Fire_Wizard(Player):
         self.y_velocity += DEFAULT_GRAVITY
         self.y_pos += self.y_velocity
 
-        
-
         # Update the player's position
         self.rect.midbottom = (self.x_pos, self.y_pos)
 
@@ -1149,8 +626,5 @@ class Fire_Wizard(Player):
                 self.special -= SPECIAL_DURATION
                 if self.special <= 0:
                     self.special_active = False
-        # if self.running:
-        #     print('is running')
 
-        
         super().update()

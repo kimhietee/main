@@ -249,7 +249,7 @@ class Fire_Wizard(Player):
                 skill_rect=self.skill_1_rect, skill_img=skill_1_icon, mana=self.mana,
                 mana_cost=self.mana_cost_list[0], cooldown=self.atk1_cooldown, damage=[self.base_damage['atk1dmg'][0], self.base_damage['atk1dmg'][1]],
                 skill_name='Fireball',
-                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Distance': [self.fireball_distance, 'white']},
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Distance': [f'{self.fireball_distance}' + ' units', 'green']},
                 skill_desc='Casts fireball in a short distance.@Enemies hit are damaged.'
             ),
             Attacks(
@@ -292,7 +292,7 @@ class Fire_Wizard(Player):
                 skill_rect=self.special_skill_1_rect, skill_img=special_skill_1_icon, mana=self.mana,
                 mana_cost=self.special_mana_cost_list[0], cooldown=self.special_atk1_cooldown, damage=[self.base_damage['sp_atk1dmg'][0], self.base_damage['sp_atk1dmg'][1]],
                 skill_name='Fireball',
-                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [self.special_fireball_distance, 'white']},
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [f'{self.special_fireball_distance}' + ' units', 'green']},
                 skill_desc=f'Casts a barrage of fireballs in a short@distance but damage is reduced. Enemies@hit are damaged.@- Fireball count: {len(self.special_fireball_offsets)}@- Damage per fireball: {self.special_fireball_damage_mult*100:.0f}%'
             ),
             Attacks(
@@ -306,7 +306,7 @@ class Fire_Wizard(Player):
                 skill_rect=self.special_skill_3_rect, skill_img=special_skill_3_icon, mana=self.mana,
                 mana_cost=self.special_mana_cost_list[2], cooldown=self.special_atk3_cooldown, damage=[self.base_damage['sp_atk3dmg'][0], self.base_damage['sp_atk3dmg'][1]],
                 skill_name='Flame Spire',
-                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [self.fire_spire_distance, 'white']},
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [f'{self.fire_spire_distance}' + ' units', 'green']},
                 skill_desc=f'Ignites a moving spire of fire on the ground,@dealing damage to enemies in its path. Repeats@{self.fire_spire_repeat} times.'
             ),
             Attacks(

@@ -97,7 +97,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.agility = 30 # = 35
 
         self.base_health_regen = 0.8 # 1.12
-        self.base_mana_regen =0# 5.4 # 5.92
+        self.base_mana_regen = 5.0 # 5.92
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100
@@ -177,7 +177,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk1_damage = (self.raw_atk1_dmg, 0) # buff
         self.atk2_damage = (self.raw_atk2_dmg / self.atk2_ani_count, 2) # roots arrow +50 mana
         self.atk3_damage = (self.raw_atk3_dmg / self.atk3_ani_count, 5) # green roots +70 mana
-        self.sp_damage = (self.raw_atk4_dmg / self.atk4_ani_count, 0) # beam +150 mana
+        self.sp_damage = (self.raw_atk4_dmg / self.atk4_ani_count, self.raw_atk4_dmg / self.atk4_ani_count) # beam +150 mana
 
         #special
         self.sp_atk2_damage_2nd = (self.raw_sp_atk2_dmg_2nd / self.sp_atk2_ani_count, 0) # poison arrow +30 mana
@@ -199,7 +199,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # ex. 100 / 0.5 = 50 / 10 = 5
         # (Skill mana cost / Desired mana refund) * attack total damage (modify the frames of attack)
         # mana refund for arrow is default at 2
-        self.mana_refund_multiplier = 1
+        self.mana_refund_multiplier = 2
+        self.attack_mana_refund_reduction = 0.5
         # sk1 = 0
         # sk2 = 50
         # sk3 = 70
@@ -451,13 +452,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.atk2_cooldown,
                 mana=self.mana,
                 damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Magic Arrow',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.arrow_distance, 'white'],
-                    'Mana Refund': [f'{round(self.atk2_mana_refund, 2)}', 'green']
+                    'Distance': [f'{self.arrow_distance}' + ' units', 'green'],
+                    'Mana as Damage': [0, 'maize']
                 },
                 skill_desc=f'Roots the enemy hit with single attack.@Counts as basic attack.@- Root duration: {self.root_duration_atk2/1000}s'
             ),
@@ -468,12 +470,13 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.atk3_cooldown,
                 mana=self.mana,
                 damage=[self.raw_atk3_dmg, self.atk3_damage[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Arrow Volley',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Mana Refund': [f'{round(self.atk3_mana_refund, 2)}', 'green'],
+                    'Mana as Damage': [0, 'maize']
                     # 'Cast Range': [self.arrow_volley_cast_range, 'white']
                 },
                 skill_desc=f'Shoots 3 spiky arrows that enroots enemies@hit within the area while jumping.@- Max range: {self.arrow_volley_cast_range}@- Root duration: {self.root_duration_atk3/1000}s'
@@ -485,13 +488,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.sp_cooldown,
                 mana=self.mana,
                 damage=[self.raw_atk4_dmg, self.sp_damage[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Powershot',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
-                    'Mana Refund': [f'{round(self.sp_mana_refund, 2)}', 'green']
+                    'Mana as Damage': [0, 'maize']
                 },
                 skill_desc=f'Charges up the bow to release a powerful@laser beam.'
             )
@@ -504,15 +508,18 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana,
+                # mana_refund=self.mana_refund_multiplier * self.attack_mana_refund_reduction,
                 # hero=self,
 
                 skill_name='Basic Attack',
                 skill_stats={
                     'Type': ['Ranged', 'white'],
                     'Ability': ['Splinter', 'green'],
-                    'Distance': [self.arrow_distance, 'white']
+                    'Distance': [f'{self.arrow_distance}' + ' units', 'green'],
+                    'Mana as Damage': [f'{(self.mana_refund_multiplier * self.attack_mana_refund_reduction)*100}%', 'maize']
+
                 },
-                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks deals damage when special is active.@Some spells can have this ability.@- Damage: 30% of basic attack '
+                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks deals damage when special is active.@Some spells can have this ability.@- Damage: 30% of basic attack@- Mana as Damage Reduction: {self.attack_mana_refund_reduction*100}%'
             )
         )
 
@@ -569,12 +576,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.atk2_cooldown,
                 mana=self.mana,
                 damage=[self.raw_sp_atk2_dmg + self.raw_sp_atk2_dmg_2nd, self.atk2_damage_2nd[1] + self.sp_atk2_damage_2nd[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Magic Arrow',
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.arrow_distance, 'white']
+                    'Distance': [f'{self.arrow_distance}' + ' units', 'green'],
+                    'Mana as Damage': [0, 'maize']
                 },
                 skill_desc=f'Poisons the enemy hit with single attack. Slows@enemy after the poison attack. Counts as basic@attack.@- Poison Slow: {(1 - self.poison_slow_1)*100}%/{(1 - self.poison_slow_2)*100}%@- Poison duration: {self.poison_duration_1/1000}s/{self.poison_duration_2/1000}s'
             ),
@@ -585,12 +594,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.atk3_cooldown_for_special,
                 mana=self.mana,
                 damage=[self.raw_sp_atk3_dmg, self.sp_atk3_damage[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Raining Arroww',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                     'Type': ['Single Target', 'white'],
+                    'Mana as Damage': [0, 'maize']
                 },
                 skill_desc=f'Shoots barrage of arrows to the closest enemy.@Enroots the enemy hit with raining arrows.@- Root duration: {self.root_duration_atk3/1000}s'
             ),
@@ -601,12 +612,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 cooldown=self.sp_cooldown_for_special,
                 mana=self.mana,
                 damage=[self.raw_sp_atk4_dmg, self.sp_damage_2nd[1]],
+                mana_refund=self.mana_refund_multiplier,
 
                 skill_name='Death Beam',
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Invulnerability': ['True', 'green'],
                     'Damage': [0 , 'red'],
+                    'Mana as Damage': [0, 'maize']
                 },
                 skill_desc=f'Releases a deadly laser beam that deals@significant amount of damage to a large area.'
             )
@@ -619,14 +632,16 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_img=self.basic_icon3,
                 cooldown=self.basic_attack_cooldown,
                 mana=self.mana,
+                # mana_refund=self.mana_refund_multiplier * self.attack_mana_refund_reduction,
 
                 skill_name='Basic Attack',
                 skill_stats={
                     'Type': ['Basic Attack', 'white'],
                     'Ability': ['Splinter', 'green'],
-                    'Distance': [self.arrow_distance, 'white']
+                    'Distance': [f'{self.arrow_distance}' + ' units', 'green'],
+                    'Mana as Damage': [f'{(self.mana_refund_multiplier * self.attack_mana_refund_reduction)*100}%', 'maize']
                 },
-                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks can deal damage.@Some spells can have this ability@- Damage: 30% of basic attack '
+                skill_desc=f'Arrow can get stuck to the enemy when hit.@Attacks can deal damage.@Some spells can have this ability@- Damage: 30% of basic attack@- Mana as Damage Reduction: {self.attack_mana_refund_reduction*100}%'
             )
         )
 
@@ -834,6 +849,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             add_mana=True,
                             mana_mult=self.mana_refund_multiplier,
+                            is_basic_attack=True, # can crit
 
                             spawn_attack= {
                             'use_attack_onhit_pos': True,
@@ -994,7 +1010,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             ) 
                         attack_display.add(attack)
                         self.mana -=  self.attacks[3].mana_cost
-                        # self.display_damage(50, interval=30, color=cyan2, size=50)
+                        # self.display_damage(50, interval=30, color'maize2, size=50)
                         self.attacks[3].last_used_time = current_time
                         self.running = False
                         self.sp_attacking = True
@@ -1034,7 +1050,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=self.mana_refund_multiplier,
+                            mana_mult=self.mana_refund_multiplier * self.attack_mana_refund_reduction,
                             
                             # leave arrow bullets
                             spawn_attack= {
@@ -1067,7 +1083,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # print(self.atk_haste_duration)
                         attack_display.add(attack)
                         self.mana -= 0
-                        # self.display_damage(50, interval=30, color=cyan2, size=50)
+                        # self.display_damage(50, interval=30, color'maize2, size=50)
                         self.attacks[4].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True
@@ -1186,6 +1202,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
                             add_mana=True,
                             mana_mult=self.mana_refund_multiplier,
+                            is_basic_attack=True, # can crit
 
                             spawn_attack= {
                             'use_attack_onhit_pos': True,
@@ -1255,7 +1272,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                                             'follow': (False, True),
                                                             'follow_offset': (random.randint(-30, 30), random.randint(-40, 80)),
                                                             'add_mana': True,
-                                                            'mana_mult': self.mana_refund_multiplier, # self.sp_atk2_mana_refund_2nd,
+                                                            'mana_mult': self.mana_refund_multiplier * self.attack_mana_refund_reduction, # self.sp_atk2_mana_refund_2nd,
                                                             'hitbox_scale_x': 0.1,
                                                             'hitbox_scale_y': 0.1,
                                                             }
@@ -1331,7 +1348,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
-                                    'mana_mult': self.mana_refund_multiplier, #self.sp_atk2_mana_refund_2nd,
+                                    'mana_mult': self.mana_refund_multiplier * self.attack_mana_refund_reduction, #self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
@@ -1435,7 +1452,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             hitbox_scale_y=0.1,
 
                             add_mana=True,
-                            mana_mult=self.mana_refund_multiplier,
+                            mana_mult=self.mana_refund_multiplier * self.attack_mana_refund_reduction,
 
                             # leave arrow bullets
                             spawn_attack= {
@@ -1458,6 +1475,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                                     'follow': (False, True),
                                     'follow_offset': (random.randint(-30, 30), (random.randint(30, 45))),
                                     'add_mana': True,
+                                    'mana_mult': self.mana_refund_multiplier * self.attack_mana_refund_reduction, # self.sp_atk2_mana_refund_2nd,
                                     'hitbox_scale_x': 0.1,
                                     'hitbox_scale_y': 0.1,
                                     }
@@ -1470,7 +1488,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                         # print(self.atk_haste_duration)
                         attack_display.add(attack)
                         self.mana -= 0
-                        # self.display_damage(50, interval=30, color=cyan2, size=50)
+                        # self.display_damage(50, interval=30, color'maize2, size=50)
                         self.attacks_special[4].last_used_time = current_time
                         self.running = False
                         self.attacking2 = True

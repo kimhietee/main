@@ -308,7 +308,7 @@ class Attacks:
 
 
     def __init__(self, mana_cost:int, skill_rect:pygame.Rect, skill_img:pygame.Surface, cooldown:int, mana:int='self.mana', damage:list=[0,0], special_skill=False,
-                 skill_name='', skill_stats='', skill_desc='', mana_refund=0, hero=None):
+                 skill_name='', skill_stats='', skill_desc='', mana_refund=1, hero=None):
         self.mana_cost = mana_cost
         self.skill_rect = skill_rect
         self.skill_img = skill_img
@@ -552,9 +552,11 @@ class Attacks:
                 elif name == 'Heal':
                     if type(self.skill_stats['Heal']) == list:
                         self.skill_stats['Heal'][0] = round(self.damage, 2)
-                elif name == 'Mana Refund':
-                    if type(self.skill_stats['Mana Refund']) == list:
-                        self.skill_stats['Mana Refund'][0] = round(self.mana_refund, 1)
+                elif name == 'Mana as Damage':
+                    if type(self.skill_stats['Mana as Damage']) == list:
+                        if type(self.skill_stats['Mana as Damage'][0]) == str:
+                            break
+                        self.skill_stats['Mana as Damage'][0] = round(self.damage * self.mana_refund, 2)
 
                     # else: # for basic attack damage, don't use list (im confused)
                     #     if self.hero is not None:
@@ -2093,7 +2095,7 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
     "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
     "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana, Reduction",
     "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%/20% Mana, Cost and Delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% Lifesteal, 20% Base Attack Speed, 200%+ Mana Refund",
+    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% Lifesteal, 20% Base Attack Speed, + 200% Mana as Damage",
     "Yurei": "Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% Cooldown Reduction",
     "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5%/10% Stat,Potency",
     "Phantom Assassin": "Strength: 40, Intelligence: 40, Agility: 30, , Trait: 0",
@@ -2888,8 +2890,8 @@ def player_selection():
     
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Wanderer_Magician
-            PLAYER_2_SELECTED_HERO = Forest_Ranger
+            PLAYER_1_SELECTED_HERO = Fire_Knight
+            PLAYER_2_SELECTED_HERO = Wanderer_Magician
             map_selected = Animate_BG.dark_forest_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

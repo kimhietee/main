@@ -694,12 +694,14 @@ class DisplaySkillInfo:
     
     # Color palette
     COLOR_MAP = {
-        'red': (220, 50, 50),
-        'white': (215, 215, 215),
-        'cyan': (0, 255, 255),
-        'green': (100, 200, 100),
-        'blueviolet': (138,43,226),
-        'magenta': (255,0,255)
+        'red': (220, 50, 50), # damage
+        'white': (205, 205, 205), # neutral
+        'cyan': (0, 255, 255), # mana 
+        'green': (100, 200, 100), #heal
+        'blueviolet': (138,43,226), # level 1
+        'magenta': (255,0,255), # level 2   
+        'orange': (255,165,0), # level 3
+        'maize': (251,236,93), # mana refund
     }
     
     def __init__(self, image_path, pos, skill_name, font_path=None, font_size=16, 

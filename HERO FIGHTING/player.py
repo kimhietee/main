@@ -1040,41 +1040,54 @@ class Player(pygame.sprite.Sprite):
                         else:
                             self.sp_atk2_damage *= (1 + val)
 
-                    if hasattr(self, 'sp_atk3_damage'): # also for water princess (only single)
+                    if hasattr(self, 'sp_atk3_damage'):
                         if isinstance(self.sp_atk3_damage, tuple):
                             self.sp_atk3_damage = (self.sp_atk3_damage[0] * (1 + val), self.sp_atk3_damage[1] * (1 + val))
                         else:
                             self.sp_atk3_damage *= (1 + val)
 
-                    if hasattr(self, 'sp_atk4_damage'): # also for water princess (only single)
+                    if hasattr(self, 'sp_atk4_damage'):
                         if isinstance(self.sp_atk4_damage, tuple):
                             self.sp_atk4_damage = (self.sp_atk4_damage[0] * (1 + val), self.sp_atk4_damage[1] * (1 + val))
                         else:
                             self.sp_atk4_damage *= (1 + val)
 
-
+                    if hasattr(self, 'sp_atk1_damage_2nd'):
+                        if isinstance(self.sp_atk1_damage_2nd, tuple):
+                            self.sp_atk1_damage_2nd = (self.sp_atk1_damage_2nd[0] * (1 + val), self.sp_atk1_damage_2nd[1] * (1 + val))
+                        else:
+                            self.sp_atk1_damage_2nd *= (1 + val)
 
                     if hasattr(self, 'sp_atk2_damage_2nd'): # For water princess
                         self.sp_atk2_damage_2nd = (self.sp_atk2_damage_2nd[0] * (1 + val), self.sp_atk2_damage_2nd[1] * (1 + val))
                     if hasattr(self, 'sp_atk2_damage_3rd'): # For water princess
                         self.sp_atk2_damage_3rd = (self.sp_atk2_damage_3rd[0] * (1 + val), self.sp_atk2_damage_3rd[1] * (1 + val))
 
-                    # -----------------------------------------------
-                    if hasattr(self, 'atk2_mana_refund'): # for forest ranger mana refund trait
-                        self.atk2_mana_refund *= (1 + val)
-                    if hasattr(self, 'atk3_mana_refund'): # for forest ranger mana refund trait
-                        self.atk3_mana_refund *= (1 + val)
-                    if hasattr(self, 'sp_mana_refund'): # for forest ranger mana refund trait
-                        self.sp_mana_refund *= (1 + val)
+                    if hasattr(self, 'sp_atk3_damage_2nd'):
+                        if isinstance(self.sp_atk3_damage_2nd, tuple):
+                            self.sp_atk3_damage_2nd = (self.sp_atk3_damage_2nd[0] * (1 + val), self.sp_atk3_damage_2nd[1] * (1 + val))
+                        else:
+                            self.sp_atk3_damage_2nd *= (1 + val)
 
-                    if hasattr(self, 'sp_atk2_mana_refund_2nd'): # for forest ranger mana refund trait
-                        self.sp_atk2_mana_refund_2nd *= (1 + val)
-                    if hasattr(self, 'atk2_mana_refund_2nd'): # for forest ranger mana refund trait
-                        self.atk2_mana_refund_2nd *= (1 + val)
-                    if hasattr(self, 'sp_atk3_mana_refund'): # for forest ranger mana refund trait
-                        self.sp_atk3_mana_refund *= (1 + val)
-                    if hasattr(self, 'sp_mana_refund_2nd'): # for forest ranger mana refund trait
-                        self.sp_mana_refund_2nd *= (1 + val)
+                    if hasattr(self, 'sp_atk4_damage_2nd'):
+                        if isinstance(self.sp_atk4_damage_2nd, tuple):
+                            self.sp_atk4_damage_2nd = (self.sp_atk4_damage_2nd[0] * (1 + val), self.sp_atk4_damage_2nd[1] * (1 + val))
+                        else:
+                            self.sp_atk4_damage_2nd *= (1 + val)
+
+                    if hasattr(self, 'special_sp_damage1'):
+                        if isinstance(self.special_sp_damage1, tuple):
+                            self.special_sp_damage1 = (self.special_sp_damage1[0] * (1 + val), self.special_sp_damage1[1] * (1 + val))
+                        else:
+                            self.special_sp_damage1 *= (1 + val)
+                    
+                    if hasattr(self, 'special_sp_damage2'):
+                        if isinstance(self.special_sp_damage2, tuple):
+                            self.special_sp_damage2 = (self.special_sp_damage2[0] * (1 + val), self.special_sp_damage2[1] * (1 + val))
+                        else:
+                            self.special_sp_damage2 *= (1 + val)
+                    # -----------------------------------------------
+                    
                     
                     # apply damage buff for skill info
                     num_skills = len(self.attacks) - 1  # 4 skills, skip basic (assumes basic is last)
@@ -1831,7 +1844,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_stats = [
                 {'icon': self.attack_speed_icon, 'value': f'{self.attack_speed:.0f}', 'color': orange},
                 {'icon': self.attack_time_icon, 'value': f'{f'{self.basic_attack_cooldown / 1000:.2f}'}s', 'color': orange},
-                {'icon': self.attack_damage_icon, 'value': f'{self.basic_attack_damage:.1f}', 'color': orange}
+                {'icon': self.attack_damage_icon, 'value': f'{self.basic_attack_damage * (global_vars.DEFAULT_BASIC_ATK_DMG_BONUS if self.special_active else 1):.1f}', 'color': orange}
             ]
         
         self.attribute_stats = [
@@ -2757,6 +2770,9 @@ class Player(pygame.sprite.Sprite):
         
         return int(cast_range + distance + attack_hitbox_size)
     
+    def get_frame_duration(total_seconds, frames, repeat_animation):
+        return (total_seconds * 1000) / (frames * repeat_animation)
+
     def dmg_per_frame(self, total_dmg, frames):
         '''calculates damage per frame based on how many frames the attack has.'''
         return total_dmg / max(1, len(frames))

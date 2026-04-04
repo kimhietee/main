@@ -127,12 +127,28 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.starlight_frame_duration = 100
         self.starlight_repeat = 5
         self.starlight_speed = 7
+        self.special_starlight_count = [(0, 30), (40, 60), (40, 0)]
+        self.special_starlight_damage_mult = 0.5
         self.energy_blast_delay = 800
         self.energy_blast_slow = 0.2
+        self.special_energy_blast_slow = 0.4
         self.arcane_orb_speed = 5
         self.arcane_orb_frame_duration = 40
         self.arcane_orb_repeat = 30
         self.arcane_orb_delay = 5000
+        self.magic_bullets_damage = 0.33333
+        self.curse_of_affliction_duration = 20000
+        self.curse_of_affliction_repeat = 30
+        self.curse_of_affliction_slow = 0.2
+        self.curse_of_affliction_total_damage = 80
+        self.curse_of_affliction_damage_per_repeat = self.curse_of_affliction_total_damage / self.curse_of_affliction_repeat
+        self.basic_attack_frame_duration = 100
+        self.basic_attack_repeat = 5
+        self.basic_attack_speed = 7
+        self.special_basic_attack_speed = 8
+        self.basic_attack_count = WANDERER_MAGICIAN_BASIC
+        self.special_basic_attack_count = 4
+
 
         self.raw_atk1_dmg = 7.5
         self.raw_atk2_dmg = 40
@@ -145,20 +161,21 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.atk4_ani_count = WANDERER_MAGICIAN_SP
         # --------------------------
         self.raw_sp_atk2_dmg = 50
-        self.raw_sp_atk3_dmg = 0
-        self.raw_sp_atk4_dmg = 0
+        self.raw_sp_atk3_dmg = 34
+        self.raw_sp_atk4_dmg = self.curse_of_affliction_damage_per_repeat * 0.2
 
         self.sp_atk3_ani_count = WANDERER_MAGICIAN_SPECIAL_ATK3
-        self.sp_atk4_ani_count = 30
+        self.sp_atk4_ani_count = 8
 
 
 
         self.atk1_damage = (self.raw_atk1_dmg, 0)
         self.atk2_damage = (self.raw_atk2_dmg/self.atk2_ani_count, 0) # 30 heal, slow -> 37 heal if special, quick
-        self.atk2_damage_2nd = (self.raw_sp_atk2_dmg/self.atk2_ani_count, 0)
+        self.atk2_damage_2nd = (self.raw_sp_atk2_dmg/self.atk2_ani_count, 0) # special mode
         self.atk3_damage = (self.raw_atk3_dmg/self.atk3_ani_count, 8) #26
+        self.sp_atk3_damage = (self.raw_sp_atk3_dmg/self.sp_atk3_ani_count, 8) # special mode
         self.sp_damage = (self.raw_atk4_dmg, 0) # 68.75 is the special dmg 
-        self.sp_damage_2nd = (5/16, 0.5) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
+        self.sp_damage_2nd = (self.raw_sp_atk4_dmg/self.sp_atk4_ani_count, self.curse_of_affliction_damage_per_repeat * 0.8) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
 
         # dmg_mult = 0
         # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
@@ -315,7 +332,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.fireball_distance = 0
         self.arcane_orb_hitbox_size = self.calculate_hitbox_size(self.sp)
         self.arcane_orb_distance = self.calculate_attack_range(0, self.arcane_orb_hitbox_size, self.arcane_orb_speed, self.atk4_ani_count, self.arcane_orb_frame_duration, repeat=self.arcane_orb_repeat)
-
+        self.basic_attack_size = self.calculate_hitbox_size(self.basic)
+        self.special_basic_attack_size = self.calculate_hitbox_size(self.special_basic)
+        self.basic_attack_distance = self.calculate_attack_range(0, self.basic_attack_size, self.basic_attack_speed, self.basic_attack_count, self.basic_attack_frame_duration, repeat=self.basic_attack_repeat)
+        self.special_basic_attack_distance = self.calculate_attack_range(0, self.special_basic_attack_size, self.special_basic_attack_speed, self.special_basic_attack_count, self.basic_attack_frame_duration, repeat=self.basic_attack_repeat)
 
         # Skills
         self.attacks = [
@@ -331,7 +351,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.starlight_distance, 'white']
+                    'Distance': [f'{self.starlight_distance}' + ' units', 'green']
                 },
                 skill_desc=f'Shoots a star in straight direction. Damage@is multiplied by random when landed.@- Multiplier: 1/2/3/4@- Chances: 30%/50%/10%/10%'
             ),
@@ -363,7 +383,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'Creates an explosion to the enemy position@in last {self.energy_blast_delay/1000} seconds. Enemies hit are damaged@and slowed.'
+                skill_desc=f'Creates an explosion to the enemy position@in last {self.energy_blast_delay/1000} seconds. Enemies hit are damaged@and slowed.@- Slow: {int(self.energy_blast_slow*100)}%'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -377,7 +397,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.arcane_orb_distance, 'white']
+                    'Distance': [f'{self.arcane_orb_distance}' + ' units', 'green']
                 },
                 skill_desc=f'Channels up powerful energies into a single@orb and launches a devastating arcane energies@that travels towards the enemy.@- Channel time: {self.arcane_orb_delay/1000}'
 
@@ -396,9 +416,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_stats={
                     'Type': ['Ranged', 'white'],
                     'Ability': ['Magic Bullets', 'green'],
-                    'Distance': [0, 'white']
+                    'Distance': [f'{self.basic_attack_distance}' + ' units', 'green']
                 },
-                skill_desc=f'Special mode only. Shoots magic bullets@in quick succession.@'
+                skill_desc=f'Special mode only. Shoots magic@bullets in quick succession.@- Bullet count: 3@- Damage per bullet: {self.magic_bullets_damage*100}%'
             )
         )
 
@@ -415,6 +435,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     'Type': ['Special', 'white'],
                     'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
                     'Move Speed': ['+ 10', 'green'],
+                    'Mana Increase': ['+ 60', 'maize'],
                     'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
@@ -430,58 +451,59 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 mana=self.mana,
                 damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
 
-                skill_name='Fireball',
+                skill_name='Starlight',
                 skill_stats={
-                    'Lv': [1, 'blueviolet'],
+                    'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.fireball_distance, 'white']
+                    'Distance': [f'{self.starlight_distance}' + ' units', 'green']
                 },
-                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
+                skill_desc=f'Shoots multiple stars in straight direction.@Damage is multiplied by random when@landed.@- Projectile count: {len(self.special_starlight_count)}@- Multiplier: 1/2/3/4@- Chances: 30%/50%/10%/10%'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.special_skill_2_rect,
                 skill_img=special_skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                mana=self.mana,
+                damage=[self.raw_sp_atk2_dmg, self.atk2_damage_2nd[1]],
 
-                skill_name='Fireball',
+                skill_name='Healing Wind',
                 skill_stats={
-                    'Lv': [1, 'blueviolet'],
-                    'Damage': [0 , 'red'],
-                    'Distance': [self.fireball_distance, 'white']
+                    'Lv': [2, 'magenta'],
+                    'Heal': [0 , 'green'],
                 },
-                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
+                skill_desc=f'Casts a healing aura around the hero. Heals@the hero over time when in radius.@Heal rate is increased.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                mana=self.mana,
+                damage=[self.raw_sp_atk3_dmg, self.sp_atk3_damage[1]],
 
-                skill_name='Fireball',
+                skill_name='Energy Blast',
                 skill_stats={
-                    'Lv': [1, 'blueviolet'],
+                    'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.fireball_distance, 'white']
                 },
-                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
+                skill_desc=f'Creates an explosion to the enemy position@in last {self.energy_blast_delay/1000} seconds. Enemies hit are damaged@and slowed.@- Slow: {int(self.special_energy_blast_slow*100)}%'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana,damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                mana=self.mana,
+                damage=[self.curse_of_affliction_total_damage, 0],
 
                 skill_name='Curse of Affliction',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
+                    'Type': ['Debuff', 'white'],
                     'Damage': [0 , 'red'],
-                    'Distance': [self.fireball_distance, 'white']
                 },
-                skill_desc=f'Casts fireball in a short distance.@Enemies hit are damaged.'
+                skill_desc=f'Curses the enemy with affliction, slows and@deals damage over time.@- Slow: {int(self.curse_of_affliction_slow*100)}%@- Duration: {self.curse_of_affliction_duration/1000} seconds'
             )
         ]
 
@@ -495,8 +517,11 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 
                 skill_name='Basic Attack',
                 skill_stats={
-                    'Type': ['Melee', 'white'],
+                    'Type': ['Ranged', 'white'],
+                    'Ability': ['Magic Bullets', 'green'],
+                    'Distance': [f'{self.special_basic_attack_distance}' + ' units', 'green']
                 },
+                skill_desc=f'Shoots magic bullets@in quick succession.@- Bullet count: 3@- Damage per bullet: {self.magic_bullets_damage*100}%'
             )
         )
         
@@ -575,7 +600,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             repeat_animation=self.starlight_repeat,
                             speed=self.starlight_speed if self.facing_right else -self.starlight_speed,
                             dmg=(self.atk1_damage[0] * random.choice(self.starlight_chance)), #30% chance for non crit, 50% chance for crit 2x, 10% chance for super crit 3x and 10% change for super mega crit 4x
-                            final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
                             moving=True,
@@ -609,7 +633,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frames=self.atk2,
                             frame_duration=100,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
                             dmg=self.atk2_damage[0], 
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
@@ -648,13 +671,12 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frames=self.atk3,
                             frame_duration=100,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
                             dmg=self.atk3_damage[0],
                             final_dmg=self.atk3_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
                             sound=(True, self.atk3_sound , None, None),
-                            stop_movement=(True, 3, 1, 1 - self.arcane_orb_slow), # slow for 20%
+                            stop_movement=(True, 3, 1, 1 - self.energy_blast_slow), # slow for 20%
                             delay=(True, self.energy_blast_delay)
                             ) # Replace with the target
                         attack_display.add(attack)
@@ -712,9 +734,9 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             x=self.rect.centerx,
                             y=self.rect.centery + random.randint(0, 40),
                             frames=self.basic if self.facing_right else self.basic_flipped,
-                            frame_duration=100,
-                            repeat_animation=5,
-                            speed=7 if self.facing_right else -7,
+                            frame_duration=self.basic_attack_frame_duration,
+                            repeat_animation=self.basic_attack_repeat,
+                            speed=self.basic_attack_speed if self.facing_right else -self.basic_attack_speed,
                             dmg=self.basic_attack_damage,
                             final_dmg=0,
                             who_attacks=self,
@@ -724,7 +746,28 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             sound=(True, self.atk1_sound, None, None),
                             kill_collide=True,
                             delay=(True, self.basic_attack_animation_speed * (500 / self.base_animation_speed)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed) # 500/120
-                            is_basic_attack=True
+                            is_basic_attack=True,
+                        #     periodic_spawn={
+                        #     'attack_kwargs': {
+                        #         'x': width+100,
+                        #         'y': self.rect.centery + random.randint(0, 40),
+                        #         'frames': self.atk1 if self.facing_right else self.atk1_flipped,
+                        #         'frame_duration': 100,
+                        #         'repeat_animation': 5,
+                        #         'speed': -7 if self.facing_right else 7,
+                        #         'dmg': random.choice([2.5, 2.5, 2.5, 5, 5, 5, 5, 5, 7.5, 10 ]) * 3,
+                        #         'final_dmg': 0,
+                        #         'who_attacks': self,
+                        #         'who_attacked': self.enemy,
+                        #         'moving': True,
+                        #         'sound': (False, self.atk1_sound, None, None),
+                        #         'delay': (True, 300),
+                        #         'kill_collide': True
+                        #     },
+                        #     'interval': 1000,
+                        #     'repeat_count': 5,
+                        #     'use_attack_pos': False,
+                        # }
                         )
                     
                         attack_display.add(attack)
@@ -809,7 +852,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     if self.mana >=  self.attacks_special[0].mana_cost and self.attacks_special[0].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [(0, 30), (40, 60), (40, 0)]:
+                        for i in self.special_starlight_count:
                             attack = Attack_Display(
                                 x=self.rect.centerx - i[0] if self.facing_right else self.rect.centerx + i[0],
                                 y=self.rect.centery + i[1] if self.facing_right else self.rect.centery + i[1],
@@ -817,7 +860,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                                 frame_duration=100,
                                 repeat_animation=5,
                                 speed=7 if self.facing_right else -7,
-                                dmg=(self.atk1_damage[0] * random.choice(self.starlight_chance)) * 0.5,
+                                dmg=(self.atk1_damage[0] * random.choice(self.starlight_chance)) * self.special_starlight_damage_mult,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.enemy,
@@ -852,7 +895,6 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frames=self.atk2,
                             frame_duration=40,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
                             dmg=self.atk2_damage_2nd[0],
                             final_dmg=self.atk2_damage_2nd[1],
                             who_attacks=self,
@@ -885,11 +927,11 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             frames=self.special_atk3,
                             frame_duration=100,
                             repeat_animation=1,
-                            speed=5 if self.facing_right else -5,
-                            dmg=self.atk3_damage[0] + (self.atk3_damage[0] * (SPECIAL_MULTIPLIER * 0.15)),
-                            final_dmg=self.atk3_damage[1] + (self.atk3_damage[1] * (SPECIAL_MULTIPLIER * 0.15)),
+                            dmg=self.sp_atk3_damage[0],
+                            final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
+                            stop_movement=(True, 3, 1, 1 - self.special_energy_blast_slow), # slow for 40%
                             sound=(True, self.atk3_sound , None, None),
                             delay=(True, 800)
                             ) # Replace with the target
@@ -911,18 +953,27 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         # Create an attack
                         # print("Z key pressed")
 
+                    #     frame_duration, repeat_animation = self.skill_duration(
+                    #     set_mode = ('frames', 125),
+                    #     # frame_count = self.count_atk_frames(self.sp_special),
+                    #     repeat_animation=20,
+                    #     frame_divisor=1,
+                    #     set_max_frame_duration=120
+                    # )
+
                         self.single_target()
                         attack = Attack_Display(
                             x=self.target.x_pos,
                             y=self.target.y_pos + 40,
                             frames=self.sp_special,
-                            frame_duration=160,
-                            repeat_animation=30,
+                            frame_duration=(self.curse_of_affliction_duration / len(self.sp_special)) / self.curse_of_affliction_repeat,
+                            repeat_animation=self.curse_of_affliction_repeat,
                             speed=5 if self.facing_right else -5,
                             dmg=self.sp_damage_2nd[0],
                             final_dmg=self.sp_damage_2nd[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
+                            stop_movement=(True, 3, 1, 1 - self.curse_of_affliction_slow), # slow for 30%
                             moving=False,
                             follow=(False, True),
                             follow_offset=(0, 50),
@@ -952,10 +1003,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             x=self.rect.centerx,
                             y=self.rect.centery + i[1],
                             frames=self.special_basic if self.facing_right else self.special_basic_flipped,
-                            frame_duration=100,
-                            repeat_animation=5,
-                            speed=8 if self.facing_right else -8,
-                            dmg=(self.basic_attack_damage / 3) * DEFAULT_BASIC_ATK_DMG_BONUS,
+                            frame_duration=self.basic_attack_frame_duration,
+                            repeat_animation=self.basic_attack_repeat,
+                            speed=self.special_basic_attack_speed if self.facing_right else -self.special_basic_attack_speed,
+                            dmg=(self.basic_attack_damage * DEFAULT_BASIC_ATK_DMG_BONUS) * self.magic_bullets_damage,
                             final_dmg=0,
                             who_attacks=self,
                             who_attacked=self.enemy,
@@ -982,8 +1033,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                         #         'delay': (False, 0)
                         #     },
                         #     'use_attack_onhit_pos': True
-                            
-                        # }
+                        # },
                         is_basic_attack=True
                         )
                             

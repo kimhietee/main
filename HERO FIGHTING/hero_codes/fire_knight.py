@@ -55,7 +55,7 @@ FIRE_KNIGHT_ATK2_DAMAGE = (25/20, 5)
 FIRE_KNIGHT_ATK3_DAMAGE = (40/60, 10) #35
 FIRE_KNIGHT_SP_DAMAGE = (60/65, 15) # 55
 
-FIRE_KNIGHT_BURN_DAMAGE = 10
+
 
 class Display_Text: # display damage taken text previously (not working for now)
     def __init__(self, x, y, health):
@@ -131,25 +131,70 @@ class Fire_Knight(Player):
         self.sp_mana_cost = 180
 
         self.atk1_cooldown = 5000
-        self.atk2_cooldown = 18000
-        self.atk3_cooldown = 26000
+        self.atk2_cooldown = 20000
+        self.atk3_cooldown = 27000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10/49, 2)
-        self.atk2_damage = (26/20, 2) #27 = 32, 3 = 29, 26 = 28
-        self.atk3_damage = (35/60, 7)
-        self.sp_damage = (50/65, 15) 
-        self.special_sp_damage1 = (20/10, 0) # 25, total 70 damage #start
-        self.special_sp_damage2 = (60/10, 0) # 45 #explosion (total=70 -> )
+        self.eruption_airborne_duration = 3000
+        self.eruption_airborne_distance = 50 # y distance enemies are lifted up in the air
+        self.special_eruption_count = [(130, 700), (250, 1700), (370, 2700)]
+        self.special_eruption_damage_mult = 0.4
+        self.special_eruption_cast_range = self.special_eruption_count[-1][0]
+        self.special_eruption_frame_duration = 150
+        self.special_eruption_speed = 1
+        self.scorching_tornado_airborne_duration = 4000
+        self.scorching_tornado_airborne_distance = 100
+
+        self.burn_damage = 5
+        self.burn_duration = 5000
+        self.burn_repeat = 2
+        self.basic_attack_burn_damage = self.burn_damage * 0.1
+        self.atk1_burn_damage = self.burn_damage * 0.2
+        self.atk2_burn_damage = self.burn_damage * 0.4
+        self.atk3_burn_damage = self.atk4_burn_damage = self.burn_damage
+
+        self.raw_atk1_dmg = 10
+        self.raw_atk2_dmg = 26
+        self.raw_atk3_dmg = 35
+        self.raw_atk4_dmg = 50
+        
+        self.atk1_ani_count = 49
+        self.atk2_ani_count = 20
+        self.atk3_ani_count = 60
+        self.atk4_ani_count = 65
+        # --------------------------
+        self.raw_sp_atk1_dmg = 12
+        self.raw_sp_atk2_dmg = 26 * self.special_eruption_damage_mult
+        self.raw_sp_atk3_dmg = 30
+        self.raw_sp_atk4_dmg = 20
+        self.raw_sp_atk4_dmg_2nd = 60
+        # self.raw_sp_atk4_dmg = 0
+
+        self.sp_atk3_ani_count = 20
+        self.sp_atk4_ani_count = 10
+        self.sp_atk4_ani_count_2nd = 10
+
+        self.atk1_damage = (self.raw_atk1_dmg / self.atk1_ani_count, 2)
+        self.atk2_damage = (self.raw_atk2_dmg / self.atk2_ani_count, 2) #27 = 32, 3 = 29, 26 = 28
+        self.atk3_damage = (self.raw_atk3_dmg / self.atk3_ani_count, 7)
+        self.sp_damage = (self.raw_atk4_dmg / self.atk4_ani_count, 15)
+
+        self.sp_atk1_damage = (self.raw_sp_atk1_dmg / self.atk1_ani_count, 2)
+        self.sp_atk2_damage = (self.raw_sp_atk2_dmg / self.atk2_ani_count, 2)
+        self.sp_atk3_damage = (self.raw_sp_atk3_dmg / self.sp_atk3_ani_count, 10)
+
+        self.special_sp_damage1 = (self.raw_sp_atk4_dmg / self.sp_atk4_ani_count, 0) # 25, total 70 damage #start
+        self.special_sp_damage2 = (self.raw_sp_atk4_dmg_2nd / self.sp_atk4_ani_count_2nd, 0) # 45 #explosion (total=70 -> )
+
         
 
-        dmg_mult = 0
-        self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
-        self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
-        self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
-        self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
-        self.special_sp_damage1 = self.special_sp_damage1[0] + (self.special_sp_damage1[0] * dmg_mult), self.special_sp_damage1[1] + (self.special_sp_damage1[1] * dmg_mult)
-        self.special_sp_damage2 = self.special_sp_damage2[0] + (self.special_sp_damage2[0] * dmg_mult), self.special_sp_damage2[1] + (self.special_sp_damage2[1] * dmg_mult)
+        # dmg_mult = 0
+        # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
+        # self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
+        # self.atk3_damage = self.atk3_damage[0] + (self.atk3_damage[0] * dmg_mult), self.atk3_damage[1] + (self.atk3_damage[1] * dmg_mult)
+        # self.sp_damage = self.sp_damage[0] + (self.sp_damage[0] * dmg_mult), self.sp_damage[1] + (self.sp_damage[1] * dmg_mult)
+        # self.special_sp_damage1 = self.special_sp_damage1[0] + (self.special_sp_damage1[0] * dmg_mult), self.special_sp_damage1[1] + (self.special_sp_damage1[1] * dmg_mult)
+        # self.special_sp_damage2 = self.special_sp_damage2[0] + (self.special_sp_damage2[0] * dmg_mult), self.special_sp_damage2[1] + (self.special_sp_damage2[1] * dmg_mult)
         
         
         # Player Animation Source
@@ -220,6 +265,16 @@ class Fire_Knight(Player):
             self.skill_3_rect = skill_3.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X - SPACING_X, SKILL_Y_OFFSET))
             self.skill_4_rect = skill_4.get_rect(center=(DEFAULT_X_POS - START_OFFSET_X, SKILL_Y_OFFSET))
 
+        # self.atk1=49
+        # self.atk1_flipped=49
+        # self.atk2=20
+        # self.atk3=60
+        # self.sp=65
+        # self.sp_special1=10
+        # self.sp_special2=10
+        # self.burn=40
+        # self.atk3_special=20
+        
         # Player Attack Animations Load
         self.atk1 = load_attack(
         filepath=r"assets\attacks\fire knight\atk1\6_flamelash_spritesheet.png",
@@ -357,6 +412,8 @@ class Fire_Knight(Player):
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        self.eruption_hitbox_size = self.calculate_hitbox_size(self.atk2)
+        self.eruption_distance = self.calculate_attack_range(self.special_eruption_cast_range, self.eruption_hitbox_size, self.special_eruption_speed, self.atk2_ani_count, self.special_eruption_frame_duration, repeat=1)
         # Skills
         self.attacks = [
             Attacks(
@@ -364,28 +421,61 @@ class Fire_Knight(Player):
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Scorching Slash',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Imbues attack with flames.@Counts as basic attack.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
+
+                skill_name='Eruption',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Strikes the ground, causing an eruption of fire@that damages enemies in the area. Enemies@caught are airborne for a short duration.@- Airborne duration: {self.eruption_airborne_duration/1000} seconds@- Airborne distance: {self.eruption_airborne_distance}'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk3_dmg, self.atk3_damage[1]],
+
+                skill_name='Incendiary',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Ignites the area with burning fire,@dealing explosion damage after a short delay'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.skill_4_rect,
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk4_dmg, self.sp_damage[1]],
+
+                skill_name='Fire of Destruction',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Invulnerability': ['True', 'green'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Unleashes a powerful stream of fire on an area,@dealing large amount of damage to enemies in@its wake. Deals explosion damage at the@end of the attack'
             )
         ]
 
@@ -395,7 +485,14 @@ class Fire_Knight(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Basic Attack', 'white'],
+                    'Ability': ['Burning Blade', 'green'],
+                },
+                skill_desc=f'Special mode only. Imbues attacks and spells@with fire, dealing additional burn damage over time.@- Burn damage: {(self.basic_attack_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
             )
         )
 
@@ -406,7 +503,15 @@ class Fire_Knight(Player):
                 skill_img=special_icon,
                 cooldown=0,
                 mana=0,
-                special_skill=True
+                special_skill=True,
+                skill_name='Activate Special',
+                skill_stats={
+                    'Type': ['Special', 'white'],
+                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
+                    'Move Speed': ['+ 10', 'green'],
+                    'Duration': ['30', 'white']
+                },
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         )
 
@@ -416,28 +521,64 @@ class Fire_Knight(Player):
                 skill_rect=self.special_skill_1_rect,
                 skill_img=special_skill_1,
                 cooldown=int(self.atk1_cooldown/2),
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_sp_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Scorching Slash',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Imbues attack with flames at faster@rate. Counts as basic attack.@- Burn damage: {(self.atk1_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
+
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.special_skill_2_rect,
                 skill_img=special_skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_sp_atk2_dmg, self.sp_atk2_damage[1]],
+
+                skill_name='Eruption',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                    'Distance': [f'{self.eruption_distance}' + ' units', 'green'],
+                },
+                skill_desc=f'Strikes the ground, causing multiple moving eruptions@of fire that damages enemies along the way. Enemies@caught are airborne for a short duration.@- Eruption count: {len(self.special_eruption_count)}@- Eruption interval: 1s@- Airborne duration: {(self.eruption_airborne_duration)/1000} seconds@- Airborne distance: {self.eruption_airborne_distance} units@- Burn damage: {(self.atk2_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_sp_atk3_dmg, self.sp_atk3_damage[1]],
+
+                skill_name='Scorching Tornado',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Strikes the ground with might, bursting scorching@tornado that sets caught enemies to airborne.@- Airborne duration: {(self.scorching_tornado_airborne_duration)/1000}@- Airborne distance: {self.scorching_tornado_airborne_distance} units@- Burn damage: {(self.atk3_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_sp_atk4_dmg + self.raw_sp_atk4_dmg_2nd, self.special_sp_damage1[1] + self.special_sp_damage2[1]],
+
+                skill_name='Hellfire Blast',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Invulnerability': ['True', 'green'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'Sets out a wave of fire, dealing damage over time,@then it will explode on an area that deals@massive amount of damage to enemies in its wake.@- Burn damage: {(self.atk4_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
+
             )
         ]
 
@@ -447,7 +588,14 @@ class Fire_Knight(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                    'Ability': ['Burning Blade', 'green'],
+                },
+                skill_desc=f'Imbues attacks and spells with fire, dealing@additional burn damage over time.@- Burn damage: {(self.basic_attack_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
             )
         )
 
@@ -540,12 +688,36 @@ class Fire_Knight(Player):
                             ,hitbox_scale_y=0.4
                             ) # Replace with the target
                         attack_display.add(attack)
+
+                        # basic attack
+                        attack = Attack_Display(
+                            x=self.rect.centerx + 70 if self.facing_right else self.rect.centerx - 70,
+                            y=self.rect.centery + 90,
+                            frames=self.basic_slash_big if self.facing_right else self.basic_slash_flipped_big,
+                            frame_duration=BASIC_FRAME_DURATION + 50,
+                            repeat_animation=1,
+                            speed=0,
+                            dmg=self.basic_attack_damage,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+
+                            sound=(True, self.basic_sound, None, None),
+                            delay=(True, self.basic_attack_animation_speed * (700 / self.base_animation_speed)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            moving=True
+                            ,is_basic_attack=True
+
+                            )
+                        attack_display.add(attack)
                         self.mana -= self.attacks[0].mana_cost
                         self.attacks[0].last_used_time = current_time
                         self.running = False
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+
+                        self.basic_attacking = True
+
 
                         # print("Attack executed")
                     else:
@@ -563,14 +735,14 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + 130 if self.facing_right else self.rect.centerx - 130, # in front of him
                             y=self.rect.centery + 30,
                             frames=self.atk2,
-                            frame_duration=150,
+                            frame_duration=self.eruption_airborne_duration / len(self.atk2),
                             repeat_animation=1,
                             speed=5 if self.facing_right else -5,
                             dmg=self.atk2_damage[0],
                             final_dmg=self.atk2_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            stun=(True, 50),
+                            stun=(True, self.eruption_airborne_distance),
                             sound=(True, self.atk2_sound , None, None),
                             delay=(True, 700)
                         )
@@ -710,8 +882,8 @@ class Fire_Knight(Player):
                             frame_duration=5,
                             repeat_animation=1,
                             speed=3.5 if self.facing_right else -3.5,
-                            dmg=self.atk1_damage[0]* 0.6,
-                            final_dmg=self.atk1_damage[1],
+                            dmg=self.sp_atk1_damage[0],
+                            final_dmg=self.sp_atk1_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
                             sound=(True, self.atk1_sound , None, None),
@@ -727,11 +899,11 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + 80 if self.facing_right else self.rect.centerx - 80, # in front of him
                             y=self.rect.centery + 100,
                             frames=self.burn,
-                            frame_duration=200,
-                            repeat_animation=2,
+                            frame_duration=self.burn_duration / len(self.burn),
+                            repeat_animation=self.burn_repeat,
                             speed=0.5 if self.facing_right else -0.5,
                             dmg=0,
-                            final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.2,
+                            final_dmg=self.atk1_burn_damage,
                             who_attacks=self,
                             who_attacked=self.target,
                             sound=(True, self.burn_sound, None, None),
@@ -740,6 +912,27 @@ class Fire_Knight(Player):
                             follow_offset=(0, 80)
                             )
                         attack_display.add(burn_attack)
+
+                        # basic attack
+                        attack = Attack_Display(
+                            x=self.rect.centerx + 70 if self.facing_right else self.rect.centerx - 70,
+                            y=self.rect.centery + 90,
+                            frames=self.basic_slash_big if self.facing_right else self.basic_slash_flipped_big,
+                            frame_duration=BASIC_FRAME_DURATION + 50,
+                            repeat_animation=1,
+                            speed=0 if self.facing_right else 0,
+                            dmg=self.basic_attack_damage*DEFAULT_BASIC_ATK_DMG_BONUS,
+                            final_dmg=0,
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            delay=(True, self.basic_attack_animation_speed * (700 / self.base_animation_speed)), # self.basic_attack_animation_speed * (Base Delay/Default Basic Attack Speed)
+                            sound=(True, self.basic_sound, None, None),
+                            moving=True
+                            ,is_basic_attack=True
+
+                            
+                            )
+                        attack_display.add(attack)
 
                         self.mana -=  self.attacks_special[0].mana_cost
                         self.attacks_special[0].last_used_time = current_time
@@ -759,16 +952,16 @@ class Fire_Knight(Player):
                     if self.mana >=  self.attacks_special[1].mana_cost and self.attacks_special[1].is_ready():
                         # Create an attack
                         # print("Z key pressed")
-                        for i in [(130, 700), (250, 1700), (370, 2700)]:
+                        for i in self.special_eruption_count:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx - i[0], # in front of him
                                 y=self.rect.centery + 30,
                                 frames=self.atk2,
-                                frame_duration=150,
+                                frame_duration=self.special_eruption_frame_duration,
                                 repeat_animation=1,
-                                speed=1 if self.facing_right else -1,
-                                dmg=self.atk2_damage[0] * 0.4,
-                                final_dmg=self.atk2_damage[1] * 0.4,
+                                speed=self.special_eruption_speed if self.facing_right else -self.special_eruption_speed,
+                                dmg=self.sp_atk2_damage[0],
+                                final_dmg=self.sp_atk2_damage[1],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
                                 stun=(True, 50),
@@ -785,11 +978,11 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + i[0] if self.facing_right else self.rect.centerx - i[0], # in front of him
                             y=self.rect.centery + 100,
                             frames=self.burn,
-                            frame_duration=200,
-                            repeat_animation=2,
+                            frame_duration=self.burn_duration / len(self.burn),
+                            repeat_animation=self.burn_repeat,
                             speed=0.5 if self.facing_right else -0.5,
                             dmg=0,
-                            final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.4,
+                            final_dmg=self.atk2_burn_damage,
                             who_attacks=self,
                             who_attacked=self.target,
                             sound=(True, self.burn_sound, None, None),
@@ -820,14 +1013,14 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + 130 if self.facing_right else self.rect.centerx - 130, # in front of him
                             y=self.rect.centery + 30,
                             frames=self.atk3_special,
-                            frame_duration=200,
+                            frame_duration=self.scorching_tornado_airborne_duration / len(self.atk3_special),
                             repeat_animation=1,
                             speed=5 if self.facing_right else -5,
-                            dmg=self.atk2_damage[0]*1.6,
-                            final_dmg=self.atk2_damage[1],
+                            dmg=self.sp_atk3_damage[0],
+                            final_dmg=self.sp_atk3_damage[1],
                             who_attacks=self,
                             who_attacked=self.enemy,
-                            stun=(True, 100),
+                            stun=(True, self.scorching_tornado_airborne_distance),
                             sound=(True, self.atk2_sound , None, None),
                             delay=(True, 700)
                         )
@@ -839,11 +1032,11 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + 130 if self.facing_right else self.rect.centerx - 130, # in front of him
                             y=self.rect.centery + 100,
                             frames=self.burn,
-                            frame_duration=200,
-                            repeat_animation=2,
+                            frame_duration=self.burn_duration / len(self.burn),
+                            repeat_animation=self.burn_repeat,
                             speed=0.5 if self.facing_right else -0.5,
                             dmg=0,
-                            final_dmg=FIRE_KNIGHT_BURN_DAMAGE,
+                            final_dmg=self.atk3_burn_damage,
                             who_attacks=self,
                             who_attacked=self.target,
                             sound=(True, self.burn_sound, None, None),
@@ -889,24 +1082,24 @@ class Fire_Knight(Player):
                                 ) # Replace with the target
                             attack_display.add(attack)
 
-                            self.single_target()
-                            burn_attack = Attack_Display(
-                                x=self.rect.centerx + i[3] if self.facing_right else self.rect.centerx - i[3], # in front of him
-                                y=self.rect.centery + i[2],
-                                frames=self.burn,
-                                frame_duration=200,
-                                repeat_animation=2,
-                                speed=0.5 if self.facing_right else -0.5,
-                                dmg=0,
-                                final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.5,
-                                who_attacks=self,
-                                who_attacked=self.target,
-                                sound=(True, self.burn_sound, None, None),
-                                delay=(i[1], 1200),
-                                follow=(True, False),
-                                follow_offset=(0, 80)
-                                )
-                            attack_display.add(burn_attack)
+                        self.single_target()
+                        burn_attack = Attack_Display(
+                            x=self.rect.centerx + 220 if self.facing_right else self.rect.centerx - 220, # in front of him
+                            y=self.rect.centery + 100,
+                            frames=self.burn,
+                            frame_duration=self.burn_duration / len(self.burn),
+                            repeat_animation=self.burn_repeat,
+                            speed=0.5 if self.facing_right else -0.5,
+                            dmg=0,
+                            final_dmg=self.atk4_burn_damage,
+                            who_attacks=self,
+                            who_attacked=self.target,
+                            sound=(True, self.burn_sound, None, None),
+                            delay=(True, 1200),
+                            follow=(True, False),
+                            follow_offset=(0, 80)
+                            )
+                        attack_display.add(burn_attack)
 
                         self.mana -=  self.attacks_special[3].mana_cost
                         self.attacks_special[3].last_used_time = current_time
@@ -948,11 +1141,11 @@ class Fire_Knight(Player):
                             x=self.rect.centerx + 70 if self.facing_right else self.rect.centerx - 70, # in front of him
                             y=self.rect.centery + 100,
                             frames=self.burn,
-                            frame_duration=200,
-                            repeat_animation=2,
+                            frame_duration=self.burn_duration / len(self.burn),
+                            repeat_animation=self.burn_repeat,
                             speed=0.5 if self.facing_right else -0.5,
                             dmg=0,
-                            final_dmg=FIRE_KNIGHT_BURN_DAMAGE * 0.1,
+                            final_dmg=self.basic_attack_burn_damage,
                             who_attacks=self,
                             who_attacked=self.target,
                             sound=(True, self.burn_sound, None, None),

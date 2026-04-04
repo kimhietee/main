@@ -136,7 +136,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.arcane_orb_frame_duration = 40
         self.arcane_orb_repeat = 30
         self.arcane_orb_delay = 5000
-        self.magic_bullets_damage = 0.33333
+        self.magic_bullets_damage = 0.3333
         self.curse_of_affliction_duration = 20000
         self.curse_of_affliction_repeat = 30
         self.curse_of_affliction_slow = 0.2

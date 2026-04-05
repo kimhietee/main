@@ -136,6 +136,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.arcane_orb_frame_duration = 40
         self.arcane_orb_repeat = 30
         self.arcane_orb_delay = 5000
+        self.arcane_orb_radius_damage_mult = 0.03
         self.magic_bullets_damage = 0.3333
         self.curse_of_affliction_duration = 20000
         self.curse_of_affliction_repeat = 30
@@ -153,7 +154,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.raw_atk1_dmg = 7.5
         self.raw_atk2_dmg = 40
         self.raw_atk3_dmg = 26
-        self.raw_atk4_dmg = 55
+        self.raw_atk4_dmg = 40
         
         self.atk1_ani_count = WANDERER_MAGICIAN_ATK1
         self.atk2_ani_count = WANDERER_MAGICIAN_ATK2
@@ -168,13 +169,14 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.sp_atk4_ani_count = 8
 
 
-
+        
         self.atk1_damage = (self.raw_atk1_dmg, 0)
         self.atk2_damage = (self.raw_atk2_dmg/self.atk2_ani_count, 0) # 30 heal, slow -> 37 heal if special, quick
         self.atk2_damage_2nd = (self.raw_sp_atk2_dmg/self.atk2_ani_count, 0) # special mode
         self.atk3_damage = (self.raw_atk3_dmg/self.atk3_ani_count, 8) #26
         self.sp_atk3_damage = (self.raw_sp_atk3_dmg/self.sp_atk3_ani_count, 8) # special mode
         self.sp_damage = (self.raw_atk4_dmg, 0) # 68.75 is the special dmg 
+        self.sp_damage_3rd = (self.raw_atk4_dmg*self.arcane_orb_radius_damage_mult / self.atk4_ani_count, 0)
         self.sp_damage_2nd = (self.raw_sp_atk4_dmg/self.sp_atk4_ani_count, self.curse_of_affliction_damage_per_repeat * 0.8) # * 15 = 67.5 (when calculating [0] value, * 15, if [1], * 30)
 
         # dmg_mult = 0
@@ -262,6 +264,12 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
         self.special_atk3 = self.load_img_frames(special_atk3[0], special_atk3[1], special_atk3[2], WANDERER_MAGICIAN_SPECIAL_ATK3_SIZE)
 
+        self.blank_frame = [
+            pygame.transform.rotozoom(
+            pygame.image.load(r"assets\attacks\forest ranger\atk4\blank frame\beam_extension_effect_10.png").convert_alpha(),
+            angle=0, scale=5.0)
+            ]
+        
         self.special_basic = load_attack(
         filepath=r"assets\attacks\Basic Attack\wanderer magician\basic atk special\4.png",
         frame_width=10, 
@@ -399,7 +407,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                     'Damage': [0 , 'red'],
                     'Distance': [f'{self.arcane_orb_distance}' + ' units', 'green']
                 },
-                skill_desc=f'Channels up powerful energies into a single@orb and launches a devastating arcane energies@that travels towards the enemy.@- Channel time: {self.arcane_orb_delay/1000}'
+                skill_desc=f'Channels up powerful energies into a single@orb and launches a devastating arcane energies@that travels through the enemies. Deals radius@damage to enemies while traveling.@- Damage as radius damage: {self.arcane_orb_radius_damage_mult*100}%@- Channel time: {self.arcane_orb_delay/1000}'
 
             )
         ]
@@ -710,11 +718,32 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             who_attacked=self.enemy,
                             moving=True,
 
-                            kill_collide=True,
+                            # kill_collide=True,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(True, self.arcane_orb_delay)
+                            delay=(False, self.arcane_orb_delay)
                             ) 
                         attack_display.add(attack)
+                        
+                        attack = Attack_Display(
+                            x=self.rect.centerx, # in front of him
+                            y=self.rect.centery,
+                            frames=self.blank_frame,
+                            frame_duration=global_vars.FPS, # deal damage per second (in 60 fps)
+                            repeat_animation=self.arcane_orb_repeat * len(self.sp),
+                            speed=self.arcane_orb_speed if self.facing_right else -self.arcane_orb_speed,
+                            dmg=self.sp_damage_3rd[0],
+                            final_dmg=self.sp_damage_3rd[1],
+                            who_attacks=self,
+                            who_attacked=self.enemy,
+                            moving=True,
+
+                            # kill_collide=True,
+                            continuous_dmg=True,
+                            sound=(True, self.sp_sound , None, None),
+                            delay=(False, self.arcane_orb_delay)
+                            ) 
+                        attack_display.add(attack)
+                        
                         self.mana -=  self.attacks[3].mana_cost
                         self.attacks[3].last_used_time = current_time
                         self.running = False

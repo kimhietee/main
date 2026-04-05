@@ -138,13 +138,35 @@ class Wind_Hashashin(Player):
         self.atk3_cooldown = 26000
         self.sp_cooldown = 60000
 
-        self.atk1_damage = (10, 0) #smoke dmg
-        self.atk2_damage = (35/45, 0) #tornado
-        self.atk2_damage_2nd = (13/15, 5) # x slash
-        self.atk3_damage = (0, 0) #not used
-        self.sp_damage = (200/20, 25) # circle
-        self.sp_damage_2nd = (13/15, 5) # x slash
-        self.real_sp_damage = 16 # times 4
+        self.raw_atk1_dmg = 10
+        self.raw_atk2_dmg = 35 # damage is 3-5 if 35 damage
+        self.raw_atk2_dmg_2nd = 13
+        self.raw_atk3_dmg = 10
+        self.raw_atk3_dmg_2nd = 13
+        self.raw_atk4_dmg = 16
+        
+        self.atk1_ani_count = None
+        self.atk2_ani_count = 45
+        self.atk2_ani_count_2nd = 15
+        self.atk3_ani_count = 20 # not used
+        self.atk3_ani_count_2nd = self.atk2_ani_count_2nd # same attack
+        self.atk4_ani_count = None
+        # --------------------------
+        self.raw_sp_atk1_dmg = 12
+        self.raw_sp_atk2_dmg = 26
+        self.raw_sp_atk3_dmg = 30
+        self.raw_sp_atk4_dmg = 0
+
+        self.sp_atk3_ani_count = 20
+        self.sp_atk4_ani_count = 10
+        self.sp_atk4_ani_count_2nd = 10
+
+        self.atk1_damage = (self.raw_atk1_dmg, 0) #smoke dmg
+        self.atk2_damage = (self.raw_atk2_dmg/self.atk2_ani_count, 0) #tornado
+        self.atk2_damage_2nd = (self.raw_atk2_dmg_2nd/self.atk2_ani_count_2nd, 5) # x slash
+        self.atk3_damage = (self.raw_atk3_dmg, 5) # circle
+        self.atk3_damage_2nd = (self.raw_atk3_dmg_2nd/self.atk3_ani_count_2nd, 5) # x slash
+        self.sp_damage = (self.raw_atk4_dmg, 0) # times 4
 
         #SKILL DAMAGE before
         #10
@@ -345,28 +367,60 @@ class Wind_Hashashin(Player):
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.skill_4_rect,
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             )
         ]
 
@@ -376,7 +430,13 @@ class Wind_Hashashin(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
+                skill_desc=f'Imbues'
             )
         )
 
@@ -387,7 +447,16 @@ class Wind_Hashashin(Player):
                 skill_img=special_icon,
                 cooldown=0,
                 mana=0,
-                special_skill=True
+                special_skill=True,
+                
+                skill_name='Activate Special',
+                skill_stats={
+                    'Type': ['Special', 'white'],
+                    'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
+                    'Move Speed': ['+ 10', 'green'],
+                    'Duration': ['30', 'white']
+                },
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         )
 
@@ -397,28 +466,60 @@ class Wind_Hashashin(Player):
                 skill_rect=self.special_skill_1_rect,
                 skill_img=special_skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=int(self.mana_cost_list[1]*1.5),
                 skill_rect=self.special_skill_2_rect,
                 skill_img=skill_3,
                 cooldown=int(self.atk2_cooldown*1.5),
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
                 skill_rect=self.special_skill_4_rect,
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='sad',
+                skill_stats={
+                    'Lv': [2, 'magenta'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f'sad'
             )
         ]
 
@@ -428,7 +529,13 @@ class Wind_Hashashin(Player):
                 skill_rect=self.basic_icon_rect,
                 skill_img=self.basic_icon,
                 cooldown=self.basic_attack_cooldown,
-                mana=self.mana
+                mana=self.mana,
+
+                skill_name='Basic Attack',
+                skill_stats={
+                    'Type': ['Melee', 'white'],
+                },
+                skill_desc=f'Imbues'
             )
         )
 
@@ -586,8 +693,8 @@ class Wind_Hashashin(Player):
                         # print("Z key pressed")  # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg
                         
                         for i in [
-                            (self.atk3, True, 100, 70, self.sp_damage[0], self.sp_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
-                            (self.sp, False, 100, 50, self.sp_damage_2nd[0], self.sp_damage_2nd[1])
+                            (self.atk3, True, 100, 70, self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.sp, False, 100, 50, self.atk3_damage_2nd[0], self.atk3_damage_2nd[1])
                             ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2], # in front of him
@@ -636,7 +743,7 @@ class Wind_Hashashin(Player):
                                 frame_duration=0.1,
                                 repeat_animation=4,
                                 speed=0 if self.facing_right else 0,
-                                dmg=self.real_sp_damage,
+                                dmg=self.sp_damage[0],
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.target,
@@ -757,8 +864,8 @@ class Wind_Hashashin(Player):
                         # for i in [40*2, 80*2, 120*2, 160*2, 200*2]:
 
                         for i in [
-                            (self.atk3, True, 100, 70, self.sp_damage[0], self.sp_damage[1]/2), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
-                            (self.sp, False, 100, 50, self.sp_damage_2nd[0], self.sp_damage_2nd[1])
+                            (self.atk3, True, 100, 70, self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.sp, False, 100, 50, self.atk3_damage_2nd[0], self.atk3_damage_2nd[1])
                             ]:
                             attack = Attack_Display(
                                 x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2], # in front of him
@@ -841,7 +948,7 @@ class Wind_Hashashin(Player):
                                 frame_duration=5,
                                 repeat_animation=4,
                                 speed=0 if self.facing_right else 0,
-                                dmg=self.real_sp_damage * 0.4,
+                                dmg=self.sp_damage[0] * 0.4,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.target,

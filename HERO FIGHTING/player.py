@@ -97,6 +97,7 @@ class Player(pygame.sprite.Sprite):
         self.items = [] # contains 3 or less than 3 item classes. ex. 
                             # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
         self.damage_reduce = 0
+        self.damage_increase = 0
         self.special_increase = 0
         self.lifesteal = 0
         self.mana_refund = 0
@@ -122,6 +123,8 @@ class Player(pygame.sprite.Sprite):
 
         self.immortality_activated = False
         self.immortality_duration = 0
+
+        self.damage_return = 0
 
 
 
@@ -987,6 +990,8 @@ class Player(pygame.sprite.Sprite):
                     self.health_cost += val  # Health penalty
                 elif typ == "dmg_reduce_per":
                     self.damage_reduce += val
+                elif typ == "dmg_increase_per":
+                    self.damage_increase += val
                 elif typ == "sp_increase_per":
                     self.special_increase += val
                 elif typ == "mana_refund_per":
@@ -996,8 +1001,7 @@ class Player(pygame.sprite.Sprite):
                 elif typ == "crit_dmg_per":
                     self.crit_damage += val
                 elif typ == "dmg_return_per": # negative value for enemy
-                    for enemy in self.enemy:
-                        enemy.lifesteal -= val
+                    self.damage_return += val
                 elif typ == "mana_regen_per":
                     self.mana_regen *= (1 + val)
                 elif typ == "hp_regen_per":
@@ -2237,6 +2241,13 @@ class Player(pygame.sprite.Sprite):
             return
         if self.damage_reduce > 0:
             damage -= (damage * self.damage_reduce)
+        if self.damage_increase > 0:
+            damage += (damage * self.damage_increase)
+
+        # damages attacker if has damage return value
+        if self.damage_return > 0 and enemy is not None:
+            # print(damage * self.damage_return,damage,'*',self.damage_return)
+            enemy.take_damage(damage * self.damage_return)
         
         # Absorb damage with temp_hp first
         if self.temp_hp > 0:
@@ -2257,10 +2268,11 @@ class Player(pygame.sprite.Sprite):
         #     if enemy.mana_burn > 0:
         #         self.take_mana(damage * enemy.mana_burn, mana_burn=True)
                 
-
+        
         self.health = max(0, self.health - damage)  # Ensure health doesn't go below 0
         # print(f"THIS PLAYER took {damage} damage. Current health: {self.health}")
 
+        
         
         if self.health <= 0:
             self.die()  # Trigger the death process

@@ -116,7 +116,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.atk3_mana_cost = 125
         self.sp_mana_cost = 175
 
-        self.atk1_cooldown = 80
+        self.atk1_cooldown = 8000
         self.atk2_cooldown = 24000 
         self.atk3_cooldown = 17000  
         self.sp_cooldown = 60000

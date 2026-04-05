@@ -1787,6 +1787,7 @@ class Item:
 
             # Defensive / Utility / Special
             "dmg_reduce_per": "Damage Reduction",
+            "dmg_increase_per": "Damage Taken Increase",
             "dmg_return_per": "Damage Return",
             "lifesteal_per": "Lifesteal",
             "health_cost_per": "Health Cost",

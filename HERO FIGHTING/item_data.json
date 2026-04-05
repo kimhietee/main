@@ -3,8 +3,8 @@
     {
       "name": "Curse of Warlord",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_15.png",
-      "bonus_type": ["dmg_return_per"],
-      "bonus_value": [0.2],
+      "bonus_type": ["dmg_return_per", "move_speed_per", "hp_flat"],
+      "bonus_value": [0.2, 0.07, 12],
       "description": "Returns 20% of damage taken to attacker."
     },
     {
@@ -23,16 +23,16 @@
     {
       "name": "Undead Marrow",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_40.png",
-      "bonus_type": ["lifesteal_per"],
-      "bonus_value": [0.2],
-      "description": "Heals the attacker for 20% of the@attack damage dealt to enemy."
+      "bonus_type": ["lifesteal_per", "dmg_increase_per"],
+      "bonus_value": [0.2, 0.05],
+      "description": "Heals the attacker for 20% of the@attack damage dealt to enemy.@Increases damage taken from enemies."
 
     },
     {
       "name": "Enchanted Bracelet",
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_39.png",
-      "bonus_type": ["spell_lifesteal_per"],
-      "bonus_value": [0.2],
+      "bonus_type": ["spell_lifesteal_per", "int_flat"],
+      "bonus_value": [0.2, 4],
       "description": "Heals the attacker for 20% of the@spell damage dealt to enemy."
 
     },

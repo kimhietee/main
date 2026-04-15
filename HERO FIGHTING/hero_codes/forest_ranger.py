@@ -101,7 +101,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100
-        self.base_attack_time = 1900
+        self.base_attack_time = 1800
 
 
         self.health_regen = self.calculate_regen(self.base_health_regen, self.hp_regen_per_str, self.strength) #0.8 + 32 * 0.01 = 1.12
@@ -125,14 +125,14 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.height = 20
 
         # real mana cost is commented
-        self.atk1_mana_cost = 110 #100
+        self.atk1_mana_cost = 120 #100
         self.atk2_mana_cost = 100 #50 (40 when special)
         self.atk3_mana_cost = 170 #100
         self.sp_mana_cost = 220 #120
         self.atk3_mana_cost_for_special = 200 #100
         self.sp_mana_cost_for_special = 250 #120
 
-        self.atk1_cooldown = 10000 + 5000 # 15 seconds
+        self.atk1_cooldown = 22000 # 18 seconds
         self.atk2_cooldown = 7000
         self.atk3_cooldown = 12000
         self.sp_cooldown = 30000
@@ -140,6 +140,17 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk3_cooldown_for_special = 25000
 
         # skill info
+        
+        self.arrow_stuck_duration = 5000
+        self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
+
+        # haste base bonus
+        self.haste_duration = 7000
+        self.haste_attack_speed = 300
+        self.special_haste_attack_speed = 350
+        self.frame_duration_divider = 2 # increases animation speed, repeats based on the number
+
+        self.haste_move_speed = 1.5
         self.base_animation_speed = 100
         self.min_animation_speed = 10
         self.attack_speed_modifier = 1.1
@@ -187,8 +198,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
 
         # self.damage_to_heal_percentage =
 
-        self.arrow_stuck_duration = 5000
-        self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
+        
         # dmg_mult = 0
         # self.atk1_damage = self.atk1_damage[0] + (self.atk1_damage[0] * dmg_mult), self.atk1_damage[1] + (self.atk1_damage[1] * dmg_mult)
         # self.atk2_damage = self.atk2_damage[0] + (self.atk2_damage[0] * dmg_mult), self.atk2_damage[1] + (self.atk2_damage[1] * dmg_mult)
@@ -406,11 +416,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[1]
 
-        # haste base bonus
-        self.haste_duration = 5000
-        self.haste_attack_speed = 300
-        self.special_haste_attack_speed = 350
-        self.haste_move_speed = 1.5
+        
 
         # for i in range(4):
         #     if hasattr(self.atk2_damage):
@@ -768,8 +774,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             x=self.rect.centerx,
                             y=self.rect.centery + 0,
                             frames=self.atk1,
-                            frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
-                            repeat_animation=1,
+                            frame_duration=(self.haste_duration / len(self.atk1)) / self.frame_duration_divider, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
+                            repeat_animation=self.frame_duration_divider,
                             speed=7 if self.facing_right else -7,
                             who_attacks=self,
                             who_attacked=self.enemy,
@@ -788,7 +794,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             x=self.rect.centerx,
                             y=self.rect.centery + 0,
                             frames=self.blank_frame,
-                            frame_duration=5000, # 5 seconds
+                            frame_duration=self.haste_duration, # 5 seconds
                             repeat_animation=1,
                             who_attacks=self,
                             who_attacked=[self],
@@ -1117,8 +1123,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             x=self.rect.centerx,
                             y=self.rect.centery + 0,
                             frames=self.atk1,
-                            frame_duration=111.11, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
-                            repeat_animation=1,
+                            frame_duration=(self.haste_duration / len(self.atk1)) / self.frame_duration_divider, # 5 seconds (4999.95) (45 frames * duration(5000) = 111.11)
+                            repeat_animation=self.frame_duration_divider,
                             speed=7 if self.facing_right else -7,
                             dmg=0,
                             final_dmg=0,
@@ -1139,7 +1145,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                             x=self.rect.centerx,
                             y=self.rect.centery + 0,
                             frames=self.blank_frame,
-                            frame_duration=5000, # 5 seconds
+                            frame_duration=self.haste_duration, # 5 seconds
                             repeat_animation=1,
                             speed=0,
                             dmg=0,

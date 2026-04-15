@@ -527,6 +527,12 @@ class Player(pygame.sprite.Sprite):
     def trigger_dash(self, attacking:str, speed:int, max_distance:int, delay:int=0, facing:bool=True, reverse:bool=False, forced:tuple[bool | str]=(False, 'left')):
         """Handles dash movement when dash is activated.
 
+        NOTE: Make sure you animate the animation first before calling the trigger_dash, or else the max_distance will not work.
+        ex.\n
+        if self.attacking1:\n
+            self.atk1_animation()\n
+            self.trigger_dash()\n
+
         Guide:
             attacking                      - Pass the attacking to disable when max distance is reached.
             speed, max_distance            - Provide the speed and max_distance of the dash.
@@ -551,10 +557,12 @@ class Player(pygame.sprite.Sprite):
                 # print('SET TO TRUE')
                 self.dash_delay_triggered = True
         else:
-
+            print(self.dash_distance_covered,self.attacking1, self.dashing)
+            
             get_current_position = self.x_pos
             self.dash_distance_covered = abs(get_current_position - self.get_last_position)
             if self.dash_distance_covered >= max_distance:
+                print('stoppp', self.dashing)
                 self.get_last_position = 0
                 self.dash_start_time = 0
                 self.dash_delay_triggered = False
@@ -563,6 +571,9 @@ class Player(pygame.sprite.Sprite):
                 self.reset_dash()
                 # print('end')
                 setattr(self, attacking, False)
+                print('end', self.attacking1, self.dashing)
+                print(self.dash_distance_covered >= max_distance)
+                return
             else:
                 self.dashing = True
                 if facing:
@@ -578,6 +589,9 @@ class Player(pygame.sprite.Sprite):
         self.dash_start_time = 0
         self.dash_delay_triggered = False
         self.dash_distance_covered = 0
+        # Reset animation indices when dash ends
+        # self.player_atk1_index = 0
+        # self.player_atk1_index_flipped = 0
 
 
     # def trigger_dash(
@@ -1022,12 +1036,14 @@ class Player(pygame.sprite.Sprite):
                         self.atk2_damage_2nd = (self.atk2_damage_2nd[0] * (1 + val), self.atk2_damage_2nd[1] * (1 + val)) #reused by water princess
                     if hasattr(self, 'sp_damage_2nd'):
                         self.sp_damage_2nd = (self.sp_damage_2nd[0] * (1 + val), self.sp_damage_2nd[1] * (1 + val))
-                    if hasattr(self, 'real_sp_damage'):
-                        self.real_sp_damage *= (1 + val)
+
 
                     #some of these from water princess, will reuse some variable
                     if hasattr(self, 'atk3_damage_2nd'):
-                        self.atk3_damage_2nd *= (1 + val)
+                        if isinstance(self.atk3_damage_2nd, tuple):
+                            self.atk3_damage_2nd = (self.atk3_damage_2nd[0] * (1 + val), self.atk3_damage_2nd[1] * (1 + val))
+                        else:
+                            self.atk3_damage_2nd *= (1 + val)
                     if hasattr(self, 'atk1_damage_2nd'):
                         self.atk1_damage_2nd *= (1 + val)
                     if hasattr(self, 'sp_damage_3rd'): # For water princess
@@ -2950,7 +2966,7 @@ class Player(pygame.sprite.Sprite):
 
         return frame_duration, repeat_animation
 
-
+    # def damage_per_second(self, dps, frame_count)
 
 
     # ------------------------ Targeting HELPERS ------------------------

@@ -707,7 +707,7 @@ class DisplaySkillInfo:
     def __init__(self, image_path, pos, skill_name, font_path=None, font_size=16, 
                  skill_icon_path=None, stats=None, info_text=None,
                  text_color='white', padding=(20, 20), min_size=(150, 100), 
-                 anchor='topleft', fixed_size=None, text_scale=1.0):
+                 anchor='topleft', fixed_size=None, text_scale=1.0, columns=1):
         """
         Initialize enhanced skill info display.
         """
@@ -715,6 +715,7 @@ class DisplaySkillInfo:
         self.padding = padding
         self.anchor = anchor
         self.pos = pos
+        self.columns = max(1, columns)  # Ensure at least 1 column
         
         # Font setup (title larger, base default, stats smaller)
         self.base_font_size = int(font_size * text_scale)
@@ -733,7 +734,8 @@ class DisplaySkillInfo:
                 else:
                     self.skill_icon = pygame.image.load(skill_icon_path).convert_alpha()
                 # Scale icon to 75% of original size
-                icon_size = int(self.skill_icon.get_width() * 0.75), int(self.skill_icon.get_height() * 0.75)
+                # icon_size = int(self.skill_icon.get_width() * 0.75), int(self.skill_icon.get_height() * 0.75)
+                icon_size = 75, 75
                 self.icon_scaled = pygame.transform.smoothscale(self.skill_icon, icon_size)
             except Exception as exc:
                 print('DisplaySkillInfo icon load error:', exc)
@@ -758,11 +760,13 @@ class DisplaySkillInfo:
         self.max_content_width = self.first_row_width
         self.total_content_height = self.first_row_height
 
-        # Stats list
+        # Stats list (organized by columns)
         self.stat_surfaces = []
+        self.stat_columns = []  # List of columns, each column is a list of stat rows
+        
         if stats and isinstance(stats, dict):
-            if self.stat_surfaces:
-                pass
+            # Create stat surfaces
+            all_stats = []
             for stat_name, stat_data in stats.items():
                 if isinstance(stat_data, tuple) or isinstance(stat_data, list):
                     stat_value, stat_color = stat_data
@@ -773,11 +777,39 @@ class DisplaySkillInfo:
                 color = self._parse_color(stat_color)
                 stat_name_surf = self.font_small.render(f"{stat_name}: ", global_vars.TEXT_ANTI_ALIASING, self.text_color)
                 stat_value_surf = self.font_small.render(str(stat_value), global_vars.TEXT_ANTI_ALIASING, color)
-                self.stat_surfaces.append((stat_name_surf, stat_value_surf))
-
-                row_width = stat_name_surf.get_width() + stat_value_surf.get_width()
-                self.max_content_width = max(self.max_content_width, row_width)
-                self.total_content_height += stat_name_surf.get_height() + 3
+                all_stats.append((stat_name_surf, stat_value_surf))
+            
+            # Distribute stats into columns
+            if self.columns > 1:
+                stats_per_col = (len(all_stats) + self.columns - 1) // self.columns
+                for col_idx in range(self.columns):
+                    start_idx = col_idx * stats_per_col
+                    end_idx = start_idx + stats_per_col
+                    self.stat_columns.append(all_stats[start_idx:end_idx])
+            else:
+                self.stat_columns = [all_stats]
+            
+            self.stat_surfaces = all_stats
+            
+            # Calculate dimensions for multi-column layout
+            col_widths = []
+            col_heights = []
+            for col in self.stat_columns:
+                col_width = 0
+                col_height = 0
+                for stat_name_surf, stat_value_surf in col:
+                    row_width = stat_name_surf.get_width() + stat_value_surf.get_width()
+                    col_width = max(col_width, row_width)
+                    col_height += stat_name_surf.get_height() + 3
+                col_widths.append(col_width)
+                col_heights.append(col_height if col_height > 0 else 0)
+            
+            # Total width is sum of column widths (with spacing between columns)
+            if col_widths:
+                col_spacing = 20
+                self.max_content_width = max(self.max_content_width, sum(col_widths) + (len(col_widths) - 1) * col_spacing)
+                # Total height is the max height among columns
+                self.total_content_height += max(col_heights) if col_heights else 0
 
         # Info text
         self.info_lines = []
@@ -836,13 +868,33 @@ class DisplaySkillInfo:
 
         y += self.first_row_height
 
-        # 2) Stats lines below
-        if self.stat_surfaces:
+        # 2) Stats lines below (multi-column layout)
+        if self.stat_columns:
             y += 10
-            for stat_name_surf, stat_value_surf in self.stat_surfaces:
-                screen.blit(stat_name_surf, (x_base, y))
-                screen.blit(stat_value_surf, (x_base + stat_name_surf.get_width(), y))
-                y += stat_name_surf.get_height() + 3
+            col_x_positions = []
+            current_x = x_base
+            col_spacing = 20
+            
+            # Calculate column positions based on widths
+            for col_idx, col in enumerate(self.stat_columns):
+                col_x_positions.append(current_x)
+                col_width = 0
+                for stat_name_surf, stat_value_surf in col:
+                    row_width = stat_name_surf.get_width() + stat_value_surf.get_width()
+                    col_width = max(col_width, row_width)
+                current_x += col_width + col_spacing
+            
+            # Draw each column
+            max_col_height = 0
+            for col_idx, col in enumerate(self.stat_columns):
+                col_y = y
+                for stat_name_surf, stat_value_surf in col:
+                    screen.blit(stat_name_surf, (col_x_positions[col_idx], col_y))
+                    screen.blit(stat_value_surf, (col_x_positions[col_idx] + stat_name_surf.get_width(), col_y))
+                    col_y += stat_name_surf.get_height() + 3
+                max_col_height = max(max_col_height, col_y - y)
+            
+            y += max_col_height
 
         # 3) Info text lines below
         if self.info_lines:

@@ -1212,7 +1212,7 @@ class Water_Princess(Player):
                                 )
                             attack_display.add(attack)
                         self.mana -= 0
-                        self.attacks[4].last_used_time = current_time
+                        self.attacks_special[4].last_used_time = current_time
                         self.running = False
                         self.basic_attacking = True
                         self.player_basic_index = 0

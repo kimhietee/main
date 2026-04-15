@@ -123,7 +123,9 @@ class Fire_Wizard(Player):
         self.sp_sound.set_volume(sound4[1] * global_vars.MAIN_VOLUME)
 
         # Character Frame Source
-        basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', 10, 1]
+        # basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', 10, 1]
+        basic_ani = [r'assets\characters\stickman\attack\Frame0', 6, 0]
+
         jump_ani = [r'assets\characters\Fire wizard\jump pngs\Jump_', 6, 1]
         run_ani = [r'assets\characters\Fire wizard\run pngs\Run_', 8, 1]
         idle_ani= [r'assets\characters\Fire wizard\idle pngs\image_0-', 7, 1]
@@ -152,7 +154,7 @@ class Fire_Wizard(Player):
         self.sp = self.load_img_frames_numbering_method(sp_atk[0], sp_atk[1], sp_atk[2], sp_atk[3])
 
         # Load Character Frames
-        self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], self.char_size)
+        self.player_basic = self.load_img_frames(basic_ani[0], basic_ani[1], basic_ani[2], 0.2)
         self.player_basic_flipped = self.load_img_frames_flipped(basic_ani[0], basic_ani[1], basic_ani[2], self.char_size)
         
         self.player_jump = self.load_img_frames(jump_ani[0], jump_ani[1], jump_ani[2], self.char_size)

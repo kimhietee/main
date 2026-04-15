@@ -1570,8 +1570,6 @@ import hero_codes.phantom_assassin as phantom_assassin
 Phantom_Assassin = phantom_assassin.Phantom_Assassin
 
 
-
-
 # #-------------------------------------
 # #if have time to make, make the players more centralized
 
@@ -2090,17 +2088,100 @@ Elixir: 8% hp regen, 8% mana regen, 4% move speed
 Flower Locket: 12% hp regen, 12% mana regen
 Energy Booster: 3 str flat, 3 int flat, 3 agi flat
 '''
+# Hero display info cache - populated once at startup to avoid expensive hero instantiation
+HERO_DISPLAY_CACHE = {}
+
+def build_hero_display_cache():
+    """
+    Pre-compute hero display info cache to avoid expensive instantiation on hover.
+    This is called once at startup to populate the cache.
+    """
+    hero_data = {
+        "Fire Wizard": {"str": 40, "int": 40, "agi": 26, "base_atk": 0.1, "atk_time": 1750, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.3, "icon": fire_wizard_icon},
+        "Wanderer Magician": {"str": 40, "int": 36, "agi": 35, "base_atk": 0.2, "atk_time": 1600, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.6, "mana_regen": 6.75, "icon": wanderer_magician_icon},
+        "Fire Knight": {"str": 42, "int": 36, "agi": 33, "base_atk": 3.4, "atk_time": 1800, "atk_spd_mod": 0.5, "atk_spd": 60, "hp_regen": 0.85, "mana_regen": 4.85, "icon": fire_knight_icon},
+        "Wind Hashashin": {"str": 38, "int": 40, "agi": 24, "base_atk": 0.0, "atk_time": 1700, "atk_spd_mod": 0.6, "atk_spd": 105, "hp_regen": 0.82, "mana_regen": 5.1, "icon": wind_hashashin_icon},
+        "Water Princess": {"str": 38, "int": 48, "agi": 20, "base_atk": 0.0, "atk_time": 3700, "atk_spd_mod": 0.4, "atk_spd": 60, "hp_regen": 0.8, "mana_regen": 6.05, "icon": water_princess_icon},
+        "Forest Ranger": {"str": 32, "int": 52, "agi": 30, "base_atk": 0.1, "atk_time": 1800, "atk_spd_mod": 1.1, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.0, "icon": forest_ranger_icon},
+        "Yurei": {"str": 36, "int": 40, "agi": 37, "base_atk": 0.5, "atk_time": 1500, "atk_spd_mod": 0.55, "atk_spd": 100, "hp_regen": 0.75, "mana_regen": 5.5, "icon": yurei_icon},
+        "Chthulu": {"str": 40, "int": 40, "agi": 25, "base_atk": 2.5, "atk_time": 1900, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.9, "mana_regen": 4.9, "icon": chthulu_icon},
+        "Phantom Assassin": {"str": 40, "int": 40, "agi": 30, "base_atk": 0.3, "atk_time": 1600, "atk_spd_mod": 1.2, "atk_spd": 110, "hp_regen": 0.8, "mana_regen": 5.5, "icon": phantom_assassin_icon},
+    }
+    
+    STR_MULT = 5  # From Player class
+    INT_MULT = 5  # From Player class
+    AGI_MULT = 0.1  # From Player class
+    
+    for hero_name, data in hero_data.items():
+        str_val = data["str"]
+        int_val = data["int"]
+        agi_val = data["agi"]
+        base_atk = data["base_atk"]
+        atk_time = data["atk_time"]
+        atk_spd_mod = data["atk_spd_mod"]
+        atk_spd = data["atk_spd"]
+        hp_regen = data["hp_regen"]
+        mana_regen = data["mana_regen"]
+        hero_icon = data["icon"]
+        
+        # Calculate derived stats (matching Player class logic)
+        max_health = str_val * STR_MULT
+        max_mana = int_val * INT_MULT
+        basic_damage = base_atk + (agi_val * AGI_MULT)
+        
+        # Extract trait from HERO_INFO
+        trait_text = ""
+        if hero_name in HERO_INFO:
+            info_str = HERO_INFO[hero_name]
+            if "Trait: " in info_str:
+                trait_text = info_str.split("Trait: ")[-1]
+        
+        # Build stats dictionary with colors (organized in display order)
+        stats = {
+            'Strength': (str_val, 'red'),
+            'HP Regen': (round(hp_regen, 2), 'green'),
+            'Intelligence': (int_val, 'cyan'),
+            'Mana Regen': (round(mana_regen, 2), 'cyan'),
+            'Agility': (agi_val, 'green'),
+            'Health': (int(max_health), 'maize'),
+            'Mana': (int(max_mana), 'cyan'),
+            'Attack Damage': (round(basic_damage, 2), 'red'),
+            'Attack Speed': (atk_spd, 'white'),
+            'Base Attack Time': (f"{atk_time//100/10}s", 'white'),
+            'Attack Speed Modifier': (atk_spd_mod, 'white'),
+        }
+        
+        HERO_DISPLAY_CACHE[hero_name] = (stats, "Trait:@" + trait_text, hero_icon)
+
+def get_hero_display_info(hero_class):
+    """
+    Get cached hero display information (O(1) lookup, no instantiation).
+    
+    Args:
+        hero_class: The hero class (e.g., Fire_Wizard)
+    
+    Returns:
+        tuple: (stats_dict, trait_text, icon_path) from cache
+    """
+    hero_name = hero_class.__name__.replace("_", " ")
+    cached = HERO_DISPLAY_CACHE.get(hero_name, ({}, "", None))
+    return cached
+
+
 HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
-    "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 26, , Trait: 10% Spell Damage",
-    "Wanderer Magician": "Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% Mana, Regen",
-    "Fire Knight": "Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
-    "Wind Hashashin": "Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana, Reduction",
-    "Water Princess": "Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%/20% Mana, Cost and Delay",
-    "Forest Ranger": "Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% Lifesteal, 20% Base Attack Speed, + 200% Mana as Damage",
-    "Yurei": "Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% Cooldown Reduction",
-    "Chthulu": "Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5%/10% Stat,Potency",
-    "Phantom Assassin": "Strength: 40, Intelligence: 40, Agility: 30, , Trait: 0",
+    "Fire Wizard": f"Strength: 40, Intelligence: 40, Agility: 26, , Trait: 10% Spell Damage",
+    "Wanderer Magician": f"Strength: 40, Intelligence: 36, Agility: 37, , Trait: 20%->30% Mana Regen",
+    "Fire Knight": f"Strength: 42, Intelligence: 36, Agility: 33, , Trait: 15% Base Health Regen",
+    "Wind Hashashin": f"Strength: 38, Intelligence: 40, Agility: 24, , Trait: 15% Mana@Reduction",
+    "Water Princess": f"Strength: 40, Intelligence: 48, Agility: 20, , Trait: 15%/20% Mana@Cost and Delay",
+    "Forest Ranger": f"Strength: 32, Intelligence: 52, Agility: 30, , Trait: 10% Lifesteal@20% Base Attack Speed@200% Mana as Damage",
+    "Yurei": f"Strength: 36, Intelligence: 40, Agility: 37, , Trait: 15% Cooldown Reduction",
+    "Chthulu": f"Strength: 40, Intelligence: 40, Agility: 25, , Trait: 5%/10% Stat Increase",
+    "Phantom Assassin": f"Strength: 40, Intelligence: 40, Agility: 30, , Trait: 0",
 }
+
+# Initialize hero display cache (called once after HERO_INFO is defined for performance)
+build_hero_display_cache()
 
 # HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, compared with data is above forest ranger class
 #     "Fire Wizard": "Strength: 40, Intelligence: 40, Agility: 27 (26 dmg), HP: 200, Mana: 200, Damage: 5.4 , Attack Speed: -200, , Trait: 20% spell dmg",
@@ -2115,6 +2196,9 @@ HERO_INFO = { # Agility on display based on total damage around 5-6 seconds, com
 
 
 class EquippedItem:
+    '''
+    scudge
+    '''
     def __init__(self, items_list):
         self.item = []
         self.items_list = items_list  # List of Item instances
@@ -2124,6 +2208,29 @@ class EquippedItem:
         indexed = len(self.item)
         if indexed < MAX_ITEM:
             self.item.append(item)
+
+    def populate_random_items(self, max_items=MAX_ITEM):
+        """
+        Randomly equip items from the available items list.
+        This method randomly selects and equips items up to max_items count.
+        
+        Args:
+            max_items: Maximum number of items to randomly equip (default: MAX_ITEM)
+        """
+        if not self.items_list or len(self.items_list) == 0:
+            return
+        
+        # Randomly select how many items to equip (1 to max_items)
+        num_items_to_equip = max_items
+        
+        # Randomly select items from the available items list
+        selected_items = random.sample(self.items_list, num_items_to_equip)
+        
+        # Add the randomly selected items to the equipped items
+        for item in selected_items:
+            self.add(item)
+            # Mark as selected so update() won't remove them
+            item.selected = True
 
     def update(self):
         for i in self.item:
@@ -2395,35 +2502,30 @@ class PlayerSelector:
         return self.class_item
 
     def show_hover_tooltip(self, position):
-        """Display hero info tooltip on hover (if applicable)."""
+        """Display hero info tooltip on hover with detailed stats and trait."""
         if (self.hovered and
             isinstance(self.class_item, type) and
             issubclass(self.class_item, Player)):
             hero_name = self.class_item.__name__.replace("_", " ")
             if hero_name in HERO_INFO:
-                # info_bubble = ImageBro(
-                #     image_path=text_box_img,
-                #     pos=position,
-                #     scale=2,
-                #     text=f"{hero_name}, {HERO_INFO[hero_name]}",
-                #     font_path=global_vars.FONT_PATH,
-                #     font_size=font_size * 1.05,
-                #     text_color='white',
-                #     fku=True,
-                #     scale_val=(150, 230),
-                #     hover_move=0,
-                #     player_info=True
-                # )
-                info_bubble = ImageBro(
+                # Get detailed hero stats and trait
+                stats, trait_text, icon_path = get_hero_display_info(self.class_item)
+                
+                # Create and display info bubble using DisplaySkillInfo
+                from button import DisplaySkillInfo
+                info_bubble = DisplaySkillInfo(
                     image_path=text_box_img,
                     pos=position,
-                    text=f"{hero_name}, {HERO_INFO[hero_name]}",
+                    skill_name=hero_name,
+                    skill_icon_path=icon_path,  # Could add hero portrait if desired
+                    stats=stats,
+                    info_text=trait_text,
                     font_path=global_vars.FONT_PATH,
-                    font_size=font_size * 1.05,
+                    font_size=font_size * 1.2,
                     text_color='white',
-                    player_info=True,
-                    text_scale=1.3,  # Full size
-                    anchor='bottomright'
+                    anchor='midbottom',
+                    text_scale=1.1,
+                    columns=3
                 )
                 info_bubble.drawing_info(screen)
         
@@ -2681,12 +2783,12 @@ def player_selection():
 
     #upper position PlayerSelector(wind_hashashin_icon, (75, height - 75 * 3), Wind_Hashashin)
     #p1
-    addd=width * 0.0079#10 
+    addd=int(width * 0.0079)#10 
     # yposlower=75
     # yposupper=200
 
-    yposlower=(height * 0.10417 ) #75
-    yposupper=(height * 0.2778) #200
+    yposlower=int(height * 0.10417 ) #75
+    yposupper=int(height * 0.2778) #200
 
     xpos1=width - int(yposlower * 7)+addd # 535
     xpos2=width - int(yposlower * 5.5)+addd # 422
@@ -2868,14 +2970,16 @@ def player_selection():
 
     from button import RectButton
     all_items_button = RectButton((width/2), height*0.8, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "All Items")
-    x2_bot = RectButton((width/2), height*0.6, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "2x Bot")
-    random_p1 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random")
-    random_p2 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random")
+    x2_bot = RectButton((width/2), height*0.5, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "2x Bot")
+    random_p1 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random Hero")
+    random_p2 = RectButton((width/2), height*0.7, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random Hero")
+
+    random_p1_item = RectButton((width/2), height*0.6, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random Item")
+    random_p2_item = RectButton((width/2), height*0.6, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Random Item")
 
 
     next_page_button = RectButton((width/3.5), height*0.75, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), ">", height_position=0)
     back_page_button = RectButton((width/6), height*0.75, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "<", height_position=0)
-
 
     toggle_bot_button = RectButton((width/2), height*0.8, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "Toggle Bot")
     # chosen hero will be the name
@@ -2891,9 +2995,9 @@ def player_selection():
     
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Fire_Knight
+            PLAYER_1_SELECTED_HERO = Wind_Hashashin
             PLAYER_2_SELECTED_HERO = Wanderer_Magician
-            map_selected = Animate_BG.dark_forest_bg # Default
+            map_selected = Animate_BG.city_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False
             map_choose = True
@@ -2936,6 +3040,12 @@ def player_selection():
                 if toggle_bot_button.is_clicked(event.pos):
                     if player_1_choose:
                         global_vars.HERO1_BOT = toggle_bot_button.toggle(global_vars.HERO1_BOT)
+                if random_p1_item.is_clicked(event.pos):
+                    if player_1_choose:
+                        global_vars.random_item_pick_p1 = random_p1_item.toggle(global_vars.random_item_pick_p1)
+                if random_p2_item.is_clicked(event.pos):
+                    if player_2_choose:
+                        global_vars.random_item_pick_p2 = random_p2_item.toggle(global_vars.random_item_pick_p2)
                 if next_page_button.is_clicked(event.pos):
                     paginating(True)
                 if back_page_button.is_clicked(event.pos):
@@ -2962,6 +3072,8 @@ def player_selection():
             
             random_p1.update(mouse_pos, global_vars.random_pick_p1)
             random_p1.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            random_p1_item.update(mouse_pos, global_vars.random_item_pick_p1)
+            random_p1_item.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
             # print(pygame.mouse.get_pressed())
             
@@ -3053,6 +3165,8 @@ def player_selection():
                 x2_bot.draw(screen, global_vars.TEXT_ANTI_ALIASING)
             random_p2.update(mouse_pos, global_vars.random_pick_p2)
             random_p2.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            random_p2_item.update(mouse_pos, global_vars.random_item_pick_p2)
+            random_p2_item.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
             for selector in p2_select:
                 selector.update(mouse_pos, mouse_press, p2_select, max_selected=1)
@@ -3212,7 +3326,12 @@ def player_selection():
                     # hero1.enemy.append(hero3)
                     # hero3.player = hero2
 
-
+                    # === AUTO-EQUIP RANDOM ITEMS IF TOGGLE IS ON ===
+                    if global_vars.random_item_pick_p1:
+                        equipped_items.populate_random_items(MAX_ITEM)
+                    
+                    if global_vars.random_item_pick_p2:
+                        equipped_items_p2.populate_random_items(MAX_ITEM)
 
                     for item in equipped_items.item:
                         # if item.is_selected():

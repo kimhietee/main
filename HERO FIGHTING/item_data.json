@@ -25,7 +25,7 @@
       "image_path": "assets/item icons/new items/2 Icons with back/Icons_40.png",
       "bonus_type": ["lifesteal_per", "dmg_increase_per"],
       "bonus_value": [0.2, 0.05],
-      "description": "Heals the attacker for 20% of the@attack damage dealt to enemy.@Increases damage taken from enemies."
+      "description": "Heals the attacker for 20% of the@attack damage dealt to enemy but@increases damage taken from enemies."
 
     },
     {

@@ -42,12 +42,14 @@ item_page = 1
 toggle_hero3 = False
 random_pick_p1 = False 
 random_pick_p2 = False 
+random_item_pick_p1 = False
+random_item_pick_p2 = False 
 
 
 MAIN_VOLUME = 0.01
 TEXT_ANTI_ALIASING = False
 SMOOTH_BG = False
-MAX_ITEM = 40
+MAX_ITEM = 4
 # MAX DEFAULT ITEM = 4
 x_gap = width * 0.078125
 item_equip_hashmap = [(x*x_gap)-21 for x in range(2,MAX_ITEM+2)]

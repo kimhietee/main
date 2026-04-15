@@ -89,7 +89,7 @@ class Wind_Hashashin(Player):
 
 
 
-        self.base_health_regen = 0.85 # 1.23
+        self.base_health_regen = 0.82 # 1.23
         self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
         self.base_attack_damage = 0.0 # 4.8
 
@@ -360,6 +360,10 @@ class Wind_Hashashin(Player):
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        # self.arcane_orb_hitbox_size = self.calculate_hitbox_size(self.sp)
+        # self.arcane_orb_distance = self.calculate_attack_range(0, self.arcane_orb_hitbox_size, self.arcane_orb_speed, self.atk4_ani_count, self.arcane_orb_frame_duration, repeat=self.arcane_orb_repeat)
+        
+
         # Skills
         self.attacks = [
             Attacks(
@@ -370,12 +374,12 @@ class Wind_Hashashin(Player):
                 mana=self.mana,
                 damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
 
-                skill_name='sad',
+                skill_name='Wind Dash',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Dashes forward while leaving a gust@of wind moving away, that can damage@enemies.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
@@ -956,7 +960,7 @@ class Wind_Hashashin(Player):
                                 disable_collide=True,
                                 sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
                                 repeat_sound=True,
-                                damage_mode='single'
+                                # damage_mode='single'
                                 )
                         attack_display.add(attack)
 
@@ -968,7 +972,7 @@ class Wind_Hashashin(Player):
                                     frame_duration=120,
                                     repeat_animation=1,
                                     speed=0 if self.facing_right else 0,
-                                    dmg=self.real_sp_damage * 0,
+                                    dmg=self.sp_damage[0] * 0,
                                     final_dmg=0,
                                     who_attacks=self,
                                     who_attacked=self.target,
@@ -989,7 +993,7 @@ class Wind_Hashashin(Player):
                                 frame_duration=5,
                                 repeat_animation=4,
                                 speed=0 if self.facing_right else 0,
-                                dmg=self.real_sp_damage * 0.2,
+                                dmg=self.sp_damage[0] * 0.2,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.target,
@@ -1123,27 +1127,15 @@ class Wind_Hashashin(Player):
             self.atk1_move_speed, self.atk2_move_speed = 1, 1
 
         elif self.attacking1: # fixing the damn bug for this hero
-            # self.activate_dash = True
-            
-            # if not self.special_active:
-            #     self.dash_speed = self.default_dash_speed
-            #     self.max_distance = self.default_max_distance
-            # else:
-            #     self.dash_speed = self.special_dash_speed
-            #     self.max_distance = self.special_max_distance
+            self.atk1_animation()  
 
-            # if self.distance_covered >= self.max_distance:
-            #     self.activate_dash = False
-            #     self.attacking1 = False
-            #     self.distance_covered = 0
-            # else: 
-            #     if self.activate_dash:
-            #         self.trigger_dash()
             if not self.special_active:
                 self.trigger_dash('attacking1', speed=12, max_distance=500, delay=0)
             else:
-                self.trigger_dash('attacking1', speed=15, max_distance=800, delay=0)
-            self.atk1_animation()  
+                self.trigger_dash('attacking1', speed=15, max_distance=700, delay=0)
+            # Only animate if attack is still active (trigger_dash might have ended it)
+            # if self.attacking1:
+                # self.atk1_animation()  
 
         elif self.jumping:
             self.jump_animation()

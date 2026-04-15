@@ -577,12 +577,14 @@ def game(bg=None):
 
     # Import keybinds as data from json
     
-
+    bot_pos = 200
 
     for p1 in main.hero1_group:
-        p1.x_pos = random.randint(50, 100)
+        # p1.x_pos = random.randint(50, 100)
+        p1.x_pos = 300
     for p2 in main.hero2_group:
-        p2.x_pos = random.randint(width-100, width-50)
+        # p2.x_pos = random.randint(width-100, width-50)
+        p2.x_pos = width-300
 
 
 

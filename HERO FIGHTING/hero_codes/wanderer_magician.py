@@ -740,7 +740,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                             # kill_collide=True,
                             continuous_dmg=True,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(False, self.arcane_orb_delay)
+                            delay=(True, self.arcane_orb_delay)
                             ) 
                         attack_display.add(attack)
                         

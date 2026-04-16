@@ -157,7 +157,7 @@ class Wind_Hashashin(Player):
         self.special_tornado_cast_range = 130
         self.special_tornado_airborne_duration = 1800
         self.omnislash_count = 4 # same for the special version
-        self.mark_of_death_count = [1500, 3000, 4500, 6000]
+        self.mark_of_death_count = [500, 1500, 2500]
         
 
         self.raw_atk1_dmg = 10
@@ -180,7 +180,7 @@ class Wind_Hashashin(Player):
         self.raw_sp_atk2_dmg = 26
         self.raw_sp_atk3_dmg = 50
         self.raw_sp_atk4_dmg = 10 # times 4
-        self.raw_sp_atk4_dmg_2nd = 2 # times 4, times (count(4)) + 40 = 72
+        self.raw_sp_atk4_dmg_2nd = 3 # times 4, times (count(3)) + 40 = 76
 
 
         self.sp_atk3_ani_count = 20

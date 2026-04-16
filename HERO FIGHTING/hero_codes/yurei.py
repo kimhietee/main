@@ -536,6 +536,10 @@ class Yurei(Player):
             'sp_attacking': False, 
         }
    
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 1.05  # speed_modifier: 0.05
+        self.default_speed = self.speed
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION
@@ -631,8 +635,8 @@ class Yurei(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.05,
-                special_active_speed = 0.25,
+                speed_modifier = 0,
+                special_active_speed = 0.15,
                 jump_force = self.jump_force,
                 jump_force_modifier = 0
                 )

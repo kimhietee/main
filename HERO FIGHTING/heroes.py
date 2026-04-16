@@ -2097,15 +2097,15 @@ def build_hero_display_cache():
     This is called once at startup to populate the cache.
     """
     hero_data = {
-        "Fire Wizard": {"str": 40, "int": 40, "agi": 26, "base_atk": 0.1, "atk_time": 1750, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.3, "icon": fire_wizard_icon},
-        "Wanderer Magician": {"str": 40, "int": 36, "agi": 35, "base_atk": 0.2, "atk_time": 1600, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.6, "mana_regen": 6.75, "icon": wanderer_magician_icon},
-        "Fire Knight": {"str": 42, "int": 36, "agi": 33, "base_atk": 3.4, "atk_time": 1800, "atk_spd_mod": 0.5, "atk_spd": 60, "hp_regen": 0.85, "mana_regen": 4.85, "icon": fire_knight_icon},
-        "Wind Hashashin": {"str": 38, "int": 40, "agi": 24, "base_atk": 0.0, "atk_time": 1700, "atk_spd_mod": 0.6, "atk_spd": 105, "hp_regen": 0.82, "mana_regen": 5.1, "icon": wind_hashashin_icon},
-        "Water Princess": {"str": 38, "int": 48, "agi": 20, "base_atk": 0.0, "atk_time": 3700, "atk_spd_mod": 0.4, "atk_spd": 60, "hp_regen": 0.8, "mana_regen": 6.05, "icon": water_princess_icon},
-        "Forest Ranger": {"str": 32, "int": 52, "agi": 30, "base_atk": 0.1, "atk_time": 1800, "atk_spd_mod": 1.1, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.0, "icon": forest_ranger_icon},
-        "Yurei": {"str": 36, "int": 40, "agi": 37, "base_atk": 0.5, "atk_time": 1500, "atk_spd_mod": 0.55, "atk_spd": 100, "hp_regen": 0.75, "mana_regen": 5.5, "icon": yurei_icon},
-        "Chthulu": {"str": 40, "int": 40, "agi": 25, "base_atk": 2.5, "atk_time": 1900, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.9, "mana_regen": 4.9, "icon": chthulu_icon},
-        "Phantom Assassin": {"str": 40, "int": 40, "agi": 30, "base_atk": 0.3, "atk_time": 1600, "atk_spd_mod": 1.2, "atk_spd": 110, "hp_regen": 0.8, "mana_regen": 5.5, "icon": phantom_assassin_icon},
+        "Fire Wizard": {"str": 40, "int": 40, "agi": 26, "base_atk": 0.1, "atk_time": 1750, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.3, "move_speed": 2.2, "icon": fire_wizard_icon},
+        "Wanderer Magician": {"str": 40, "int": 36, "agi": 35, "base_atk": 0.2, "atk_time": 1600, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.6, "mana_regen": 6.75, "move_speed": 2.2, "icon": wanderer_magician_icon},
+        "Fire Knight": {"str": 42, "int": 36, "agi": 33, "base_atk": 3.4, "atk_time": 1800, "atk_spd_mod": 0.5, "atk_spd": 60, "hp_regen": 0.85, "mana_regen": 4.85, "move_speed": 1.76, "icon": fire_knight_icon},
+        "Wind Hashashin": {"str": 38, "int": 40, "agi": 24, "base_atk": 0.0, "atk_time": 1700, "atk_spd_mod": 0.6, "atk_spd": 105, "hp_regen": 0.82, "mana_regen": 5.1, "move_speed": 2.64, "icon": wind_hashashin_icon},
+        "Water Princess": {"str": 38, "int": 48, "agi": 20, "base_atk": 0.0, "atk_time": 3700, "atk_spd_mod": 0.4, "atk_spd": 60, "hp_regen": 0.8, "mana_regen": 6.05, "move_speed": 2.035, "icon": water_princess_icon},
+        "Forest Ranger": {"str": 32, "int": 52, "agi": 30, "base_atk": 0.1, "atk_time": 1800, "atk_spd_mod": 1.1, "atk_spd": 100, "hp_regen": 0.8, "mana_regen": 5.0, "move_speed": 2.53, "icon": forest_ranger_icon},
+        "Yurei": {"str": 36, "int": 40, "agi": 37, "base_atk": 0.5, "atk_time": 1500, "atk_spd_mod": 0.55, "atk_spd": 100, "hp_regen": 0.75, "mana_regen": 5.5, "move_speed": 2.31, "icon": yurei_icon},
+        "Chthulu": {"str": 40, "int": 40, "agi": 25, "base_atk": 2.5, "atk_time": 1900, "atk_spd_mod": 0.5, "atk_spd": 100, "hp_regen": 0.9, "mana_regen": 4.9, "move_speed": 1.1, "icon": chthulu_icon},
+        "Phantom Assassin": {"str": 40, "int": 40, "agi": 30, "base_atk": 0.3, "atk_time": 1600, "atk_spd_mod": 1.2, "atk_spd": 110, "hp_regen": 0.8, "mana_regen": 5.5, "move_speed": 2.42, "icon": phantom_assassin_icon},
     }
     
     STR_MULT = 5  # From Player class
@@ -2122,6 +2122,7 @@ def build_hero_display_cache():
         atk_spd = data["atk_spd"]
         hp_regen = data["hp_regen"]
         mana_regen = data["mana_regen"]
+        move_speed = data["move_speed"]
         hero_icon = data["icon"]
         
         # Calculate derived stats (matching Player class logic)
@@ -2138,17 +2139,18 @@ def build_hero_display_cache():
         
         # Build stats dictionary with colors (organized in display order)
         stats = {
-            'Strength': (str_val, 'red'),
-            'HP Regen': (round(hp_regen, 2), 'green'),
+            'Strength': (f"{str_val}", 'red'),
             'Intelligence': (int_val, 'cyan'),
-            'Mana Regen': (round(mana_regen, 2), 'cyan'),
             'Agility': (agi_val, 'green'),
-            'Health': (int(max_health), 'maize'),
+            'Move Speed': (round(move_speed, 2), 'white'),
+            'Health': (int(max_health), 'red'),
             'Mana': (int(max_mana), 'cyan'),
-            'Attack Damage': (round(basic_damage, 2), 'red'),
+            'Health Regen': (round(hp_regen + str_val/100, 2), 'green'),
+            'Mana Regen': (round(mana_regen + int_val/100, 2), 'cyan'),
             'Attack Speed': (atk_spd, 'white'),
             'Base Attack Time': (f"{atk_time//100/10}s", 'white'),
             'Attack Speed Modifier': (atk_spd_mod, 'white'),
+            'Attack Damage': (round(basic_damage, 2), 'red'),
         }
         
         HERO_DISPLAY_CACHE[hero_name] = (stats, "Trait:@" + trait_text, hero_icon)

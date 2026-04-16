@@ -442,7 +442,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
                 skill_stats={
                     'Type': ['Special', 'white'],
                     'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
-                    'Move Speed': ['+ 10', 'green'],
+                    'Move Speed': ['+ 10%', 'green'],
                     'Mana Increase': ['+ 60', 'maize'],
                     'Duration': ['30', 'white']
                 },
@@ -541,6 +541,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
             'sp_attacking': True,    
         }
    
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 1.0  # speed_modifier: 0 (no change)
+        self.default_speed = self.speed
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION
@@ -720,7 +724,7 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
                             # kill_collide=True,
                             sound=(True, self.sp_sound , None, None),
-                            delay=(False, self.arcane_orb_delay)
+                            delay=(True, self.arcane_orb_delay)
                             ) 
                         attack_display.add(attack)
                         

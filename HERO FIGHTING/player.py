@@ -123,6 +123,7 @@ class Player(pygame.sprite.Sprite):
 
         self.immortality_activated = False
         self.immortality_duration = 0
+        self.immortality_health_regen_multiplier = 2
 
         self.damage_return = 0
 
@@ -151,6 +152,7 @@ class Player(pygame.sprite.Sprite):
 
         self.mana_regen = self.regen_per_second(DEFAULT_MANA_REGENERATION)
         self.health_regen = self.regen_per_second(DEFAULT_HEALTH_REGENERATION)
+        self.last_health_regen = self.health_regen
 
         # Attack Speed Calculation
         self.bonus_attack_speed_flat = 0
@@ -2231,8 +2233,11 @@ class Player(pygame.sprite.Sprite):
             for item in self.items:
                 if 'immortality' in item.bonus_type and current_time - item.last_used >= item.cooldown: # check if dmg can kill hero
                     self.immortality_activated = True
-                    self.immortality_duration = (current_time * 1000) + 7000
+                    self.immortality_duration = (current_time * 1000) + 10000
                     item.last_used = current_time
+
+                    self.last_health_regen = self.health_regen
+                    self.health_regen = self.health_regen * self.immortality_health_regen_multiplier
                 
                     if item.attack_frames:
                         from heroes import Attack_Display
@@ -3171,6 +3176,8 @@ class Player(pygame.sprite.Sprite):
 
         if self.immortality_activated and current_time_ticks >= self.immortality_duration:
             self.immortality_activated = False
+            self.health_regen = self.last_health_regen
+        
 
         # print(current_time_ticks, self.immortality_duration, self.immortality_activated)
 

@@ -145,7 +145,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
 
         # haste base bonus
-        self.haste_duration = 7000
+        self.haste_duration = 5000
         self.haste_attack_speed = 300
         self.special_haste_attack_speed = 350
         self.frame_duration_divider = 2 # increases animation speed, repeats based on the number
@@ -541,7 +541,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
                 skill_stats={
                     'Type': ['Special', 'white'],
                     'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100, 1)}%', 'green'],
-                    'Move Speed': ['+ 10', 'green'],
+                    'Move Speed': ['+ 10%', 'green'],
                     'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
@@ -658,6 +658,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
             'sp_attacking': True,   
         }
    
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 1.15  # speed_modifier: 0.15
+        self.default_speed = self.speed
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION
@@ -752,8 +756,8 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.15,
-                special_active_speed = 0.25,
+                speed_modifier = 0,
+                special_active_speed = 0.15,
                 jump_force = self.jump_force,
                 jump_force_modifier = 0.05
                 )

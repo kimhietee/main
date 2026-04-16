@@ -702,6 +702,7 @@ class DisplaySkillInfo:
         'magenta': (255,0,255), # level 2   
         'orange': (255,165,0), # level 3
         'maize': (251,236,93), # mana refund
+        'ruby': (224, 17, 95), # level 4
     }
     
     def __init__(self, image_path, pos, skill_name, font_path=None, font_size=16, 

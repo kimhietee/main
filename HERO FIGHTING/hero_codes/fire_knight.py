@@ -444,7 +444,7 @@ class Fire_Knight(Player):
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'Strikes the ground, causing an eruption of fire@that damages enemies in the area. Enemies@caught are airborne for a short duration.@- Airborne duration: {self.eruption_airborne_duration/1000} seconds@- Airborne distance: {self.eruption_airborne_distance}'
+                skill_desc=f'Strikes the ground, causing an eruption of fire@that damages enemies in the area. Enemies@caught are airborne for a short duration.@- Airborne duration: {self.eruption_airborne_duration/1000} seconds' # @- Airborne distance: {self.eruption_airborne_distance}
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
@@ -508,7 +508,7 @@ class Fire_Knight(Player):
                 skill_stats={
                     'Type': ['Special', 'white'],
                     'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
-                    'Move Speed': ['+ 10', 'green'],
+                    'Move Speed': ['+ 10%', 'green'],
                     'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
@@ -546,7 +546,7 @@ class Fire_Knight(Player):
                     'Damage': [0 , 'red'],
                     'Distance': [f'{self.eruption_distance}' + ' units', 'green'],
                 },
-                skill_desc=f'Strikes the ground, causing multiple moving eruptions@of fire that damages enemies along the way. Enemies@caught are airborne for a short duration.@- Eruption count: {len(self.special_eruption_count)}@- Eruption interval: 1s@- Airborne duration: {(self.eruption_airborne_duration)/1000} seconds@- Airborne distance: {self.eruption_airborne_distance} units@- Burn damage: {(self.atk2_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
+                skill_desc=f'Strikes the ground, causing multiple moving eruptions@of fire that damages enemies along the way. Enemies@caught are airborne for a short duration.@- Eruption count: {len(self.special_eruption_count)}@- Eruption interval: 1s@- Airborne duration: {(self.eruption_airborne_duration)/1000} seconds@- Burn damage: {(self.atk2_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds' # @- Airborne distance: {self.eruption_airborne_distance} units
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
@@ -561,7 +561,7 @@ class Fire_Knight(Player):
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'Strikes the ground with might, bursting scorching@tornado that sets caught enemies to airborne.@- Airborne duration: {(self.scorching_tornado_airborne_duration)/1000}@- Airborne distance: {self.scorching_tornado_airborne_distance} units@- Burn damage: {(self.atk3_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds'
+                skill_desc=f'Strikes the ground with might, bursting scorching@tornado that sets caught enemies to airborne.@- Airborne duration: {(self.scorching_tornado_airborne_duration)/1000}@- Burn damage: {(self.atk3_burn_damage) * self.burn_repeat}@- Burn duration: {(self.burn_duration/1000) * self.burn_repeat} seconds' # @- Airborne distance: {self.scorching_tornado_airborne_distance} units
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -605,6 +605,10 @@ class Fire_Knight(Player):
             'attacking3': False,  
             'sp_attacking': True,     
         }
+
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 0.8  # speed_modifier: -0.2
+        self.default_speed = self.speed
 
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
@@ -652,8 +656,8 @@ class Fire_Knight(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = -0.2,
-                special_active_speed = -0.1,
+                speed_modifier = 0,
+                special_active_speed = 0.1,
                 jump_force = self.jump_force,
                 jump_force_modifier = -0.05
                 )

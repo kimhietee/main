@@ -124,42 +124,73 @@ class Wind_Hashashin(Player):
         percen = 0.15
         base1 = 50
         base2 = 70 #80
+        special_base2 = 100
         base3 = 130 #140
+        special_base3 = 150
         base4 = 200
 
         self.atk1_mana_cost = int(base1 - (base1 * percen)) # 47 !
         self.atk2_mana_cost = int(base2 - (base2 * percen))
+        self.special_atk2_mana_cost = int(special_base2 - (special_base2 * percen))
         self.atk3_mana_cost = int(base3 - (base3 * percen))
+        self.special_atk3_mana_cost = int(special_base3 - (special_base3 * percen))
         self.sp_mana_cost = int(base4 - (base4 * percen))
 
 
         self.atk1_cooldown = 7000
         self.atk2_cooldown = 10000 #14000 -> 10000
+        self.special_atk2_cooldown = 15000
         self.atk3_cooldown = 26000
+        self.special_atk3_cooldown = 30000
         self.sp_cooldown = 60000
 
+        self.dash_speed = 12
+        self.dash_max_distance = 500
+        self.special_dash_speed = 15
+        self.special_dash_max_distance = 700
+        self.tornado_speed = 10
+        self.tornado_cast_range = 30
+        self.tornado_slow = 0.5
+        self.tornado_slow_duration = 1400
+        self.enslice_stun_duration = 1400
+        self.special_tornado_speed = 7
+        self.special_tornado_cast_range = 130
+        self.special_tornado_airborne_duration = 1800
+        self.omnislash_count = 4 # same for the special version
+        self.mark_of_death_count = [1500, 3000, 4500, 6000]
+        
+
         self.raw_atk1_dmg = 10
-        self.raw_atk2_dmg = 35 # damage is 3-5 if 35 damage
-        self.raw_atk2_dmg_2nd = 13
-        self.raw_atk3_dmg = 10
-        self.raw_atk3_dmg_2nd = 13
-        self.raw_atk4_dmg = 16
+        self.raw_atk2_dmg = 60 # damage is 3-5 if 35 damage
+        self.raw_atk2_dmg_2nd = 9 # x slash
+        self.raw_atk3_dmg = 10  # circle
+        self.raw_atk3_dmg_2nd = 13 # x slash
+        self.raw_atk4_dmg = 15 # * 4
         
         self.atk1_ani_count = None
         self.atk2_ani_count = 45
-        self.atk2_ani_count_2nd = 15
-        self.atk3_ani_count = 20 # not used
+        self.atk2_ani_count_2nd = 15 # c
+        self.atk3_ani_count = 20
         self.atk3_ani_count_2nd = self.atk2_ani_count_2nd # same attack
         self.atk4_ani_count = None
         # --------------------------
+        self.tornado_frame_duration = round(self.tornado_slow_duration / self.atk2_ani_count, 2)
+        # --------------------------
         self.raw_sp_atk1_dmg = 12
         self.raw_sp_atk2_dmg = 26
-        self.raw_sp_atk3_dmg = 30
-        self.raw_sp_atk4_dmg = 0
+        self.raw_sp_atk3_dmg = 50
+        self.raw_sp_atk4_dmg = 10 # times 4
+        self.raw_sp_atk4_dmg_2nd = 2 # times 4, times (count(4)) + 40 = 72
+
 
         self.sp_atk3_ani_count = 20
         self.sp_atk4_ani_count = 10
         self.sp_atk4_ani_count_2nd = 10
+
+        # --------------------------
+        self.special_tornado_frame_duration = round(self.special_tornado_airborne_duration / self.sp_atk3_ani_count, 2)
+        # --------------------------
+
 
         self.atk1_damage = (self.raw_atk1_dmg, 0) #smoke dmg
         self.atk2_damage = (self.raw_atk2_dmg/self.atk2_ani_count, 0) #tornado
@@ -167,6 +198,11 @@ class Wind_Hashashin(Player):
         self.atk3_damage = (self.raw_atk3_dmg, 5) # circle
         self.atk3_damage_2nd = (self.raw_atk3_dmg_2nd/self.atk3_ani_count_2nd, 5) # x slash
         self.sp_damage = (self.raw_atk4_dmg, 0) # times 4
+
+        self.sp_atk3_damage =(self.raw_sp_atk3_dmg/self.sp_atk3_ani_count, 0)
+
+        # atk 2 = 21 - 23 dmg
+        # atk 3 = 31
 
         #SKILL DAMAGE before
         #10
@@ -354,14 +390,19 @@ class Wind_Hashashin(Player):
             self.atk1_mana_cost,
             self.atk2_mana_cost,
             self.atk3_mana_cost,
-            self.sp_mana_cost
+            self.sp_mana_cost,
+            self.special_atk2_mana_cost,
+            self.special_atk3_mana_cost
             ]
 
         # Modify
         self.lowest_mana_cost = self.mana_cost_list[0]
 
-        # self.arcane_orb_hitbox_size = self.calculate_hitbox_size(self.sp)
-        # self.arcane_orb_distance = self.calculate_attack_range(0, self.arcane_orb_hitbox_size, self.arcane_orb_speed, self.atk4_ani_count, self.arcane_orb_frame_duration, repeat=self.arcane_orb_repeat)
+        self.tornado_hitbox_size = self.calculate_hitbox_size(self.atk2)
+        self.tornado_distance = self.calculate_attack_range(self.tornado_cast_range, self.tornado_hitbox_size, self.tornado_speed, self.atk2_ani_count, self.tornado_frame_duration, repeat=1)
+        
+        self.special_tornado_hitbox_size = self.calculate_hitbox_size(self.atk3)
+        self.special_tornado_distance = self.calculate_attack_range(self.special_tornado_cast_range, self.special_tornado_hitbox_size, self.special_tornado_speed, self.sp_atk3_ani_count, self.special_tornado_frame_duration, repeat=1)
         
 
         # Skills
@@ -378,8 +419,10 @@ class Wind_Hashashin(Player):
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Distance': [f'{self.dash_max_distance}' + ' units', 'green'],
+                    'Speed': [f'{self.dash_speed}' + ' units', 'green']
                 },
-                skill_desc=f'Dashes forward while leaving a gust@of wind moving away, that can damage@enemies.'
+                skill_desc=f'Dashes forward while leaving a gust@of wind moving away, that can damage@enemies. Can be cast while on air.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
@@ -387,14 +430,15 @@ class Wind_Hashashin(Player):
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[self.raw_atk2_dmg * 0.15 + self.raw_atk2_dmg_2nd, self.atk2_damage_2nd[1]], # 0.15 is the estimate damage for tornado.
 
-                skill_name='sad',
+                skill_name='Tornado Slash',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Distance': [f'{self.tornado_distance}' + ' units', 'green']
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Violently slashes the wind, summoning@a tornado that damages and slows@enemies caught in it.@- Slow: {int(self.tornado_slow*100)}%@- Slow Max Duration: {round(self.tornado_slow_duration/1000, 2)}s'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
@@ -402,14 +446,14 @@ class Wind_Hashashin(Player):
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[self.raw_atk3_dmg + self.raw_atk3_dmg_2nd, self.atk3_damage[1] + self.atk3_damage_2nd[1]],
 
-                skill_name='sad',
+                skill_name='Enslice',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Catches enemies instantly, slicing@through them.'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -417,14 +461,14 @@ class Wind_Hashashin(Player):
                 skill_img=skill_4,
                 cooldown=self.sp_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[self.raw_atk4_dmg * self.omnislash_count, 0],
 
-                skill_name='sad',
+                skill_name='Omnislash',
                 skill_stats={
                     'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Teleports above the nearest enemy,@jumping the enemy and continuously@rips them apart.'
             )
         ]
 
@@ -440,7 +484,7 @@ class Wind_Hashashin(Player):
                 skill_stats={
                     'Type': ['Melee', 'white'],
                 },
-                skill_desc=f'Imbues'
+                skill_desc=f''
             )
         )
 
@@ -457,7 +501,7 @@ class Wind_Hashashin(Player):
                 skill_stats={
                     'Type': ['Special', 'white'],
                     'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'],
-                    'Move Speed': ['+ 10', 'green'],
+                    'Move Speed': ['+ 10%', 'green'],
                     'Duration': ['30', 'white']
                 },
                 skill_desc='Provides unique buffs and abilities to hero.'
@@ -473,42 +517,45 @@ class Wind_Hashashin(Player):
                 mana=self.mana,
                 damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
 
-                skill_name='sad',
+                skill_name='Wind Dash',
                 skill_stats={
-                    'Lv': [2, 'magenta'],
+                    'Lv': [2, 'blueviolet'],
                     'Damage': [0 , 'red'],
+                    'Distance': [f'{self.special_dash_max_distance}' + ' units', 'green'],
+                    'Speed': [f'{self.special_dash_speed}' + ' units', 'green']
                 },
-                skill_desc=f'sad'
+                skill_desc= f'Dashes forward while leaving a gusts@of wind in its trail, damaging enemies.@Can be cast while on air.'
             ),
             Attacks(
-                mana_cost=int(self.mana_cost_list[1]*1.5),
+                mana_cost=int(self.mana_cost_list[4]),
                 skill_rect=self.special_skill_2_rect,
                 skill_img=skill_3,
-                cooldown=int(self.atk2_cooldown*1.5),
+                cooldown=self.special_atk2_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[self.raw_atk3_dmg + self.raw_atk3_dmg_2nd, self.atk3_damage[1] + self.atk3_damage_2nd[1]],
 
-                skill_name='sad',
+                skill_name='Enslice',
                 skill_stats={
-                    'Lv': [2, 'magenta'],
+                    'Lv': [1, 'blueviolet'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Catches enemies instantly, slicing@through them.'
             ),
             Attacks(
-                mana_cost=self.mana_cost_list[2],
+                mana_cost=self.mana_cost_list[5],
                 skill_rect=self.special_skill_3_rect,
                 skill_img=special_skill_3,
-                cooldown=self.atk3_cooldown,
+                cooldown=self.special_atk3_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[self.raw_sp_atk3_dmg, self.sp_atk3_damage[1]], # 0.15 is the estimate damage for tornado.
 
-                skill_name='sad',
+                skill_name='Tornado Slash',
                 skill_stats={
-                    'Lv': [2, 'magenta'],
+                    'Lv': [3, 'orange'],
                     'Damage': [0 , 'red'],
+                    'Distance': [f'{self.tornado_distance}' + ' units', 'green']
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Violently slashes the wind, summoning@a flaming tornado that damages and@enemies caught are airborned.@- Airborne max duration: {(self.special_tornado_airborne_duration)/1000}'
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],
@@ -516,14 +563,19 @@ class Wind_Hashashin(Player):
                 skill_img=special_skill_4,
                 cooldown=self.sp_cooldown,
                 mana=self.mana,
-                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+                damage=[
+                    (self.raw_sp_atk4_dmg * self.omnislash_count) + 
+                    ((
+                        self.raw_sp_atk4_dmg_2nd * self.omnislash_count) * 
+                        len(self.mark_of_death_count
+                            )), 0],
 
-                skill_name='sad',
+                skill_name='Mark of Death',
                 skill_stats={
                     'Lv': [2, 'magenta'],
                     'Damage': [0 , 'red'],
                 },
-                skill_desc=f'sad'
+                skill_desc=f'Teleports above the nearest enemy,@jumping the enemy and continuously rips@them apart, while summoning clones to@finish the job.'
             )
         ]
 
@@ -539,7 +591,7 @@ class Wind_Hashashin(Player):
                 skill_stats={
                     'Type': ['Melee', 'white'],
                 },
-                skill_desc=f'Imbues'
+                skill_desc=f''
             )
         )
 
@@ -552,8 +604,9 @@ class Wind_Hashashin(Player):
             'sp_attacking': True,   
         }
         
-        
-
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 1.2  # speed_modifier: 0.2
+        self.default_speed = self.speed
 
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
@@ -598,8 +651,8 @@ class Wind_Hashashin(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.2,
-                special_active_speed = 0.25,
+                speed_modifier = 0,
+                special_active_speed = 0.1,
                 jump_force = self.jump_force,
                 jump_force_modifier = 0.1
                 )
@@ -654,7 +707,7 @@ class Wind_Hashashin(Player):
                         # print("Z key pressed")
                         # for i in [40*2, 80*2, 120*2, 160*2, 200*2]:
                         for i in [
-                            (self.atk2, True, 30, 30, self.atk2_damage[0], False, self.atk2_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.atk2, True, self.tornado_cast_range, self.tornado_frame_duration, self.atk2_damage[0], False, self.atk2_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
                             (self.sp, False, 70, 40, self.atk2_damage_2nd[0], False, self.atk2_damage_2nd[1])
                             ]:
                             attack = Attack_Display(
@@ -663,7 +716,7 @@ class Wind_Hashashin(Player):
                                 frames=i[0],
                                 frame_duration=i[3],
                                 repeat_animation=1,
-                                speed=10 if self.facing_right else -10,
+                                speed=self.tornado_speed if self.facing_right else -self.tornado_speed,
                                 dmg=i[4],
                                 final_dmg=i[6],
                                 who_attacks=self,
@@ -673,7 +726,7 @@ class Wind_Hashashin(Player):
                                 stun=(i[5], 40),
                                 sound=(True, self.atk2_sound, self.x_slash_sound, None),
                                 
-                                stop_movement=(i[1], 3, 2, 0.5)
+                                stop_movement=(i[1], 3, 2, self.tornado_slow)
                                 ) # Replace with the target
                             attack_display.add(attack)
                         self.mana -=  self.attacks[1].mana_cost
@@ -697,7 +750,7 @@ class Wind_Hashashin(Player):
                         # print("Z key pressed")  # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg
                         
                         for i in [
-                            (self.atk3, True, 100, 70, self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.atk3, True, 100, self.enslice_stun_duration / len(self.atk3), self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
                             (self.sp, False, 100, 50, self.atk3_damage_2nd[0], self.atk3_damage_2nd[1])
                             ]:
                             attack = Attack_Display(
@@ -711,8 +764,7 @@ class Wind_Hashashin(Player):
                                 final_dmg=i[5],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
-                                moving=i[1],
-                                stun=(True, 0),
+                                stun=(i[1], 0),
                                 sound=(True, self.atk3_sound , self.x_slash_sound, None)
                                 )
                             attack_display.add(attack)
@@ -745,7 +797,7 @@ class Wind_Hashashin(Player):
                                 y=self.rect.centery + 60,
                                 frames=self.atk1, #frames=self.real_sp,
                                 frame_duration=0.1,
-                                repeat_animation=4,
+                                repeat_animation=self.omnislash_count,
                                 speed=0 if self.facing_right else 0,
                                 dmg=self.sp_damage[0],
                                 final_dmg=0,
@@ -868,7 +920,7 @@ class Wind_Hashashin(Player):
                         # for i in [40*2, 80*2, 120*2, 160*2, 200*2]:
 
                         for i in [
-                            (self.atk3, True, 100, 70, self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.atk3, True, 100, self.enslice_stun_duration / len(self.atk3), self.atk3_damage[0], self.atk3_damage[1]), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
                             (self.sp, False, 100, 50, self.atk3_damage_2nd[0], self.atk3_damage_2nd[1])
                             ]:
                             attack = Attack_Display(
@@ -882,8 +934,7 @@ class Wind_Hashashin(Player):
                                 final_dmg=i[5],
                                 who_attacks=self,
                                 who_attacked=self.enemy,
-                                moving=i[1],
-                                stun=(True, 0),
+                                stun=(i[1], 0),
                                 sound=(True, self.atk3_sound , self.x_slash_sound, None)
                                 )
                             attack_display.add(attack)
@@ -908,7 +959,7 @@ class Wind_Hashashin(Player):
                         # print("Z key pressed")  # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg
                         
                         for i in [
-                            (self.atk3_special, True, 130, 100, self.atk2_damage[0] * 2.4, True, self.atk2_damage[1], -20), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
+                            (self.atk3_special, True, self.special_tornado_cast_range, self.special_tornado_frame_duration, self.sp_atk3_damage[0], True, self.atk2_damage[1], -20), # 0 = frames, 1 = moving, 2 = pos, 3 = duration, 4 = dmg, 5 = stun
                             (self.sp, False, 70, 40, self.atk2_damage_2nd[0] * 2, False, self.atk2_damage_2nd[1], 50)
                             ]:
                             attack = Attack_Display(
@@ -917,7 +968,7 @@ class Wind_Hashashin(Player):
                                 frames=i[0],
                                 frame_duration=i[3],
                                 repeat_animation=1,
-                                speed=7 if self.facing_right else -7,
+                                speed=self.special_tornado_speed if self.facing_right else -self.special_tornado_speed,
                                 dmg=i[4],
                                 final_dmg=i[6],
                                 who_attacks=self,
@@ -950,9 +1001,9 @@ class Wind_Hashashin(Player):
                                 y=self.rect.centery + 60,
                                 frames=self.atk1, #frames=self.real_sp,
                                 frame_duration=5,
-                                repeat_animation=4,
+                                repeat_animation=self.omnislash_count,
                                 speed=0 if self.facing_right else 0,
-                                dmg=self.sp_damage[0] * 0.4,
+                                dmg=self.raw_sp_atk4_dmg,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.target,
@@ -964,7 +1015,7 @@ class Wind_Hashashin(Player):
                                 )
                         attack_display.add(attack)
 
-                        for i in [1500, 3000, 4500, 6000]:
+                        for i in self.mark_of_death_count:
                             attack1 = Attack_Display(
                                     x=self.target.x_pos,
                                     y=self.target.y_pos - 150,
@@ -991,9 +1042,9 @@ class Wind_Hashashin(Player):
                                 y=self.rect.centery + 60,
                                 frames=self.atk1, #frames=self.real_sp,
                                 frame_duration=5,
-                                repeat_animation=4,
+                                repeat_animation=self.omnislash_count,
                                 speed=0 if self.facing_right else 0,
-                                dmg=self.sp_damage[0] * 0.2,
+                                dmg=self.raw_sp_atk4_dmg_2nd,
                                 final_dmg=0,
                                 who_attacks=self,
                                 who_attacked=self.target,
@@ -1130,9 +1181,9 @@ class Wind_Hashashin(Player):
             self.atk1_animation()  
 
             if not self.special_active:
-                self.trigger_dash('attacking1', speed=12, max_distance=500, delay=0)
+                self.trigger_dash('attacking1', speed=self.dash_speed, max_distance=self.dash_max_distance, delay=0)
             else:
-                self.trigger_dash('attacking1', speed=15, max_distance=700, delay=0)
+                self.trigger_dash('attacking1', speed=self.special_dash_speed, max_distance=self.special_dash_max_distance, delay=0)
             # Only animate if attack is still active (trigger_dash might have ended it)
             # if self.attacking1:
                 # self.atk1_animation()  

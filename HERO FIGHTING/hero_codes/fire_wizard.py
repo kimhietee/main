@@ -9,7 +9,7 @@ from global_vars import (
     BASIC_FRAME_DURATION, DEFAULT_ANIMATION_SPEED, DEFAULT_BASIC_ATK_DMG_BONUS,
     SPECIAL_DURATION, MAX_SPECIAL, DISABLE_MANA_REGEN, DISABLE_HEAL_REGEN,
     DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
-    RUNNING_ANIMATION_SPEED, attack_display, screen
+    RUNNING_ANIMATION_SPEED, attack_display, screen, RUNNING_SPEED
 )
 
 class Fire_Wizard(Player):
@@ -193,6 +193,8 @@ class Fire_Wizard(Player):
         self.bonus_type = "strength"
         self.bonus_value = self.strength
 
+        self.speed = RUNNING_SPEED * 1.0  # speed_modifier: 0 (no change)
+        self.default_speed = self.speed
         # Set to new hp/mana
         self.white_health_p1 = self.health
         self.white_mana_p1 = self.mana   
@@ -283,7 +285,7 @@ class Fire_Wizard(Player):
             Attacks(
                 skill_rect=self.special_rect, skill_img=special_icon, mana=0, mana_cost=0, special_skill=True, cooldown=0,
                 skill_name='Activate Special',
-                skill_stats={'Type': ['Special', 'white'], 'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'], 'Move Speed': ['+ 10', 'green'], 'Duration': ['30', 'white']},
+                skill_stats={'Type': ['Special', 'white'], 'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'], 'Move Speed': ['+ 10%', 'green'], 'Duration': ['30', 'white']},
                 skill_desc='Provides unique buffs and abilities to hero.'
             )
         ]

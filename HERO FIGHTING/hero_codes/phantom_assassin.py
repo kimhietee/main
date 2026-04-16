@@ -16,7 +16,7 @@ from global_vars import (
     DEFAULT_SPECIAL_SKILL_COOLDOWN,
     DEFAULT_HEALTH_REGENERATION, DEFAULT_MANA_REGENERATION,
 
-    RUNNING_ANIMATION_SPEED, DEFAULT_GRAVITY,
+    RUNNING_ANIMATION_SPEED, RUNNING_SPEED, DEFAULT_GRAVITY,
     DISABLE_MANA_REGEN, DISABLE_HEAL_REGEN,
     SPECIAL_DURATION, BASIC_FRAME_DURATION,
 
@@ -482,6 +482,10 @@ class Phantom_Assassin(Player):
             'sp_attacking': True,      
         }
 
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 1.1  # speed_modifier: 0.1
+        self.default_speed = self.speed
+
         self.skill_1 = self.attacks[0]
         self.skill_2 = self.attacks[1]
         self.skill_3 = self.attacks[2]
@@ -524,8 +528,8 @@ class Phantom_Assassin(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = 0.1,
-                special_active_speed = 0.2,
+                speed_modifier = 0,
+                special_active_speed = 0.1,
                 jump_force = self.jump_force,
                 jump_force_modifier = 0.04
                 )
@@ -679,7 +683,7 @@ class Phantom_Assassin(Player):
                                 'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound2, None, None),
-                                'delay': (True, 500),
+                                'delay': (False, 500),
                                 'stop_movement': (True, 1, 2),
                                 'follow': (False, True),
                                 'follow_offset': (0, 20),
@@ -746,7 +750,7 @@ class Phantom_Assassin(Player):
                                 'moving': True,
                                 'continuous_dmg': True,
                                 'sound': (True, self.sound2, None, None),
-                                'delay': (True, 200),
+                                'delay': (False, 200),
                                 'stop_movement': (True, 1, 2),
                                 # 'follow': (False, True),
                                 'stun':(True, 10),

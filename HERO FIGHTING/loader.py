@@ -101,12 +101,13 @@ def register(username, password):
         cursor2.execute(
             "INSERT INTO user_info (id) VALUES (?)",
             (user_id,)
-
         )
-
+        conn2.commit()
+        return True
         
     except sqlite3.IntegrityError:
         print("Username already exists")
+        return False
 
 def show_all_user():
     cursor.execute("SELECT * FROM users")

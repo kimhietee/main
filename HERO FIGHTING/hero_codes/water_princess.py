@@ -535,6 +535,10 @@ class Water_Princess(Player):
             'sp_attacking': True,    
         }
 
+        # Apply speed modifier to base speed
+        self.speed = RUNNING_SPEED * 0.925  # speed_modifier: -0.075
+        self.default_speed = self.speed
+
         # Regen Rate
         self.hp_regen_rate = DEFAULT_HEALTH_REGENERATION # Health regeneration rate per frame
         self.mana_regen_rate = DEFAULT_MANA_REGENERATION  # Mana regeneration rate per frame
@@ -594,8 +598,8 @@ class Water_Princess(Player):
         # ---------- Moving ----------
         if self.can_move():
             self.player_movement(right_hotkey, left_hotkey, jump_hotkey, current_time,
-                speed_modifier = -0.075,
-                special_active_speed = 0.4,
+                speed_modifier = 0,
+                special_active_speed = 0.325,
                 jump_force = self.jump_force,
                 jump_force_modifier = -0.05
                 )

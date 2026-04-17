@@ -32,7 +32,7 @@ gold = 'Gold' #special
 # 'blue'
 # 'yellow'
 
-IMMEDIATE_RUN = True
+IMMEDIATE_RUN = False
 
 HERO1_BOT = False
 all_items = False #equip bot with all items
@@ -220,8 +220,8 @@ hero2 = None
 username = None
 user_id = None
 user_bio = None
-
-
+logged_in = False
+current_user_controls = None
 
 
 

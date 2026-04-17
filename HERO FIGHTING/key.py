@@ -121,31 +121,48 @@ status = [
 ]
 
 os.makedirs("key_settings", exist_ok=True)
-filename = f"key_settings/keybinds_{g.user_id}.json"
 
-    
+def get_keybinds_filename():
+    """Get the keybinds filename for the current user"""
+    return f"key_settings/keybinds_{g.user_id}.json"
 
 def read_settings():
-
+    """Read keybinds for the current logged-in user"""
+    filename = get_keybinds_filename()
+    
     if os.path.exists(filename):
         with open(filename, "r") as f:
             try:
                 Main_Keybinds = json.load(f)      # Load existing dictionary
             except json.JSONDecodeError:
-                print("Error") 
+                print("Error reading keybinds") 
                 Main_Keybinds = data
-                        # If file empty or invalid, start fresh
+            # If file empty or invalid, start fresh
     else:
         Main_Keybinds = data
+        # Write default keybinds for new user
+        write_settings_for_user(g.user_id, Main_Keybinds)
 
     return Main_Keybinds
 
 def write_settings():
-    if os.path.exists(filename):
-        return None
-    else:
+    """Write keybinds for the current logged-in user (legacy support)"""
+    write_settings_for_user(g.user_id, data)
+
+def write_settings_for_user(user_id, keybinds_data):
+    """Write keybinds for a specific user"""
+    if user_id is None:
+        print("Warning: user_id is None, cannot save keybinds")
+        return
+    
+    filename = f"key_settings/keybinds_{user_id}.json"
+    try:
         with open(filename, "w") as f:
-            json.dump(data, f, indent = 4)
+            json.dump(keybinds_data, f, indent=4)
+        print(f"Saved keybinds for user {user_id}")
+    except IOError as e:
+        print(f"Error saving keybinds: {e}")
+
 
 
 

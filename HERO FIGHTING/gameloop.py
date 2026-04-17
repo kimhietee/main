@@ -38,8 +38,9 @@ import Animate_BG
 
 import key
 from player import display_inputs
+import loader as Save
 
-key.write_settings()
+# Keybinds will be loaded after user login
 
 
 
@@ -97,6 +98,7 @@ MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
 
 winner = 'hero2'
+battle_result_recorded = False  # Flag to prevent recording win multiple times per battle
 paused = False
 
 # Add a global variable to track the pause state
@@ -274,6 +276,17 @@ Login_option = ImageButton(
     pos=(100, height * 0.85),
     scale=scale * 0.8,
     text='LOGIN',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
+
+leaderboard_button = ImageButton(
+    image_path=text_box_img,
+    pos=(100, height * 0.75),
+    scale=scale * 0.8,
+    text='LEADERBOARD',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
@@ -522,9 +535,10 @@ def run_background(bg):
     bg.display(screen)
 import time
 def game(bg=None):
-    global winner, paused, is_paused
+    global winner, paused, is_paused, battle_result_recorded
     game_music_started = False
     second_track_played = False
+    battle_result_recorded = False  # Reset for new game
     print('stopping music')
     # bg_list = [
     #     r'assets\backgrounds\1.png',
@@ -668,7 +682,7 @@ def game(bg=None):
                 is_paused = not is_paused
 
             if keys[main.pygame.K_6]:
-                print('ehj') 
+                print('hp and mana increased') 
                 main.hero1.health += 20
                 main.hero2.health += 20 
                 main.hero1.mana += 20
@@ -1048,14 +1062,22 @@ in_game_settings_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
-    global paused
+    global paused, battle_result_recorded
     if font is None:
         font = global_vars.get_font(100)
     if winner is not None:
         if winner == 'hero1':
             create_title('PLAYER 1 WINS!!!', font, default_size - 0.55, height * 0.40)
+            # Track win for player 1 if logged in and multiplayer (only record ONCE)
+            if not global_vars.SINGLE_MODE_ACTIVE and global_vars.logged_in and global_vars.user_id is not None and not battle_result_recorded:
+                Save.update_user_win(global_vars.user_id)
+                battle_result_recorded = True
         elif winner == 'hero2':
             create_title('PLAYER 2 WINS!!!', font, default_size - 0.55, height * 0.40)
+            # Track loss for player 1 if logged in and multiplayer (only record ONCE)
+            if not global_vars.SINGLE_MODE_ACTIVE and global_vars.logged_in and global_vars.user_id is not None and not battle_result_recorded:
+                Save.update_user_loss(global_vars.user_id)
+                battle_result_recorded = True
     
         menu_game.draw(screen, mouse_pos)
         rematch_game.draw(screen, mouse_pos)
@@ -1179,8 +1201,11 @@ def menu():
                     # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], login, 300, True)
                     # campaign()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if leaderboard_button.is_clicked(event.pos):
+                    fade(Animate_BG.waterfall_day_bg.frames[0], leaderboard, 300, True)
                     
-
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -1206,8 +1231,8 @@ def menu():
 
         settings_button.draw(main.screen,mouse_pos)
         Login_option.draw(main.screen, mouse_pos)
+        leaderboard_button.draw(main.screen, mouse_pos)
         
-
 
         if campaign_button.is_hovered(mouse_pos):
             coming_soon_button.draw(main.screen, mouse_pos)
@@ -1246,10 +1271,12 @@ def login():
     typing_gap = 1500
     typing = False
     font = global_vars.get_font(60)
-
     
-    
-    # register_modal.set_position((width * 0.5, height * 0.5))
+    # Popup message tracking
+    popup_message = ""
+    popup_type = ""  # "success", "error", "info"
+    popup_show_time = 0
+    popup_duration = 2000  # 2 seconds
 
     userreg = RectButton(width*0.5 - int(login_button_width/2), 
                             height*2, 
@@ -1292,11 +1319,7 @@ def login():
                             40, 
                             0)
 
-
-
     register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [reg_back, reg_register], button_gap = 0.5, button_bottom_gap= 0, Title = "Register")
-    # register_modal = ModalObject((width * 0.5, height * 1.5),(width*0.7,height*0.7),   inputobject=[userreg, passreg], buttons = [userreg_but1, userreg_but2], button_gap = 0.5, Title = "Register")
-    
     
     Username = RectButton(width*0.5 - int(login_button_width/2), 
                             height*0.4, 
@@ -1316,6 +1339,18 @@ def login():
                             login_button_height, 
                             0)
     register_opacity = 0
+    
+    # Logout button (only visible when logged in)
+    logout_button = ImageButton(
+        image_path=text_box_img,
+        pos=(width * 0.4, height * 0.85),
+        scale=0.9,
+        text='LOGOUT',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size,
+        text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+    )
     
     while True:
         
@@ -1339,8 +1374,6 @@ def login():
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
-        # mouse_press = pygame.mouse.get_pressed()
-        # key_press = pygame.key.get_pressed()
         
 
         if not load_sword_login_bg:
@@ -1350,21 +1383,20 @@ def login():
         
 
         #typing indicator
-        # print(pygame.time.get_ticks() % typing_gap)
         if (pygame.time.get_ticks() % typing_gap) > typing_gap/2:
-            
             typing = True
-            # print(typing)
         else: 
             typing = False
-
-        # print(register_modal.selected)
 
         if register_modal.selected:
             register_opacity = 0.5
         else:
             register_opacity = 0
 
+        # Check if popup should still be shown
+        if popup_message and (pygame.time.get_ticks() - popup_show_time) > popup_duration:
+            popup_message = ""
+            popup_type = ""
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1377,10 +1409,24 @@ def login():
                 if menu_button.is_clicked(event.pos):
                     menu() 
                     return
-                if Username.is_clicked(event.pos) and not register_modal.selected:
+                
+                # Logout button handling
+                if global_vars.logged_in and logout_button.is_clicked(event.pos):
+                    global_vars.logged_in = False
+                    global_vars.username = None
+                    global_vars.user_id = None
+                    global_vars.current_user_controls = None
+                    username_input = ""
+                    password_input = ""
+                    popup_message = "Logged out successfully!"
+                    popup_type = "success"
+                    popup_show_time = pygame.time.get_ticks()
+                    continue
+                
+                if Username.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
                     username_clicked = not username_clicked
                     password_clicked = False
-                if Password.is_clicked(event.pos) and not register_modal.selected:
+                if Password.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
                     password_clicked = not password_clicked
                     username_clicked = False
 
@@ -1394,44 +1440,74 @@ def login():
                 if reg_register.is_clicked(event.pos) and register_modal.selected:
                     
                     if len(usernamereg_input) >= username_limit_char[0] and len(usernamereg_input) <= username_limit_char[1]:
-                            if len(passwordreg_input) >= password_limit_char[0] and len(passwordreg_input) <= password_limit_char[1]:
-                                Save.register(usernamereg_input, Save.hash_pw(passwordreg_input))
-                                
-                                print("Registered Successfully")
-                                register_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
-                                register_modal.selected = False
+                        if len(passwordreg_input) >= password_limit_char[0] and len(passwordreg_input) <= password_limit_char[1]:
+                            success = Save.register(usernamereg_input, Save.hash_pw(passwordreg_input))
+                            
+                            if success:
+                                popup_message = "User registered successfully!"
+                                popup_type = "success"
+                                popup_show_time = pygame.time.get_ticks()
+                                # Close modal after successful registration
+                                register_modal.close_modal()
+                                # Clear register inputs
+                                usernamereg_clicked = False
+                                passwordreg_clicked = False
+                                usernamereg_input = ""
+                                passwordreg_input = ""
                             else:
-                                print("Passowrd too short")
+                                popup_message = "Username already exists!"
+                                popup_type = "error"
+                                popup_show_time = pygame.time.get_ticks()
                                 register_modal.shake(5)
+                        else:
+                            popup_message = "Password too short (min 8 chars)"
+                            popup_type = "error"
+                            popup_show_time = pygame.time.get_ticks()
+                            register_modal.shake(5)
                     else:
-                        print("Username too short")
+                        popup_message = "Username length must be 1-20 chars"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
                         register_modal.shake(5)
 
-
                         
-                if login_button.is_clicked(event.pos) and not register_modal.selected:
-                
+                if login_button.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
                     if len(username_input) == 0:
-                        print("Please Enter Username")
-                        
-                
+                        popup_message = "Please enter username"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
                     else:
                         user = Save.login_check(username_input)
                         if user == None:
-                            print("No account")
+                            popup_message = "No account found"
+                            popup_type = "error"
+                            popup_show_time = pygame.time.get_ticks()
                         else:
                             if user[2] == Save.hash_pw(password_input):
-                                print("LOGIN COMPLETE")
+                                # Login successful
+                                global_vars.logged_in = True
+                                global_vars.username = user[1]
+                                global_vars.user_id = user[0]
+                                # Load user-specific keybinds
+                                global_vars.current_user_controls = key.read_settings()
+                                popup_message = f"Welcome {global_vars.username}!"
+                                popup_type = "success"
+                                popup_show_time = pygame.time.get_ticks()
+                                username_input = ""
+                                password_input = ""
                             else:
-                                print("wrong password")
-                                
+                                popup_message = "Wrong password"
+                                popup_type = "error"
+                                popup_show_time = pygame.time.get_ticks()
 
-
-
-                if register_button.is_clicked(event.pos) and not register_modal.selected:
-                    print("register")
+                if register_button.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
                     Save.show_all_user()
-                    register_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
+                    # Animate register modal to center
+                    register_modal.open_modal()
+                    print(register_modal.selected)
+                    register_modal.selected = True
+                    print(register_modal.selected)
+
                     
                     usernamereg_clicked = False
                     passwordreg_clicked = False
@@ -1444,62 +1520,56 @@ def login():
 
             if username_clicked and not register_modal.selected:
                 if event.type == pygame.KEYDOWN:
-                    print("Key down")
                     if event.key == pygame.K_BACKSPACE:
                         username_input = username_input[:-1]
                     elif event.key == pygame.K_RETURN:
-                        print("Username entered:", username_input)
-                
+                        pass
                     elif len(username_input) <= username_limit_char[1]:
                         username_input += event.unicode
-                        print(event.unicode)
                     else:
-                        print("max character reached!")
+                        popup_message = "Max username length reached"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
 
             if password_clicked and not register_modal.selected:
                 if event.type == pygame.KEYDOWN:
-                    print("Key down")
                     if event.key == pygame.K_BACKSPACE:
                         password_input = password_input[:-1]
                     elif event.key == pygame.K_RETURN:
-                        print("Username entered:", password_input)
-
+                        pass
                     elif len(password_input) <= password_limit_char[1]:
                         password_input += event.unicode
-                        print(event.unicode)
                     else:
-                        print("max character reached!")
-
+                        popup_message = "Max password length reached"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
 
             if usernamereg_clicked and register_modal.selected:
                 if event.type == pygame.KEYDOWN:
-                    print("Key down")
                     if event.key == pygame.K_BACKSPACE:
                         usernamereg_input = usernamereg_input[:-1]
                     elif event.key == pygame.K_RETURN:
-                        print("Username entered:", usernamereg_input)
-                
+                        pass
                     elif len(usernamereg_input) <= username_limit_char[1]:
                         usernamereg_input += event.unicode
-                        print(event.unicode)
                     else:
-                        print("max character reached!")
+                        popup_message = "Max username length reached"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
 
             if passwordreg_clicked and register_modal.selected:
                 if event.type == pygame.KEYDOWN:
-                    print("Key down")
                     if event.key == pygame.K_BACKSPACE:
                         passwordreg_input = passwordreg_input[:-1]
                     elif event.key == pygame.K_RETURN:
-                        print("Username entered:", passwordreg_input)
-
+                        pass
                     elif len(passwordreg_input) <= password_limit_char[1]:
                         passwordreg_input += event.unicode
-                        print(event.unicode)
                     else:
-                        print("max character reached!")
+                        popup_message = "Max password length reached"
+                        popup_type = "error"
+                        popup_show_time = pygame.time.get_ticks()
         
-
 
         Username.text = username_input + (("|" if typing else "") if username_clicked and len(username_input) <= username_limit_char[1] else "")
         
@@ -1515,41 +1585,229 @@ def login():
 
         create_title('FIGHTING KIMHIEE', font , 1, height * 0.1, angle=0, x_offset=width)
 
-        create_title('Username', font , 0.5, height * 0.35, angle=0, x_offset=width*0.74)
-        create_title('Password', font , 0.5, height * 0.55, angle=0, x_offset=width*0.74)
+        # Show different UI based on login status
+        if global_vars.logged_in:
+            create_title(f'Logged in as: {global_vars.username}', font , 0.6, height * 0.35, angle=0, x_offset=width)
+            logout_button.draw(screen, mouse_pos)
+        else:
+            create_title('Username', font , 0.5, height * 0.35, angle=0, x_offset=width*0.74)
+            create_title('Password', font , 0.5, height * 0.55, angle=0, x_offset=width*0.74)
 
-      
+            Password.update(mouse_pos, password_clicked)
+            Password.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
-        Password.update(mouse_pos, password_clicked)
-        Password.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            Username.update(mouse_pos, username_clicked)
+            Username.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
-        Username.update(mouse_pos, username_clicked)
-        Username.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+            userreg.update(mouse_pos, usernamereg_clicked)
+            passreg.update(mouse_pos, passwordreg_clicked)
 
-        userreg.update(mouse_pos, usernamereg_clicked)
-        passreg.update(mouse_pos, passwordreg_clicked)
-
-        # userreg.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        # print(userreg)
-        login_button.draw(screen, mouse_pos)
-        register_button.draw(screen, mouse_pos)
+            login_button.draw(screen, mouse_pos)
+            register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
         
-
-
         draw_black_screen(register_opacity)
 
         register_modal.update(mouse_pos, mouse_press, None, max_selected=1)
-        
 
+        # Draw popup message if active
+        if popup_message:
+            if popup_type == "success":
+                popup_color = green
+            elif popup_type == "error":
+                popup_color = red
+            else:
+                popup_color = white
+            
+            create_title(popup_message, font, 0.8, height * 0.5, color=popup_color, angle=0, x_offset=width)
         
-        # print("campaign")
         pygame.display.update()
         main.clock.tick(main.FPS)
 
+def leaderboard():
+    global load_sword_login_bg
+    
+    font_title = global_vars.get_font(70)
+    font_header = global_vars.get_font(33)
+    font_data = global_vars.get_font(30)
 
+    sort_mode = "wins"
+    sort_order = "desc"
 
+    while True:
+        data = Save.get_leaderboard_data()
+
+        # SORTING
+        if sort_mode == "wins":
+            key_func = lambda x: x[3]  # games_won
+        else:
+            key_func = lambda x: x[2]  # games_played
+
+        reverse = True if sort_order == "desc" else False
+        data = sorted(data, key=key_func, reverse=reverse)
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        # EVENTS
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+                elif event.key == pygame.K_w:
+                    sort_mode = "wins"
+                elif event.key == pygame.K_g:
+                    sort_mode = "games"
+                elif event.key == pygame.K_UP:
+                    sort_order = "asc"
+                elif event.key == pygame.K_DOWN:
+                    sort_order = "desc"
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    return
+
+        # BACKGROUND
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
+
+        # DARK OVERLAY (for readability)
+        draw_black_screen(0.4)
+
+        # PANEL WITH BETTER SPACING
+        panel_left = width * 0.1
+        panel_top = height * 0.12
+        panel_width = width * 0.8
+        panel_height = height * 0.72
+        panel = pygame.Rect(panel_left, panel_top, panel_width, panel_height)
+        pygame.draw.rect(screen, (20, 20, 30), panel, border_radius=12)
+        pygame.draw.rect(screen, (180, 140, 40), panel, 3, border_radius=12)
+
+        # TITLE
+        title = font_title.render("⚔ LEADERBOARD ⚔", True, (255, 220, 120))
+        screen.blit(title, title.get_rect(center=(width/2, height*0.13)))
+
+        # IMPROVED COLUMN LAYOUT WITH PROPER SPACING
+        header_y = height * 0.21
+        row_start_y = header_y + height * 0.05
+        row_height = height * 0.055
+        
+        # Column widths and x positions (with padding)
+        col_rank_x = panel_left + width * 0.05
+        col_name_x = panel_left + width * 0.15
+        col_games_x = panel_left + width * 0.40
+        col_wins_x = panel_left + width * 0.52
+        col_loss_x = panel_left + width * 0.64
+        col_wr_x = panel_left + width * 0.74
+        
+        # Draw header line separator
+        pygame.draw.line(screen, (150, 120, 80), (panel_left + width*0.03, header_y + height*0.03), 
+                        (panel_left + panel_width - width*0.03, header_y + height*0.03), 2)
+        
+        # DRAW HEADERS
+        headers = [
+            ("RANK", col_rank_x),
+            ("WARRIOR", col_name_x),
+            ("GAMES", col_games_x),
+            ("WINS", col_wins_x),
+            ("LOSS", col_loss_x),
+            ("WR%", col_wr_x),
+        ]
+        
+        for text, x in headers:
+            surf = font_header.render(text, True, (255, 255, 200))
+            screen.blit(surf, (x, header_y))
+
+        # ROWS
+        if len(data) == 0:
+            no_user = font_data.render("No warriors found...", True, (255, 120, 120))
+            screen.blit(no_user, no_user.get_rect(center=(width/2, height/2)))
+        else:
+            for idx, user in enumerate(data[:10]):
+                uid, name, gp, gw, gl = user
+                
+                # Truncate long names
+                display_name = name[:14] if len(name) > 14 else name
+
+                winrate = (gw / gp * 100) if gp > 0 else 0
+
+                row_y = row_start_y + (idx * row_height)
+                row_rect = pygame.Rect(panel_left + width*0.02, row_y - height*0.008, panel_width - width*0.04, row_height - height*0.01)
+
+                # ROW BG
+                pygame.draw.rect(screen, (35, 35, 50), row_rect, border_radius=6)
+
+                # TOP 3 RANK COLORS (MEDAL EFFECT)
+                if idx == 0:
+                    rank_color = (255, 215, 0)  # Gold
+                    pygame.draw.rect(screen, (255, 215, 0, 50), row_rect, 2, border_radius=6)  # Gold border
+                elif idx == 1:
+                    rank_color = (192, 192, 192)  # Silver
+                    pygame.draw.rect(screen, (192, 192, 192, 50), row_rect, 2, border_radius=6)
+                elif idx == 2:
+                    rank_color = (205, 127, 50)  # Bronze
+                    pygame.draw.rect(screen, (205, 127, 50, 50), row_rect, 2, border_radius=6)
+                else:
+                    rank_color = (220, 220, 220)
+
+                # CURRENT USER HIGHLIGHT (BLUE)
+                if global_vars.username and global_vars.username == name:
+                    pygame.draw.rect(screen, (100, 150, 255), row_rect, 3, border_radius=6)
+
+                # PREPARE ROW DATA
+                row_values = [
+                    str(idx + 1),
+                    display_name,
+                    str(gp),
+                    str(gw),
+                    str(gl),
+                    f"{winrate:.0f}%"
+                ]
+
+                row_colors = [
+                    rank_color,
+                    (120, 255, 255),  # Cyan for names
+                    (200, 200, 200),  # Light gray for games
+                    (100, 255, 100),  # Light green for wins
+                    (255, 120, 120),  # Light red for losses
+                    (255, 220, 120)   # Gold for winrate
+                ]
+                
+                row_positions = [
+                    col_rank_x,
+                    col_name_x,
+                    col_games_x,
+                    col_wins_x,
+                    col_loss_x,
+                    col_wr_x
+                ]
+
+                # DRAW ROW TEXT
+                for value, x, color in zip(row_values, row_positions, row_colors):
+                    surf = font_data.render(str(value), True, color)
+                    screen.blit(surf, (x, row_y))
+
+        # CONTROLS INFO AT BOTTOM
+        info_text = f"[W] Sort by Wins  [G] Sort by Games  [↑] Ascending [↓] Descending"
+        info = font_data.render(info_text, True, (200, 200, 150))
+        info_rect = info.get_rect(center=(width/2, height*0.905))
+        screen.blit(info, info_rect)
+        
+        # Sort mode indicator
+        sort_indicator = font_data.render(f"Sorting: {sort_mode.upper()} ({sort_order.upper()})", True, (180, 220, 100))
+        screen.blit(sort_indicator, (panel_left + width*0.02, height*0.905))
+
+        # MENU BUTTON
+        menu_button.draw(screen, mouse_pos)
+
+        pygame.display.update()
+        main.clock.tick(main.FPS)
 
 
 
@@ -1789,29 +2047,30 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             #onClick, 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if keybinds.is_clicked(mouse_pos):
-                    if os.path.exists(key.filename):
-                        # with open(key.filename, "r") as f:
+                    keybinds_filename = key.get_keybinds_filename()
+                    if os.path.exists(keybinds_filename):
+                        # with open(keybinds_filename, "r") as f:
                         #     try:
-                            data = Save.loadFile(key.filename)
-                            #     data = json.load(f)
-                            # except json.JSONDecodeError:
-                            #     print("Error")
-                            
-                            for count,i in enumerate(data):
-                                # print(i)
-                                # print(tuple(new_key[count]))
-                                data[i] = tuple(new_key[count])
+                        data = Save.loadFile(keybinds_filename)
+                        #     data = json.load(f)
+                        # except json.JSONDecodeError:
+                        #     print("Error")
+                        
+                        for count,i in enumerate(data):
+                            # print(i)
+                            # print(tuple(new_key[count]))
+                            data[i] = tuple(new_key[count])
 
-                            Save.saveFile(key.filename, data)
-                            # with open(key.filename, "w") as f:
-                            #     # print(data, "Data type")
-                            #     json.dump(data, f, indent=4)
+                        Save.saveFile(keybinds_filename, data)
+                        # with open(keybinds_filename, "w") as f:
+                        #     # print(data, "Data type")
+                        #     json.dump(data, f, indent=4)
 
-                            # f.close()
+                        # f.close()
                     
                     else:
                         data = key.data
-                        Save.saveFile(key.filename, data)
+                        Save.saveFile(keybinds_filename, data)
 
                     has_changes = False
                     # print('Save keybinds') 
@@ -1829,21 +2088,26 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 if keyswap_replace.is_clicked(mouse_pos):
-                                display_keyswap_confirmation(False)
-                                indexed = key_store.index(key_name)
-                                temp = new_key[detect.index(True)]
-                                new_key[detect.index(True)] = (pygame.key.key_code(key_name), key_name)
-                                keyswap_modal.set_position((int(width * 0.5),int(height * 1.5)), False, True)
+                                # Check if True exists in detect and modal is open before proceeding
+                                if True in detect and keyswap_modal.selected:
+                                    display_keyswap_confirmation(False)
+                                    indexed = key_store.index(key_name)
+                                    detect_index = detect.index(True)
+                                    temp = new_key[detect_index]
+                                    new_key[detect_index] = (pygame.key.key_code(key_name), key_name)
+                                    # Close the confirmation modal after successful key swap
+                                    keyswap_modal.close_modal()
 
-                                if no_swap:
-                                    new_key[indexed] = (200, " ")
-                                else:
-                                    new_key[indexed] = temp
-                                for i in key_list:
-                                    print(i)
-                                    i.is_switched(False, False)
-                                for i in (detect):
-                                    detect[i] = False
+                                    if no_swap:
+                                        new_key[indexed] = (200, " ")
+                                    else:
+                                        new_key[indexed] = temp
+                                    for i in key_list:
+                                        # print(i)
+                                        i.is_switched(False, False)
+                                    # Reset detect flags
+                                    for idx in range(len(detect)):
+                                        detect[idx] = False
                                     keybind_select_reset()
                                     has_changes = True
                                     update_key_display(key_list, new_key)
@@ -1972,17 +2236,19 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                         if key_name not in key_store:
                             
                         
-                            print(f"selected {pygame.key.name(key_index)}")
+                            # print(f"selected {pygame.key.name(key_index)}")
                             
                             
-                            print("has changes")
-
-                            new_key[detect.index(True)] = (key_index, key_name)
-                            for i in key_list:
-                                print(i)
-                                i.is_switched(False, False)
-                            for i in (detect):
-                                detect[i] = False
+                            # print("has changes")
+                            if True in detect:
+                                detect_index = detect.index(True)
+                                new_key[detect_index] = (key_index, key_name)
+                                for i in key_list:
+                                    # print(i)
+                                    i.is_switched(False, False)
+                                # Reset detect flags
+                                for idx in range(len(detect)):
+                                    detect[idx] = False
                                 keybind_select_reset()
                                 has_changes = True
                                 update_key_display(key_list, new_key)
@@ -1996,8 +2262,9 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                            
                                     else:
                                         draw_black_screen(0.5)
-                                        keyswap_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
-                                        print("watatas")
+                                        # keyswap_modal.set_position((int(width * 0.5),int(height * 0.55)), False, True)
+                                        keyswap_modal.open_modal()
+                                        # print("watatas")
                                         display_confirmation = not True
                                         can_click = False
                                         opacity = 0.8
@@ -2354,10 +2621,11 @@ def main_menu():
         main.clock.tick(main.FPS)
 
 def reset_all():
-    global fade_alpha, fading, fade_start_time
+    global fade_alpha, fading, fade_start_time, battle_result_recorded
     global_vars.PAUSED = False
     global_vars.PAUSED_TOTAL_DURATION = 0
     global_vars.PAUSED_START = None
+    battle_result_recorded = False  # Reset win tracking for new game
     # reset hero states
     heroes_to_reset = [x for x in main.hero1_group] + [x for x in main.hero2_group]
     if hasattr(main, 'hero3') and main.hero3 is not None:

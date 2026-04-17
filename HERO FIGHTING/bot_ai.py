@@ -2439,8 +2439,6 @@ def create_bot(selected_hero, player_type, enemy):
             self.forcemove_left = False
             self.forcemove_right = False
             if self.special_ready() and self.special_condition():
-                if debug:
-                    print("[SKIP] Special skill ready & conditions met — saving mana.")
                 return
             
             if any([self.attacking1, self.attacking2, self.attacking3, self.sp_attacking]):
@@ -2452,17 +2450,10 @@ def create_bot(selected_hero, player_type, enemy):
                 skill = self.attacks_special[i] if self.special_active else self.attacks[i]
                 config = skills[skill_key]
 
-                if debug:
-                    print(f"\n[SKILL CHECK] Evaluating {skill_key}...")
-
                 # Mana and cooldown
                 if self.mana < skill.mana_cost:
-                    if debug:
-                        print(f"[SKIP] Not enough mana ({self.mana}/{skill.mana_cost})")
                     continue
                 if not skill.is_ready():
-                    if debug:
-                        print(f"[SKIP] Skill is on cooldown.")
                     continue
 
                 min_r = config['min_cast_range']
@@ -2476,8 +2467,6 @@ def create_bot(selected_hero, player_type, enemy):
 
                 # Jumping check
                 if self.jumping and not allow_jump_cast:
-                    if debug:
-                        print(f"[SKIP] Cannot cast {skill_key} while jumping.")
                     continue
 
 
@@ -2490,16 +2479,6 @@ def create_bot(selected_hero, player_type, enemy):
                 else:
                     result = require_all
 
-                if debug:
-                    print(f"[CONDITIONS] require_all = {result}")
-                    for idx, cond in enumerate(conditions):
-                        try:
-                            cond_result = cond(self) if callable(cond) else cond
-                        except Exception as e:
-                            print(f"[ERROR] Condition {idx+1} threw error: {e}")
-                            cond_result = False
-                        print(f"  Condition {idx+1}: {cond_result}")
-
                 passed = (
                     result and all((cond(self) if callable(cond) else cond) for cond in conditions)
                 ) or (
@@ -2507,16 +2486,12 @@ def create_bot(selected_hero, player_type, enemy):
                 )
 
                 if not passed:
-                    if debug:
-                        print(f"[SKIP] Conditions not met for {skill_key}.")
                     continue
 
                 # Distance handling
                 # print(f"[DISTANCE] enemy_distance = {self.enemy_distance}, min_r = {min_r}, max_r = {max_r}")
                 # print(f"[DISTANCE] enemy_distance = {self.enemy_distance}")
                 if self.enemy_distance < min_r:
-                    if debug:
-                        print(f"[ACTION] Too close to cast — moving away from enemy.")
                     # self.unface_enemy()
                     self.state = 'retreat_for_attack'
                     if self.enemy_on_left:
@@ -2531,34 +2506,22 @@ def create_bot(selected_hero, player_type, enemy):
                             (self.enemy_on_left and self.facing_right) or
                             (self.enemy_on_right and not self.facing_right)
                         )
-                        if debug:
-                            print(f"[FACING] Facing right? {self.facing_right}, Enemy on right? {self.enemy_on_right}")
                         if facing_wrong:
-                            if debug:
-                                print(f"[ACTION] Turning to face enemy before casting.")
                             self.face_enemy() #DOUBLE CHECK JUST MAKING SURE (IN THE LOGIC FUNC, already face_enemy active, same for unface enemy)
                             self.state = 'chase'
                             return
                     else: # not require facing enemy, if True, then facing enemy is not required (bot no need to face enemy) damn so confusing
                         pass
-                    if force_escape:
-                        self.state = 'escape'
                     if face_enemy_away:
                         self.forcemove_left = False
                         self.forcemove_right = False
                         # print(f"[DEBUG] Bot facing_right: {self.facing_right}, enemy_on_right: {self.enemy_on_right}, is_facing_away: {self.is_facing_away_from_enemy()}")
-                        if debug:
-                            print(f"[FACING] Facing enemy away before casting.")
                         self.unface_enemy()
-                        if debug:
-                            print(f"[CAST] All checks passed. Casting {skill_key}!")
                         setattr(self, f'botkey_skill{i+1}', True)
                         return
                     else:
                         self.forcemove_left = False
                         self.forcemove_right = False
-                        if debug:
-                            print(f"[CAST] All checks passed. Casting {skill_key}!")
                         setattr(self, f'botkey_skill{i+1}', True)
                         return
 

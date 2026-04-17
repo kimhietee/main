@@ -13,7 +13,6 @@ def loadFile(filePath):
         with open(filePath, "r") as file:
             return json.load(file)
     except (json.JSONDecodeError, IOError):
-        print("Error loading playlist. Returning empty list.")
         return {}
 
 
@@ -22,9 +21,8 @@ def saveFile(filePath, data):
     try:
         with open(filePath, "w") as file:
             json.dump(data, file, indent=4)
-        print(f"saved {filePath} successfully.")
     except IOError:
-        print("Error saving.")
+        pass
 
 
 # Initialize database directories
@@ -37,16 +35,14 @@ old_info_db = "database/user_info/user_info_store.db"
 if os.path.exists(old_user_db):
     try:
         os.remove(old_user_db)
-        print("[DB] Removed old user.db")
     except Exception as e:
-        print(f"[DB] Could not remove old user.db: {e}")
+        pass
 
 if os.path.exists(old_info_db):
     try:
         os.remove(old_info_db)
-        print("[DB] Removed old user_info_store.db")
     except Exception as e:
-        print(f"[DB] Could not remove old user_info_store.db: {e}")
+        pass
 
 # Create SINGLE consolidated database with both tables
 db_path = "database/game.db"
@@ -97,7 +93,6 @@ def login_check(username):
         user = cursor.fetchone()
         return user
     except Exception as e:
-        print(f"[DB] Error checking login: {e}")
         return None
 
 
@@ -109,7 +104,6 @@ def register(username, password):
             (username, password)
         )
         conn.commit()
-        print(f"[DB] User '{username}' registered successfully")
 
         # Get the new user ID
         user_id = cursor.lastrowid
@@ -120,14 +114,11 @@ def register(username, password):
             (user_id,)
         )
         conn.commit()
-        print(f"[DB] User info created for user {user_id}")
         return True
         
     except sqlite3.IntegrityError as e:
-        print(f"[DB] Username '{username}' already exists or registration failed: {e}")
         return False
     except Exception as e:
-        print(f"[DB] Error during registration: {e}")
         return False
 
 
@@ -136,17 +127,15 @@ def show_all_user():
     try:
         cursor.execute("SELECT id, username FROM users")
         users = cursor.fetchall()
-        print("\n[DB] All Users:")
         for user in users:
-            print(f"  ID: {user[0]}, Username: {user[1]}")
+            pass
         
         cursor.execute("SELECT id, games_played, games_won, games_lost FROM user_info")
         stats = cursor.fetchall()
-        print("\n[DB] User Stats:")
         for stat in stats:
-            print(f"  ID: {stat[0]}, Games: {stat[1]}, Won: {stat[2]}, Lost: {stat[3]}")
+            pass
     except Exception as e:
-        print(f"[DB] Error showing users: {e}")
+        pass
 
 
 def get_leaderboard_data():
@@ -162,10 +151,8 @@ def get_leaderboard_data():
             ORDER BY COALESCE(i.games_won, 0) DESC, COALESCE(i.games_played, 0) DESC
         """)
         results = cursor.fetchall()
-        print(f"[DB] Leaderboard query returned {len(results)} users")
         return results
     except Exception as e:
-        print(f"[DB] Error fetching leaderboard: {e}")
         return []
 
 
@@ -179,10 +166,8 @@ def update_user_win(user_id):
             WHERE id = ?
         """, (user_id,))
         conn.commit()
-        print(f"[DB] User {user_id} win recorded")
         return True
     except Exception as e:
-        print(f"[DB] Error updating user win: {e}")
         return False
 
 
@@ -196,10 +181,8 @@ def update_user_loss(user_id):
             WHERE id = ?
         """, (user_id,))
         conn.commit()
-        print(f"[DB] User {user_id} loss recorded")
         return True
     except Exception as e:
-        print(f"[DB] Error updating user loss: {e}")
         return False
 
 
@@ -220,14 +203,9 @@ def get_user_stats(user_id):
             }
         return None
     except Exception as e:
-        print(f"[DB] Error fetching user stats: {e}")
         return None
 
 
 def hash_pw(pw):
     """Hash a password using SHA256"""
     return hashlib.sha256(pw.encode()).hexdigest()
-
-
-# Print completion message
-print("[DB] Database system initialized successfully!")

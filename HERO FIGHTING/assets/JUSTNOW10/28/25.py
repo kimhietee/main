@@ -729,7 +729,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                                 2 - apply damage to random enemy 
                                 3 - apply damage to all enemy'''
         if damage_mode == 1: #use who_attacked as enemy(single) expected if enemy passed is single
-            print(f'dealing damage to lonely {target}')
             for target in self.targets:
                 target.take_damage(
                     self.dmg if not final_dmg else self.final_dmg,
@@ -741,7 +740,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         elif damage_mode == 2: #if no collision needed, randomize enemy damage in whole area
             if type(self.targets) is list:
                 target = self.targets[random.randint(0, len(self.targets)-1)]
-            print(f'dealing damage to lucky {target}')
             target.take_damage(
                 self.dmg if not final_dmg else self.final_dmg,
                 add_mana_to_self=True if self.add_mana else False, 
@@ -750,7 +748,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 mana_multiplier=self.mana_mult
                 )
         elif damage_mode == 3: # apply per end dmg to all enemy
-            print(f'dealing damage to these people: {self.targets}')
             for target in self.targets:
                 target.take_damage(
                     self.dmg if not final_dmg else self.final_dmg,
@@ -762,13 +759,11 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 
     def apply_heal(self):
         for target in self.targets:
-            print(f'give heal to {target}')
             target.take_heal(
                 self.dmg
                 ) 
     def apply_stun(self):
         for target in self.targets:
-            print(f'applying stun to {target}')
             target.stun(
                 self.stun,
                 self.rect.centerx,
@@ -780,7 +775,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         for target in self.targets:
             if self.stop_movement[0] and self.stop_movement[2] == 3 and not getattr(self, "status_applied", False):
                     
-                print(f'applied move status to {target}')
                 target.movement_status(
                 self.stop_movement[1],
                 source=self,
@@ -789,7 +783,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 self.status_applied = True
     def apply_movement_status(self):
         for target in self.targets:
-            print(f'applying move status to {target}')
             target.movement_status(
                 self.stop_movement[1],
                 source=self,
@@ -797,14 +790,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
                 )
     def remove_movement_status1(self):
         for target in self.targets:
-            print(f'removing move status to {target}')
             target.remove_movement_status(
                 self.stop_movement[1],
                 source=self
                 )
     def remove_movement_status2(self, status_type):
         for target in self.targets:
-            print(f'removing end move status to {target}')
             target.remove_movement_status(
                 status_type,
                 source=self
@@ -813,7 +804,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # if type(who_attacked) is list:#random if no collide target
         #     who_attacked = self.who_attacked[random.randint(0, len(self.who_attacked)-1)]
         for target in self.targets:
-            print(f'following {target}')
             self.rect.centerx = target.rect.centerx + self.follow_offset[0]
             self.rect.centery = target.rect.centery + self.follow_offset[1]
             # print(self.following_target)
@@ -822,7 +812,6 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
     def add_enemy(self, enemy):
         self.targets.clear()
         if enemy not in self.targets:
-            print(f'Adding {enemy} to targets')
             self.targets.insert(0, enemy)
         # else:
         #     if enemy in self.targets:

@@ -327,7 +327,6 @@ import global_vars as g
 
 
 
-
 class ModalObject:
     """
     Clickable selector for heroes, items, or maps with smooth movement on select.
@@ -344,48 +343,25 @@ class ModalObject:
     DESELECT_Y_OFFSET = -45
 
     def __init__(self, center_pos, size:tuple=(120,120),  inputobject:list=[], buttons:list=[], button_gap = 0.2, button_bottom_gap = 0.2, Title = "", description = " ", opacity = 1):
-        """
-        Args:
-            image: str path or Surface
-            center_pos: (x, y) tuple
-            class_item: Hero class or Item instance
-            small: True for item-sized icons (50x50)
-            custom_size: (w, h) tuple for maps/other special sizes (overrides small)
-            custom_border: (w, h) if custom_size is used. (for decor)
-        """
-        # self.class_item = class_item
-
-        # if isinstance(image, str):
-        #     original = pygame.image.load(image).convert_alpha()
-        # else:
-        # original = (100, 900)
-
-        # Determine size
         self.opacity = opacity
         self.size = size
         profile_size = size
-        # decor_size = [size[0], size[1]]
         decor_offset = [12, 12]
         self.description = description
-        # self.profile = pygame.transform.scale(original, profile_size)
-        # self.ingame_profile = pygame.transform.scale(original, (25, 25))  # always keep small version
 
-    # Create profile rectangle (no image)
         self.profile_rect = pygame.Rect(*center_pos, *profile_size)
         self.profile_rect.center = center_pos
 
-        # Create decor rectangle relative to profile
         self.decor_rect = pygame.Rect(
             self.profile_rect.centerx - decor_offset[0],
             self.profile_rect.centery - decor_offset[1],
             *size
-            )
+        )
 
         self.button_gap = button_gap
         self.button_bottom_gap = size[1] * button_bottom_gap
         self.hovered = False
 
-        # Initialize position tracking BEFORE using them
         self.original_pos = center_pos
         self.target_pos = center_pos
         self.move_speed = 0.1
@@ -393,56 +369,54 @@ class ModalObject:
         self.selected = False
 
         self.disable_action = False
-        # print(self.original_pos)
-        self.highlight_offset = (0, -50)  # Move right 10, up 20 when selected
+
+        # === NEW FLAGS FOR RELIABLE BEHAVIOUR ===
+        self.closing = False
+        self.confirmed = False          # button2 was clicked (register/assign key)
+        self.move_back_variable = False
+        self.can_move_back = True
+        # =======================================
+
+        self.highlight_offset = (0, -50)
         if len(buttons) > 1:
             self.button1 = buttons[0]
             self.button2 = buttons[1]
             
         self.inputobject = inputobject
 
-
         self.shake_count = 0
         self.shake_dir = False
         self.title = Title
 
     def open_modal(self):
-        """Move modal to center with animation"""
+        """Move modal to center with animation
+        
+        sets self.selected to True as set_position() is called with argument selectedval=True"""
         self.is_open = True
-        self.selected = True
-        self.move_speed = 0.04  # smooth entry
-        self.set_position((width // 2, height // 2), instant=False)
-
+        self.closing = False
+        self.confirmed = False
+        self.move_speed = 0.04
+        self.set_position((width // 2, height // 2), instant=False, selectedval=True)
 
     def close_modal(self):
-        """Return modal to original position"""
-        self.is_open = False
-        self.selected = False
-        self.move_speed = 0.04  # smooth exit
-        self.set_position(self.original_pos, instant=False)
+        """Start smooth exit animation
+        
+        sets self.selected to False as set_position() is called with argument selectedval=True"""
+        self.closing = True
+        self.move_speed = 0.04
+        self.set_position(self.original_pos, instant=False, selectedval=False)
 
     def shake_enable(self):
         gap = 0.1 if self.shake_dir else -0.1
         self.target_pos = (self.target_pos[0] * (1 + gap), self.target_pos[1])
         self.shake_dir = not self.shake_dir
-        # print(gap)
-        # print(self.target_pos)
-
 
     def shake(self, times):
         self.move_speed = 0.5
-        # print('waw')
         self.shake_count = times
         self.shake_enable()
     
     def set_position(self, new_center, instant=False, selectedval:bool = False):
-        """
-        Move the selector to a new center position.
-
-        Args:
-            new_center (tuple): New (x, y) center.
-            instant (bool): If True, snap immediately (bypass lerp).
-        """
         self.selected = selectedval
         if instant:
             self.target_pos = new_center
@@ -451,125 +425,88 @@ class ModalObject:
             self.target_pos = new_center
 
     def _apply_position(self, center):
-        # print(center)
-        
-        """Internal: Sync all rects to given center."""
         dx = center[0] - self.profile_rect.centerx
         dy = center[1] - self.profile_rect.centery
-        # print(dx, dy)
 
         self.profile_rect.center = center
         self.decor_rect.move_ip(dx, dy)
         
-        # Calculate button gap width and position
         button_gap_width = self.size[0] * self.button_gap / 2
         button_y = center[1] + self.size[1]/2 - self.button_bottom_gap
         
         self.button1.set_position((center[0] * (1-(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap))
         self.button2.set_position((center[0] * (1+(self.button_gap/2)), (center[1] + self.size[1]/2 - self.button1.height_from_B) - self.button_bottom_gap))
         
-        # Position input fields vertically around center
         input_y_offset = -30 if len(self.inputobject) > 0 else 0
         for num, i in enumerate(self.inputobject):
                 i.set_position((center[0], center[1] + input_y_offset + 80 * num))
-  
+
+    @property
+    def is_active(self):
+        """Use this in gameloop.py to know when to draw the dark overlay"""
+        return self.is_open or self.closing
+
     def update(self, mouse_pos, mouse_pressed, other_selectors, max_selected=g.MAX_ITEM):
-        # Smooth movement toward target
-        
-
+        # Smooth movement
         if self.profile_rect.center != self.target_pos:
-            
-
             current = [float(self.profile_rect.centerx), float(self.profile_rect.centery)]
             dx = self.target_pos[0] - current[0]
             dy = self.target_pos[1] - current[1]
 
-            # If very close, snap exactly to avoid drift
             if abs(dx) <= 2 and abs(dy) <= 2:
-                # print("Snapped")
                 self.disable_action = self.selected
                 self._apply_position(self.target_pos)
+
+                if self.closing:
+                    self.is_open = False
+                    self.selected = False
+                    self.closing = False
+                    self.confirmed = False   # reset for next use
+
                 if self.shake_count:
                     self.shake_count -= 1
                     self.shake_enable()
-
-                # self.enable_movement()
             else:
-                # Normal smooth movement
-                # print(dx, dy)
                 if abs(dx) > 10:
-                    
                     current[0] += (dx * self.move_speed)
                 else:
                     current[0] += (dx * 0.3)
                 if abs(dy) > 10:
-                    
                     current[1] += (dy * self.move_speed)
                 else:
                     current[1] += (dy * 0.3)
-                
                 self._apply_position((round(current[0]), round(current[1])))
-        
-        # Draw base
+
+        # Drawing
         self.draw()
 
-        # Draw input fields
         for i in self.inputobject:
-                i.draw(screen, g.TEXT_ANTI_ALIASING)
+            i.draw(screen, g.TEXT_ANTI_ALIASING)
         
-        # Draw buttons
         self.button1.draw(g.screen, mouse_pos)
         self.button2.draw(g.screen, mouse_pos)
         
-        # Draw title and description
-        create_title(self.title, g.get_font(60) , 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset= self.profile_rect.centerx * 2)
-        create_title(self.description, g.get_font(60) , 0.8, self.profile_rect.centery, angle=0, x_offset= self.profile_rect.centerx * 2)
+        create_title(self.title, g.get_font(60), 1, self.profile_rect.centery - (height * 0.2), angle=0, x_offset=self.profile_rect.centerx * 2)
+        create_title(self.description, g.get_font(60), 0.8, self.profile_rect.centery, angle=0, x_offset=self.profile_rect.centerx * 2)
 
-            
+        # Button handling
         if mouse_pressed[0] and self.button1.is_clicked(mouse_pos):
-                # Close modal - animate back to original position
-                self.is_open = False
-                self.selected = False
-                self.move_speed = 0.04
-                self.target_pos = self.original_pos
+            self.close_modal()                    # Cancel always closes immediately
+
         if mouse_pressed[0] and self.button2.is_clicked(mouse_pos):
-                self.move_back_variable = True
-                self.can_move_back = False
-                # print(self.can_move_back)
-                # self.set_position(self.original_pos)
-                self.selected = False
-                # self.close_modal()
-
-                # print(self.target_pos)
-                pass
-    
-
-
-
-
-
+            self.move_back_variable = True
+            self.can_move_back = False
+            self.selected = False
+            self.confirmed = True                 # Signal to gameloop.py - DO NOT close here
 
     def draw(self):
-        """Draw border and profile image based on state."""
         color = g.gold if self.selected else g.white if self.hovered else g.black
-        # pygame.draw.rect(g.screen, color, self.decor_rect)
-        # g.screen.blit(self.profile_rect, self.profile_rect)
-        # pygame.draw.rect(g.screen, (0, 0, 0, 0), self.profile_rect)
-        # draw_black_screen(0.2,size=(width*0.05, height * 0.2, width*0.44, height*0.65))
         overlay = pygame.Surface(self.profile_rect.size, pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 255 * self.opacity))  # RGBA (alpha = 120)
-
+        overlay.fill((0, 0, 0, 255 * self.opacity))
         g.screen.blit(overlay, self.profile_rect.topleft)
 
-        
     def draw_icon(self, center_pos, small=False, hero_sp=False):
-        """
-        Draw small or large icon with black border (used in-game).
-        
-        Args:
-            center_pos (tuple): Center position for the icon.
-            small (bool): If True, use ingame size (25x25).
-        """
+        # unchanged from your original code
         profile = self.ingame_profile if small else self.profile
         size = self.INGAME_SIZE if small else self.PROFILE_SIZE
         offset = self.DECOR_OFFSET_SMALL if small else self.DECOR_OFFSET_LARGE
@@ -590,7 +527,6 @@ class ModalObject:
         pygame.draw.rect(g.screen, color, decor)
         g.screen.blit(profile, rect)
 
-        # Display cooldown if applicable
         if hasattr(self.class_item, 'cooldown') and self.class_item.cooldown > 0 and not g.PAUSED:
             current_time = pygame.time.get_ticks() / 1000 - g.PAUSED_TOTAL_DURATION / 1000
             remaining = self.class_item.cooldown - (current_time - self.class_item.last_used)
@@ -603,13 +539,10 @@ class ModalObject:
                 text = font.render("ready", True, g.green)
                 g.screen.blit(text, (center_pos[0] - text.get_width()//2, center_pos[1] - 30))
 
-    
-    
     def is_selected(self):
         return self.selected
 
     def get_associated(self):
-        """Return the associated hero class or item."""
         return self.class_item
 
     # def show_hover_tooltip(self, position):

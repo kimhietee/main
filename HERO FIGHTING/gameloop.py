@@ -539,7 +539,6 @@ def game(bg=None):
     game_music_started = False
     second_track_played = False
     battle_result_recorded = False  # Reset for new game
-    print('stopping music')
     # bg_list = [
     #     r'assets\backgrounds\1.png',
     #     r'assets\backgrounds\2.png',
@@ -654,14 +653,12 @@ def game(bg=None):
                 pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME * 0.5)  # Apply mute logic
                 pygame.mixer.music.play(1, fade_ms=1500)
                 game_music_started = True
-                print("Started game music 1")
 
             elif event.type == pygame.USEREVENT and game_music_started and not second_track_played:
                 pygame.mixer.music.load(GAME_MUSIC_2)
                 pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME * 0.5)  # Apply mute logic
                 pygame.mixer.music.play(loops=-1, fade_ms=1500)
                 second_track_played = True
-                print("Started game music 2")
 
             # if keys[pygame.K_ESCAPE]:
             #     menu()
@@ -682,7 +679,6 @@ def game(bg=None):
                 is_paused = not is_paused
 
             if keys[main.pygame.K_6]:
-                print('hp and mana increased') 
                 main.hero1.health += 20
                 main.hero2.health += 20 
                 main.hero1.mana += 20
@@ -974,7 +970,6 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall = random.randint(-2000, -500)
-            print(f"Cube collected by Player 1: {bonus_type} +{bonus_amount}")
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
             if bonus_type == 'health':
@@ -1001,7 +996,6 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall =random.randint(-2000, -500)
-            print(f"Cube collected by Player 2: {bonus_type} +{bonus_amount}")
     else:
         cube_x = random.randint(20, int(main.width - 20))
         cube_fall = -150
@@ -1504,9 +1498,6 @@ def login():
                     Save.show_all_user()
                     # Animate register modal to center
                     register_modal.open_modal()
-                    print(register_modal.selected)
-                    register_modal.selected = True
-                    print(register_modal.selected)
 
                     
                     usernamereg_clicked = False
@@ -1794,7 +1785,7 @@ def leaderboard():
                     screen.blit(surf, (x, row_y))
 
         # CONTROLS INFO AT BOTTOM
-        info_text = f"[W] Sort by Wins  [G] Sort by Games  [↑] Ascending [↓] Descending"
+        info_text = f"[W] Sort by Wins  [G] Sort by Games  [^] Ascending [v] Descending"
         info = font_data.render(info_text, True, (200, 200, 150))
         info_rect = info.get_rect(center=(width/2, height*0.905))
         screen.blit(info, info_rect)

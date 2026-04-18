@@ -37,6 +37,7 @@ IMMEDIATE_RUN = False
 HERO1_BOT = False
 all_items = False #equip bot with all items
 item_page = 1
+leaderboard_page = 1
 
 
 toggle_hero3 = False
@@ -223,6 +224,13 @@ user_bio = None
 logged_in = False
 current_user_controls = None
 
+#USER VARIABLE - PLAYER 2
+username2 = None
+user_id2 = None
+user_bio2 = None
+logged_in2 = False
+current_user_controls2 = None
+
 
 
 
@@ -312,6 +320,9 @@ summon_display = pygame.sprite.Group()
 
 
 no_swap = False
+
+# ====================== LEADERBOARD PAGINATION ======================
+LEADERBOARD_PER_PAGE = 8      # how many users per page (you can change this)
 
 # import heroes as main
 # def assign_summon_enemy(player_type):

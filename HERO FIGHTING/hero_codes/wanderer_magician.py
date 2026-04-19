@@ -65,6 +65,20 @@ WANDERER_MAGICIAN_SPECIAL_BASICATK1_SIZE = 2
 
 
 class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 40,
+        "int": 36,
+        "agi": 35,
+        "base_atk": 0.2,
+        "atk_time": 1600,
+        "atk_spd_mod": 0.5,
+        "atk_spd": 100,
+        "hp_regen": 0.6,
+        "mana_regen": 6.75,
+        "move_speed": 2.2,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         self.player_type = player_type # 1 for player 1, 2 for player 2

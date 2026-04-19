@@ -49,6 +49,20 @@ WATER_PRINCESS_SP_SIZE = 4
 
 
 class Water_Princess(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 38,
+        "int": 48,
+        "agi": 20,
+        "base_atk": 0.0,
+        "atk_time": 3700,
+        "atk_spd_mod": 0.4,
+        "atk_spd": 60,
+        "hp_regen": 0.8,
+        "mana_regen": 6.05,
+        "move_speed": 2.035,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)
@@ -136,8 +150,33 @@ class Water_Princess(Player):
         self.atk3_cooldown = 40000
         self.sp_cooldown = 65000
 
-        self.atk1_damage = (10/40, 0)
-        self.atk1_damage_2nd = 20 #-----
+        self.raw_atk1_dmg = 10
+        self.raw_atk1_dmg_2nd = 20 # heals enemies
+        self.raw_atk2_dmg = 60
+        self.raw_atk2_dmg_2nd = 9
+        self.raw_atk3_dmg = 10
+        self.raw_atk3_dmg_2nd = 13
+        self.raw_atk4_dmg = 15 # * 4
+        
+        self.atk1_ani_count = 40
+        self.atk2_ani_count = 45
+        self.atk2_ani_count_2nd = 15 # c
+        self.atk3_ani_count = 20
+        self.atk3_ani_count_2nd = self.atk2_ani_count_2nd # same attack
+        self.atk4_ani_count = None
+        # --------------------------
+        self.raw_sp_atk1_dmg = 12
+        self.raw_sp_atk2_dmg = 26
+        self.raw_sp_atk3_dmg = 50
+        self.raw_sp_atk4_dmg = 10 # times 4
+        self.raw_sp_atk4_dmg_2nd = 3 # times 4, times (count(3)) + 40 = 76
+
+        self.sp_atk3_ani_count = 20
+        self.sp_atk4_ani_count = 10
+        self.sp_atk4_ani_count_2nd = 10
+
+        self.atk1_damage = (self.raw_atk1_dmg / self.atk1_ani_count, 0)
+        self.atk1_damage_2nd = self.raw_atk1_dmg_2nd #-----
         self.atk2_damage = (12.5/40, 0) # total dmg 40 #rain
         self.atk2_damage_2nd = (3/40, 5) #circling
         self.atk3_damage = (15/25, 0) 
@@ -436,21 +475,45 @@ class Water_Princess(Player):
                 skill_rect=self.skill_1_rect,
                 skill_img=skill_1,
                 cooldown=self.atk1_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk1_dmg, self.atk1_damage[1]],
+
+                skill_name='Blade Dance',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f''
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[1],
                 skill_rect=self.skill_2_rect,
                 skill_img=skill_2,
                 cooldown=self.atk2_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
+
+                skill_name='Starlight',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f''
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[2],
                 skill_rect=self.skill_3_rect,
                 skill_img=skill_3,
                 cooldown=self.atk3_cooldown,
-                mana=self.mana
+                mana=self.mana,
+                damage=[self.raw_atk2_dmg, self.atk2_damage[1]],
+
+                skill_name='Starlight',
+                skill_stats={
+                    'Lv': [1, 'blueviolet'],
+                    'Damage': [0 , 'red'],
+                },
+                skill_desc=f''
             ),
             Attacks(
                 mana_cost=self.mana_cost_list[3],

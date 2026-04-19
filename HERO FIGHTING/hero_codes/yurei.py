@@ -23,6 +23,20 @@ from player import Player
 import global_vars
 import pygame
 class Yurei(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 36,
+        "int": 40,
+        "agi": 37,
+        "base_atk": 0.5,
+        "atk_time": 1500,
+        "atk_spd_mod": 0.55,
+        "atk_spd": 100,
+        "hp_regen": 0.75,
+        "mana_regen": 5.5,
+        "move_speed": 2.31,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         self.player_type = player_type # 1 for player 1, 2 for player 2

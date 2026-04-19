@@ -50,6 +50,20 @@ import pygame
 
 # STILL IN PROGRESS: 11/16/26 6:07PM
 class Chthulu(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 40,
+        "int": 40,
+        "agi": 25,
+        "base_atk": 2.5,
+        "atk_time": 1900,
+        "atk_spd_mod": 0.5,
+        "atk_spd": 100,
+        "hp_regen": 0.9,
+        "mana_regen": 4.9,
+        "move_speed": 1.1,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)

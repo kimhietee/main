@@ -559,12 +559,12 @@ class Player(pygame.sprite.Sprite):
                 # print('SET TO TRUE')
                 self.dash_delay_triggered = True
         else:
-            print(self.dash_distance_covered,self.attacking1, self.dashing)
+            # print(self.dash_distance_covered,self.attacking1, self.dashing)
             
             get_current_position = self.x_pos
             self.dash_distance_covered = abs(get_current_position - self.get_last_position)
             if self.dash_distance_covered >= max_distance:
-                print('stoppp', self.dashing)
+                # print('stoppp', self.dashing)
                 self.get_last_position = 0
                 self.dash_start_time = 0
                 self.dash_delay_triggered = False
@@ -573,8 +573,8 @@ class Player(pygame.sprite.Sprite):
                 self.reset_dash()
                 # print('end')
                 setattr(self, attacking, False)
-                print('end', self.attacking1, self.dashing)
-                print(self.dash_distance_covered >= max_distance)
+                # print('end', self.attacking1, self.dashing)
+                # print(self.dash_distance_covered >= max_distance)
                 return
             else:
                 self.dashing = True

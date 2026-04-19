@@ -2838,7 +2838,7 @@ def player_selection():
 
     # positioning
     upper=height * 0.76
-    item_gap_x = width * 0.05859375 
+    item_gap_x = width * 0.05859375
     item_gap_y = 100
 
    
@@ -2997,8 +2997,8 @@ def player_selection():
     
     while True:
         if immediate_run: # DEV OPTION ONLY
-            PLAYER_1_SELECTED_HERO = Wind_Hashashin
-            PLAYER_2_SELECTED_HERO = Wanderer_Magician
+            PLAYER_1_SELECTED_HERO = Phantom_Assassin
+            PLAYER_2_SELECTED_HERO = Wind_Hashashin
             map_selected = Animate_BG.city_bg # Default
             bot = create_bot(Wanderer_Magician, hero1, hero1) if global_vars.SINGLE_MODE_ACTIVE else None
             player_1_choose = False

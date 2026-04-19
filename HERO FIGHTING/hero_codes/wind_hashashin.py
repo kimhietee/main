@@ -73,6 +73,20 @@ WIND_HASHASHIN_ATK3_SPECIAL_SIZE = 2
 
 
 class Wind_Hashashin(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 38,
+        "int": 40,
+        "agi": 24,
+        "base_atk": 0.0,
+        "atk_time": 1700,
+        "atk_spd_mod": 0.6,
+        "atk_spd": 105,
+        "hp_regen": 0.82,
+        "mana_regen": 5.1,
+        "move_speed": 2.64,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         self.player_type = player_type

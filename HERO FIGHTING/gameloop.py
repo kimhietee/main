@@ -27,7 +27,7 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton
+from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title
 import heroes as main
 
 
@@ -43,7 +43,247 @@ import loader as Save
 # Keybinds will be loaded after user login
 
 
+# LEADERBOARD CLASS
+# LEADERBOARD CLASS (now draws ONLY the leaderboard table/panel itself)
+class Leaderboard:
+    def __init__(self):
+        # ================================================================
+        # LAYOUT CONSTANTS (still fully adjustable here)
+        # ================================================================
+        self.LEADERBOARD_WIDTH = 450
+        self.LEADERBOARD_HEIGHT = 600
 
+        # Column offsets from panel_left (no overlap, WR% removed)
+        self.col_rank_offset = 30
+        self.col_name_offset = 100
+        self.col_games_offset = 235
+        self.col_wins_offset = 280 + 50
+        self.col_loss_offset = 345 + 50
+
+        self.font_title = global_vars.get_font(48)
+        self.font_header = global_vars.get_font(20)
+        self.font_data = global_vars.get_font(22)
+        self.font_helper = global_vars.get_font(18)   # smallest font for bottom texts
+
+        self.sort_mode = "wins"
+        self.sort_order = "desc"
+
+        self.ITEMS_PER_PAGE = global_vars.LEADERBOARD_PER_PAGE  # you will set this to 5
+
+        self.leaderboard_page = 1
+
+        # Fetch data ONCE (snapshot - never changes while the leaderboard is open)
+        self.raw_data = Save.get_leaderboard_data()
+
+    def update(self, screen, x, y, mouse_pos, mouse_press, events):
+        """
+        Call this every frame from your game loop.
+        Draws ONLY the leaderboard panel/table (no background).
+        
+        - x, y = top-left position of the entire leaderboard panel
+        - mouse_pos, mouse_press = current pygame.mouse.get_pos() and get_pressed()
+        - events = the list returned by pygame.event.get() in your main loop
+        
+        Returns:
+            "back" if ESC or menu_button was clicked
+            None otherwise
+        """
+        # ====================== LAYOUT (now driven by passed x, y) ======================
+        # print(x, y)
+        panel_left = x
+        panel_top = y
+
+        # Vertical layout inside the panel
+        title_y = panel_top + 25
+        header_y = panel_top + 65
+        row_start_y = header_y + 35
+        row_height = 45
+
+        # Buttons positioned exactly as before (just before the 8th player + 75 px down)
+        button_y = row_start_y + 7 * row_height + 50
+
+        # Create buttons every frame with current position
+        leaderboard_prev_button = RectButton(
+            panel_left + 40, button_y,
+            global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "<", height_position=0
+        )
+        leaderboard_next_button = RectButton(
+            panel_left + self.LEADERBOARD_WIDTH - 80, button_y,
+            global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), ">", height_position=0
+        )
+
+        # ====================== SORTING ======================
+        if self.sort_mode == "wins":
+            key_func = lambda user: user[3]  # games_won
+        else:
+            key_func = lambda user: user[2]  # games_played
+
+        reverse = self.sort_order == "desc"
+        data = sorted(self.raw_data, key=key_func, reverse=reverse)
+
+        total_leaderboard_pages = ((len(data) - 1) // self.ITEMS_PER_PAGE) + 1 if len(data) > 0 else 1
+
+        # ====================== EVENT HANDLING ======================
+        back_requested = False
+
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    back_requested = True
+                elif event.key == pygame.K_w:
+                    self.sort_mode = "wins"
+                elif event.key == pygame.K_g:
+                    self.sort_mode = "games"
+                elif event.key == pygame.K_UP:
+                    self.sort_order = "asc"
+                elif event.key == pygame.K_DOWN:
+                    self.sort_order = "desc"
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    back_requested = True
+                    main_menu()
+                if leaderboard_next_button.is_clicked(event.pos):
+                    if self.leaderboard_page < total_leaderboard_pages:
+                        self.leaderboard_page += 1
+                if leaderboard_prev_button.is_clicked(event.pos):
+                    if self.leaderboard_page > 1:
+                        self.leaderboard_page -= 1
+
+        # ====================== PANEL (the leaderboard table itself) ======================
+        panel_surface = pygame.Surface((self.LEADERBOARD_WIDTH, self.LEADERBOARD_HEIGHT), pygame.SRCALPHA)
+        pygame.draw.rect(panel_surface, (20, 20, 30, 150), (0, 0, self.LEADERBOARD_WIDTH, self.LEADERBOARD_HEIGHT), border_radius=-1)
+        pygame.draw.rect(panel_surface, (180, 140, 40, 150), (0, 0, self.LEADERBOARD_WIDTH, self.LEADERBOARD_HEIGHT), 3, border_radius=-1)
+        screen.blit(panel_surface, (panel_left, panel_top))
+        # panel_rect = pygame.Rect(panel_left, panel_top, self.LEADERBOARD_WIDTH, self.LEADERBOARD_HEIGHT)
+        # pygame.draw.rect(screen, (20, 20, 30), panel_rect, border_radius=-1) # 12
+        # pygame.draw.rect(screen, (180, 140, 40), panel_rect, 3, border_radius=-1)
+
+        # ====================== TITLE ======================
+        title_surf = self.font_title.render(" LEADERBOARD ", True, (255, 220, 120))
+        title_rect = title_surf.get_rect(center=(10 + panel_left + self.LEADERBOARD_WIDTH // 2, title_y))
+        screen.blit(title_surf, title_rect)
+
+        # ====================== HEADERS ======================
+        headers = [
+            ("RANK", panel_left + self.col_rank_offset),
+            ("PLAYER", panel_left + self.col_name_offset),
+            ("GAMES", panel_left + self.col_games_offset),
+            ("W", panel_left + self.col_wins_offset),
+            ("L", panel_left + self.col_loss_offset),
+        ]
+        for text, x_pos in headers:
+            surf = self.font_header.render(text, True, (255, 255, 200))
+            screen.blit(surf, (x_pos, header_y))
+
+        # Header separator line
+        pygame.draw.line(screen, (150, 120, 80),
+                         (panel_left + 15, header_y + 25),
+                         (panel_left + self.LEADERBOARD_WIDTH - 15, header_y + 25), 2)
+
+        # ====================== ROWS ======================
+        if len(data) == 0:
+            no_user = self.font_data.render("No warriors found...", True, (255, 120, 120))
+            screen.blit(no_user, no_user.get_rect(center=(panel_left + self.LEADERBOARD_WIDTH // 2, panel_top + 280)))
+        else:
+            start_idx = (self.leaderboard_page - 1) * self.ITEMS_PER_PAGE
+            end_idx = start_idx + self.ITEMS_PER_PAGE
+            page_data = data[start_idx:end_idx]
+
+            for idx, user in enumerate(page_data):
+                uid, name, gp, gw, gl = user
+                actual_rank = start_idx + idx + 1
+
+                # Limit name to 10 characters + "..."
+                display_name = (name[:10] + "...") if len(name) > 10 else name
+
+                row_y = row_start_y + (idx * row_height)
+                row_rect = pygame.Rect(panel_left + 15, row_y - 4, self.LEADERBOARD_WIDTH - 30, row_height - 8)
+
+                # Row background
+                pygame.draw.rect(screen, (35, 35, 50), row_rect, border_radius=6)
+
+                # Top 3 medal borders
+                if idx == 0:
+                    rank_color = (255, 215, 0)
+                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                elif idx == 1:
+                    rank_color = (192, 192, 192)
+                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                elif idx == 2:
+                    rank_color = (205, 127, 50)
+                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                else:
+                    rank_color = (220, 220, 220)
+
+                # Current user highlight
+                if global_vars.username and global_vars.username == name:
+                    pygame.draw.rect(screen, (100, 150, 255), row_rect, 3, border_radius=6)
+
+                row_values = [
+                    str(actual_rank),
+                    display_name,
+                    str(gp),
+                    str(gw),
+                    str(gl),
+                ]
+
+                row_colors = [
+                    rank_color,
+                    (120, 255, 255),
+                    (200, 200, 200),
+                    (100, 255, 100),
+                    (255, 120, 120),
+                ]
+
+                row_positions = [
+                    panel_left + self.col_rank_offset,
+                    panel_left + self.col_name_offset,
+                    panel_left + self.col_games_offset,
+                    panel_left + self.col_wins_offset,
+                    panel_left + self.col_loss_offset,
+                ]
+
+                for value, x_pos, color in zip(row_values, row_positions, row_colors):
+                    surf = self.font_data.render(str(value), True, color)
+                    screen.blit(surf, (x_pos, row_y))
+
+        # ====================== BOTTOM UI ======================
+        # Buttons visual update + draw
+        prev_pressed = leaderboard_prev_button.is_clicked(mouse_pos) and mouse_press[0]
+        leaderboard_prev_button.update(mouse_pos, prev_pressed)
+        leaderboard_prev_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        next_pressed = leaderboard_next_button.is_clicked(mouse_pos) and mouse_press[0]
+        leaderboard_next_button.update(mouse_pos, next_pressed)
+        leaderboard_next_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        # Sort indicator and helper text
+        sort_y = button_y + 50
+        sort_indicator = self.font_helper.render(f"Sorting: {self.sort_mode.upper()} ({self.sort_order.upper()})", True, (180, 220, 100))
+        screen.blit(sort_indicator, (panel_left + 15, sort_y))
+
+        info_text = f"[W] Wins  [G] Games  [^] Asc  [v] Desc"
+        info = self.font_helper.render(info_text, True, (200, 200, 150))
+        info_rect = info.get_rect(center=(panel_left + self.LEADERBOARD_WIDTH // 2, sort_y + 23))
+        screen.blit(info, info_rect)
+
+        # Page indicator
+        page_y = panel_top + self.LEADERBOARD_HEIGHT - 28
+        page_indicator = self.font_helper.render(f"Page {self.leaderboard_page}/{total_leaderboard_pages}", True, (200, 200, 150))
+        screen.blit(page_indicator, page_indicator.get_rect(center=(panel_left + self.LEADERBOARD_WIDTH // 2, page_y)))
+
+        # Global menu button
+        menu_button.draw(screen, mouse_pos)
+
+        # Return signal
+        if back_requested:
+            return "back"
+        return None
 
 
 # from heroes import player_selection, p1_select, p2_select, hero1_group, hero2_group
@@ -97,7 +337,7 @@ GAME_MUSIC_2 = r'assets\audios\z-battle-227609.mp3'
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
 
-winner = 'hero2'
+winner = None
 battle_result_recorded = False  # Flag to prevent recording win multiple times per battle
 paused = False
 
@@ -157,16 +397,6 @@ menu_button = ImageButton(
 
 
 
-login_button = ImageButton(
-    image_path=text_box_img,
-    pos=(width * 0.6, height * 0.85),
-    scale=0.9,
-    text='LOGIN',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
 register_button = ImageButton(
     image_path=text_box_img,
     pos=(width * 0.4, height * 0.85),
@@ -200,11 +430,12 @@ play_button = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
+central_offset = 270
 
 # menu()
 campaign_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-100),
+    pos=(center_pos[0] + central_offset, center_pos[1]-100),
     scale=scale,
     text='Campaign',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -213,10 +444,11 @@ campaign_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
     hover_move=0
 )
+
 #_____ for campaign
 coming_soon_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-100),
+    pos=(center_pos[0] + central_offset, center_pos[1]-100),
     scale=scale*0.95,
     text='Coming Soon',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -230,7 +462,7 @@ coming_soon_button = ImageButton(
 
 single_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]-50),
+    pos=(center_pos[0] + central_offset, center_pos[1]-50),
     scale=scale,
     text='Single Player',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -241,7 +473,7 @@ single_button = ImageButton(
 
 multiplayer_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0], center_pos[1]),
+    pos=(center_pos[0] + central_offset, center_pos[1]),
     scale=scale,
     text='Multiplayer',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -250,20 +482,23 @@ multiplayer_button = ImageButton(
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
-info_button = ImageButton(
+# --------------------------
+
+
+# Login Button from menu page
+login_button = ImageButton(
     image_path=text_box_img,
     pos=(width - 100, height - 100),
-    scale=scale*0.8,
-    text='Game Info',
+    scale=0.8,
+    text='LOGIN',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
-
 control_button = ImageButton(
     image_path=text_box_img,
-    pos=(width - 100, height - 50),
+    pos=(width - 300, height - 50),
     scale=scale*0.8,
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -271,31 +506,10 @@ control_button = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
-Login_option = ImageButton(
-    image_path=text_box_img,
-    pos=(100, height - 150),
-    scale=scale * 0.8,
-    text='LOGIN',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
-
-leaderboard_button = ImageButton(
-    image_path=text_box_img,
-    pos=(100, height - 100),
-    scale=scale * 0.8,
-    text='LEADERBOARD',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
-    text_color='white',
-    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-)
 
 settings_button = ImageButton(
     image_path=text_box_img,
-    pos=(100, height - 50),
+    pos=(width - 100, height - 50),
     scale=scale*0.8,
     text='Settings',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -303,6 +517,50 @@ settings_button = ImageButton(
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
+
+# ---------------
+
+
+
+
+
+# Login Button in login page
+
+# login_option = ImageButton(
+#     image_path=text_box_img,
+#     pos=(width//2 + 100, height - 100),
+#     scale=scale * 0.8,
+#     text='LOGIN',
+#     font_path=r'assets\font\slkscr.ttf',  # or any other font path
+#     font_size=font_size,  # dynamic size ~29 at 720p
+#     text_color='white',
+#     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+# )
+
+
+
+# leaderboard_button = ImageButton(
+#     image_path=text_box_img,
+#     pos=(100, height - 100),
+#     scale=scale * 0.8,
+#     text='LEADERBOARD',
+#     font_path=r'assets\font\slkscr.ttf',  # or any other font path
+#     font_size=font_size,  # dynamic size ~29 at 720p
+#     text_color='white',
+#     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+# )
+
+# info_button = ImageButton(
+#     image_path=text_box_img,
+#     pos=(width - 100, height - 100),
+#     scale=scale*0.8,
+#     text='Game Info',
+#     font_path=r'assets\font\slkscr.ttf',  # or any other font path
+#     font_size=font_size*0.8,  # dynamic size ~29 at 720p
+#     text_color='white',
+#     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+# )
+
 
 has_changes = False
 def show_confirmation_modals(font=None):
@@ -600,7 +858,7 @@ def game(bg=None):
         p2.x_pos = width-300
 
 
-
+    disable_debug = True
     while True:
         # print(main.hero1.mana)
             
@@ -677,64 +935,64 @@ def game(bg=None):
             # Toggle pause state when the pause key is pressed
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 is_paused = not is_paused
+            if not disable_debug:
+                if keys[main.pygame.K_6]:
+                    main.hero1.health += 20
+                    main.hero2.health += 20 
+                    main.hero1.mana += 20
+                    main.hero2.mana += 20
+                    if hasattr(main.bot, 'mana'):
+                        main.bot.mana += 20
+                    if hasattr(main.bot, 'health'):
+                        main.bot.health += 20
 
-            if keys[main.pygame.K_6]:
-                main.hero1.health += 20
-                main.hero2.health += 20 
-                main.hero1.mana += 20
-                main.hero2.mana += 20
-                if hasattr(main.bot, 'mana'):
-                    main.bot.mana += 20
-                if hasattr(main.bot, 'health'):
-                    main.bot.health += 20
+                # if keys[main.pygame.K_SPACE]: # reset
+                #     main.hero1.health += 500
+                #     main.hero2.health += 500
+                #     main.hero1.mana += 500
+                #     main.hero2.mana += 500
+                #     main.hero1.special -= 500
+                #     main.hero2.special -= 500
 
-            # if keys[main.pygame.K_SPACE]: # reset
-            #     main.hero1.health += 500
-            #     main.hero2.health += 500
-            #     main.hero1.mana += 500
-            #     main.hero2.mana += 500
-            #     main.hero1.special -= 500
-            #     main.hero2.special -= 500
+                if keys[main.pygame.K_1] and not keys[main.pygame.K_LALT]: # reset
+                    main.hero1.special += 500
+                    main.hero2.special += 500
+                    
 
-            if keys[main.pygame.K_1] and not keys[main.pygame.K_LALT]: # reset
-                main.hero1.special += 500
-                main.hero2.special += 500
-                
+                # if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT] and not FREEZE_SPECIAL: # freeze
+                #     FREEZE_SPECIAL = True
+                #     # freeze_toggled = False
+                #     if event.type == pygame.USEREVENT:
+                #         print('freeze special toggled')
+                    
 
-            # if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT] and not FREEZE_SPECIAL: # freeze
-            #     FREEZE_SPECIAL = True
-            #     # freeze_toggled = False
-            #     if event.type == pygame.USEREVENT:
-            #         print('freeze special toggled')
-                
+                # if keys[main.pygame.K_2] and keys[main.pygame.K_LALT]: # unfreeze (alt)
+                #     FREEZE_SPECIAL = False
+                #     # freeze_toggled = True
+                #     if event.type == pygame.USEREVENT:
+                #         print('unfreeze special toggled') 
 
-            # if keys[main.pygame.K_2] and keys[main.pygame.K_LALT]: # unfreeze (alt)
-            #     FREEZE_SPECIAL = False
-            #     # freeze_toggled = True
-            #     if event.type == pygame.USEREVENT:
-            #         print('unfreeze special toggled') 
+                if keys[main.pygame.K_3] and not keys[main.pygame.K_LALT]: # special to 1
+                    main.hero1.special = 0.01   
+                    main.hero2.special = 0.01
+                    
 
-            if keys[main.pygame.K_3] and not keys[main.pygame.K_LALT]: # special to 1
-                main.hero1.special = 0.01   
-                main.hero2.special = 0.01
-                
+                if keys[main.pygame.K_4] and not keys[main.pygame.K_LALT]: # disable special
+                    global_vars.DISABLE_SPECIAL_REDUCE = False
+                elif keys[main.pygame.K_4] and keys[main.pygame.K_LALT]: # special on (alt)
+                    global_vars.DISABLE_SPECIAL_REDUCE = True
 
-            if keys[main.pygame.K_4] and not keys[main.pygame.K_LALT]: # disable special
-                global_vars.DISABLE_SPECIAL_REDUCE = False
-            elif keys[main.pygame.K_4] and keys[main.pygame.K_LALT]: # special on (alt)
-                global_vars.DISABLE_SPECIAL_REDUCE = True
+                if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT]:
+                    global_vars.DISABLE_SPECIAL_REDUCE = True
+                    main.hero1.special = 0.01
+                    main.hero2.special = 0.01
 
-            if keys[main.pygame.K_2] and not keys[main.pygame.K_LALT]:
-                global_vars.DISABLE_SPECIAL_REDUCE = True
-                main.hero1.special = 0.01
-                main.hero2.special = 0.01
-
-            if keys[main.pygame.K_5] and not keys[main.pygame.K_LALT]: # disable hp regen
-                main.DISABLE_HEAL_REGEN = True
-            if keys[main.pygame.K_5] and keys[main.pygame.K_LALT]: # hp regen (alt)
-                main.DISABLE_HEAL_REGEN = False
-                
-            '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
+                if keys[main.pygame.K_5] and not keys[main.pygame.K_LALT]: # disable hp regen
+                    main.DISABLE_HEAL_REGEN = True
+                if keys[main.pygame.K_5] and keys[main.pygame.K_LALT]: # hp regen (alt)
+                    main.DISABLE_HEAL_REGEN = False
+                    
+                '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
             # if FREEZE_SPECIAL: 
             #     main.hero1.special_active = True
@@ -908,7 +1166,7 @@ def game(bg=None):
         
         
 
-        
+
 
 
         #draw distance
@@ -1156,14 +1414,17 @@ def menu():
     font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
+    leaderboard_ui = Leaderboard()
+
     while True:
+        events = pygame.event.get()
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
         key_press = pygame.key.get_pressed()
 
         main.screen.fill((0, 0, 0))
-        for event in pygame.event.get():
+        for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()   
@@ -1184,9 +1445,10 @@ def menu():
                     return
              
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if info_button.is_clicked(event.pos):
-                    info()
-                    return
+                pass
+                # if info_button.is_clicked(event.pos):
+                #     info()
+                #     return
                     # return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if control_button.is_clicked(event.pos):
@@ -1206,15 +1468,15 @@ def menu():
                     fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
                     # campaign()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if Login_option.is_clicked(event.pos):
+                if login_button.is_clicked(event.pos):
                     # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], login, 300, True)
                     # campaign()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if leaderboard_button.is_clicked(event.pos):
-                    fade(Animate_BG.waterfall_day_bg.frames[0], leaderboard, 300, True)
-                    
+                pass
+                # if leaderboard_button.is_clicked(event.pos):
+                    # fade(Animate_BG.waterfall_day_bg.frames[0], leaderboard, 300, True)      
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -1231,22 +1493,35 @@ def menu():
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
         # Animate_BG.Sword_campaign.display(screen, speed=50)
-        create_title('Maine Menu', font, default_size, main.height * 0.2)
+        create_bordered_title('Maine Menu', font, default_size, main.height * 0.2, x_real_offset=260)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
 
-        info_button.draw(main.screen,mouse_pos)
+        login_button.draw(main.screen,mouse_pos)
         control_button.draw(main.screen,mouse_pos)
 
         settings_button.draw(main.screen,mouse_pos)
-        Login_option.draw(main.screen, mouse_pos)
-        leaderboard_button.draw(main.screen, mouse_pos)
+        login_button.draw(main.screen, mouse_pos)
+        # leaderboard_button.draw(main.screen, mouse_pos)
         
 
         if campaign_button.is_hovered(mouse_pos):
             coming_soon_button.draw(main.screen, mouse_pos)
         else:
             campaign_button.draw(main.screen, mouse_pos)
+
+
+        result = leaderboard_ui.update(
+                            screen=main.screen,
+                            x=50,
+                            y=75,
+                            # x=mouse_pos[0],
+                            # y=mouse_pos[1],
+                            mouse_pos=mouse_pos,
+                            mouse_press=mouse_press,
+                            events=events
+                        )
+
 
         
 
@@ -1357,6 +1632,16 @@ def login():
                             0)
     register_opacity = 0
     
+    login_option = ImageButton(
+        image_path=text_box_img,
+        pos=(width * 0.6, height * 0.85),
+        scale=0.9,
+        text='LOGIN',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size,
+        text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+    )
     # Logout button (only visible when logged in)
     logout_button = ImageButton(
         image_path=text_box_img,
@@ -1374,7 +1659,7 @@ def login():
         image_path=text_box_img,
         pos=(width * 0.6, height * 0.85),
         scale=0.9,
-        text='LOGIN P2',
+        text='LOGIN',
         font_path=r'assets\font\slkscr.ttf',
         font_size=font_size,
         text_color='white',
@@ -1386,7 +1671,7 @@ def login():
         image_path=text_box_img,
         pos=(width * 0.6, height * 0.85),
         scale=0.9,
-        text='LOGOUT P2',
+        text='LOGOUT',
         font_path=r'assets\font\slkscr.ttf',
         font_size=font_size,
         text_color='white',
@@ -1606,7 +1891,7 @@ def login():
                         passwordreg_input = ""
 
                         
-                if login_button.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
+                if login_option.is_clicked(event.pos) and not register_modal.selected and not global_vars.logged_in:
                     if len(username_input) == 0:
                         popup_message = "Please enter username"
                         popup_type = "error"
@@ -1787,7 +2072,7 @@ def login():
             userreg.update(mouse_pos, usernamereg_clicked)
             passreg.update(mouse_pos, passwordreg_clicked)
 
-            login_button.draw(screen, mouse_pos)
+            login_option.draw(screen, mouse_pos)
             register_button.draw(screen, mouse_pos)
         
         menu_button.draw(screen, mouse_pos)
@@ -1818,230 +2103,7 @@ def login():
         
         pygame.display.update()
         main.clock.tick(main.FPS)
-
-def leaderboard():
-    global load_sword_login_bg
-    
-    font_title = global_vars.get_font(70)
-    font_header = global_vars.get_font(33)
-    font_data = global_vars.get_font(30)
-
-    sort_mode = "wins"
-    sort_order = "desc"
-
-    ITEMS_PER_PAGE = global_vars.LEADERBOARD_PER_PAGE
-
-    leaderboard_next_button = RectButton((width/2 + width*0.3), height*0.73, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), ">", height_position=0)
-    leaderboard_prev_button = RectButton((width/2 - width*0.3), height*0.73, global_vars.FONT_PATH, int(height * 0.025), (0, 255, 0), "<", height_position=0)
-
-    leaderboard_page = 1
-
-    while True:
-        data = Save.get_leaderboard_data()
-
-        # SORTING
-        if sort_mode == "wins":
-            key_func = lambda x: x[3]  # games_won
-        else:
-            key_func = lambda x: x[2]  # games_played
-
-        reverse = True if sort_order == "desc" else False
-        data = sorted(data, key=key_func, reverse=reverse)
-
         
-        total_leaderboard_pages = ((len(data)-1)//ITEMS_PER_PAGE) + 1 if len(data) > 0 else 1
-
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_press = pygame.mouse.get_pressed()
-
-        # EVENTS
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    return
-                elif event.key == pygame.K_w:
-                    sort_mode = "wins"
-                elif event.key == pygame.K_g:
-                    sort_mode = "games"
-                elif event.key == pygame.K_UP:
-                    sort_order = "asc"
-                elif event.key == pygame.K_DOWN:
-                    sort_order = "desc"
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if menu_button.is_clicked(event.pos):
-                    return
-                if leaderboard_next_button.is_clicked(event.pos):
-                    if leaderboard_page < total_leaderboard_pages:
-                        leaderboard_page += 1
-                if leaderboard_prev_button.is_clicked(event.pos):
-                    if leaderboard_page > 1:
-                        leaderboard_page -= 1
-
-        # BACKGROUND
-        if not load_sword_login_bg:
-            Animate_BG.sword_login.load_frames_type2()
-            load_sword_login_bg = True
-        Animate_BG.sword_login.display(screen, speed=10)
-
-        # DARK OVERLAY (for readability)
-        draw_black_screen(0.4)
-
-        # PANEL WITH BETTER SPACING
-        panel_left = width * 0.05
-        panel_top = height * 0.12
-        panel_width = width * 0.9
-        panel_height = height * 0.72
-        panel = pygame.Rect(panel_left, panel_top, panel_width, panel_height)
-        pygame.draw.rect(screen, (20, 20, 30), panel, border_radius=12)
-        pygame.draw.rect(screen, (180, 140, 40), panel, 3, border_radius=12)
-
-        # TITLE
-        title = font_title.render(" LEADERBOARD ", True, (255, 220, 120))
-        screen.blit(title, title.get_rect(center=(width/2, height*0.18)))
-
-        # IMPROVED COLUMN LAYOUT WITH PROPER SPACING
-        header_y = height * 0.25
-        row_start_y = header_y + height * 0.05
-        row_height = height * 0.055
-        
-        # Column widths and x positions (with padding)
-        col_rank_x = panel_left + width * 0.05
-        col_name_x = panel_left + width * 0.15
-        col_games_x = panel_left + width * 0.40
-        col_wins_x = panel_left + width * 0.52
-        col_loss_x = panel_left + width * 0.64
-        col_wr_x = panel_left + width * 0.74
-        
-        # Draw header line separator
-        pygame.draw.line(screen, (150, 120, 80), (panel_left + width*0.03, header_y + height*0.06   ), 
-                        (panel_left + panel_width - width*0.03, header_y + height*0.06), 2)
-        
-        # DRAW HEADERS
-        headers = [
-            ("RANK", col_rank_x),
-            ("PLAYER", col_name_x),
-            ("GAMES", col_games_x),
-            ("WINS", col_wins_x),
-            ("LOSS", col_loss_x),
-            ("WR%", col_wr_x),
-        ]
-        
-        for text, x in headers:
-            surf = font_header.render(text, True, (255, 255, 200))
-            screen.blit(surf, (x, header_y))
-
-        # ROWS
-        if len(data) == 0:
-            no_user = font_data.render("No warriors found...", True, (255, 120, 120))
-            screen.blit(no_user, no_user.get_rect(center=(width/2, height/2)))
-        else:
-            start_idx = (leaderboard_page - 1) * ITEMS_PER_PAGE
-            end_idx = start_idx + ITEMS_PER_PAGE
-            page_data = data[start_idx:end_idx]
-            
-            for idx, user in enumerate(page_data):
-                uid, name, gp, gw, gl = user
-                
-                # Actual rank in leaderboard
-                actual_rank = start_idx + idx + 1
-                
-                # Truncate long names
-                display_name = name[:14] if len(name) > 14 else name
-
-                winrate = (gw / gp * 100) if gp > 0 else 0
-
-                row_y = row_start_y + (idx * row_height)
-                row_rect = pygame.Rect(panel_left + width*0.02, row_y - height*0.003, panel_width - width*0.04, row_height - height*0.01)
-
-                # ROW BG
-                pygame.draw.rect(screen, (35, 35, 50), row_rect, border_radius=6)
-
-                # TOP 3 RANK COLORS (MEDAL EFFECT)
-                if idx == 0:
-                    rank_color = (255, 215, 0)  # Gold
-                    pygame.draw.rect(screen, (255, 215, 0), row_rect, 2, border_radius=6)  # Gold border
-                elif idx == 1:
-                    rank_color = (192, 192, 192)  # Silver
-                    pygame.draw.rect(screen, (192, 192, 192), row_rect, 2, border_radius=6)
-                elif idx == 2:
-                    rank_color = (205, 127, 50)  # Bronze
-                    pygame.draw.rect(screen, (205, 127, 50), row_rect, 2, border_radius=6)
-                else:
-                    rank_color = (220, 220, 220)
-
-                # CURRENT USER HIGHLIGHT (BLUE)
-                if global_vars.username and global_vars.username == name:
-                    pygame.draw.rect(screen, (100, 150, 255), row_rect, 3, border_radius=6)
-
-                # PREPARE ROW DATA
-                row_values = [
-                    str(actual_rank),
-                    display_name,
-                    str(gp),
-                    str(gw),
-                    str(gl),
-                    f"{winrate:.0f}%"
-                ]
-
-                row_colors = [
-                    rank_color,
-                    (120, 255, 255),  # Cyan for names
-                    (200, 200, 200),  # Light gray for games
-                    (100, 255, 100),  # Light green for wins
-                    (255, 120, 120),  # Light red for losses
-                    (255, 220, 120)   # Gold for winrate
-                ]
-                
-                row_positions = [
-                    col_rank_x,
-                    col_name_x,
-                    col_games_x,
-                    col_wins_x,
-                    col_loss_x,
-                    col_wr_x
-                ]
-
-                # DRAW ROW TEXT
-                for value, x, color in zip(row_values, row_positions, row_colors):
-                    surf = font_data.render(str(value), True, color)
-                    screen.blit(surf, (x, row_y))
-
-        
-        
-        # Page indicator
-        page_indicator = font_data.render(f"Page {leaderboard_page}/{total_leaderboard_pages}", True, (200, 200, 150))
-        screen.blit(page_indicator, page_indicator.get_rect(center=(width/2, height*0.96)))
-
-        # CONTROLS INFO AT BOTTOM
-        info_text = f"[W] Sort by Wins  [G] Sort by Games  [^] Ascending [v] Descending"
-        info = font_data.render(info_text, True, (200, 200, 150))
-        info_rect = info.get_rect(center=(width/2, height*0.905))
-        screen.blit(info, info_rect)
-        
-        # Sort mode indicator
-        sort_indicator = font_data.render(f"Sorting: {sort_mode.upper()} ({sort_order.upper()})", True, (180, 220, 100))
-        screen.blit(sort_indicator, (panel_left, height*0.94))
-
-        # Pagination buttons
-        leaderboard_prev_button.update(mouse_pos, (True if leaderboard_prev_button.is_clicked(mouse_pos) and mouse_press[0] else False))
-        leaderboard_prev_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        
-        leaderboard_next_button.update(mouse_pos, (True if leaderboard_next_button.is_clicked(mouse_pos) and mouse_press[0] else False))
-        leaderboard_next_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-
-        # MENU BUTTON
-        menu_button.draw(screen, mouse_pos)
-
-        pygame.display.update()
-        main.clock.tick(main.FPS)
-
-
-
 
 
 
@@ -3033,56 +3095,58 @@ def reset_all():
     # # Reset paused tracking so timers/cooldowns start fresh
     
 
-volume_limit = {'min':100, 'max':300}
-current_volume = (global_vars.MAIN_VOLUME*100) + volume_limit['min']
-volume_button_rect = pygame.Rect(current_volume, center_pos[1]-2, 13, 25)
+
 
 # NOTE: The mute button does not use this function
 from button import RectButton
-
 def settings(in_game=False):
     global paused
     
     font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH)) / 1.5
-    # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
-
     
-    # current_volume = global_vars.MAIN_VOLUME*100
     setting_font = global_vars.get_font(int(height * 0.025))
-    
-    # true
-    
     
     volume_clicked = False
     mute_hovered = False
 
-    # Move volume bar to the right
-    volume_bar_x = 100
-    volume_bar_y = center_pos[1]
-    volume_bar_decor_rect = pygame.Rect(volume_bar_x-5, volume_bar_y-5, (volume_limit['max']-volume_limit['min']+20), 30)
-    volume_button_rect.x = volume_bar_x + (global_vars.MAIN_VOLUME * 200)  # 200 is the range
-    volume_button_rect.y = volume_bar_y - 2
+    # ================================================================
+    # ORGANIZED LAYOUT (matches the image perfectly)
+    # ================================================================
+    # 1. LEFT: MUTE + Volume slider (exactly where it appears in the image)
+    volume_bar_x = width * 0.08          # left side
+    volume_bar_y = height * 0.35
 
-    # Mute button decor
-    mute_rect = pygame.Rect(volume_bar_x-65, volume_bar_y-10, 40, 40)
+    volume_limit = {'min':100, 'max':300}
+    current_volume = (global_vars.MAIN_VOLUME*100) + volume_limit['min']
+    volume_button_rect = pygame.Rect(current_volume, volume_bar_y - 2, 13, 25)
+    
+    # Mute button (small square + label above, just like image)
+    mute_rect = pygame.Rect(volume_bar_x - 65, volume_bar_y - 10, 40, 40)
     mute_clicked = global_vars.MUTE
 
-    anti_alias_button = RectButton(width*0.1, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
-    smooth_bg_button = RectButton(width*0.3, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
-    show_distance_button = RectButton(width*0.5, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Distance")
-    show_hitbox_button = RectButton(width*0.7, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Hitbox")
-    show_grid_button = RectButton(width*0.9, height-height*0.2, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (don't)")
+    # Volume bar decor (black background bar)
+    volume_bar_decor_rect = pygame.Rect(volume_bar_x - 5, volume_bar_y - 5,
+                                        (volume_limit['max'] - volume_limit['min'] + 20), 30)
 
-    show_health_bar = RectButton(width*0.5, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Health Bar")
-    show_mana_bar = RectButton(width*0.7, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Mana Bar")
-    show_special_bar = RectButton(width*0.9, center_pos[1], r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Special Bar")
-    
-    # text anti-alias
+    # 2. CENTER UPPER: Hero bars (placed on the "bridge" area like in the image)
+    hero_y = height * 0.48
+    show_health_bar = RectButton(width * 0.30, hero_y,
+                                 r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Health Bar")
+    show_mana_bar = RectButton(width * 0.50, hero_y,
+                               r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Mana Bar")
+    show_special_bar = RectButton(width * 0.70, hero_y,
+                                  r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Hero Special Bar")
 
+    # 3. BOTTOM ROW: All 5 toggle options (evenly spaced, exactly as in the image)
+    bottom_y = height - height * 0.20
+    anti_alias_button = RectButton(width * 0.10, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Text Anti-Aliasing")
+    smooth_bg_button = RectButton(width * 0.28, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
+    show_distance_button = RectButton(width * 0.46, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Distance")
+    show_hitbox_button = RectButton(width * 0.64, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Hitbox")
+    show_grid_button = RectButton(width * 0.82, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (don't)")
 
     while True:
-        # print(global_vars.SMOOTH_BG)
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
         mouse_press = pygame.mouse.get_pressed()
@@ -3100,22 +3164,24 @@ def settings(in_game=False):
                 if not in_game:
                     menu()
                 return
-            
-            
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     if not in_game:
                         menu()
                     return
+                
+                # Mute toggle
                 if mute_rect.collidepoint(event.pos):
                     mute_clicked = not mute_clicked
                     global_vars.MUTE = mute_clicked
                     pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME)
-                        
+                
+                # Volume drag start
                 if volume_button_rect.collidepoint(event.pos):
                     volume_clicked = True
 
+                # All toggle buttons
                 if anti_alias_button.is_clicked(event.pos):
                     global_vars.TEXT_ANTI_ALIASING = anti_alias_button.toggle(global_vars.TEXT_ANTI_ALIASING)
                 
@@ -3139,75 +3205,50 @@ def settings(in_game=False):
 
                 if show_special_bar.is_clicked(event.pos):
                     global_vars.SHOW_MINI_SPECIAL_BAR = show_special_bar.toggle(global_vars.SHOW_MINI_SPECIAL_BAR)
-                
-                
 
-            
             elif event.type == pygame.MOUSEBUTTONUP:
                 volume_clicked = False
-        # print(global_vars.MAIN_VOLUME)
-        # Volume bar logic
-        volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x-volume_bar_x, 20)
+
+        # ====================== VOLUME BAR LOGIC ======================
+        volume_bar_rect = pygame.Rect(volume_bar_x, volume_bar_y, volume_button_rect.x - volume_bar_x, 20)
 
         if volume_clicked and not mute_clicked:
             volume_button_rect.x = mouse_pos[0]
-        if volume_button_rect.x >= volume_bar_x + (volume_limit['max']-volume_limit['min']):
-            volume_button_rect.x = volume_bar_x + (volume_limit['max']-volume_limit['min'])
+
+        # Clamp volume slider
+        if volume_button_rect.x >= volume_bar_x + (volume_limit['max'] - volume_limit['min']):
+            volume_button_rect.x = volume_bar_x + (volume_limit['max'] - volume_limit['min'])
         elif volume_button_rect.x <= volume_bar_x:
             volume_button_rect.x = volume_bar_x
 
-        # Calculate volume
+        # Calculate and apply volume
         global_vars.MAIN_VOLUME = ((volume_button_rect.x - volume_bar_x) / (volume_limit['max'] - volume_limit['min']))
-        pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME)  # Apply mute logic
+        pygame.mixer.music.set_volume(0 if global_vars.MUTE else global_vars.MAIN_VOLUME)
 
-
+        # ====================== BACKGROUND ======================
         Animate_BG.waterfall_rainy_bg.display(screen, speed=50) if not global_vars.SMOOTH_BG else Animate_BG.smooth_waterfall_rainy_bg.display(screen, speed=50)
         create_title('Settings', font, default_size, main.height * 0.2, color='Grey3')
-        
 
-
-        # Draw mute button decor
+        # ====================== MUTE BUTTON (small square) ======================
         mute_color = (0, 75, 0) if mute_hovered else (30, 30, 30)
         if mute_clicked:
             mute_color = (0, 150, 0)
         if mute_clicked and mute_hovered:
             mute_color = (0, 200, 0)
-        
-        # Draw mute button
         pygame.draw.rect(screen, mute_color, mute_rect)
 
-        # Button functionality
-        anti_alias_button.update(mouse_pos, global_vars.TEXT_ANTI_ALIASING)
-        smooth_bg_button.update(mouse_pos, global_vars.SMOOTH_BG)
-        show_distance_button.update(mouse_pos, global_vars.DRAW_DISTANCE)
-        show_hitbox_button.update(mouse_pos, global_vars.SHOW_HITBOX)
-        show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
-        show_mana_bar.update(mouse_pos, global_vars.SHOW_MINI_MANA_BAR)
-        show_special_bar.update(mouse_pos, global_vars.SHOW_MINI_SPECIAL_BAR)
-        show_health_bar.update(mouse_pos, global_vars.SHOW_MINI_HEALTH_BAR)
-        # Drawing buttons
-        anti_alias_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_distance_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_hitbox_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_mana_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_special_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_health_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-
-        # Draw mute text
-        # mute_text = setting_font.render('Mute' if random.random() > 0.5 else "fsa", global_vars.TEXT_ANTI_ALIASING, white)
-        mute_text = setting_font.render('Mute', global_vars.TEXT_ANTI_ALIASING, white)
-        mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery-mute_rect.height))
+        # Mute label above the square (exactly like the image)
+        mute_text = setting_font.render('MUTE', global_vars.TEXT_ANTI_ALIASING, white)
+        mute_text_rect = mute_text.get_rect(center=(mute_rect.centerx, mute_rect.centery - mute_rect.height - 5))
         screen.blit(mute_text, mute_text_rect)
 
-        # Draw volume bar decor
+        # ====================== VOLUME BAR + PERCENTAGE ======================
         pygame.draw.rect(screen, black, volume_bar_decor_rect)
         pygame.draw.rect(screen, white if not mute_clicked else black, volume_bar_rect)
         pygame.draw.rect(screen, 'Red' if not mute_clicked else black, volume_button_rect)
 
-        # Draw volume number background and text
-        vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max']-volume_limit['min']) + 30, volume_bar_y-5, 60, 30)
+        # Volume percentage
+        vol_num_rect = pygame.Rect(volume_bar_x + (volume_limit['max'] - volume_limit['min']) + 30, volume_bar_y - 5, 60, 30)
         pygame.draw.rect(screen, black, vol_num_rect)
         vol_num = int(global_vars.MAIN_VOLUME * 100) if not mute_clicked else 0
         vol_num_font = global_vars.get_font(int(height * 0.025))
@@ -3215,8 +3256,31 @@ def settings(in_game=False):
         vol_num_text_rect = vol_num_text.get_rect(center=vol_num_rect.center)
         screen.blit(vol_num_text, vol_num_text_rect)
 
+        # ====================== BUTTON UPDATES & DRAWING ======================
+        # Hero bars (center upper)
+        show_health_bar.update(mouse_pos, global_vars.SHOW_MINI_HEALTH_BAR)
+        show_mana_bar.update(mouse_pos, global_vars.SHOW_MINI_MANA_BAR)
+        show_special_bar.update(mouse_pos, global_vars.SHOW_MINI_SPECIAL_BAR)
+
+        # Bottom row toggles
+        anti_alias_button.update(mouse_pos, global_vars.TEXT_ANTI_ALIASING)
+        smooth_bg_button.update(mouse_pos, global_vars.SMOOTH_BG)
+        show_distance_button.update(mouse_pos, global_vars.DRAW_DISTANCE)
+        show_hitbox_button.update(mouse_pos, global_vars.SHOW_HITBOX)
+        show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
+
+        # Draw all buttons
+        show_health_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_mana_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_special_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
+        anti_alias_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_distance_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_hitbox_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+
         menu_button.draw(screen, mouse_pos)
-        # print(global_vars.MUTE)
 
         pygame.display.update()
         main.clock.tick(main.FPS)

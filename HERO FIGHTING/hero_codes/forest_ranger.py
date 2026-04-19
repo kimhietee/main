@@ -80,6 +80,20 @@ FR_SPECIAL_BASICATK1_SIZE = 2
 
 
 class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINCE IM DONE 4/6/25 10:30pm
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 32,
+        "int": 52,
+        "agi": 30,
+        "base_atk": 0.1,
+        "atk_time": 1800,
+        "atk_spd_mod": 1.1,
+        "atk_spd": 100,
+        "hp_regen": 0.8,
+        "mana_regen": 5.0,
+        "move_speed": 2.53,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # print('from forest ranger. player:', player_type)
@@ -145,7 +159,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.arrow_stuck_damage = (self.basic_attack_damage * 0.3) - 0.05 # total dmg=1
 
         # haste base bonus
-        self.haste_duration = 5000
+        self.haste_duration = 6000
         self.haste_attack_speed = 300
         self.special_haste_attack_speed = 350
         self.frame_duration_divider = 2 # increases animation speed, repeats based on the number

@@ -79,6 +79,20 @@ class Display_Text: # display damage taken text previously (not working for now)
   
 
 class Fire_Knight(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 42,
+        "int": 36,
+        "agi": 33,
+        "base_atk": 3.4,
+        "atk_time": 1800,
+        "atk_spd_mod": 0.5,
+        "atk_spd": 60,
+        "hp_regen": 0.85,
+        "mana_regen": 4.85,
+        "move_speed": 1.76,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # self.display_text = Display_Text(self.x_pos, self.y_pos, self.health)

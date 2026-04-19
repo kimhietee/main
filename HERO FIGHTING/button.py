@@ -15,12 +15,26 @@ def draw_black_screen(opacity, color=(0,0,0), size=(0, 0, width, height)):
     # Blit it on the target surface
     screen.blit(overlay, rect.topleft)
 
-def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width):
+def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width, x_real_offset=0):
     title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
-    title_rect = title.get_rect(center = (x_offset / 2, y_offset))
+    title_rect = title.get_rect(center = (x_offset / 2 + x_real_offset, y_offset))
 
     screen.blit(title, title_rect)
 
+def create_bordered_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width, x_real_offset=0, border_color=(20, 20, 30), border_thickness=2):
+    main_surf = font.render(str(text), TEXT_ANTI_ALIASING, color)
+    border_surf = font.render(str(text), TEXT_ANTI_ALIASING, border_color)
+    
+    main_title = pygame.transform.rotozoom(main_surf, angle, scale)
+    border_title = pygame.transform.rotozoom(border_surf, angle, scale)
+    
+    title_rect = main_title.get_rect(center=(x_offset / 2 + x_real_offset, y_offset))
+    
+    offsets = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)]
+    for dx, dy in offsets:
+        screen.blit(border_title, (title_rect.x + dx * border_thickness, title_rect.y + dy * border_thickness))
+    
+    screen.blit(main_title, title_rect)
 
 class ImageButton:
     def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True, y_margin=0):

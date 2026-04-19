@@ -13,6 +13,20 @@ from global_vars import (
 )
 
 class Fire_Wizard(Player):
+    # Class-level attribute for hero display data (used by player_selector hover tooltip)
+    HERO_DISPLAY_DATA = {
+        "str": 40,
+        "int": 40,
+        "agi": 26,
+        "base_atk": 0.1,
+        "atk_time": 1750,
+        "atk_spd_mod": 0.5,
+        "atk_spd": 100,
+        "hp_regen": 0.8,
+        "mana_regen": 5.3,
+        "move_speed": 2.2,
+    }
+    
     def __init__(self, player_type, enemy):
         super().__init__(player_type, enemy)
         # ----- Core -----

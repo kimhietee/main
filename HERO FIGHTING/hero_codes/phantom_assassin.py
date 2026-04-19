@@ -61,24 +61,50 @@ class Phantom_Assassin(Player):
         self.attack_speed_modifier = 1.2
         
         self.atk1_mana_cost = 40
-        self.atk2_mana_cost = 60
+        self.atk2_mana_cost = 70
         self.atk3_mana_cost = 90
-        self.sp_mana_cost = 120
+        self.sp_mana_cost = 125
         
         self.atk1_cooldown = 8000
         self.atk2_cooldown = 15000
         self.atk3_cooldown = 20000
-        self.atk4_cooldown = 30000
-
+        self.atk4_cooldown = 32000
+                
         self.sp_atk1_mana_cost = 40
-        self.sp_atk2_mana_cost = 60
+        self.sp_atk2_mana_cost = 70
         self.sp_atk3_mana_cost = 90
-        self.sp_atk4_mana_cost = 120
+        self.sp_atk4_mana_cost = 125
 
         self.special_atk1_cooldown = 8000
-        self.special_atk2_cooldown = 15000
-        self.special_atk3_cooldown = 20000
+        self.special_atk2_cooldown = 12000
+        self.special_atk3_cooldown = 18000
         self.special_atk4_cooldown = 30000
+
+        self.void_slash_hitbox_size_modifier = 0.4
+        self.void_slash_cast_range = 30
+        self.void_slash_speed = 10
+        self.secondary_void_slash_speed_multiplier = 0.5
+        self.void_slash_delay = 500
+        self.secondary_void_slash_raw_delay = 500
+        self.secondary_void_slash_delay = self.void_slash_delay + self.secondary_void_slash_raw_delay
+        self.void_slash_damage = 12
+        self.secondary_void_slash_damage_multiplier = 0.7
+
+        self.iaido_delay = 500
+
+        self.step_back_max_distance = 200
+        self.iaido_max_distance = 400
+        self.thousand_cuts_max_distance = 500
+
+        self.step_back_speed = 7
+        self.iaido_speed = 50
+        self.thousan_cuts_speed = 80
+
+        self.step_back_stun_duration = 1000
+        self.iaido_stun_duration = 1300
+        self.thousan_cuts_airborne_duration = 1300
+
+        self.special_step_back_stun_duration = 700
 
         
 
@@ -87,14 +113,14 @@ class Phantom_Assassin(Player):
         #       *refer to the Player's existing variables, or create one if not enough
         #   - [0] = damage, [1] = final damage (applies at last frame)
         self.base_damage = {
-            'atk1dmg': (12, 0), # 12
+            'atk1dmg': (self.void_slash_damage, 0), # 12
             'atk2dmg': (14, 5), # 19
-            'atk3dmg': (20, 5), # [1] is 2x dmg (30 dmg)
+            'atk3dmg': (20, 5), # 25
             'atk4dmg': (40, 0), #
 
-            'atk5dmg': (9, 0), # 12 + 9 = 21 
+            'atk5dmg': (self.void_slash_damage * self.secondary_void_slash_damage_multiplier, 0), # 12 * 0.7(8.4) = 20.4
             'atk6dmg': (15, 10), # 25
-            'atk7dmg': (25, 5), # 35
+            'atk7dmg': (25, 5), # 30
             'atk8dmg': (45, 0), # 
 
             # For projectile damage
@@ -364,6 +390,18 @@ class Phantom_Assassin(Player):
         # modify the index on which skill has lowest mana cost
         self.lowest_mana_cost = self.mana_cost_list[0]
 
+        self.void_slash_frame_duration, self.void_slash_repeat_animation = self.skill_duration(
+                        set_mode = ('seconds', 500),
+                        frame_count = self.count_atk_frames(self.atk1),
+                        repeat_animation=1,
+                        frame_divisor=1,
+                        set_max_frame_duration=100
+        )
+
+        self.void_slash_hitbox_size = self.calculate_hitbox_size(self.atk1, self.void_slash_hitbox_size_modifier)
+        self.void_slash_distance = self.calculate_attack_range(self.void_slash_cast_range, self.void_slash_hitbox_size, self.void_slash_speed, self.attack_frames['atk1frames'], self.void_slash_frame_duration)
+
+        
         # apply Attacks class (responsible for all skills)
         # --------------- Basic Skills ---------------
         self.attacks = [
@@ -374,18 +412,22 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.mana_cost_list[0],
-                cooldown = self.atk1_cooldown,
-                skill_name="Void Slash",
-                skill_stats="- Damage:12@- Mana Cost:40",
-                skill_desc="Damages enemies hit in vicinity.@- Distance: Short"
+                cooldown = self.atk1_cooldown, damage=[self.base_damage['atk1dmg'][0], self.base_damage['atk1dmg'][1]],
+                skill_name='Void Slash',
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Distance': [f'{self.void_slash_distance}' + ' units', 'green']},
+                skill_desc='Slashes through fabric space, damages@enemies hit in its vicinity.'
             ),
+            
             Attacks(
                 skill_rect = self.skill_2_rect,
                 skill_img = skill_2_icon,
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.mana_cost_list[1],
-                cooldown = self.atk2_cooldown
+                cooldown = self.atk2_cooldown, damage=[self.base_damage['atk2dmg'][0], self.base_damage['atk2dmg'][1]],
+                skill_name='Step Back',
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.step_back_max_distance}' + ' units', 'green']},
+                skill_desc=f'Counters opening from behind, sliding@backwards to slash the enemy off guard@- Stun duration: {(self.step_back_stun_duration)/1000:.1f}'
             ),
             Attacks(
                 skill_rect = self.skill_3_rect,
@@ -393,7 +435,10 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.mana_cost_list[2],
-                cooldown = self.atk3_cooldown
+                cooldown = self.atk3_cooldown, damage=[self.base_damage['atk3dmg'][0], self.base_damage['atk3dmg'][1]],
+                skill_name='Iaido Casuality',
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.iaido_max_distance}' + ' units', 'green']},
+                skill_desc=f'Warps reality on cast, slashes through@the enemy. After a short delay, the@damage is then dealt.@- Stun duration: {(self.iaido_stun_duration + self.iaido_delay)/1000:.1f}'
             ),
             Attacks(
                 skill_rect = self.skill_4_rect,
@@ -401,26 +446,23 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.mana_cost_list[3],
-                cooldown = self.atk4_cooldown
+                cooldown = self.atk4_cooldown, damage=[self.base_damage['atk4dmg'][0], self.base_damage['atk4dmg'][1]],
+                skill_name='Thousand Cuts',
+                skill_stats={'Lv': [1, 'blueviolet'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.thousand_cuts_max_distance}' + ' units', 'green']},
+                skill_desc=f'Delivers consecutive slashes on an area,@affected enemies are damaged@ and unable to move.@- Airborne duration: {(self.thousan_cuts_airborne_duration)/1000:.1f}'
             ),
             # Basic Attack (icon can be changed)
             Attacks(
-                mana_cost=0,
-                cooldown=self.basic_attack_cooldown,
-                mana=self.mana,
-                # ----------------------
-                skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon,   
+                mana_cost=0, cooldown=self.basic_attack_cooldown, mana=self.mana,
+                skill_rect=self.basic_icon_rect, skill_img=self.basic_icon,   
+                skill_name='Basic Attack', skill_stats={'Type': ['Melee', 'white']} 
             ),
             # Special Skill
             Attacks(
-                skill_rect=self.special_rect,
-                skill_img=special_icon,
-                mana=0,
-                mana_cost=0,
-                special_skill=True,
-                # ----------------------
-                cooldown=DEFAULT_SPECIAL_SKILL_COOLDOWN,
+                skill_rect=self.special_rect, skill_img=special_icon, mana=0, mana_cost=0, special_skill=True, cooldown=DEFAULT_SPECIAL_SKILL_COOLDOWN,
+                skill_name='Activate Special',
+                skill_stats={'Type': ['Special', 'white'], 'Attack Increase': [f'{round((DEFAULT_BASIC_ATK_DMG_BONUS-1)*100,1)}%', 'green'], 'Move Speed': ['+ 10%', 'green'], 'Duration': ['30', 'white']},
+                skill_desc='Provides unique buffs and abilities to hero.'
             )
         ]
      
@@ -437,7 +479,10 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.special_mana_cost_list[0],
-                cooldown = self.special_atk1_cooldown
+                cooldown = self.special_atk1_cooldown, damage=[self.base_damage['atk1dmg'][0] + self.base_damage['atk5dmg'][0], self.base_damage['atk1dmg'][1] + self.base_damage['atk5dmg'][1]],
+                skill_name='Void Slash',
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Distance': [f'{self.void_slash_distance}' + ' units', 'green']},
+                skill_desc=f'Slashes through fabric space, damages@enemies hit in its vicinity. Secondary@slash at {self.secondary_void_slash_raw_delay/1000}s after the first slash.@- Secondary slash damage: {self.secondary_void_slash_damage_multiplier}%@- Secondary slash speed: {round(self.secondary_void_slash_speed_multiplier*100, 2)}%'
             ),
             Attacks(
                 skill_rect = self.special_skill_2_rect,
@@ -445,7 +490,10 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.special_mana_cost_list[1],
-                cooldown = self.special_atk2_cooldown
+                cooldown = self.special_atk2_cooldown, damage=[self.base_damage['atk6dmg'][0], self.base_damage['atk6dmg'][1]],
+                skill_name='Step Back',
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.step_back_max_distance}' + ' units', 'green']},
+                skill_desc=f'Counters opening from behind, sliding@backwards to slash the enemy off guard.@Knocks the enemy in opposite direction.@- Stun duration: {(self.special_step_back_stun_duration)/1000:.1f}'
             ),
             Attacks(
                 skill_rect = self.special_skill_3_rect,
@@ -453,7 +501,10 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.special_mana_cost_list[2],
-                cooldown = self.special_atk3_cooldown
+                cooldown = self.special_atk3_cooldown, damage=[self.base_damage['atk7dmg'][0], self.base_damage['atk7dmg'][1]],
+                skill_name='Iaijutsu',
+                skill_stats={'Lv': [1, 'magenta'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.iaido_max_distance}' + ' units', 'green']},
+                skill_desc=f'Warps reality on cast, slashes through@the enemy. After a short delay, the@damage is then dealt.@- Stun duration: {(self.iaido_stun_duration + self.iaido_delay)/1000:.1f}'
             ),
             Attacks(
                 skill_rect = self.special_skill_4_rect,
@@ -461,16 +512,16 @@ class Phantom_Assassin(Player):
                 mana = self.mana,
                 # ----------------------
                 mana_cost = self.special_mana_cost_list[3],
-                cooldown = self.special_atk4_cooldown
+                cooldown = self.special_atk4_cooldown, damage=[self.base_damage['atk8dmg'][0], self.base_damage['atk8dmg'][1]],
+                skill_name='Thousand Cuts',
+                skill_stats={'Lv': [2, 'magenta'], 'Damage': [0 , 'red'], 'Dash max distance': [f'{self.thousand_cuts_max_distance}' + ' units', 'green']},
+                skill_desc=f'Delivers consecutive slashes on an area,@affected enemies are damaged@ and unable to move.@- Airborne duration: {(self.thousan_cuts_airborne_duration)/1000:.1f}'
             ),
             # Basic Attack (icon can be changed)
             Attacks(
-                mana_cost=0,
-                cooldown=self.basic_attack_cooldown,
-                mana=self.mana,
-                # ----------------------
-                skill_rect=self.basic_icon_rect,
-                skill_img=self.basic_icon,   
+                mana_cost=0, cooldown=self.basic_attack_cooldown, mana=self.mana,
+                skill_rect=self.basic_icon_rect, skill_img=self.basic_icon,   
+                skill_name='Basic Attack', skill_stats={'Type': ['Melee', 'white']}
             )
         ]
 
@@ -547,20 +598,20 @@ class Phantom_Assassin(Player):
             if self.is_in_basic_mode() and not self.is_jumping():
                 if self.is_skill_ready(self.attacks, 0):
                     
-                    frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 500),
-                        frame_count = self.count_atk_frames(self.atk1),
-                        repeat_animation=1,
-                        frame_divisor=1,
-                        set_max_frame_duration=100
-                    )
+                    # frame_duration, repeat_animation = self.skill_duration(
+                    #     set_mode = ('seconds', 500),
+                    #     frame_count = self.count_atk_frames(self.atk1),
+                    #     repeat_animation=1,
+                    #     frame_divisor=1,
+                    #     set_max_frame_duration=100
+                    # )
                     attack_display.add(Attack_Display(
-                        x=self.attack_position(self.rect, 'x', 30, True),
+                        x=self.attack_position(self.rect, 'x', self.void_slash_cast_range, True),
                         y=self.attack_position(self.rect, 'y', -3, False),
                         frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
-                        frame_duration=frame_duration,
-                        repeat_animation=repeat_animation,
-                        speed=10 if self.facing_right else -10  ,
+                        frame_duration=self.void_slash_frame_duration,
+                        repeat_animation=self.void_slash_repeat_animation,
+                        speed=self.void_slash_speed if self.facing_right else -self.void_slash_speed,
                         dmg=self.atk1_damage[0],
                         final_dmg=self.atk1_damage[1],
                         who_attacks=self,
@@ -584,20 +635,20 @@ class Phantom_Assassin(Player):
 
             elif self.is_in_special_mode() and not self.is_jumping():
                 if self.is_skill_ready(self.attacks_special, 0):
-                    frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 500),
-                        frame_count = self.count_atk_frames(self.atk1),
-                        repeat_animation=1,
-                        frame_divisor=1,
-                        set_max_frame_duration=100
-                    )
-                    for i in [(500, 10, self.atk1_damage[0]), (1000, 5, self.sp_atk1_damage[0])]:
+                    # frame_duration, repeat_animation = self.skill_duration(
+                    #     set_mode = ('seconds', 500),
+                    #     frame_count = self.count_atk_frames(self.atk1),
+                    #     repeat_animation=1,
+                    #     frame_divisor=1,
+                    #     set_max_frame_duration=100
+                    # )
+                    for i in [(self.void_slash_delay, self.void_slash_speed, self.atk1_damage[0]), (self.secondary_void_slash_delay, self.void_slash_speed * self.secondary_void_slash_speed_multiplier, self.sp_atk1_damage[0])]:
                         attack_display.add(Attack_Display(
-                            x=self.attack_position(self.rect, 'x', 30, True),
+                            x=self.attack_position(self.rect, 'x', self.void_slash_cast_range, True),
                             y=self.attack_position(self.rect, 'y', -3, False),
                             frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
-                            frame_duration=frame_duration,
-                            repeat_animation=repeat_animation,
+                            frame_duration=self.void_slash_frame_duration,
+                            repeat_animation=self.void_slash_repeat_animation,
                             speed=i[1] if self.facing_right else -i[1],
                             dmg=i[2],
                             final_dmg=self.sp_atk1_damage[1],
@@ -639,7 +690,7 @@ class Phantom_Assassin(Player):
                 if self.is_skill_ready(self.attacks, 1):
                     
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 1000),
+                        set_mode = ('seconds', self.step_back_stun_duration),
                         frame_count = self.count_atk_frames(self.atk6),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -659,7 +710,7 @@ class Phantom_Assassin(Player):
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(False, 0),
+                        delay=(False, 500),
                         sound=(True, self.sound2, None, None),
                         follow=(False,True),
                         follow_self=True,
@@ -683,7 +734,7 @@ class Phantom_Assassin(Player):
                                 'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound2, None, None),
-                                'delay': (False, 500),
+                                'delay': (False, 0),
                                 'stop_movement': (True, 1, 2),
                                 'follow': (False, True),
                                 'follow_offset': (0, 20),
@@ -705,7 +756,7 @@ class Phantom_Assassin(Player):
             elif self.is_in_special_mode() and not self.is_jumping():
                 if self.is_skill_ready(self.attacks_special, 1):
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 700),
+                        set_mode = ('seconds', self.special_step_back_stun_duration),
                         frame_count = self.count_atk_frames(self.atk7),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -725,7 +776,7 @@ class Phantom_Assassin(Player):
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(False, 0),
+                        delay=(False, 500),
                         sound=(True, self.sound2, None, None),
                         follow=(False,True),
                         follow_self=True,
@@ -750,7 +801,7 @@ class Phantom_Assassin(Player):
                                 'moving': True,
                                 'continuous_dmg': True,
                                 'sound': (True, self.sound2, None, None),
-                                'delay': (False, 200),
+                                'delay': (False, 0),
                                 'stop_movement': (True, 1, 2),
                                 # 'follow': (False, True),
                                 'stun':(True, 10),
@@ -793,7 +844,7 @@ class Phantom_Assassin(Player):
             if self.is_in_basic_mode() and not self.is_jumping():
                 if self.is_skill_ready(self.attacks, 2):
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 1300),
+                        set_mode = ('seconds', self.iaido_stun_duration),
                         frame_count = self.count_atk_frames(self.atk2),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -812,7 +863,7 @@ class Phantom_Assassin(Player):
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(True, 500),
+                        delay=(True, self.iaido_delay),
                         sound=(True, self.sound3, None, None),
 
 
@@ -838,12 +889,12 @@ class Phantom_Assassin(Player):
                         frame_duration=50,
                         repeat_animation=20,
                         speed=0,
-                        dmg=self.atk3_damage[1],
+                        dmg=0,
                         final_dmg=0,
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(True, 500),
+                        delay=(True, self.iaido_delay),
                         sound=(True, self.sound3, None, None),
                         follow=(False,True),
                         follow_self=True,
@@ -862,12 +913,12 @@ class Phantom_Assassin(Player):
                                 'repeat_animation': repeat_animation,
                                 'speed': 0,
                                 'dmg': self.atk3_damage[0],
-                                'final_dmg': self.atk3_damage[1], # also used by blank frame
+                                'final_dmg': self.atk3_damage[1],
                                 'who_attacks': self,
                                 'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound3, None, None),
-                                'delay': (True, 500),
+                                'delay': (True, self.iaido_delay),
                                 'stop_movement': (True, 1, 2),
                                 'follow': (False, True),
                                 'follow_offset': (0, 20),
@@ -888,7 +939,7 @@ class Phantom_Assassin(Player):
             elif self.is_in_special_mode() and not self.is_jumping():
                 if self.is_skill_ready(self.attacks_special, 2):
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 1300),
+                        set_mode = ('seconds', self.iaido_stun_duration),
                         frame_count = self.count_atk_frames(self.atk2),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -907,7 +958,7 @@ class Phantom_Assassin(Player):
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(True, 500),
+                        delay=(True, self.iaido_delay),
                         sound=(True, self.sound3, None, None),
 
 
@@ -933,12 +984,12 @@ class Phantom_Assassin(Player):
                         frame_duration=50,
                         repeat_animation=20,
                         speed=0,
-                        dmg=self.sp_atk3_damage[1],
+                        dmg=0,
                         final_dmg=0,
                         who_attacks=self,
                         who_attacked=self.enemy,
                         moving=True,
-                        delay=(True, 500),
+                        delay=(True, self.iaido_delay),
                         sound=(True, self.sound3, None, None),
                         follow=(False,True),
                         follow_self=True,
@@ -957,12 +1008,12 @@ class Phantom_Assassin(Player):
                                 'repeat_animation': repeat_animation,
                                 'speed': 0,
                                 'dmg': self.sp_atk3_damage[0],
-                                'final_dmg': self.sp_atk3_damage[1], # also used by blank frame
+                                'final_dmg': self.sp_atk3_damage[1],
                                 'who_attacks': self,
                                 'who_attacked': self.enemy,
                                 'moving': False,
                                 'sound': (True, self.sound3, None, None),
-                                'delay': (True, 500),
+                                'delay': (True, self.iaido_delay),
                                 'stop_movement': (True, 1, 2),
                                 'follow': (False, True),
                                 'follow_offset': (0, 20),
@@ -1003,7 +1054,7 @@ class Phantom_Assassin(Player):
                 if self.is_skill_ready(self.attacks, 3):
                     
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 1300),
+                        set_mode = ('seconds', self.thousan_cuts_airborne_duration),
                         frame_count = self.count_atk_frames(self.atk4),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -1015,7 +1066,7 @@ class Phantom_Assassin(Player):
                         y=self.attack_position(self.rect, 'y', -70, False),
                         frames=self.attack_frame_count(self.atk4, self.atk4_flipped),
                         frame_duration=frame_duration,
-                        repeat_animation=repeat_animation,
+                        repeat_animation=1,
                         speed=0,
                         dmg=0,
                         final_dmg=0,
@@ -1033,7 +1084,7 @@ class Phantom_Assassin(Player):
 
                     
                     frame_duration, repeat_animation = self.skill_duration(
-                        set_mode = ('seconds', 1300),
+                        set_mode = ('seconds', self.thousan_cuts_airborne_duration),
                         frame_count = self.count_atk_frames(self.atk5),
                         repeat_animation=1,
                         frame_divisor=1,
@@ -1085,7 +1136,7 @@ class Phantom_Assassin(Player):
                         y=self.attack_position(self.rect, 'y', -70, False),
                         frames=self.attack_frame_count(self.atk4, self.atk4_flipped),
                         frame_duration=frame_duration,
-                        repeat_animation=repeat_animation,
+                        repeat_animation=1,
                         speed=0,
                         dmg=0,
                         final_dmg=0,
@@ -1247,14 +1298,14 @@ class Phantom_Assassin(Player):
         elif self.attacking1:
             self.atk1_animation()
         elif self.attacking2:
-            self.trigger_dash('attacking2', speed=-7, max_distance=200, delay=100)
+            self.trigger_dash('attacking2', speed=-self.step_back_speed, max_distance=self.step_back_max_distance, delay=100)
             self.atk2_animation()
         elif self.attacking3:
-            self.trigger_dash('attacking3', speed=30, max_distance=300, delay=500)
+            self.trigger_dash('attacking3', speed=self.iaido_speed, max_distance=self.iaido_max_distance, delay=500)
             self.atk3_animation()
         elif self.sp_attacking:
             self.y_velocity = -2.5
-            self.trigger_dash('sp_attacking', speed=50, max_distance=500, delay=500)
+            self.trigger_dash('sp_attacking', speed=self.thousan_cuts_speed, max_distance=self.thousand_cuts_max_distance, delay=500)
 
             self.sp_animation()
         elif self.basic_attacking:

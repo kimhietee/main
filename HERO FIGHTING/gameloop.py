@@ -1493,7 +1493,7 @@ def menu():
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
         # Animate_BG.Sword_campaign.display(screen, speed=50)
-        create_bordered_title('Maine Menu', font, default_size, main.height * 0.2, x_real_offset=260)
+        create_title('Menu', font, default_size, main.height * 0.2, x_real_offset=260)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
 
@@ -2914,11 +2914,12 @@ def main_menu():
         main.clock.tick(main.FPS)
 
 def reset_all():
-    global fade_alpha, fading, fade_start_time, battle_result_recorded
+    global fade_alpha, fading, fade_start_time, battle_result_recorded, winner
     global_vars.PAUSED = False
     global_vars.PAUSED_TOTAL_DURATION = 0
     global_vars.PAUSED_START = None
     battle_result_recorded = False  # Reset win tracking for new game
+    winner = None  # Reset winner for new game
     # reset hero states
     heroes_to_reset = [x for x in main.hero1_group] + [x for x in main.hero2_group]
     if hasattr(main, 'hero3') and main.hero3 is not None:
@@ -3144,7 +3145,7 @@ def settings(in_game=False):
     smooth_bg_button = RectButton(width * 0.28, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Smooth Background")
     show_distance_button = RectButton(width * 0.46, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Distance")
     show_hitbox_button = RectButton(width * 0.64, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Hitbox")
-    show_grid_button = RectButton(width * 0.82, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (don't)")
+    # show_grid_button = RectButton(width * 0.82, bottom_y, r'assets\font\slkscr.ttf', int(height * 0.025), (0, 255, 0), "Show Grid (don't)")
 
     while True:
         keys = pygame.key.get_pressed()
@@ -3194,8 +3195,8 @@ def settings(in_game=False):
                 if show_hitbox_button.is_clicked(event.pos):
                     global_vars.SHOW_HITBOX = show_hitbox_button.toggle(global_vars.SHOW_HITBOX)
 
-                if show_grid_button.is_clicked(event.pos):
-                    global_vars.SHOW_GRID = show_grid_button.toggle(global_vars.SHOW_GRID)
+                # if show_grid_button.is_clicked(event.pos):
+                #     global_vars.SHOW_GRID = show_grid_button.toggle(global_vars.SHOW_GRID)
 
                 if show_health_bar.is_clicked(event.pos):
                     global_vars.SHOW_MINI_HEALTH_BAR = show_health_bar.toggle(global_vars.SHOW_MINI_HEALTH_BAR)
@@ -3267,7 +3268,7 @@ def settings(in_game=False):
         smooth_bg_button.update(mouse_pos, global_vars.SMOOTH_BG)
         show_distance_button.update(mouse_pos, global_vars.DRAW_DISTANCE)
         show_hitbox_button.update(mouse_pos, global_vars.SHOW_HITBOX)
-        show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
+        # show_grid_button.update(mouse_pos, global_vars.SHOW_GRID)
 
         # Draw all buttons
         show_health_bar.draw(screen, global_vars.TEXT_ANTI_ALIASING)
@@ -3278,7 +3279,7 @@ def settings(in_game=False):
         smooth_bg_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         show_distance_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
         show_hitbox_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
-        show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        # show_grid_button.draw(screen, global_vars.TEXT_ANTI_ALIASING)
 
         menu_button.draw(screen, mouse_pos)
 

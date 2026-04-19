@@ -49,7 +49,7 @@ random_item_pick_p2 = False
 
 MAIN_VOLUME = 0.01
 TEXT_ANTI_ALIASING = False
-SMOOTH_BG = False
+SMOOTH_BG = True
 MAX_ITEM = 4
 # MAX DEFAULT ITEM = 4
 x_gap = width * 0.078125

@@ -12,8 +12,8 @@ clock = pygame.time.Clock()
 # screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 
-screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
-# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
+# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
+screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
 
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
@@ -57,7 +57,7 @@ item_equip_hashmap = [(x*x_gap)-21 for x in range(2,MAX_ITEM+2)]
 
 
 hitboxanddistance = False
-show_bot_skills = True
+show_bot_skills = False
 show_bot_stats = True
 
 SINGLE_MODE_ACTIVE = False # constant
@@ -66,7 +66,7 @@ SHOW_HITBOX = hitboxanddistance
 DRAW_DISTANCE = hitboxanddistance
 SHOW_GRID = False
 
-HITBOX_EXCLUDE_LIST = ["Phantom_Assassin"]
+HITBOX_EXCLUDE_LIST = ["Phantom_Assassin"] # idk what is this???
 
 # Pause tracking (used so UI/cooldowns stop while game is paused)
 PAUSED = False
@@ -87,6 +87,7 @@ TOTAL_WIDTH = width
 DISABLE_HEAL_REGEN = False
 DISABLE_MANA_REGEN = False
 
+# Outdated!!
 DEFAULT_HEALTH_REGENERATION = 1.2 # 1.2/s (0.02)
 DEFAULT_MANA_REGENERATION = 6.0 # 6.0/s (0.1)
 

@@ -94,7 +94,7 @@ class Leaderboard:
         panel_top = y
 
         # Vertical layout inside the panel
-        title_y = panel_top + 25
+        title_y = panel_top + 30
         header_y = panel_top + 65
         row_start_y = header_y + 35
         row_height = 45
@@ -130,6 +130,8 @@ class Leaderboard:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
+            # print(x, y)
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -210,13 +212,13 @@ class Leaderboard:
                 # Top 3 medal borders
                 if idx == 0:
                     rank_color = (255, 215, 0)
-                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                    # pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
                 elif idx == 1:
                     rank_color = (192, 192, 192)
-                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                    # pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
                 elif idx == 2:
                     rank_color = (205, 127, 50)
-                    pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
+                    # pygame.draw.rect(screen, rank_color, row_rect, 2, border_radius=6)
                 else:
                     rank_color = (220, 220, 220)
 
@@ -264,13 +266,13 @@ class Leaderboard:
 
         # Sort indicator and helper text
         sort_y = button_y + 50
-        sort_indicator = self.font_helper.render(f"Sorting: {self.sort_mode.upper()} ({self.sort_order.upper()})", True, (180, 220, 100))
-        screen.blit(sort_indicator, (panel_left + 15, sort_y))
+        # sort_indicator = self.font_helper.render(f"Sorting: {self.sort_mode.upper()} ({self.sort_order.upper()})", True, (180, 220, 100))
+        # screen.blit(sort_indicator, (panel_left + 15, sort_y))
 
-        info_text = f"[W] Wins  [G] Games  [^] Asc  [v] Desc"
-        info = self.font_helper.render(info_text, True, (200, 200, 150))
-        info_rect = info.get_rect(center=(panel_left + self.LEADERBOARD_WIDTH // 2, sort_y + 23))
-        screen.blit(info, info_rect)
+        # info_text = f"[W] Wins  [G] Games  [^] Asc  [v] Desc"
+        # info = self.font_helper.render(info_text, True, (200, 200, 150))
+        # info_rect = info.get_rect(center=(panel_left + self.LEADERBOARD_WIDTH // 2, sort_y + 23))
+        # screen.blit(info, info_rect)
 
         # Page indicator
         page_y = panel_top + self.LEADERBOARD_HEIGHT - 28
@@ -435,7 +437,7 @@ central_offset = 270
 # menu()
 campaign_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0] + central_offset, center_pos[1]-100),
+    pos=(center_pos[0], center_pos[1]-60),
     scale=scale,
     text='Campaign',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -448,7 +450,7 @@ campaign_button = ImageButton(
 #_____ for campaign
 coming_soon_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0] + central_offset, center_pos[1]-100),
+    pos=(center_pos[0], center_pos[1]-60),
     scale=scale*0.95,
     text='Coming Soon',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -462,7 +464,7 @@ coming_soon_button = ImageButton(
 
 single_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0] + central_offset, center_pos[1]-50),
+    pos=(center_pos[0], center_pos[1]),
     scale=scale,
     text='Single Player',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -473,7 +475,7 @@ single_button = ImageButton(
 
 multiplayer_button = ImageButton(
     image_path=text_box_img,
-    pos=(center_pos[0] + central_offset, center_pos[1]),
+    pos=(center_pos[0], center_pos[1]+60),
     scale=scale,
     text='Multiplayer',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -488,7 +490,7 @@ multiplayer_button = ImageButton(
 # Login Button from menu page
 login_button = ImageButton(
     image_path=text_box_img,
-    pos=(width - 100, height - 100),
+    pos=(width - 100, height - 50),
     scale=0.8,
     text='LOGIN',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -498,7 +500,7 @@ login_button = ImageButton(
 )
 control_button = ImageButton(
     image_path=text_box_img,
-    pos=(width - 300, height - 50),
+    pos=(300, height - 50),
     scale=scale*0.8,
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -509,7 +511,7 @@ control_button = ImageButton(
 
 settings_button = ImageButton(
     image_path=text_box_img,
-    pos=(width - 100, height - 50),
+    pos=(100, height - 50),
     scale=scale*0.8,
     text='Settings',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
@@ -539,16 +541,16 @@ settings_button = ImageButton(
 
 
 
-# leaderboard_button = ImageButton(
-#     image_path=text_box_img,
-#     pos=(100, height - 100),
-#     scale=scale * 0.8,
-#     text='LEADERBOARD',
-#     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-#     font_size=font_size,  # dynamic size ~29 at 720p
-#     text_color='white',
-#     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-# )
+leaderboard_button = ImageButton(
+    image_path=text_box_img,
+    pos=(width - 300, height - 50),
+    scale=scale * 0.8,
+    text='LEADERBOARD',
+    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_size=font_size,  # dynamic size ~29 at 720p
+    text_color='white',
+    text_anti_alias=global_vars.TEXT_ANTI_ALIASING
+)
 
 # info_button = ImageButton(
 #     image_path=text_box_img,
@@ -861,6 +863,7 @@ def game(bg=None):
     disable_debug = True
     while True:
         # print(main.hero1.mana)
+        
             
         
         keys = pygame.key.get_pressed()
@@ -1177,7 +1180,60 @@ def game(bg=None):
         main.clock.tick(main.FPS)
         # xaxa.tick(10000)
 
-            
+
+
+def leaderboard():
+
+    leaderboard_ui = Leaderboard()
+    load_sword_login_bg = False
+    
+    # leaderboard_ui.update()
+    while True:
+        events = pygame.event.get()
+
+        keys = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_press = pygame.mouse.get_pressed()
+        key_press = pygame.key.get_pressed()
+
+        current_time = pygame.time.get_ticks()
+        for event in events:
+            if event.type == main.pygame.QUIT:
+                main.pygame.quit()
+                exit()
+
+            if keys[pygame.K_ESCAPE]:
+                menu()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    menu() 
+                    return
+
+
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
+
+
+        leaderboard_ui.update(
+            screen=main.screen,
+            x=width // 2 + 100,
+            y=75,
+            # x=mouse_pos[0],
+            # y=mouse_pos[1],
+            mouse_pos=mouse_pos,
+            mouse_press=mouse_press,
+            events=events
+        )
+
+
+
+
+        main.pygame.display.update()
+        main.clock.tick(main.FPS)
+
 def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound):
     """
     Handles the logic for a single cube.
@@ -1414,7 +1470,6 @@ def menu():
     font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
-    leaderboard_ui = Leaderboard()
 
     while True:
         events = pygame.event.get()
@@ -1436,6 +1491,11 @@ def menu():
                 if single_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
+                    return
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    main_menu()
                     return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -1474,9 +1534,9 @@ def menu():
                     # campaign()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
-                # if leaderboard_button.is_clicked(event.pos):
-                    # fade(Animate_BG.waterfall_day_bg.frames[0], leaderboard, 300, True)      
+                # pass
+                if leaderboard_button.is_clicked(event.pos):
+                    fade(Animate_BG.waterfall_day_bg.frames[0], leaderboard, 300, True)      
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
@@ -1493,7 +1553,7 @@ def menu():
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
         # Animate_BG.Sword_campaign.display(screen, speed=50)
-        create_title('Menu', font, default_size, main.height * 0.2, x_real_offset=260)
+        create_bordered_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
 
@@ -1502,7 +1562,9 @@ def menu():
 
         settings_button.draw(main.screen,mouse_pos)
         login_button.draw(main.screen, mouse_pos)
-        # leaderboard_button.draw(main.screen, mouse_pos)
+        leaderboard_button.draw(main.screen, mouse_pos)
+
+        menu_button.draw(main.screen, mouse_pos)
         
 
         if campaign_button.is_hovered(mouse_pos):
@@ -1511,16 +1573,16 @@ def menu():
             campaign_button.draw(main.screen, mouse_pos)
 
 
-        result = leaderboard_ui.update(
-                            screen=main.screen,
-                            x=50,
-                            y=75,
-                            # x=mouse_pos[0],
-                            # y=mouse_pos[1],
-                            mouse_pos=mouse_pos,
-                            mouse_press=mouse_press,
-                            events=events
-                        )
+        # result = leaderboard_ui.update(
+        #                     screen=main.screen,
+        #                     x=50,
+        #                     y=75,
+        #                     # x=mouse_pos[0],
+        #                     # y=mouse_pos[1],
+        #                     mouse_pos=mouse_pos,
+        #                     mouse_press=mouse_press,
+        #                     events=events
+        #                 )
 
 
         

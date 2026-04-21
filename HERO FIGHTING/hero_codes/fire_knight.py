@@ -958,6 +958,9 @@ class Fire_Knight(Player):
                         self.attacking1 = True
                         self.player_atk1_index = 0
                         self.player_atk1_index_flipped = 0
+
+                        self.basic_attacking = True
+
  
                         # print("Attack executed")
                     else:

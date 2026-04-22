@@ -2211,7 +2211,7 @@ class EquippedItem:
         if indexed < MAX_ITEM:
             self.item.append(item)
 
-    def populate_random_items(self, max_items=MAX_ITEM):
+    def populate_random_items(self, max_items=MAX_ITEM, ):
         """
         Randomly equip items from the available items list.
         This method randomly selects and equips items up to max_items count.
@@ -2221,9 +2221,13 @@ class EquippedItem:
         """
         if not self.items_list or len(self.items_list) == 0:
             return
+
+        for item in self.items_list:
+            item.selected = False
+        self.item.clear()
         
         # Randomly select how many items to equip (1 to max_items)
-        num_items_to_equip = max_items
+        num_items_to_equip = min(max_items, len(self.items_list))
         
         # Randomly select items from the available items list
         selected_items = random.sample(self.items_list, num_items_to_equip)
@@ -3328,12 +3332,7 @@ def player_selection():
                     # hero1.enemy.append(hero3)
                     # hero3.player = hero2
 
-                    # === AUTO-EQUIP RANDOM ITEMS IF TOGGLE IS ON ===
-                    if global_vars.random_item_pick_p1:
-                        equipped_items.populate_random_items(MAX_ITEM)
                     
-                    if global_vars.random_item_pick_p2:
-                        equipped_items_p2.populate_random_items(MAX_ITEM)
 
                     for item in equipped_items.item:
                         # if item.is_selected():
@@ -3347,6 +3346,13 @@ def player_selection():
                                 if global_vars.toggle_hero3:
                                     hero3.items.append(item.get_associated())
 
+
+                    # === AUTO-EQUIP RANDOM ITEMS IF TOGGLE IS ON ===
+                    if global_vars.random_item_pick_p1:
+                        equipped_items.populate_random_items(MAX_ITEM)
+                    
+                    if global_vars.random_item_pick_p2:
+                        equipped_items_p2.populate_random_items(MAX_ITEM)
 
                     hero1_group = pygame.sprite.Group()
                     # hero1_group.add(hero3)

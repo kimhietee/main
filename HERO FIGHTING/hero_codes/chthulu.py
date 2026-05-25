@@ -60,7 +60,7 @@ class Chthulu(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 100,
         "hp_regen": 0.9,
-        "mana_regen": 4.9,
+        "mana_regen": 5.2,
         "move_speed": 1.1,
     }
     
@@ -84,7 +84,7 @@ class Chthulu(Player):
         self.agi_mult += 0.05 # 0.15
 
         self.base_health_regen = 0.9 # 1.3
-        self.base_mana_regen = 4.9 # 5.3
+        self.base_mana_regen = 5.2 # 5.6
         self.base_attack_damage = 2.5 # ? 
 
         self.base_attack_speed = 100

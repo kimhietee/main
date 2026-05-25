@@ -59,7 +59,7 @@ class Water_Princess(Player):
         "atk_spd_mod": 0.4,
         "atk_spd": 60,
         "hp_regen": 0.8,
-        "mana_regen": 6.05,
+        "mana_regen": 6.35,
         "move_speed": 2.035,
     }
     
@@ -93,7 +93,7 @@ class Water_Princess(Player):
 
         
         self.base_health_regen = 0.8 # 1.2
-        self.base_mana_regen = 6.05 # 6.53
+        self.base_mana_regen = 6.35 # 6.83
         self.base_attack_damage = 0.0 # 2.0
 
         self.base_attack_speed = 60

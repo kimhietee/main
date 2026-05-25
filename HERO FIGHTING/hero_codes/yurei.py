@@ -33,7 +33,7 @@ class Yurei(Player):
         "atk_spd_mod": 0.55,
         "atk_spd": 100,
         "hp_regen": 0.75,
-        "mana_regen": 5.5,
+        "mana_regen": 5.7,
         "move_speed": 2.31,
     }
     
@@ -50,7 +50,7 @@ class Yurei(Player):
         self.agility = 37
         
         self.base_health_regen = 0.75 # 1.11
-        self.base_mana_regen = 5.5 # 5.9
+        self.base_mana_regen = 5.7 # 6.1
         self.base_attack_damage = 0.5 # 3.8
 
         self.base_attack_speed = 100

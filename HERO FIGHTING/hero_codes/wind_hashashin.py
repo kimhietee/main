@@ -83,7 +83,7 @@ class Wind_Hashashin(Player):
         "atk_spd_mod": 0.6,
         "atk_spd": 105,
         "hp_regen": 0.82,
-        "mana_regen": 5.1,
+        "mana_regen": 5.5,
         "move_speed": 2.64,
     }
     
@@ -104,7 +104,7 @@ class Wind_Hashashin(Player):
 
 
         self.base_health_regen = 0.82 # 1.23
-        self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
+        self.base_mana_regen = 5.5 # 5.5 + 0.4 = 5.9
         self.base_attack_damage = 0.0 # 4.8
 
         self.base_attack_speed = 105

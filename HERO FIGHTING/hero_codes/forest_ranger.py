@@ -90,7 +90,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         "atk_spd_mod": 1.1,
         "atk_spd": 100,
         "hp_regen": 0.8,
-        "mana_regen": 5.0,
+        "mana_regen": 5.2,
         "move_speed": 2.53,
     }
     
@@ -111,7 +111,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.agility = 30 # = 35
 
         self.base_health_regen = 0.8 # 1.12
-        self.base_mana_regen = 5.0 # 5.92
+        self.base_mana_regen = 5.2 # 6.12
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100

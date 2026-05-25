@@ -89,7 +89,7 @@ class Fire_Knight(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 60,
         "hp_regen": 0.85,
-        "mana_regen": 4.85,
+        "mana_regen": 5.05,
         "move_speed": 1.76,
     }
     
@@ -108,7 +108,7 @@ class Fire_Knight(Player):
         self.agility = 33 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
         self.base_health_regen = 0.85 # 1.22 + 15%
-        self.base_mana_regen = 4.85 # 5.21
+        self.base_mana_regen = 5.05 # 5.41
         self.base_attack_damage = 3.4 # 6.7
 
         self.base_attack_speed = 60

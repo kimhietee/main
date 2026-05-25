@@ -23,7 +23,7 @@ class Fire_Wizard(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 100,
         "hp_regen": 0.8,
-        "mana_regen": 5.3,
+        "mana_regen": 5.45,
         "move_speed": 2.2,
     }
     
@@ -45,7 +45,7 @@ class Fire_Wizard(Player):
         self.agility = 26 # real agility = 27
         
         self.base_health_regen = 0.8
-        self.base_mana_regen = 5.3
+        self.base_mana_regen = 5.45
         self.base_attack_damage = 0.1
 
         self.base_attack_speed = 100

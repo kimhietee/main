@@ -50,7 +50,7 @@ class Phantom_Assassin(Player):
         self.agility = 30
 
         self.base_health_regen = 0.8
-        self.base_mana_regen = 5.5
+        self.base_mana_regen = 5.7
         self.base_attack_damage = 0.3
 
         self.base_attack_speed = 110

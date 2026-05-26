@@ -235,6 +235,7 @@ import Animate_BG
 import global_vars
 
 import key
+from path_helper import resource_path
 
 # from chance import Chance
 
@@ -256,8 +257,8 @@ FONT = global_vars.get_font(30)
 cstm_pos = 0.039 #width 50
 cstm_pos2 = 0.222 #160
 cstm_pos3 = 0.291 #210
-hp_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\health icon.png').convert_alpha(), 0, 0.05)
-mana_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\mana icon.png').convert_alpha(), 0, 0.065)
+hp_icon = pygame.transform.rotozoom(pygame.image.load(resource_path('assets/icons/health icon.png')).convert_alpha(), 0, 0.05)
+mana_icon = pygame.transform.rotozoom(pygame.image.load(resource_path('assets/icons/mana icon.png')).convert_alpha(), 0, 0.065)
 hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos2)+1-20))
 mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1-20))
 hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1-20))
@@ -335,7 +336,7 @@ class Attacks:
         
         self.special_y_offset = int(self.skill_rect.height * 0.35)
 
-        self.button_icon = pygame.image.load(r'assets\icons\button.png').convert_alpha()
+        self.button_icon = pygame.image.load(resource_path('assets/icons/button.png')).convert_alpha()
 
         self.hovered = False
 
@@ -2646,7 +2647,7 @@ menu_button = ImageButton(
     pos=(60, 25),
     scale=0.9,
     text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=resource_path('assets/font/slkscr.ttf'),  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -2695,11 +2696,11 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, m
 
 
 slot = ImageButton(
-    image_path=r'assets\UI\slot.png',
+    image_path=resource_path('assets/UI/slot.png'),
     pos=(400, height - 20),
     scale=1,
     text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=resource_path('assets/font/slkscr.ttf'),  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
@@ -2774,7 +2775,7 @@ def paginating(move:bool, instant:bool = False, max_height = item_max_y):
 
 
 # from global_vars import quick_run_hero1, quick_run_hero2
-def player_selection():
+def player_selection(net_client=None):
     global map_selected
     # print('player selection opened')
     # print(global_vars.SMOOTH_BG)
@@ -2782,7 +2783,7 @@ def player_selection():
     global p1_select, p2_select, p1_items, p2_items
     # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
     background = pygame.transform.scale(
-        pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
+        pygame.image.load(resource_path('assets/backgrounds/12.png')).convert(), (width, height))
 
     font = global_vars.get_font(50)
     default_size = (((width*0.2) * DEFAULT_HEIGHT) / ((height*0.2) * DEFAULT_WIDTH))
@@ -2806,7 +2807,7 @@ def player_selection():
     # last is only 75 position for xpos4
 
     #p2
-    temp_icon = r'assets\hero profiles\temp.jpg'
+    temp_icon = resource_path('assets/hero profiles/temp.jpg')
     
     # Heroes (large icons — default size)
 
@@ -3367,13 +3368,13 @@ def player_selection():
                     # ------------------------------
                     # --- Create bots for both teams ---
                     hero1_group.add(
-                        *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, [])(None, []) for _ in range(5))
+                        *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, [])(None, []) for _ in range(0))
                     )
 
                     
 
                     hero2_group.add(
-                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, [])(None, []) for _ in range(5))
+                        *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, [])(None, []) for _ in range(0))
                     )
 
                     hero1_group.add(hero1)
@@ -3467,7 +3468,7 @@ def player_selection():
                     # print(hero2.enemy)
                     # print(hero3.enemy)
                     reset_all()
-                    fade(background, game) #lez go it worked
+                    fade(background, lambda: game(net_client=net_client)) #lez go it worked
                     # pygame.mixer.fadeout(1500)
                     
                     

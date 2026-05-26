@@ -22,6 +22,8 @@ from sprite_loader import load_attack, load_attack_flipped
 from player import Player
 import global_vars
 import pygame
+from path_helper import resource_path
+
 # Animation Counts
 # WATER_PRINCESS_BASIC_COUNT = 
 WATER_PRINCESS_JUMP_COUNT = 6
@@ -221,14 +223,14 @@ class Water_Princess(Player):
         death_ani = [r'assets\characters\Water princess\png\14_death\death_', WATER_PRINCESS_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-short.mp3') # hit water
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\water-flowing-sound-.mp3') # flowing water
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\drop splash water.mp3') # bubbles
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\water princess\ice-freezing-sequences-02-116786.mp3') #freeze
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-splash-short.mp3')) # hit water
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-flowing-sound-.mp3')) # flowing water
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/drop splash water.mp3')) # bubbles
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/ice-freezing-sequences-02-116786.mp3')) #freeze
 
-        self.sound_1 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-deep.mp3') # splash deep
-        self.sound_2 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-stream.mp3') # stream
-        self.sound_3 = pygame.mixer.Sound(r'assets\sound effects\water princess\water-splash-02-352021.mp3') # splash flowing deep
+        self.sound_1 = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-splash-deep.mp3')) # splash deep
+        self.sound_2 = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-stream.mp3')) # stream
+        self.sound_3 = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-splash-02-352021.mp3')) # splash flowing deep
 
         self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.7 * global_vars.MAIN_VOLUME)

@@ -1,3 +1,4 @@
+from path_helper import resource_path
 import pygame
 from player import Player
 from heroes import Attacks, Attack_Display, load_attack, load_attack_flipped
@@ -130,10 +131,10 @@ class Phantom_Assassin(Player):
         # Sound Effects
         #   - str [0] file path
         #   - int [1] max volume
-        sound1 = [r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3', 0.07]
-        sound2 = [r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3', 0.07]
-        sound3 = [r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3', 0.07]
-        sound4 = [r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3', 0.07]
+        sound1 = [resource_path(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3'), 0.07]
+        sound2 = [resource_path(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3'), 0.07]
+        sound3 = [resource_path(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3'), 0.07]
+        sound4 = [resource_path(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3'), 0.07]
         self.sound1 = self.load_sound(sound1[0])
         self.sound2 = self.load_sound(sound2[0])
         self.sound3 = self.load_sound(sound3[0])
@@ -144,17 +145,17 @@ class Phantom_Assassin(Player):
         #   - str [0] file path
         #   - int [1] frame count - turn it into tuple to make it column and rows
         #   - bool [2] starts at zero 
-        basic_attack_animation = [r'assets\attacks\Basic Attack\wanderer magician\basic atk\basic atk_', 5, False, 'frames']
-        jumping_animation = [r'assets\characters\Phantom Assassin\Jump.png', (1,2), False, 'spritesheet']
-        falling_animation = [r'assets\characters\Phantom Assassin\Fall.png', (1,2), False, 'spritesheet']
+        basic_attack_animation = [resource_path(r'assets\attacks\Basic Attack\wanderer magician\basic atk\basic atk_'), 5, False, 'frames']
+        jumping_animation = [resource_path(r'assets\characters\Phantom Assassin\Jump.png'), (1,2), False, 'spritesheet']
+        falling_animation = [resource_path(r'assets\characters\Phantom Assassin\Fall.png'), (1,2), False, 'spritesheet']
 
-        running_animation = [r'assets\characters\Phantom Assassin\Run.png', (1,8), False, 'spritesheet']
-        idle_animation = [r'assets\characters\Phantom Assassin\Idle.png', (1,8), False, 'spritesheet']
-        death_animation = [r'assets\characters\Phantom Assassin\Death.png', (1,6), False, 'spritesheet']
-        atk1_animation = [r'assets\characters\Phantom Assassin\Attack1.png', (1,6), False, 'spritesheet']
-        atk2_animation = [r'assets\characters\Phantom Assassin\Attack2.png', (1,6), False, 'spritesheet']
-        # atk3_animation = [r'assets\characters\Phantom Assassin\Attack3.png', (1,6), False, 'spritesheet']
-        # atk4_animation = [r'assets\characters\Phantom Assassin\Attack4.png', (1,6), False, 'spritesheet']
+        running_animation = [resource_path(r'assets\characters\Phantom Assassin\Run.png'), (1,8), False, 'spritesheet']
+        idle_animation = [resource_path(r'assets\characters\Phantom Assassin\Idle.png'), (1,8), False, 'spritesheet']
+        death_animation = [resource_path(r'assets\characters\Phantom Assassin\Death.png'), (1,6), False, 'spritesheet']
+        atk1_animation = [resource_path(r'assets\characters\Phantom Assassin\Attack1.png'), (1,6), False, 'spritesheet']
+        atk2_animation = [resource_path(r'assets\characters\Phantom Assassin\Attack2.png'), (1,6), False, 'spritesheet']
+        # atk3_animation = [resource_path(r'assets\characters\Phantom Assassin\Attack3.png'), (1,6), False, 'spritesheet']
+        # atk4_animation = [resource_path(r'assets\characters\Phantom Assassin\Attack4.png'), (1,6), False, 'spritesheet']
 
 
         # Attack Frame Source (remove the counting number)
@@ -167,21 +168,21 @@ class Phantom_Assassin(Player):
         # file path,                            frame count, starts at zero, size, type, flipped
 
         # circle slash 
-        atk1 = [r'assets\attacks\Phantom Assassin\circle slash.png', (4, 5), False, 1.5, 'spritesheet', False]
+        atk1 = [resource_path(r'assets\attacks\Phantom Assassin\circle slash.png'), (4, 5), False, 1.5, 'spritesheet', False]
         # cool slashes
-        atk2 = [r'assets\attacks\Phantom Assassin\cool slashes.png', (4, 5), False, 3, 'spritesheet', False]
+        atk2 = [resource_path(r'assets\attacks\Phantom Assassin\cool slashes.png'), (4, 5), False, 3, 'spritesheet', False]
         # dash slash
-        atk3 = [r'assets\attacks\Phantom Assassin\dash slash.png', (6, 5), False, 1, 'spritesheet', False]
+        atk3 = [resource_path(r'assets\attacks\Phantom Assassin\dash slash.png'), (6, 5), False, 1, 'spritesheet', False]
         # dash
-        atk4 = [r'assets\attacks\Phantom Assassin\dash.png', (1, 6), False, 2, 'spritesheet', False]
+        atk4 = [resource_path(r'assets\attacks\Phantom Assassin\dash.png'), (1, 6), False, 2, 'spritesheet', False]
         # slashes
-        atk5 = [r'assets\attacks\Phantom Assassin\slashes.png', (4, 5), False, 3, 'spritesheet', False]
+        atk5 = [resource_path(r'assets\attacks\Phantom Assassin\slashes.png'), (4, 5), False, 3, 'spritesheet', False]
         # x slash
-        atk6 = [r'assets\attacks\Phantom Assassin\x slash.png', (3, 5), False, 1, 'spritesheet', False]
+        atk6 = [resource_path(r'assets\attacks\Phantom Assassin\x slash.png'), (3, 5), False, 1, 'spritesheet', False]
         # cool x slash
-        atk7 = [r'assets\attacks\Phantom Assassin\cool x slash.png', (2, 5), False, 1, 'spritesheet', False]
+        atk7 = [resource_path(r'assets\attacks\Phantom Assassin\cool x slash.png'), (2, 5), False, 1, 'spritesheet', False]
         # cool dash slash
-        atk8 = [r'assets\attacks\Phantom Assassin\cool dash slash.png', (3, 5), False, 1, 'spritesheet', False]
+        atk8 = [resource_path(r'assets\attacks\Phantom Assassin\cool dash slash.png'), (3, 5), False, 1, 'spritesheet', False]
 
         # Attack Frame Count
         #   - if not spritesheet, use actual attack count
@@ -210,21 +211,21 @@ class Phantom_Assassin(Player):
         self.sound4.set_volume(sound4[1])
 
         # basic slash animation frames
-        basic_slash = [r'assets\attacks\Basic Attack\1', BASIC_SLASH_ANIMATION, 1, BASIC_SLASH_SIZE, 0]
+        basic_slash = [resource_path(r'assets\attacks\Basic Attack\1'), BASIC_SLASH_ANIMATION, 1, BASIC_SLASH_SIZE, 0]
         self.basic_slash = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], basic_slash[3], basic_slash[4], True, False)
         self.basic_slash_flipped = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], basic_slash[3], basic_slash[4], True, True)
         
         # Skill Icons Source
         default_skill_size = (ICON_WIDTH, ICON_HEIGHT) #touple type shi
-        sk_1 = [r'assets\skill icons\phantom_assassin\1.jpg', default_skill_size]
-        sk_2 = [r'assets\skill icons\phantom_assassin\2.jpg', default_skill_size]
-        sk_3 = [r'assets\skill icons\phantom_assassin\3.jpg', default_skill_size]
-        sk_4 = [r'assets\skill icons\phantom_assassin\4.jpg', default_skill_size]
-        sp = [r'assets\skill icons\phantom_assassin\sp.jpg', default_skill_size]
-        sp_sk_1 = [r'assets\skill icons\phantom_assassin\1 sp.jpg', default_skill_size]
-        # sp_sk_2 = [r'assets\skill icons\phantom_assassin\2 sp.jpg', default_skill_size]
-        sp_sk_3 = [r'assets\skill icons\phantom_assassin\3 sp.jpg', default_skill_size]
-        sp_sk_4 = [r'assets\skill icons\phantom_assassin\4 sp.jpg', default_skill_size]
+        sk_1 = [resource_path(r'assets\skill icons\phantom_assassin\1.jpg'), default_skill_size]
+        sk_2 = [resource_path(r'assets\skill icons\phantom_assassin\2.jpg'), default_skill_size]
+        sk_3 = [resource_path(r'assets\skill icons\phantom_assassin\3.jpg'), default_skill_size]
+        sk_4 = [resource_path(r'assets\skill icons\phantom_assassin\4.jpg'), default_skill_size]
+        sp = [resource_path(r'assets\skill icons\phantom_assassin\sp.jpg'), default_skill_size]
+        sp_sk_1 = [resource_path(r'assets\skill icons\phantom_assassin\1 sp.jpg'), default_skill_size]
+        # sp_sk_2 = [resource_path(r'assets\skill icons\phantom_assassin\2 sp.jpg'), default_skill_size]
+        sp_sk_3 = [resource_path(r'assets\skill icons\phantom_assassin\3 sp.jpg'), default_skill_size]
+        sp_sk_4 = [resource_path(r'assets\skill icons\phantom_assassin\4 sp.jpg'), default_skill_size]
 
         skill_1_icon = self.load_img_scaled(sk_1[0], sk_1[1])
         skill_2_icon = self.load_img_scaled(sk_2[0], sk_2[1])
@@ -298,7 +299,7 @@ class Phantom_Assassin(Player):
         
         self.blank_frame = [
             pygame.transform.rotozoom(
-            pygame.image.load(r"assets\attacks\forest ranger\atk4\blank frame\beam_extension_effect_10.png").convert_alpha(),
+            pygame.image.load(resource_path(r"assets\attacks\forest ranger\atk4\blank frame\beam_extension_effect_10.png")).convert_alpha(),
             angle=0, scale=1.0)
             ]
 

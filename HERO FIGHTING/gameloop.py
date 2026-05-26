@@ -1,7 +1,13 @@
 import pygame
 import json
 import os
+import sys
 import time
+
+# --- iOS / cross-platform CWD fix (Approach A safety net) ---
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+from path_helper import resource_path
 
 
 
@@ -332,9 +338,9 @@ class Leaderboard:
 
 pygame.font.init()
 
-MENU_MUSIC = r'assets\audios\price-of-freedom-33106.mp3'
-GAME_MUSIC_1 = r'assets\audios\intense-battle-scene-115478.mp3'
-GAME_MUSIC_2 = r'assets\audios\z-battle-227609.mp3'
+MENU_MUSIC = resource_path('assets/audios/price-of-freedom-33106.mp3')
+GAME_MUSIC_1 = resource_path('assets/audios/intense-battle-scene-115478.mp3')
+GAME_MUSIC_2 = resource_path('assets/audios/z-battle-227609.mp3')
 
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
@@ -794,7 +800,7 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
 def run_background(bg):
     bg.display(screen)
 import time
-def game(bg=None):
+def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
     game_music_started = False
     second_track_played = False
@@ -820,13 +826,13 @@ def game(bg=None):
     start_time = pygame.time.get_ticks()
     timer_font = global_vars.get_font(50)  # Timer font
 
-    cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
+    cube_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/shine-8-268901 1.mp3'))
     cube_sound.set_volume(0.8 * global_vars.MAIN_VOLUME) 
 
     cubes = [
-        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(r'assets\icons\hp bonus.png').convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
-        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(r'assets\icons\mana bonus.png').convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
-        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(r'assets\icons\special bonus.png').convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
+        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(resource_path('assets/icons/hp bonus.png')).convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
+        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(resource_path('assets/icons/mana bonus.png')).convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
+        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(resource_path('assets/icons/special bonus.png')).convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
     ]
     
     
@@ -1084,6 +1090,49 @@ def game(bg=None):
             
 
             
+            # ── NETWORK INPUT INJECTION ──────────────────────────────
+            if net_client is not None and net_client.phase == 'playing':
+                p1_keys, p2_keys = net_client.get_inputs()
+                my_type = net_client.my_player_type
+
+                # Both hero1 and hero2 get their inputs from the server
+                main.hero1._net_keys = p1_keys
+                main.hero2._net_keys = p2_keys
+
+                # Send MY keys to server this frame
+                keybinds = key.read_settings()
+                raw_keys = pygame.key.get_pressed()
+                if my_type == 1:
+                    my_keys = {
+                        'left':    bool(raw_keys[keybinds['left_move_p1'][0]]),
+                        'right':   bool(raw_keys[keybinds['right_move_p1'][0]]),
+                        'up':      bool(raw_keys[keybinds['jump_p1'][0]]),
+                        'basic':   bool(raw_keys[keybinds['basic_atk_p1'][0]]),
+                        'skill1':  bool(raw_keys[keybinds['skill_1_p1'][0]]),
+                        'skill2':  bool(raw_keys[keybinds['skill_2_p1'][0]]),
+                        'skill3':  bool(raw_keys[keybinds['skill_3_p1'][0]]),
+                        'skill4':  bool(raw_keys[keybinds['skill_4_p1'][0]]),
+                        'special': bool(raw_keys[keybinds['sp_skill_p1'][0]]),
+                    }
+                else:
+                    my_keys = {
+                        'left':    bool(raw_keys[keybinds['left_move_p2'][0]]),
+                        'right':   bool(raw_keys[keybinds['right_move_p2'][0]]),
+                        'up':      bool(raw_keys[keybinds['jump_p2'][0]]),
+                        'basic':   bool(raw_keys[keybinds['basic_atk_p2'][0]]),
+                        'skill1':  bool(raw_keys[keybinds['skill_1_p2'][0]]),
+                        'skill2':  bool(raw_keys[keybinds['skill_2_p2'][0]]),
+                        'skill3':  bool(raw_keys[keybinds['skill_3_p2'][0]]),
+                        'skill4':  bool(raw_keys[keybinds['skill_4_p2'][0]]),
+                        'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
+                    }
+                net_client.send_input(my_keys)
+            else:
+                # Normal local mode — clear net_keys so keyboard works
+                if hasattr(main, 'hero1') and main.hero1 is not None: main.hero1._net_keys = None
+                if hasattr(main, 'hero2') and main.hero2 is not None: main.hero2._net_keys = None
+            # ── END NETWORK INPUT INJECTION ──────────────────────────
+
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
             main.hero2_group.update()
@@ -1447,6 +1496,23 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
             
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
+
+def lan_connect(host_ip):
+    """Connect to LAN server and launch into hero selection."""
+    from net_client import NetClient
+    net = NetClient(host_ip)
+    try:
+        net.connect()
+    except Exception as e:
+        print(f"[CLIENT] Failed to connect: {e}")
+        return
+    # Wait in lobby until server says start
+    import time
+    print("[CLIENT] Waiting for opponent...")
+    while net.phase == 'connecting':
+        time.sleep(0.1)
+    # Go into hero selection, passing the net client through
+    main.player_selection(net_client=net)
 
 def menu():
     
@@ -2853,9 +2919,9 @@ def display_keyswap_confirmation(condition):
 
 def info():
     hero_detail = main.pygame.transform.scale(
-        pygame.image.load(r'assets\hero info detail.png').convert(), (main.width, main.height))
+        pygame.image.load(resource_path('assets/hero info detail.png')).convert(), (main.width, main.height))
     hero_info = main.pygame.transform.scale(
-        pygame.image.load(r'assets\hero info dmg.png').convert(), (main.width, main.height))
+        pygame.image.load(resource_path('assets/hero info dmg.png')).convert(), (main.width, main.height))
 
     next = ImageButton(
     image_path=text_box_img,
@@ -3445,7 +3511,7 @@ def set_background_texture(screen, texture_path):
 
 # Example usage in the game loop
 # Replace the plain color background with a texture
-background_texture_path = r'assets/black sand.jpg'  # Replace with your texture file
+background_texture_path = resource_path('assets/black sand.jpg')  # Replace with your texture file
 # set_background_texture(screen, background_texture_path)
 
 # Add animations for elements entering the screen

@@ -2,9 +2,9 @@ import pygame
 import random
 import heroes as main
 from pprint import pprint
+from path_helper import resource_path
 
 # bg_paths = [ # Wrong path, recheck if using these.
-#     (r'assets\backgrounds\animated_bg\Ocean_2\2.png', 'static', 0, 'left'),
 #     (r'assets\backgrounds\animated_bg\Ocean_2\3.png', 'dynamic', 30, 'right'),
 #     (r'assets\backgrounds\animated_bg\Ocean_2\4.png', 'dynamic', 30, 'right')
 # ]
@@ -143,45 +143,45 @@ class AnimatedBackground: # simple framed background animation (smooth)
 # Game Backgrounds
 
 waterfall_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Waterfall\\",
+    resource_path("assets/backgrounds/animated_bg/Waterfall/"),
     8,
     size="game_bg"
 )
 
 lava_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Magma Chamber\\",
+    resource_path("assets/backgrounds/animated_bg/Magma Chamber/"),
     8,
     size="game_bg"
 )
 
 dark_forest_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Dark Forest\\",
+    resource_path("assets/backgrounds/animated_bg/Dark Forest/"),
     8,
     size="game_bg"
 )
 
 trees_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Trees\\",
+    resource_path("assets/backgrounds/animated_bg/Trees/"),
     40,
     size="full",
     pos=(0, -50)
 )
 
 mountains_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Mountains\\",
+    resource_path("assets/backgrounds/animated_bg/Mountains/"),
     40,
     size=["custom", (main.width, int(main.height * 0.870))],
     pos=(0, -50)
 )
 
 sunset_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Sunset\\",
+    resource_path("assets/backgrounds/animated_bg/Sunset/"),
     40,
     size=["custom", (main.width, main.height-100)]
 )
 
 city_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\CIty\\",
+    resource_path("assets/backgrounds/animated_bg/CIty/"),
     107,
     size="game_bg",
     speed=40
@@ -191,7 +191,7 @@ city_bg = AnimatedBackground(
 # Main Menu Background
 
 dragon_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Dragon\\",
+    resource_path("assets/backgrounds/animated_bg/Dragon/"),
     35,
     size=["custom", (main.width, main.height-100)],
     pos=(0,50)
@@ -201,41 +201,41 @@ dragon_bg = AnimatedBackground(
 # Menu Backgrounds
 
 waterfall_day_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Waterfall - Day\\",
+    resource_path("assets/backgrounds/animated_bg/Waterfall - Day/"),
     7,
     size="full"
 )
 
 waterfall_rainy_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Waterfall - Rainy\\",
+    resource_path("assets/backgrounds/animated_bg/Waterfall - Rainy/"),
     9,
     size="full"
 )
 smooth_waterfall_rainy_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Smooth Waterfall - Rainy\\",
+    resource_path("assets/backgrounds/animated_bg/Smooth Waterfall - Rainy/"),
     9,
     size="full"
 )
 
 waterfall_night_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Waterfall - Night\\",
+    resource_path("assets/backgrounds/animated_bg/Waterfall - Night/"),
     11,
     size="full"
 )
 smooth_waterfall_night_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\Smooth Waterfall - Night\\",
+    resource_path("assets/backgrounds/animated_bg/Smooth Waterfall - Night/"),
     11,
     size="full"
 )
 
 green_bg = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\green_bg\\",
+    resource_path("assets/backgrounds/animated_bg/green_bg/"),
     192,
     size="full"
 )
 
 sword_login = AnimatedBackground(
-    r"assets\backgrounds\animated_bg\blue_bg\\",
+    resource_path("assets/backgrounds/animated_bg/blue_bg/"),
     250,
     size="full"
 )

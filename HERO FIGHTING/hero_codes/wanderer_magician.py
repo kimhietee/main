@@ -23,6 +23,8 @@ from player import Player
 import global_vars
 import random
 import pygame
+from path_helper import resource_path
+
 WANDERER_MAGICIAN_JUMP_COUNT = 6
 WANDERER_MAGICIAN_RUN_COUNT = 8
 WANDERER_MAGICIAN_IDLE_COUNT = 8
@@ -208,10 +210,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         sp_ani= [r'assets\characters\Wanderer Magican\charge pngs', WANDERER_MAGICIAN_SP_COUNT, 1]
         death_ani= [r'assets\characters\Wanderer Magican\dead', WANDERER_MAGICIAN_DEATH_COUNT, 1]
 
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/shine-8-268901 1.mp3'))
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/wind-chimes-2-199848 2.mp3'))
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/elemental-magic-spell-impact-outgoing-228342 3.mp3'))
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/Rasengan Sound Effect 4.mp3'))
         self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)

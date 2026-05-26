@@ -1498,7 +1498,6 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
 def lan_connect(host_ip):
-    """Connect to LAN server and launch into hero selection."""
     from net_client import NetClient
     net = NetClient(host_ip)
     try:
@@ -1506,13 +1505,15 @@ def lan_connect(host_ip):
     except Exception as e:
         print(f"[CLIENT] Failed to connect: {e}")
         return
-    # Wait in lobby until server says start
+    main._active_net_client = net  # ← store it
     import time
     print("[CLIENT] Waiting for opponent...")
     while net.phase == 'connecting':
         time.sleep(0.1)
-    # Go into hero selection, passing the net client through
     main.player_selection(net_client=net)
+    # After player_selection returns (player backed out or game ended):
+    net.disconnect()
+    main._active_net_client = None  # ← clean up
 
 def menu():
     
@@ -1552,6 +1553,10 @@ def menu():
                 pass
                 # main.player_selection()
                 # return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F1:
+                    if not hasattr(main, '_active_net_client') or main._active_net_client is None:
+                        lan_connect('127.0.0.1')
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):

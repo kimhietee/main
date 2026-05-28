@@ -17,20 +17,43 @@ player_inputs = {
 }
 clients = {}   # player_type (1 or 2) -> socket
 lock = threading.Lock()
+next_slot = [1]
+
+# ── Phase 2: lobby state ──
+lobby = {
+    'map': None,          # chosen by host (player 1)
+    'p1_hero': None,      # hero name confirmed by p1
+    'p2_hero': None,      # hero name confirmed by p2
+    'p1_ready': False,
+    'p2_ready': False,
+}
+
+# ── Phase 2: cube position authority ──
+cube_states = [
+    {'fall': -500, 'x': 640},   # health cube
+    {'fall': -300, 'x': 640},   # mana cube
+    {'fall': -700, 'x': 640},   # special cube
+]
 
 def broadcast(msg):
+    # print(f"[SERVER] Broadcasting: {msg['type']} to {list(clients.keys())} players")
     for sock in list(clients.values()):
         try: send_msg(sock, msg)
         except: pass
 
 def handle_client(conn, player_type):
     print(f"[SERVER] Player {player_type} connected.")
+    print(f"[SERVER] clients now: {list(clients.keys())}")
     try:
         while True:
             msg = recv_msg(conn)
             if msg is None:
                 break
-            if msg.get('type') == 'input':
+
+
+            message_type = msg.get('type')
+            # print(f"[SERVER] Received '{message_type}' from Player {player_type}")
+            if message_type == 'input':
                 with lock:
                     player_inputs[player_type] = msg['keys']
                 # Broadcast both players' latest inputs to everyone
@@ -41,17 +64,45 @@ def handle_client(conn, player_type):
                         'p2': dict(player_inputs[2]),
                     }
                 broadcast(state)
+
+
+            # ── Phase 2: lobby messages ──
+            elif message_type == 'set_map':
+                lobby['map'] = msg['map']
+                broadcast({'type': 'map_set', 'map': msg['map']})
+            elif message_type == 'hero_ready':
+                lobby[f'p{player_type}_hero'] = msg['hero']
+                lobby[f'p{player_type}_ready'] = True
+                broadcast({'type': 'hero_confirmed', 'player': player_type, 'hero': msg['hero']})
+                if lobby['p1_ready'] and lobby['p2_ready']:
+                    broadcast({'type': 'both_ready',
+                               'p1_hero': lobby['p1_hero'],
+                               'p2_hero': lobby['p2_hero'],
+                               'map': lobby['map']})
+                    lobby['p1_ready'] = False
+                    lobby['p2_ready'] = False
+
+                    
+            elif message_type == 'cube_reset':
+                idx = msg['index']
+                cube_states[idx]['fall'] = msg['fall']
+                cube_states[idx]['x'] = msg['x']
+                broadcast({'type': 'cube_update', 'index': idx, 'fall': msg['fall'], 'x': msg['x']})
     except (ConnectionResetError, ConnectionAbortedError):
         pass
     finally:
-        print(f"[SERVER] Player {player_type} disconnected.")
         with lock:
             clients.pop(player_type, None)
+            print(f"[SERVER] Player {player_type} disconnected.")
+            print(f"[SERVER] clients now: {list(clients.keys())}")
+            # Reset slot counter if both disconnected
+            if len(clients) == 0:
+                next_slot[0] = 1
+                print(f"[SERVER] All disconnected. Resetting slots.")
         conn.close()
         broadcast({'type': 'opponent_left'})
 
 def accept_loop():
-    next_slot = [1]
     while True:
         conn, addr = server.accept()
         pt = next_slot[0]
@@ -62,12 +113,12 @@ def accept_loop():
         with lock:
             clients[pt] = conn
         send_msg(conn, {'type': 'welcome', 'your_player_type': pt})
-        t = threading.Thread(target=handle_client, args=(conn, pt), daemon=True)
-        t.start()
+        thread = threading.Thread(target=handle_client, args=(conn, pt), daemon=True)
+        thread.start()
         if len(clients) == 2:
             broadcast({'type': 'start'})
             print("[SERVER] Both players connected. Game starting.")
-            next_slot[0] = 1   # reset for reconnects
+            # Don't reset next_slot here — wait for disconnects
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

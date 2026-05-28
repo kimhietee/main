@@ -2881,74 +2881,6 @@ def player_selection(net_client=None):
             small=True,
             static_pos = (width - (width * 1.1),position_alignnment_Y(item_spacing_w, x+1)[1]))
             )
-    #     # PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-    #     PlayerSelector(items[0].image, position_alignnment_Y(item_spacing_w, 1), items[0], small=True),
-    #     PlayerSelector(items[1].image, position_alignnment_Y(item_spacing_w, 2), items[1], small=True),
-    #     PlayerSelector(items[2].image, position_alignnment_Y(item_spacing_w, 3), items[2], small=True),
-    #     PlayerSelector(items[3].image, position_alignnment_Y(item_spacing_w, 4), items[3], small=True),
-    #     PlayerSelector(items[4].image, position_alignnment_Y(item_spacing_w, 5), items[4], small=True),
-    #     PlayerSelector(items[5].image, position_alignnment_Y(item_spacing_w, 6), items[5], small=True),
-
-    #     PlayerSelector(items[6].image, position_alignnment_Y(item_spacing_w, 7), items[6], small=True),
-    #     PlayerSelector(items[7].image, position_alignnment_Y(item_spacing_w, 8), items[7], small=True),
-    #     PlayerSelector(items[8].image, position_alignnment_Y(item_spacing_w, 9), items[8], small=True),
-    #     PlayerSelector(items[9].image, position_alignnment_Y(item_spacing_w, 10), items[9], small=True),
-    #     PlayerSelector(items[10].image, position_alignnment_Y(item_spacing_w, 11), items[10], small=True),
-    #     PlayerSelector(items[11].image, position_alignnment_Y(item_spacing_w, 12), items[11], small=True),
-
-    #     PlayerSelector(items[12].image, position_alignnment_Y(item_spacing_w, 13), items[12], small=True),
-    #     PlayerSelector(items[13].image, position_alignnment_Y(item_spacing_w, 14), items[13], small=True),
-    #     PlayerSelector(items[14].image, position_alignnment_Y(item_spacing_w, 15), items[14], small=True),
-    #     PlayerSelector(items[15].image, position_alignnment_Y(item_spacing_w, 16), items[15], small=True),
-    #     PlayerSelector(items[16].image, position_alignnment_Y(item_spacing_w, 17), items[16], small=True),
-    #     PlayerSelector(items[17].image, position_alignnment_Y(item_spacing_w, 18), items[17], small=True),
-
-    #     PlayerSelector(items[18].image, position_alignnment_Y(item_spacing_w, 19), items[18], small=True),
-    #     PlayerSelector(items[19].image, position_alignnment_Y(item_spacing_w, 20), items[19], small=True),
-    #     PlayerSelector(items[20].image, position_alignnment_Y(item_spacing_w, 21), items[20], small=True),
-    #     PlayerSelector(items[21].image, position_alignnment_Y(item_spacing_w, 22), items[21], small=True),
-    #     PlayerSelector(items[22].image, position_alignnment_Y(item_spacing_w, 23), items[22], small=True),
-    #     PlayerSelector(items[23].image, position_alignnment_Y(item_spacing_w, 24), items[23], small=True),
-
-    #     PlayerSelector(items[24].image, position_alignnment_Y(item_spacing_w, 25), items[24], small=True),
-    #     PlayerSelector(items[25].image, position_alignnment_Y(item_spacing_w, 26), items[25], small=True),
-    #     PlayerSelector(items[26].image, position_alignnment_Y(item_spacing_w, 27), items[26], small=True),
-    # ]
-
-    # p2_items = [
-    #     PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-    #     PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
-    #     PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
-    #     PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
-    #     PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
-    #     PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
-
-    #     PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
-    #     PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
-    #     PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
-    #     PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
-    #     PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
-    #     PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
-
-    #     PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
-    #     PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
-    #     PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
-    #     PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
-    #     PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
-    #     PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
-
-    #     PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
-    #     PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
-    #     PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
-    #     PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
-    #     PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
-    #     PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
-
-    #     PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
-    #     PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
-    #     PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
-
-    # ]
 
     # Maps (custom large size)
     map_select = [
@@ -2970,6 +2902,18 @@ def player_selection(net_client=None):
     map_choose = False
 
     map_selected = Animate_BG.dark_forest_bg # Default
+
+    # ── Phase 2: map name ↔ Animate_BG lookup for LAN sync ──
+    _map_name_to_bg = {
+        'waterfall': Animate_BG.waterfall_bg,
+        'lava': Animate_BG.lava_bg,
+        'dark_forest': Animate_BG.dark_forest_bg,
+        'trees': Animate_BG.trees_bg,
+        'mountains': Animate_BG.mountains_bg,
+        'sunset': Animate_BG.sunset_bg,
+        'city': Animate_BG.city_bg,
+    }
+    _bg_to_map_name = {v: k for k, v in _map_name_to_bg.items()}
 
     go = False
 
@@ -3011,7 +2955,24 @@ def player_selection(net_client=None):
             go = True
         
 
-
+        # LAN: auto-skip the turn that doesn't belong to this client
+        if net_client is not None:
+            if net_client.my_player_type == 1 and player_2_choose:
+                # P1 has picked, now waiting — skip P2 UI, go straight to map
+                player_2_choose = False
+                map_choose = True
+                go = False
+            elif net_client.my_player_type == 2 and player_1_choose:
+                # P2 skips P1 UI, goes straight to picking their own hero
+                player_1_choose = False
+                player_2_choose = True
+                go = False
+        # check if opponent disconnected
+        if net_client is not None and net_client.opponent_left:
+            net_client.opponent_left = False
+            net_client.disconnect()
+            menu()
+            return
         # print('running')
         # print(global_vars.MAIN_VOLUME)
         # return
@@ -3067,7 +3028,7 @@ def player_selection(net_client=None):
         menu_button.draw(screen, mouse_pos)
         slot.draw(screen, mouse_pos) if not map_choose else None
 
-        if player_1_choose:    
+        if player_1_choose and (net_client is None or net_client.my_player_type == 1): 
             if not go:                  
                 create_title('PLAYER 1', font, default_size, height * 0.1, modify_xpos=width*0.5) #height*0., default_size - 0.55
             else: #display selected hero name
@@ -3158,7 +3119,7 @@ def player_selection(net_client=None):
                     go = False
 
 
-        if player_2_choose:
+        if player_2_choose and (net_client is None or net_client.my_player_type == 2):
             if not go:
                 create_title('PLAYER 2', font, default_size, height * 0.1, modify_xpos=width*0.5)
             else:
@@ -3244,48 +3205,128 @@ def player_selection(net_client=None):
 
 
         if map_choose:
-            create_title('MAP SELECT', font, default_size, height * 0.1)
-            for selector in map_select:
-                selector.update(mouse_pos, mouse_press, map_select, max_selected=1)
+            # ── Phase 2: LAN P2 waits for host map selection ──
+            if net_client is not None and net_client.my_player_type == 2:
+                waiting_font = global_vars.get_font(40)
+                _lan_map_waiting = True
+                while _lan_map_waiting:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit(); exit()
+                    if net_client.opponent_left:   # ← add this
+                        net_client.opponent_left = False
+                        net_client.disconnect()
+                        menu()
+                        return
+                    if net_client.map_selected is not None:
+                        map_selected = _map_name_to_bg.get(net_client.map_selected, Animate_BG.dark_forest_bg)
+                        _lan_map_waiting = False
+                    else:
+                        screen.blit(background, (0, 0))
+                        _wait_text = waiting_font.render('Waiting for host to select map...', True, white)
+                        screen.blit(_wait_text, (width // 2 - _wait_text.get_width() // 2, height // 2 - _wait_text.get_height() // 2))
+                        pygame.display.update()
+                        clock.tick(30)
+                # Skip map UI, go straight to fight
+                go = True
+            else:
+                # Normal map selection UI (local mode or LAN host)
+                create_title('MAP SELECT', font, default_size, height * 0.1)
+                for selector in map_select:
+                    selector.update(mouse_pos, mouse_press, map_select, max_selected=1)
 
-            for selector in map_select:
-                # if selector.hovered:
-                #     selector.the_info((-(width * 0.0001), height - 500))
-                if selector.is_selected():
-                    map_selected = selector.get_associated()
+                for selector in map_select:
+                    # if selector.hovered:
+                    #     selector.the_info((-(width * 0.0001), height - 500))
+                    if selector.is_selected():
+                        map_selected = selector.get_associated()
 
-                    # # Draw item selection
-                    # for item in p2_items:
-                    #     item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
-                    # for item in p2_items:
-                    #     item.draw()
+                        
 
-                    # for item in p2_items:
-                    #     if item.hovered:
-                    #         item.class_item.update((-(width * 0.0001), height - 500))
+                        # # Draw item selection
+                        # for item in p2_items:
+                        #     item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
+                        # for item in p2_items:
+                        #     item.draw()
+
+                        # for item in p2_items:
+                        #     if item.hovered:
+                        #         item.class_item.update((-(width * 0.0001), height - 500))
   
-                    # print(PLAYER_2_SELECTED_HERO)
-                    go = True
-                    break
-                elif not immediate_run:
-                    go = False
+                        # print(PLAYER_2_SELECTED_HERO)
+                        go = True
+                        break
+                    elif not immediate_run:
+                        go = False
                 
             if go:
                 fight.draw(screen, mouse_pos)
                 if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE] or immediate_run:
-                    # print(PLAYER_1_SELECTED_HERO)
-                    # print(PLAYER_2_SELECTED_HERO)
+                    
+                    # ── Phase 2: LAN host sends map choice ──
+                    if net_client is not None and net_client.my_player_type == 1:
+                        _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
+                        net_client.send_map(_map_name)
+
                     screen.blit(background, (0, 0))
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
+
+                    # for random hero selection if toggled
                     heroes = (Fire_Wizard, Wanderer_Magician,
                               Fire_Knight, Wind_Hashashin,
                               Water_Princess, Forest_Ranger,
                               Yurei, Chthulu)
                     # Player type seems to be phased out but is still being used
-                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2)  if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2) #not live
-                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)  if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                    # ── LAN: use server-confirmed hero classes ──
+                    _hero_map = {
+                        'Fire_Wizard': Fire_Wizard,
+                        'Wanderer_Magician': Wanderer_Magician,
+                        'Fire_Knight': Fire_Knight,
+                        'Wind_Hashashin': Wind_Hashashin,
+                        'Water_Princess': Water_Princess,
+                        'Forest_Ranger': Forest_Ranger,
+                        'Yurei': Yurei,
+                        'Chthulu': Chthulu,
+                        'Phantom_Assassin': Phantom_Assassin,
+                    }
+                    
+                    # if net_client is not None and net_client.p1_hero and net_client.p2_hero:
+                    #     PLAYER_1_SELECTED_HERO = _hero_map.get(net_client.p1_hero, PLAYER_1_SELECTED_HERO)
+                    #     PLAYER_2_SELECTED_HERO = _hero_map.get(net_client.p2_hero, PLAYER_2_SELECTED_HERO)
+
+                    # ── LAN: send hero choice and wait for both ──
+                    if net_client is not None:
+                        # Send MY hero name to server
+                        _my_hero_name = (PLAYER_1_SELECTED_HERO.__name__ 
+                                        if net_client.my_player_type == 1 
+                                        else PLAYER_2_SELECTED_HERO.__name__)
+                        net_client.send_hero_ready(_my_hero_name)
+
+                        # Wait for server to confirm both heroes
+                        _wait_font = global_vars.get_font(40)
+                        while not net_client.both_ready:
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit(); exit()
+                            if net_client.opponent_left:   # ← add this
+                                net_client.opponent_left = False
+                                net_client.disconnect()
+                                menu()
+                                return
+                            screen.fill((0, 0, 0))
+                            _wt = _wait_font.render('Waiting for opponent...', True, white)
+                            screen.blit(_wt, (width//2 - _wt.get_width()//2, height//2 - _wt.get_height()//2))
+                            pygame.display.update()
+                            clock.tick(30)
+
+                        # Now we have confirmed hero names from server — override local selection
+                        PLAYER_1_SELECTED_HERO = _hero_map.get(net_client.p1_hero, PLAYER_1_SELECTED_HERO)
+                        PLAYER_2_SELECTED_HERO = _hero_map.get(net_client.p2_hero, PLAYER_2_SELECTED_HERO)
+
+                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
                     # print(hero1.enemy)
                     # print(hero2.enemy)
                     # hero3 = Wind_Hashashin(PLAYER_1, hero2)
@@ -3468,6 +3509,7 @@ def player_selection(net_client=None):
                     # print(hero2.enemy)
                     # print(hero3.enemy)
                     reset_all()
+                    
                     fade(background, lambda: game(net_client=net_client)) #lez go it worked
                     # pygame.mixer.fadeout(1500)
                     

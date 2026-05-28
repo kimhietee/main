@@ -33,7 +33,7 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title
+from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title, create_timed_title
 import heroes as main
 
 
@@ -802,6 +802,10 @@ def run_background(bg):
 import time
 def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
+    if net_client is not None:
+        net_client.phase = 'playing'
+
+    
     game_music_started = False
     second_track_played = False
     battle_result_recorded = False  # Reset for new game
@@ -1055,7 +1059,14 @@ def game(bg=None, net_client=None):
             for i, item in enumerate(main.hero2.items):
                 item.draw_icon((main.width-(150+(50*i)), 100), small='smallest')
         
-            for cube in cubes:
+            # ── Phase 2: apply pending cube updates from server ──
+            if net_client is not None:
+                for update in net_client.pop_cube_updates():
+                    ci = update['index']
+                    cubes[ci]['fall'] = update['fall']
+                    cubes[ci]['x'] = update['x']
+
+            for i, cube in enumerate(cubes):
                 cube['fall'], cube['x'] = handle_cube(
                     pygame.Rect(cube['x'], cube['fall'], 25, 25),
                     cube['fall'],
@@ -1066,7 +1077,9 @@ def game(bg=None, net_client=None):
                     main.hero2,
                     cube['bonus_type'],
                     cube['bonus_amount'],
-                    cube['sound']
+                    cube['sound'],
+                    cube_index=i,
+                    net_client=net_client
                 )
 
 
@@ -1133,6 +1146,14 @@ def game(bg=None, net_client=None):
                 if hasattr(main, 'hero2') and main.hero2 is not None: main.hero2._net_keys = None
             # ── END NETWORK INPUT INJECTION ──────────────────────────
 
+            # detect if anyone left
+            if net_client is not None and net_client.opponent_left:
+                net_client.opponent_left = False
+                net_client.disconnect()
+                main._active_net_client = None
+                lobby('disconnected') 
+                return
+            
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
             main.hero2_group.update()
@@ -1283,7 +1304,7 @@ def leaderboard():
         main.pygame.display.update()
         main.clock.tick(main.FPS)
 
-def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound):
+def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound, cube_index=0, net_client=None):
     """
     Handles the logic for a single cube.
 
@@ -1340,8 +1361,14 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                     # blue-ish text for special pickups
                     hero1.display_damage(actual, interval=30, color=gold, size=50)
                 
-            cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = random.randint(-2000, -500)
+            if net_client is not None:
+                if net_client.my_player_type == 1:
+                    cube_x = random.randint(20, int(main.width - 20))
+                    cube_fall = random.randint(-2000, -500)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+            else:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = random.randint(-2000, -500)
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
             if bonus_type == 'health':
@@ -1366,11 +1393,23 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 if actual > 0:
                     hero2.display_damage(actual, interval=30, color=gold, size=50)
 
-            cube_x = random.randint(20, int(main.width - 20))
-            cube_fall =random.randint(-2000, -500)
+            if net_client is not None:
+                if net_client.my_player_type == 1:
+                    cube_x = random.randint(20, int(main.width - 20))
+                    cube_fall = random.randint(-2000, -500)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+            else:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = random.randint(-2000, -500)
     else:
-        cube_x = random.randint(20, int(main.width - 20))
-        cube_fall = -150
+        if net_client is not None:
+            if net_client.my_player_type == 1:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = -150
+                net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+        else:
+            cube_x = random.randint(20, int(main.width - 20))
+            cube_fall = -150
 
     return cube_fall, cube_x
 
@@ -1455,11 +1494,18 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
+            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
+                main._active_net_client.disconnect()
+                main._active_net_client = None
             menu()
             return
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
+            # ── LAN cleanup ──
+            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
+                main._active_net_client.disconnect()
+                main._active_net_client = None
             reset_all()
             fade(loading_screen_bg, game)
             return
@@ -1477,6 +1523,10 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
         in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
+            # ── LAN cleanup ──
+            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
+                main._active_net_client.disconnect()
+                main._active_net_client = None
             menu()
             
 
@@ -1485,6 +1535,10 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
 
         if mouse_press[0] and restart_game.is_clicked(mouse_pos):
             paused = False
+            # ── LAN cleanup ──
+            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
+                main._active_net_client.disconnect()
+                main._active_net_client = None
             reset_all()
             fade(loading_screen_bg, game)
             
@@ -1505,15 +1559,35 @@ def lan_connect(host_ip):
     except Exception as e:
         print(f"[CLIENT] Failed to connect: {e}")
         return
-    main._active_net_client = net  # ← store it
-    import time
-    print("[CLIENT] Waiting for opponent...")
+    main._active_net_client = net
+
+    font = global_vars.get_font(60)
     while net.phase == 'connecting':
-        time.sleep(0.1)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                net.disconnect()
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                net.disconnect()
+                main._active_net_client = None
+                return
+        main.screen.fill((0, 0, 0))
+        Animate_BG.smooth_waterfall_night_bg.display(main.screen, speed=50)
+        txt = font.render("Waiting for opponent...", global_vars.TEXT_ANTI_ALIASING, (255, 255, 255))
+        main.screen.blit(txt, (width//2 - txt.get_width()//2, height//2))
+        sub = global_vars.get_font(30).render("Press ESC to cancel", global_vars.TEXT_ANTI_ALIASING, (150, 150, 150))
+        main.screen.blit(sub, (width//2 - sub.get_width()//2, height//2 + 60))
+        pygame.display.update()
+        main.clock.tick(30)
+
+    if net.phase == 'disconnected':
+        main._active_net_client = None
+        return
+
     main.player_selection(net_client=net)
-    # After player_selection returns (player backed out or game ended):
     net.disconnect()
-    main._active_net_client = None  # ← clean up
+    main._active_net_client = None
 
 def menu():
     
@@ -1537,6 +1611,7 @@ def menu():
     font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
+    _lan_connecting = False
 
     while True:
         events = pygame.event.get()
@@ -1551,12 +1626,12 @@ def menu():
                 pygame.quit()
                 exit()   
                 pass
-                # main.player_selection()
                 # return
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F1:
-                    if not hasattr(main, '_active_net_client') or main._active_net_client is None:
-                        lan_connect('127.0.0.1')
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+                if not _lan_connecting and (not hasattr(main, '_active_net_client') or main._active_net_client is None):
+                    _lan_connecting = True
+                    lan_connect('127.0.0.1')
+                    _lan_connecting = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
@@ -3423,6 +3498,56 @@ def settings(in_game=False):
 
 
 
+
+
+def lobby(status=None):
+    global load_sword_login_bg
+
+    font = global_vars.get_font(60)
+    status_start_time = None
+
+    while True:
+        events = pygame.event.get()
+        keys = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_press = pygame.mouse.get_pressed()
+        key_press = pygame.key.get_pressed()
+
+        current_time = pygame.time.get_ticks()
+        for event in events:
+            if event.type == main.pygame.QUIT:
+                main.pygame.quit()
+                exit()
+
+            if keys[pygame.K_ESCAPE]:
+                menu()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    menu() 
+                    return
+
+
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
+
+        create_title('lobby', font)
+        if status is not None:
+            if status == 'disconnected':
+                if status_start_time is None:
+                    status_start_time = pygame.time.get_ticks()
+
+                create_timed_title('opponent left', status_start_time, 5000, font, y_offset=150, color=red, scale=0.5)
+
+        menu_button.draw(screen, mouse_pos)
+
+
+
+
+        main.pygame.display.update()
+        main.clock.tick(main.FPS)
 
 
 # Image Paths

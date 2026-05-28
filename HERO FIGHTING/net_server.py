@@ -100,7 +100,11 @@ def handle_client(conn, player_type):
                 next_slot[0] = 1
                 print(f"[SERVER] All disconnected. Resetting slots.")
         conn.close()
-        broadcast({'type': 'opponent_left'})
+        for pt, sock in clients.items():
+            try:
+                send_msg(sock, {'type': 'opponent_left'})
+            except:
+                pass
 
 def accept_loop():
     while True:

@@ -2,18 +2,21 @@ import pygame
 from path_helper import resource_path
 
 # Screen and Display
-width = 1280
-height = 720
+# width = 1280
+# height = 720
+width = 1280 // 1.5
+height = 720 // 1.5
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
 icon = pygame.image.load(resource_path('assets/icons/miku.png'))      
 FPS = 60
 clock = pygame.time.Clock()
-# screen = pygame.display.set_mode((width, height))
+screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 
-screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
+# REAL IS BELOW VVVVVV
+# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
 # screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
 
 # display_size = pygame.display.get_desktop_sizes()
@@ -34,6 +37,7 @@ gold = 'Gold' #special
 # 'yellow'
 
 IMMEDIATE_RUN = False
+active_net_client = None
 
 HERO1_BOT = False
 all_items = False #equip bot with all items

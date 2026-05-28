@@ -88,8 +88,9 @@ class NetClient:
                     self.p1_keys = msg.get('p1', {})
                     self.p2_keys = msg.get('p2', {})
             elif message_type == 'opponent_left':
-                self.phase = 'lobby'
-                self.opponent_left = True
+                if self._running:
+                    self.phase = 'lobby'
+                    self.opponent_left = True
             # ── Phase 2: lobby messages ──
             elif message_type == 'map_set':
                 self.map_selected = msg['map']

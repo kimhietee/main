@@ -35,6 +35,8 @@ import global_vars
 
 from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title, create_timed_title
 import heroes as main
+import global_vars
+
 
 
 
@@ -1150,7 +1152,7 @@ def game(bg=None, net_client=None):
             if net_client is not None and net_client.opponent_left:
                 net_client.opponent_left = False
                 net_client.disconnect()
-                main._active_net_client = None
+                global_vars.active_net_client = None
                 lobby('disconnected') 
                 return
             
@@ -1494,18 +1496,18 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
-                main._active_net_client.disconnect()
-                main._active_net_client = None
+            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
             menu()
             return
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
             # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
-                main._active_net_client.disconnect()
-                main._active_net_client = None
+            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
             reset_all()
             fade(loading_screen_bg, game)
             return
@@ -1524,9 +1526,9 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
             # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
-                main._active_net_client.disconnect()
-                main._active_net_client = None
+            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
             menu()
             
 
@@ -1536,9 +1538,9 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
         if mouse_press[0] and restart_game.is_clicked(mouse_pos):
             paused = False
             # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and main._active_net_client is not None:
-                main._active_net_client.disconnect()
-                main._active_net_client = None
+            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
             reset_all()
             fade(loading_screen_bg, game)
             
@@ -1551,43 +1553,7 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
-def lan_connect(host_ip):
-    from net_client import NetClient
-    net = NetClient(host_ip)
-    try:
-        net.connect()
-    except Exception as e:
-        print(f"[CLIENT] Failed to connect: {e}")
-        return
-    main._active_net_client = net
 
-    font = global_vars.get_font(60)
-    while net.phase == 'connecting':
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                net.disconnect()
-                pygame.quit()
-                exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                net.disconnect()
-                main._active_net_client = None
-                return
-        main.screen.fill((0, 0, 0))
-        Animate_BG.smooth_waterfall_night_bg.display(main.screen, speed=50)
-        txt = font.render("Waiting for opponent...", global_vars.TEXT_ANTI_ALIASING, (255, 255, 255))
-        main.screen.blit(txt, (width//2 - txt.get_width()//2, height//2))
-        sub = global_vars.get_font(30).render("Press ESC to cancel", global_vars.TEXT_ANTI_ALIASING, (150, 150, 150))
-        main.screen.blit(sub, (width//2 - sub.get_width()//2, height//2 + 60))
-        pygame.display.update()
-        main.clock.tick(30)
-
-    if net.phase == 'disconnected':
-        main._active_net_client = None
-        return
-
-    main.player_selection(net_client=net)
-    net.disconnect()
-    main._active_net_client = None
 
 def menu():
     
@@ -1628,16 +1594,20 @@ def menu():
                 pass
                 # return
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
-                if not _lan_connecting and (not hasattr(main, '_active_net_client') or main._active_net_client is None):
+                if not _lan_connecting and (not hasattr(main, '_active_net_client') or global_vars.active_net_client is None):
                     _lan_connecting = True
-                    lan_connect('127.0.0.1')
+                    reason = lan_connect('127.0.0.1')
+                    # lobby('disconnected')
                     _lan_connecting = False
+                    if reason == 'opponent_left':
+                        lobby('disconnected')
+                        
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
-                    return
+                    
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
@@ -1648,7 +1618,7 @@ def menu():
                 if multiplayer_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = False
                     main.player_selection()
-                    return
+                    
              
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
@@ -1686,11 +1656,11 @@ def menu():
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
-                return
+                
             
             if keys[pygame.K_r]:
                 main.player_selection()
-                return
+                
             
             if keys[pygame.K_e]:
                 controls()
@@ -3088,7 +3058,7 @@ def main_menu():
 
     while True:
         # dev option
-        if IMMEDIATE_RUN:
+        if IMMEDIATE_RUN: # just a debug, does not matter anyway
             main.player_selection()
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
@@ -3520,11 +3490,9 @@ def lobby(status=None):
                 exit()
 
             if keys[pygame.K_ESCAPE]:
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
                     return
 
 
@@ -3565,6 +3533,8 @@ def lobby(status=None):
 
 
 if __name__ == '__main__':
+    from heroes import lan_connect
+
     main_menu()
 
 

@@ -236,6 +236,7 @@ import global_vars
 
 import key
 from path_helper import resource_path
+import global_vars
 
 # from chance import Chance
 
@@ -2773,6 +2774,57 @@ def paginating(move:bool, instant:bool = False, max_height = item_max_y):
                 break
 
 
+def lan_connect(host_ip):
+    """returns a reason why it got disconnected"""
+    from net_client import NetClient
+    net = NetClient(host_ip)
+    try:
+        net.connect()
+    except Exception as e:
+        print(f"[CLIENT] Failed to connect: {e}")
+        return
+    global_vars.active_net_client = net
+
+    font = global_vars.get_font(60)
+    while net.phase == 'connecting':
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                net.disconnect()
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                net.disconnect()
+                global_vars.active_net_client = None
+                return
+        screen.fill((0, 0, 0))
+        Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+        txt = font.render("Waiting for opponent...", global_vars.TEXT_ANTI_ALIASING, (255, 255, 255))
+        screen.blit(txt, (width//2 - txt.get_width()//2, height//2))
+        sub = global_vars.get_font(30).render("Press ESC to cancel", global_vars.TEXT_ANTI_ALIASING, (150, 150, 150))
+        screen.blit(sub, (width//2 - sub.get_width()//2, height//2 + 60))
+        pygame.display.update()
+        clock.tick(30)
+
+    if net.phase == 'disconnected':
+        global_vars.active_net_client = None
+        return 'fail'
+
+    fail_result = player_selection(net_client=net)
+    # print('oh no someone left')
+    print("player_selection returned:", fail_result)
+
+    if fail_result == 'opponent_left':
+        net.disconnect()
+        global_vars.active_net_client = None
+        print(f'its him {net.opponent_left}')
+
+        return 'opponent_left'
+    else: 
+        net.disconnect()
+        global_vars.active_net_client = None
+        print('its me :)')
+        print(f'its him {net.opponent_left}')
+        return 'done'
 
 # from global_vars import quick_run_hero1, quick_run_hero2
 def player_selection(net_client=None):
@@ -2969,10 +3021,10 @@ def player_selection(net_client=None):
                 go = False
         # check if opponent disconnected
         if net_client is not None and net_client.opponent_left:
-            net_client.opponent_left = False
-            net_client.disconnect()
-            menu()
-            return
+            # net_client.opponent_left = False
+            # net_client.disconnect()
+            print("Opponent left detected in player_selection")
+            return 'opponent_left'
         # print('running')
         # print(global_vars.MAIN_VOLUME)
         # return
@@ -2984,15 +3036,31 @@ def player_selection(net_client=None):
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if net_client is not None:
+                    net_client.disconnect()
+                    return
                 pygame.quit()
                 exit()   
             if keys[pygame.K_ESCAPE]:
-                menu()
-                return
+                if net_client is not None and net_client.opponent_left:
+                    # net_client.opponent_left = False
+                    print(f'I am leaving good luck everybody')
+                    print("Opponent left detected in player_selection")
+                    return 'opponent_left'
+                else:
+                    print('going back to menu?')
+                    return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
-                    return
+                    if net_client is not None and net_client.opponent_left:
+                        # net_client.opponent_left = False
+                        print(f'I am leaving good luck everybody')
+                        print("Opponent left detected in player_selection")
+                        return 'opponent_left'
+                    else:
+                        print('going back to menu?')
+                        return 'back_to_menu'
+
                 if all_items_button.is_clicked(event.pos):
                     if player_2_choose:
                         global_vars.all_items = all_items_button.toggle(global_vars.all_items)
@@ -3214,10 +3282,9 @@ def player_selection(net_client=None):
                         if event.type == pygame.QUIT:
                             pygame.quit(); exit()
                     if net_client.opponent_left:   # ← add this
-                        net_client.opponent_left = False
-                        net_client.disconnect()
-                        menu()
-                        return
+                        # net_client.opponent_left = False
+                        # net_client.disconnect()
+                        return 'opponent_left'
                     if net_client.map_selected is not None:
                         map_selected = _map_name_to_bg.get(net_client.map_selected, Animate_BG.dark_forest_bg)
                         _lan_map_waiting = False
@@ -3311,10 +3378,7 @@ def player_selection(net_client=None):
                                 if event.type == pygame.QUIT:
                                     pygame.quit(); exit()
                             if net_client.opponent_left:   # ← add this
-                                net_client.opponent_left = False
-                                net_client.disconnect()
-                                menu()
-                                return
+                                return 'opponent_left'
                             screen.fill((0, 0, 0))
                             _wt = _wait_font.render('Waiting for opponent...', True, white)
                             screen.blit(_wt, (width//2 - _wt.get_width()//2, height//2 - _wt.get_height()//2))

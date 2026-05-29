@@ -25,6 +25,7 @@ class NetClient:
         self.p2_hero = None
         self.both_ready = False
         self.opponent_ready = False
+        self.ready_to_battle = False
         # ── Phase 2: cube sync ──
         self.cube_updates = []   # list of pending cube updates: {'index':i,'fall':f,'x':x}
         self._cube_lock = threading.Lock()
@@ -63,6 +64,9 @@ class NetClient:
     def send_hero_ready(self, hero_name):
         send_msg(self.sock, {'type': 'hero_ready', 'hero': hero_name})
 
+    def send_load_opponent_hero(self, hero_name):
+        send_msg(self.sock, {'type': 'load_opponent_hero', 'hero': hero_name})
+
     def send_cube_reset(self, index, fall, x):
         send_msg(self.sock, {'type': 'cube_reset', 'index': index, 'fall': fall, 'x': x})
 
@@ -81,6 +85,8 @@ class NetClient:
                 self._running = False
                 break
             message_type = msg.get('type')
+            # print(message_type)
+
             if message_type == 'start':
                 self.phase = 'lobby'
             elif message_type == 'inputs':
@@ -94,14 +100,27 @@ class NetClient:
             # ── Phase 2: lobby messages ──
             elif message_type == 'map_set':
                 self.map_selected = msg['map']
-            elif message_type == 'hero_confirmed':
+            elif message_type == 'hero_confirmed': # not used????
                 if msg['player'] != self.my_player_type:
                     self.opponent_ready = True
+
             elif message_type == 'both_ready':
                 self.p1_hero = msg['p1_hero']
                 self.p2_hero = msg['p2_hero']
                 self.map_selected = msg['map']
+                print('both ready :)')
                 self.both_ready = True
+
+            elif message_type == 'not_ready':
+                print('not ready')
+                self.both_ready = False
+
+            elif message_type == 'ready_to_battle':
+                print('ready to battle!!!')
+                self.both_ready = True
+                # if msg['player'] and msg['player']
+                self.ready_to_battle = True
+
             elif message_type == 'cube_update':
                 with self._cube_lock:
                     self.cube_updates.append({

@@ -707,13 +707,13 @@ def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=M
             screen.blit(fade_overlay, (0, 0)) if not immediate_load else None
             # print(fade_alpha, not immediate_load)
             if fade_alpha >= 255 and not immediate_load:
-                action()
+                end_result = action()
                 fading = False
-                return
+                return end_result
             if fade_alpha >= 10 and immediate_load: # load function immediately (just displaying first frame)
-                action()
+                end_result = action()
                 fading = False
-                return
+                return end_result
             
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -915,6 +915,12 @@ def game(bg=None, net_client=None):
         # if not paused:
         #     main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
+        
+        if net_client is not None and net_client.opponent_left:
+            # net_client.opponent_left = False
+            # net_client.disconnect()
+            print("Opponent left detected in player_selection")
+            return 'opponent_left'
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
@@ -1022,7 +1028,7 @@ def game(bg=None, net_client=None):
 # -------------------------------------------------------------------------------------
         
         
-        if not paused:
+        if not paused or global_vars.active_net_client is not None:
             # Background
             # Animate_BG.waterfall_bg.display(screen)
             # Animate_BG.lava_bg.display(screen)
@@ -1153,8 +1159,8 @@ def game(bg=None, net_client=None):
                 net_client.opponent_left = False
                 net_client.disconnect()
                 global_vars.active_net_client = None
-                lobby('disconnected') 
-                return
+                # lobby('disconnected') 
+                return 'opponent_left'
             
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
@@ -1232,10 +1238,16 @@ def game(bg=None, net_client=None):
             # main.hero3.update_damage_numbers(main.screen)
 
             # main.hero2.health = 1 if not main.hero2.is_dead() else 0
-            battle_end(mouse_pos, mouse_press)
-            pause(mouse_pos, mouse_press)
+            battle_end_result = battle_end(mouse_pos, mouse_press)
+            pause_result = pause(mouse_pos, mouse_press)
+            if pause_result == 'back_to_menu' or battle_end_result == 'back_to_menu':
+                return 'back_to_menu'
+            
             # print(FPS)
-        else:
+
+            
+
+        else: # completely pause if only offline
             pause(mouse_pos, mouse_press)
 
         
@@ -1496,21 +1508,23 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
-                global_vars.active_net_client.disconnect()
-                global_vars.active_net_client = None
-            menu()
-            return
+            if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+                print(f'I am leaving good luck everybody')
+                print("Opponent left detected in player_selection")
+                return 'opponent_left'
+            else:
+                print('going back to menu?')
+                return 'back_to_menu'
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
-            # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
+
+            if global_vars.active_net_client is not None:
                 global_vars.active_net_client.disconnect()
                 global_vars.active_net_client = None
+
             reset_all()
-            fade(loading_screen_bg, game)
-            return
+            return "rematch"
 
 def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
@@ -1518,35 +1532,36 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
         font = global_vars.get_font(100)
     if paused:
         create_title('PAUSED', font, default_size - 0.55, height * 0.40)
-    
+
         menu_game.draw(screen, mouse_pos)
         resume_game.draw(screen, mouse_pos)
-        restart_game.draw(screen, mouse_pos)
-        in_game_settings_button.draw(screen, mouse_pos)
+        if global_vars.active_net_client is None:
+            restart_game.draw(screen, mouse_pos)
+            in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
-                global_vars.active_net_client.disconnect()
-                global_vars.active_net_client = None
-            menu()
+            if global_vars.active_net_client is None and global_vars.active_net_client.opponent_left:
+                print(f'I am leaving good luck everybody')
+                print("Opponent left detected in player_selection")
+                return 'opponent_left'
+            else:
+                print('going back to menu?')
+                return 'back_to_menu'
             
 
         if mouse_press[0] and resume_game.is_clicked(mouse_pos):
             paused = False
 
-        if mouse_press[0] and restart_game.is_clicked(mouse_pos):
-            paused = False
-            # ── LAN cleanup ──
-            if hasattr(main, '_active_net_client') and global_vars.active_net_client is not None:
-                global_vars.active_net_client.disconnect()
-                global_vars.active_net_client = None
-            reset_all()
-            fade(loading_screen_bg, game)
-            
+        if global_vars.active_net_client is None:
+            if mouse_press[0] and restart_game.is_clicked(mouse_pos):
+                paused = False
+                reset_all()
+                return 'restart'
+                # fade(loading_screen_bg, game)
+                
 
-        if mouse_press[0] and in_game_settings_button.is_clicked(mouse_pos):
-            settings(in_game=True)
+            if mouse_press[0] and in_game_settings_button.is_clicked(mouse_pos):
+                settings(in_game=True)
 
 
             
@@ -1592,62 +1607,47 @@ def menu():
                 pygame.quit()
                 exit()   
                 pass
-                # return
+
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 if not _lan_connecting and (not hasattr(main, '_active_net_client') or global_vars.active_net_client is None):
                     _lan_connecting = True
                     reason = lan_connect('127.0.0.1')
-                    # lobby('disconnected')
                     _lan_connecting = False
                     if reason == 'opponent_left':
                         lobby('disconnected')
-                        
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
-                    
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     main_menu()
-                    return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if multiplayer_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = False
                     main.player_selection()
-                    
-             
+                                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
-                # if info_button.is_clicked(event.pos):
-                #     info()
-                #     return
-                    # return
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if control_button.is_clicked(event.pos):
                     fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
-                    # controls()
-                    return
-                    # return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if settings_button.is_clicked(event.pos):
                     settings()
-                    return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if campaign_button.is_clicked(event.pos):
-                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
-                    # campaign()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if login_button.is_clicked(event.pos):
-                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], login, 300, True)
-                    # campaign()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # pass
@@ -1657,18 +1657,13 @@ def menu():
             if keys[pygame.K_SPACE]:
                 main.player_selection()
                 
-            
             if keys[pygame.K_r]:
                 main.player_selection()
                 
-            
             if keys[pygame.K_e]:
                 controls()
-                return
-        # main.screen.blit(background, (0, 0))
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
-        # Animate_BG.Sword_campaign.display(screen, speed=50)
         create_bordered_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
@@ -2499,11 +2494,9 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                 exit()  
             if keys[pygame.K_ESCAPE]:
                 key_list = keybind_select_reset(key_list)
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
                     return
                 
 
@@ -3073,11 +3066,8 @@ def main_menu():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.is_clicked(event.pos):
-                    # fade(background, menu)
-                    menu()
                     return
             if keys[pygame.K_RETURN]:
-                menu()
                 return
 
         # main.screen.blit(background, (0, 0))
@@ -3085,8 +3075,6 @@ def main_menu():
         # Animate_BG.trees_bg.display(screen, speed=50)
         create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
-
-        
 
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -3340,14 +3328,14 @@ def settings(in_game=False):
                 exit()   
 
             if keys[pygame.K_ESCAPE]:
-                if not in_game:
-                    menu()
+                # if not in_game:
+                #     menu()
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    if not in_game:
-                        menu()
+                    # if not in_game:
+                    #     menu()
                     return
                 
                 # Mute toggle
@@ -3534,8 +3522,8 @@ def lobby(status=None):
 
 if __name__ == '__main__':
     from heroes import lan_connect
-
     main_menu()
+    menu()
 
 
 

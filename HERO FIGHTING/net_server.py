@@ -26,6 +26,8 @@ lobby = {
     'p2_hero': None,      # hero name confirmed by p2
     'p1_ready': False,
     'p2_ready': False,
+    'p1_load_ready': False, # check if p1 loads the p2 successfully
+    'p2_load_ready': False
 }
 
 # ── Phase 2: cube position authority ──
@@ -73,7 +75,7 @@ def handle_client(conn, player_type):
             elif message_type == 'hero_ready':
                 lobby[f'p{player_type}_hero'] = msg['hero']
                 lobby[f'p{player_type}_ready'] = True
-                broadcast({'type': 'hero_confirmed', 'player': player_type, 'hero': msg['hero']})
+                broadcast({'type': 'hero_confirmed', 'player': player_type, 'hero': msg['hero']})                
                 if lobby['p1_ready'] and lobby['p2_ready']:
                     broadcast({'type': 'both_ready',
                                'p1_hero': lobby['p1_hero'],
@@ -82,14 +84,26 @@ def handle_client(conn, player_type):
                     lobby['p1_ready'] = False
                     lobby['p2_ready'] = False
 
-                    
+            elif message_type == 'load_opponent_hero':
+                lobby[f'p{player_type}_load_ready'] = True
+                broadcast({'type': 'not_ready',})  
+                # print('broadcasting ')              
+                if lobby['p1_load_ready'] and lobby['p2_load_ready']:
+                    # broadcast({'type': 'both_ready',
+                    #            'p1_hero': lobby['p1_hero'],
+                    #            'p2_hero': lobby['p2_hero'],
+                    #            'map': lobby['map']})
+                    broadcast({'type': 'ready_to_battle'})
+                    lobby['p1_load_ready'] = False
+                    lobby['p2_load_ready'] = False
+                
             elif message_type == 'cube_reset':
                 idx = msg['index']
                 cube_states[idx]['fall'] = msg['fall']
                 cube_states[idx]['x'] = msg['x']
                 broadcast({'type': 'cube_update', 'index': idx, 'fall': msg['fall'], 'x': msg['x']})
     except (ConnectionResetError, ConnectionAbortedError):
-        pass
+        print('[SERVER] Connection error!')
     finally:
         with lock:
             clients.pop(player_type, None)

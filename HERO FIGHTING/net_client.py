@@ -111,10 +111,6 @@ class NetClient:
                 print('both ready :)')
                 self.both_ready = True
 
-            elif message_type == 'not_ready':
-                print('not ready')
-                self.both_ready = False
-
             elif message_type == 'ready_to_battle':
                 print('ready to battle!!!')
                 self.both_ready = True

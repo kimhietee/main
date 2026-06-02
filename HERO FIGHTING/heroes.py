@@ -3329,9 +3329,9 @@ def player_selection(net_client=None):
                 if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE] or immediate_run:
                     
                     # ── Phase 2: LAN host sends map choice ──
-                    if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1:
-                        _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
-                        global_vars.active_net_client.send_map(_map_name)
+                    # if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1:
+                    #     _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
+                    #     global_vars.active_net_client.send_map(_map_name)
 
                     screen.blit(background, (0, 0))
                     loading.draw(screen, pygame.mouse.get_pos())
@@ -3356,80 +3356,76 @@ def player_selection(net_client=None):
                         'Chthulu': Chthulu,
                         'Phantom_Assassin': Phantom_Assassin,
                     }
-                    
-                    # if net_client is not None and net_client.p1_hero and net_client.p2_hero:
-                    #     PLAYER_1_SELECTED_HERO = _hero_map.get(net_client.p1_hero, PLAYER_1_SELECTED_HERO)
-                    #     PLAYER_2_SELECTED_HERO = _hero_map.get(net_client.p2_hero, PLAYER_2_SELECTED_HERO)
 
-                    
-                    if (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1):
-                        hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
-                    elif (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 2):
-                        hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
-                    
-                    # ── LAN: send hero choice and wait for both ──
                     if global_vars.active_net_client is not None:
-                        # Send MY hero name to server
+                        # send map (P1 only)
+                        if global_vars.active_net_client.my_player_type == 1:
+                            _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
+                            global_vars.active_net_client.send_map(_map_name)
+
+                        # load my hero
+                        if global_vars.active_net_client.my_player_type == 1:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                        else:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+
                         my_hero_name = (PLAYER_1_SELECTED_HERO.__name__ 
                                         if global_vars.active_net_client.my_player_type == 1 
                                         else PLAYER_2_SELECTED_HERO.__name__)
+                        
+                        # send hero_ready, wait for both_ready
                         global_vars.active_net_client.send_hero_ready(my_hero_name)
-                        print('send hero ready')
-                        # Wait for server to confirm both heroes
                         wait_font = global_vars.get_font(40)
+
+                        while not global_vars.active_net_client.both_ready:
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit()
+                                    exit()
+                            if global_vars.active_net_client.opponent_left:
+                                return 'opponent_left'
+                            
+                            screen.fill((0, 0, 0))
+                            wait_text = wait_font.render("Waiting for opponent...", True, white)
+                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
+                            pygame.display.update()
+                            clock.tick(30)
+                        
+                        # load opponent hero
+                        PLAYER_1_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p1_hero, PLAYER_1_SELECTED_HERO)
+                        PLAYER_2_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p2_hero, PLAYER_2_SELECTED_HERO)
+                        
+                        # load opponent hero
+                        if global_vars.active_net_client.my_player_type == 1:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                        elif global_vars.active_net_client.my_player_type == 2:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                            
+                        global_vars.active_net_client.send_load_opponent_hero(my_hero_name)
+
                         while not global_vars.active_net_client.ready_to_battle:
                             for event in pygame.event.get():
                                 if event.type == pygame.QUIT:
-                                    pygame.quit(); exit()
-                            if global_vars.active_net_client.opponent_left:   # ← add this
+                                    pygame.quit()
+                                    exit()
+                            if global_vars.active_net_client.opponent_left:
                                 return 'opponent_left'
                             
-                            print(f'both ready? {global_vars.active_net_client.both_ready}')
-                            while not global_vars.active_net_client.both_ready:
-                                for event in pygame.event.get():
-                                    if event.type == pygame.QUIT:
-                                        pygame.quit(); exit()
-                                if global_vars.active_net_client.opponent_left:   # ← add this
-                                    return 'opponent_left'
-                                
-                                screen.fill((0, 0, 0))
-                                wt = wait_font.render('Waiting for opponent...', True, white)
-                                screen.blit(wt, (width//2 - wt.get_width()//2, height//2 - wt.get_height()//2))
-                                pygame.display.update()
-                                clock.tick(30)
-
                             screen.fill((0, 0, 0))
-                            wt = wait_font.render('Loading opponent hero...', True, white)
-                            screen.blit(wt, (width//2 - wt.get_width()//2, height//2 - wt.get_height()//2))
-                            PLAYER_1_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p1_hero, PLAYER_1_SELECTED_HERO)
-                            PLAYER_2_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p2_hero, PLAYER_2_SELECTED_HERO)
-                            # loads the opponent hero
-                            if (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1):
-                                hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
-                            elif (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 2):
-                                hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
-                                
-                            global_vars.active_net_client.send_load_opponent_hero(my_hero_name)
-                            print('send opponent load')
-
-
-                            
-                        
-                            
-                            
-                            
+                            wait_text = wait_font.render("Loading opponent hero...", True, white)
+                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
                             pygame.display.update()
                             clock.tick(30)
-                            
-                        
 
-
-
-
-                    
-                    # print(hero1.enemy)
-                    # print(hero2.enemy)
-                    # hero3 = Wind_Hashashin(PLAYER_1, hero2)
+                    else:
+                        # ── Local mode (unchanged) ──
+                        if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                        if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 2:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                        # print(hero1.enemy)
+                        # print(hero2.enemy)
+                        # hero3 = Wind_Hashashin(PLAYER_1, hero2)
                     
 
                     if global_vars.SINGLE_MODE_ACTIVE:

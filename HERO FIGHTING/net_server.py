@@ -86,13 +86,7 @@ def handle_client(conn, player_type):
 
             elif message_type == 'load_opponent_hero':
                 lobby[f'p{player_type}_load_ready'] = True
-                broadcast({'type': 'not_ready',})  
-                # print('broadcasting ')              
                 if lobby['p1_load_ready'] and lobby['p2_load_ready']:
-                    # broadcast({'type': 'both_ready',
-                    #            'p1_hero': lobby['p1_hero'],
-                    #            'p2_hero': lobby['p2_hero'],
-                    #            'map': lobby['map']})
                     broadcast({'type': 'ready_to_battle'})
                     lobby['p1_load_ready'] = False
                     lobby['p2_load_ready'] = False

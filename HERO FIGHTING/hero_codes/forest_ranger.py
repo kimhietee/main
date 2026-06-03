@@ -23,6 +23,8 @@ from player import Player
 import global_vars
 import random
 import pygame
+from path_helper import resource_path
+
 '''Forest Ranger Config'''
 FR_JUMP_COUNT = 6
 FR_RUN_COUNT = 8
@@ -90,7 +92,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         "atk_spd_mod": 1.1,
         "atk_spd": 100,
         "hp_regen": 0.8,
-        "mana_regen": 5.0,
+        "mana_regen": 5.2,
         "move_speed": 2.53,
     }
     
@@ -111,7 +113,7 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.agility = 30 # = 35
 
         self.base_health_regen = 0.8 # 1.12
-        self.base_mana_regen = 5.0 # 5.92
+        self.base_mana_regen = 5.2 # 6.12
         self.base_attack_damage = 0.1 # 3.5
 
         self.base_attack_speed = 100
@@ -262,10 +264,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         sp_ani= [r'assets\characters\Forest Ranger\PNG\sp_atk\sp_atk_', 17, 0]
         death_ani= [r'assets\characters\Forest Ranger\PNG\death\death_', 19, 0]
 
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3')
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/shine-8-268901 1.mp3'))
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/wind-chimes-2-199848 2.mp3'))
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/elemental-magic-spell-impact-outgoing-228342 3.mp3'))
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/Rasengan Sound Effect 4.mp3'))
         self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)

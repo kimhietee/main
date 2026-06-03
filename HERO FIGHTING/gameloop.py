@@ -1,7 +1,13 @@
 import pygame
 import json
 import os
+import sys
 import time
+
+# --- iOS / cross-platform CWD fix (Approach A safety net) ---
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+from path_helper import resource_path
 
 
 
@@ -27,8 +33,10 @@ from global_vars import SHOW_HITBOX
 import global_vars
 
 
-from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title
+from button import ImageButton, ImageInfo, ModalObject, draw_black_screen, create_title, RectButton, create_bordered_title, create_timed_title
 import heroes as main
+import global_vars
+
 
 
 
@@ -332,9 +340,9 @@ class Leaderboard:
 
 pygame.font.init()
 
-MENU_MUSIC = r'assets\audios\price-of-freedom-33106.mp3'
-GAME_MUSIC_1 = r'assets\audios\intense-battle-scene-115478.mp3'
-GAME_MUSIC_2 = r'assets\audios\z-battle-227609.mp3'
+MENU_MUSIC = resource_path('assets/audios/price-of-freedom-33106.mp3')
+GAME_MUSIC_1 = resource_path('assets/audios/intense-battle-scene-115478.mp3')
+GAME_MUSIC_2 = resource_path('assets/audios/z-battle-227609.mp3')
 
 MENU_FADE_DURATION = 1000  # in milliseconds
 GAME_FADE_IN = 1500
@@ -699,13 +707,13 @@ def fade(background:pygame.Surface, action:Callable[[Any], Any], fade_duration=M
             screen.blit(fade_overlay, (0, 0)) if not immediate_load else None
             # print(fade_alpha, not immediate_load)
             if fade_alpha >= 255 and not immediate_load:
-                action()
+                end_result = action()
                 fading = False
-                return
+                return end_result
             if fade_alpha >= 10 and immediate_load: # load function immediately (just displaying first frame)
-                action()
+                end_result = action()
                 fading = False
-                return
+                return end_result
             
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -794,8 +802,12 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
 def run_background(bg):
     bg.display(screen)
 import time
-def game(bg=None):
+def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
+    if net_client is not None:
+        net_client.phase = 'playing'
+
+    
     game_music_started = False
     second_track_played = False
     battle_result_recorded = False  # Reset for new game
@@ -820,13 +832,13 @@ def game(bg=None):
     start_time = pygame.time.get_ticks()
     timer_font = global_vars.get_font(50)  # Timer font
 
-    cube_sound = pygame.mixer.Sound(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3')
+    cube_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/shine-8-268901 1.mp3'))
     cube_sound.set_volume(0.8 * global_vars.MAIN_VOLUME) 
 
     cubes = [
-        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(r'assets\icons\hp bonus.png').convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
-        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(r'assets\icons\mana bonus.png').convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
-        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(r'assets\icons\special bonus.png').convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
+        {'fall': -500, 'x': random.randint(20, int(main.width - 20)), 'color': 'Green', 'image': pygame.image.load(resource_path('assets/icons/hp bonus.png')).convert_alpha(), 'bonus_type': 'health', 'bonus_amount': 10, 'sound': cube_sound},
+        {'fall': -300, 'x': random.randint(20, int(main.width - 20)), 'color': 'Blue', 'image': pygame.image.load(resource_path('assets/icons/mana bonus.png')).convert_alpha(), 'bonus_type': 'mana', 'bonus_amount': 30, 'sound': cube_sound},
+        {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(resource_path('assets/icons/special bonus.png')).convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
     ]
     
     
@@ -903,6 +915,12 @@ def game(bg=None):
         # if not paused:
         #     main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
+        
+        if net_client is not None and net_client.opponent_left:
+            # net_client.opponent_left = False
+            # net_client.disconnect()
+            print("Opponent left detected in player_selection")
+            return 'opponent_left'
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
@@ -1010,7 +1028,7 @@ def game(bg=None):
 # -------------------------------------------------------------------------------------
         
         
-        if not paused:
+        if not paused or global_vars.active_net_client is not None:
             # Background
             # Animate_BG.waterfall_bg.display(screen)
             # Animate_BG.lava_bg.display(screen)
@@ -1049,7 +1067,14 @@ def game(bg=None):
             for i, item in enumerate(main.hero2.items):
                 item.draw_icon((main.width-(150+(50*i)), 100), small='smallest')
         
-            for cube in cubes:
+            # ── Phase 2: apply pending cube updates from server ──
+            if net_client is not None:
+                for update in net_client.pop_cube_updates():
+                    ci = update['index']
+                    cubes[ci]['fall'] = update['fall']
+                    cubes[ci]['x'] = update['x']
+
+            for i, cube in enumerate(cubes):
                 cube['fall'], cube['x'] = handle_cube(
                     pygame.Rect(cube['x'], cube['fall'], 25, 25),
                     cube['fall'],
@@ -1060,7 +1085,9 @@ def game(bg=None):
                     main.hero2,
                     cube['bonus_type'],
                     cube['bonus_amount'],
-                    cube['sound']
+                    cube['sound'],
+                    cube_index=i,
+                    net_client=net_client
                 )
 
 
@@ -1083,6 +1110,57 @@ def game(bg=None):
             
             
 
+            
+            # ── NETWORK INPUT INJECTION ──────────────────────────────
+            if net_client is not None and net_client.phase == 'playing':
+                p1_keys, p2_keys = net_client.get_inputs()
+                my_type = net_client.my_player_type
+
+                # Both hero1 and hero2 get their inputs from the server
+                main.hero1._net_keys = p1_keys
+                main.hero2._net_keys = p2_keys
+
+                # Send MY keys to server this frame
+                keybinds = key.read_settings()
+                raw_keys = pygame.key.get_pressed()
+                if my_type == 1:
+                    my_keys = {
+                        'left':    bool(raw_keys[keybinds['left_move_p1'][0]]),
+                        'right':   bool(raw_keys[keybinds['right_move_p1'][0]]),
+                        'up':      bool(raw_keys[keybinds['jump_p1'][0]]),
+                        'basic':   bool(raw_keys[keybinds['basic_atk_p1'][0]]),
+                        'skill1':  bool(raw_keys[keybinds['skill_1_p1'][0]]),
+                        'skill2':  bool(raw_keys[keybinds['skill_2_p1'][0]]),
+                        'skill3':  bool(raw_keys[keybinds['skill_3_p1'][0]]),
+                        'skill4':  bool(raw_keys[keybinds['skill_4_p1'][0]]),
+                        'special': bool(raw_keys[keybinds['sp_skill_p1'][0]]),
+                    }
+                else:
+                    my_keys = {
+                        'left':    bool(raw_keys[keybinds['left_move_p2'][0]]),
+                        'right':   bool(raw_keys[keybinds['right_move_p2'][0]]),
+                        'up':      bool(raw_keys[keybinds['jump_p2'][0]]),
+                        'basic':   bool(raw_keys[keybinds['basic_atk_p2'][0]]),
+                        'skill1':  bool(raw_keys[keybinds['skill_1_p2'][0]]),
+                        'skill2':  bool(raw_keys[keybinds['skill_2_p2'][0]]),
+                        'skill3':  bool(raw_keys[keybinds['skill_3_p2'][0]]),
+                        'skill4':  bool(raw_keys[keybinds['skill_4_p2'][0]]),
+                        'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
+                    }
+                net_client.send_input(my_keys)
+            else:
+                # Normal local mode — clear net_keys so keyboard works
+                if hasattr(main, 'hero1') and main.hero1 is not None: main.hero1._net_keys = None
+                if hasattr(main, 'hero2') and main.hero2 is not None: main.hero2._net_keys = None
+            # ── END NETWORK INPUT INJECTION ──────────────────────────
+
+            # detect if anyone left
+            if net_client is not None and net_client.opponent_left:
+                net_client.opponent_left = False
+                net_client.disconnect()
+                global_vars.active_net_client = None
+                # lobby('disconnected') 
+                return 'opponent_left'
             
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
@@ -1160,10 +1238,16 @@ def game(bg=None):
             # main.hero3.update_damage_numbers(main.screen)
 
             # main.hero2.health = 1 if not main.hero2.is_dead() else 0
-            battle_end(mouse_pos, mouse_press)
-            pause(mouse_pos, mouse_press)
+            battle_end_result = battle_end(mouse_pos, mouse_press)
+            pause_result = pause(mouse_pos, mouse_press)
+            if pause_result == 'back_to_menu' or battle_end_result == 'back_to_menu':
+                return 'back_to_menu'
+            
             # print(FPS)
-        else:
+
+            
+
+        else: # completely pause if only offline
             pause(mouse_pos, mouse_press)
 
         
@@ -1234,7 +1318,7 @@ def leaderboard():
         main.pygame.display.update()
         main.clock.tick(main.FPS)
 
-def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound):
+def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, bonus_type, bonus_amount, sound, cube_index=0, net_client=None):
     """
     Handles the logic for a single cube.
 
@@ -1291,8 +1375,14 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                     # blue-ish text for special pickups
                     hero1.display_damage(actual, interval=30, color=gold, size=50)
                 
-            cube_x = random.randint(20, int(main.width - 20))
-            cube_fall = random.randint(-2000, -500)
+            if net_client is not None:
+                if net_client.my_player_type == 1:
+                    cube_x = random.randint(20, int(main.width - 20))
+                    cube_fall = random.randint(-2000, -500)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+            else:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = random.randint(-2000, -500)
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             sound.play()
             if bonus_type == 'health':
@@ -1317,11 +1407,23 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 if actual > 0:
                     hero2.display_damage(actual, interval=30, color=gold, size=50)
 
-            cube_x = random.randint(20, int(main.width - 20))
-            cube_fall =random.randint(-2000, -500)
+            if net_client is not None:
+                if net_client.my_player_type == 1:
+                    cube_x = random.randint(20, int(main.width - 20))
+                    cube_fall = random.randint(-2000, -500)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+            else:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = random.randint(-2000, -500)
     else:
-        cube_x = random.randint(20, int(main.width - 20))
-        cube_fall = -150
+        if net_client is not None:
+            if net_client.my_player_type == 1:
+                cube_x = random.randint(20, int(main.width - 20))
+                cube_fall = -150
+                net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+        else:
+            cube_x = random.randint(20, int(main.width - 20))
+            cube_fall = -150
 
     return cube_fall, cube_x
 
@@ -1406,14 +1508,23 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
         rematch_game.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            menu()
-            return
+            if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+                print(f'I am leaving good luck everybody')
+                print("Opponent left detected in player_selection")
+                return 'opponent_left'
+            else:
+                print('going back to menu?')
+                return 'back_to_menu'
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
+
+            if global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
+
             reset_all()
-            fade(loading_screen_bg, game)
-            return
+            return "rematch"
 
 def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
@@ -1421,32 +1532,43 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
         font = global_vars.get_font(100)
     if paused:
         create_title('PAUSED', font, default_size - 0.55, height * 0.40)
-    
+
         menu_game.draw(screen, mouse_pos)
         resume_game.draw(screen, mouse_pos)
-        restart_game.draw(screen, mouse_pos)
-        in_game_settings_button.draw(screen, mouse_pos)
+        if global_vars.active_net_client is None:
+            restart_game.draw(screen, mouse_pos)
+            in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            menu()
+            if global_vars.active_net_client is None and global_vars.active_net_client.opponent_left:
+                print(f'I am leaving good luck everybody')
+                print("Opponent left detected in player_selection")
+                return 'opponent_left'
+            else:
+                print('going back to menu?')
+                return 'back_to_menu'
             
 
         if mouse_press[0] and resume_game.is_clicked(mouse_pos):
             paused = False
 
-        if mouse_press[0] and restart_game.is_clicked(mouse_pos):
-            paused = False
-            reset_all()
-            fade(loading_screen_bg, game)
-            
+        if global_vars.active_net_client is None:
+            if mouse_press[0] and restart_game.is_clicked(mouse_pos):
+                paused = False
+                reset_all()
+                return 'restart'
+                # fade(loading_screen_bg, game)
+                
 
-        if mouse_press[0] and in_game_settings_button.is_clicked(mouse_pos):
-            settings(in_game=True)
+            if mouse_press[0] and in_game_settings_button.is_clicked(mouse_pos):
+                settings(in_game=True)
 
 
             
 
 pygame.mixer.music.set_volume(0.8 * global_vars.MAIN_VOLUME)
+
+
 
 def menu():
     
@@ -1470,6 +1592,7 @@ def menu():
     font = global_vars.get_font(100)
     default_size = ((main.width * main.DEFAULT_HEIGHT) / (main.height * main.DEFAULT_WIDTH))
 
+    _lan_connecting = False
 
     while True:
         events = pygame.event.get()
@@ -1484,54 +1607,47 @@ def menu():
                 pygame.quit()
                 exit()   
                 pass
-                # main.player_selection()
-                # return
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+                if not _lan_connecting and (not hasattr(main, '_active_net_client') or global_vars.active_net_client is None):
+                    _lan_connecting = True
+                    reason = lan_connect('127.0.0.1')
+                    _lan_connecting = False
+                    if reason == 'opponent_left':
+                        lobby('disconnected')
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = True
                     main.player_selection()
-                    return
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     main_menu()
-                    return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if multiplayer_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = False
                     main.player_selection()
-                    return
-             
+                                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
-                # if info_button.is_clicked(event.pos):
-                #     info()
-                #     return
-                    # return
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if control_button.is_clicked(event.pos):
                     fade(Animate_BG.waterfall_day_bg.frames[0], controls, 300, True)
-                    # controls()
-                    return
-                    # return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if settings_button.is_clicked(event.pos):
                     settings()
-                    return
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if campaign_button.is_clicked(event.pos):
-                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], campaign, 300, True)
-                    # campaign()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if login_button.is_clicked(event.pos):
-                    # fade(Animate_BG.Sword_campaign.frames[0], campaign, 300, True)
                     fade(Animate_BG.waterfall_day_bg.frames[0], login, 300, True)
-                    # campaign()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # pass
@@ -1540,19 +1656,14 @@ def menu():
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
-                return
-            
+                
             if keys[pygame.K_r]:
                 main.player_selection()
-                return
-            
+                
             if keys[pygame.K_e]:
                 controls()
-                return
-        # main.screen.blit(background, (0, 0))
         
         Animate_BG.waterfall_day_bg.display(screen, speed=50)
-        # Animate_BG.Sword_campaign.display(screen, speed=50)
         create_bordered_title('Maine Menu', font, default_size, main.height * 0.2)
         single_button.draw(main.screen, mouse_pos)
         multiplayer_button.draw(main.screen, mouse_pos)
@@ -2383,11 +2494,9 @@ def controls(can_click = can_click, opacity=opacity, display_confirmation = disp
                 exit()  
             if keys[pygame.K_ESCAPE]:
                 key_list = keybind_select_reset(key_list)
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
                     return
                 
 
@@ -2853,9 +2962,9 @@ def display_keyswap_confirmation(condition):
 
 def info():
     hero_detail = main.pygame.transform.scale(
-        pygame.image.load(r'assets\hero info detail.png').convert(), (main.width, main.height))
+        pygame.image.load(resource_path('assets/hero info detail.png')).convert(), (main.width, main.height))
     hero_info = main.pygame.transform.scale(
-        pygame.image.load(r'assets\hero info dmg.png').convert(), (main.width, main.height))
+        pygame.image.load(resource_path('assets/hero info dmg.png')).convert(), (main.width, main.height))
 
     next = ImageButton(
     image_path=text_box_img,
@@ -2942,7 +3051,7 @@ def main_menu():
 
     while True:
         # dev option
-        if IMMEDIATE_RUN:
+        if IMMEDIATE_RUN: # just a debug, does not matter anyway
             main.player_selection()
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
@@ -2957,11 +3066,8 @@ def main_menu():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.is_clicked(event.pos):
-                    # fade(background, menu)
-                    menu()
                     return
             if keys[pygame.K_RETURN]:
-                menu()
                 return
 
         # main.screen.blit(background, (0, 0))
@@ -2969,8 +3075,6 @@ def main_menu():
         # Animate_BG.trees_bg.display(screen, speed=50)
         create_title('Fighting Kimhie', font, default_size, main.height * 0.2, color='Grey3')
         play_button.draw(main.screen, mouse_pos)
-
-        
 
         pygame.display.update()
         main.clock.tick(main.FPS)
@@ -3224,14 +3328,14 @@ def settings(in_game=False):
                 exit()   
 
             if keys[pygame.K_ESCAPE]:
-                if not in_game:
-                    menu()
+                # if not in_game:
+                #     menu()
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    if not in_game:
-                        menu()
+                    # if not in_game:
+                    #     menu()
                     return
                 
                 # Mute toggle
@@ -3354,6 +3458,54 @@ def settings(in_game=False):
 
 
 
+def lobby(status=None):
+    global load_sword_login_bg
+
+    font = global_vars.get_font(60)
+    status_start_time = None
+
+    while True:
+        events = pygame.event.get()
+        keys = pygame.key.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_press = pygame.mouse.get_pressed()
+        key_press = pygame.key.get_pressed()
+
+        current_time = pygame.time.get_ticks()
+        for event in events:
+            if event.type == main.pygame.QUIT:
+                main.pygame.quit()
+                exit()
+
+            if keys[pygame.K_ESCAPE]:
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    return
+
+
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
+
+        create_title('lobby', font)
+        if status is not None:
+            if status == 'disconnected':
+                if status_start_time is None:
+                    status_start_time = pygame.time.get_ticks()
+
+                create_timed_title('opponent left', status_start_time, 5000, font, y_offset=150, color=red, scale=0.5)
+
+        menu_button.draw(screen, mouse_pos)
+
+
+
+
+        main.pygame.display.update()
+        main.clock.tick(main.FPS)
+
+
 # Image Paths
 
 
@@ -3369,7 +3521,9 @@ def settings(in_game=False):
 
 
 if __name__ == '__main__':
+    from heroes import lan_connect
     main_menu()
+    menu()
 
 
 
@@ -3445,7 +3599,7 @@ def set_background_texture(screen, texture_path):
 
 # Example usage in the game loop
 # Replace the plain color background with a texture
-background_texture_path = r'assets/black sand.jpg'  # Replace with your texture file
+background_texture_path = resource_path('assets/black sand.jpg')  # Replace with your texture file
 # set_background_texture(screen, background_texture_path)
 
 # Add animations for elements entering the screen

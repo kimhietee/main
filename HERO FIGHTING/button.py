@@ -36,6 +36,15 @@ def create_bordered_title(text, font=None, scale=1, y_offset=100, color=white, a
     
     screen.blit(main_title, title_rect)
 
+def create_timed_title(text, start_time, duration=1000, font=None, scale=1, y_offset=100, color=white, angle=0, x_offset=width, x_real_offset=0):
+    current_time = pygame.time.get_ticks()
+
+    if current_time - start_time < duration:
+        title = pygame.transform.rotozoom(font.render(f'{text}', TEXT_ANTI_ALIASING, color), angle, scale)
+        title_rect = title.get_rect(center = (x_offset / 2 + x_real_offset, y_offset))
+
+        screen.blit(title, title_rect)
+        
 class ImageButton:
     def __init__(self, image_path, pos, scale, text, font_path, font_size, text_color, move_y=0, hover_move=2, fku=False, scale_val=(0,0), alpha=(1,1), text_anti_alias=True, y_margin=0):
         # Load and scale the image

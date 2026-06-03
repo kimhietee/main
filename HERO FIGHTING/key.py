@@ -3,6 +3,7 @@ import pygame
 import json
 import os
 import global_vars as g
+from path_helper import resource_path
    
 
 
@@ -120,11 +121,11 @@ status = [
     pygame.K_DELETE,
 ]
 
-os.makedirs("key_settings", exist_ok=True)
+os.makedirs(resource_path("key_settings"), exist_ok=True)
 
 def get_keybinds_filename():
     """Get the keybinds filename for the current user"""
-    return f"key_settings/keybinds_{g.user_id}.json"
+    return resource_path(f"key_settings/keybinds_{g.user_id}.json")
 
 def read_settings():
     """Read keybinds for the current logged-in user"""
@@ -155,7 +156,7 @@ def write_settings_for_user(user_id, keybinds_data):
         print("Warning: user_id is None, cannot save keybinds")
         return
     
-    filename = f"key_settings/keybinds_{user_id}.json"
+    filename = resource_path(f"key_settings/keybinds_{user_id}.json")
     try:
         with open(filename, "w") as f:
             json.dump(keybinds_data, f, indent=4)

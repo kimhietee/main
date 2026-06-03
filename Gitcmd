@@ -1,0 +1,28 @@
+[33mcommit cf153181939b9d6af4dd476734b0c6b26f07c570[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Kimhie Tee <148678535+kimhietee@users.noreply.github.com>
+Date:   Fri Apr 17 01:33:11 2026 +0800
+
+    changed mark of death count
+
+[1mdiff --git a/HERO FIGHTING/hero_codes/wind_hashashin.py b/HERO FIGHTING/hero_codes/wind_hashashin.py[m
+[1mindex f4e529f..92ffcc7 100644[m
+[1m--- a/HERO FIGHTING/hero_codes/wind_hashashin.py[m	
+[1m+++ b/HERO FIGHTING/hero_codes/wind_hashashin.py[m	
+[36m@@ -157,7 +157,7 @@[m [mclass Wind_Hashashin(Player):[m
+         self.special_tornado_cast_range = 130[m
+         self.special_tornado_airborne_duration = 1800[m
+         self.omnislash_count = 4 # same for the special version[m
+[31m-        self.mark_of_death_count = [1500, 3000, 4500, 6000][m
+[32m+[m[32m        self.mark_of_death_count = [500, 1500, 2500][m
+         [m
+ [m
+         self.raw_atk1_dmg = 10[m
+[36m@@ -180,7 +180,7 @@[m [mclass Wind_Hashashin(Player):[m
+         self.raw_sp_atk2_dmg = 26[m
+         self.raw_sp_atk3_dmg = 50[m
+         self.raw_sp_atk4_dmg = 10 # times 4[m
+[31m-        self.raw_sp_atk4_dmg_2nd = 2 # times 4, times (count(4)) + 40 = 72[m
+[32m+[m[32m        self.raw_sp_atk4_dmg_2nd = 3 # times 4, times (count(3)) + 40 = 76[m
+ [m
+ [m
+         self.sp_atk3_ani_count = 20[m

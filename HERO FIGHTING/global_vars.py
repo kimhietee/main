@@ -1,19 +1,23 @@
 import pygame
+from path_helper import resource_path
 
 # Screen and Display
-width = 1280
-height = 720
+# width = 1280
+# height = 720
+width = 1280 // 1.5
+height = 720 // 1.5
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
-icon = pygame.image.load(r'assets\icons\miku.png')      
+icon = pygame.image.load(resource_path('assets/icons/miku.png'))      
 FPS = 60
 clock = pygame.time.Clock()
-# screen = pygame.display.set_mode((width, height))
+screen = pygame.display.set_mode((width, height))
 # screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 
+# REAL IS BELOW VVVVVV
 # screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED, vsync=1)
-screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
+# screen = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN, vsync=1) # FULLSCREEN !!!
 
 # display_size = pygame.display.get_desktop_sizes()
 # width,height = display_size[0][0]-50, display_size[0][1]-50
@@ -33,6 +37,7 @@ gold = 'Gold' #special
 # 'yellow'
 
 IMMEDIATE_RUN = False
+active_net_client = None
 
 HERO1_BOT = False
 all_items = False #equip bot with all items
@@ -240,33 +245,33 @@ current_user_controls2 = None
 
 #loading screen
 loading_screen_bg = pygame.transform.scale(
-        pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
+        pygame.image.load(resource_path('assets/backgrounds/12.png')).convert(), (width, height))
 
 #hero icons
-fire_wizard_icon = r'assets\hero profiles\fire wizard prof.png'
-wanderer_magician_icon = r'assets\hero profiles\wanderer magician prof.png'
-fire_knight_icon = r'assets\hero profiles\Fire Knight.png'
-wind_hashashin_icon = r'assets\hero profiles\Wind Hashashin.png'
-water_princess_icon = r'assets\hero profiles\Water Princess.png'
-forest_ranger_icon = r'assets\hero profiles\Forest Ranger.png'
-yurei_icon = r'assets\skill icons\onre\Yuriei.jpg'
-chthulu_icon = r'assets\hero profiles\Chthulu.png'
-phantom_assassin_icon = r'assets\hero profiles\phantom assassin prof.png'
+fire_wizard_icon = resource_path('assets/hero profiles/fire wizard prof.png')
+wanderer_magician_icon = resource_path('assets/hero profiles/wanderer magician prof.png')
+fire_knight_icon = resource_path('assets/hero profiles/Fire Knight.png')
+wind_hashashin_icon = resource_path('assets/hero profiles/Wind Hashashin.png')
+water_princess_icon = resource_path('assets/hero profiles/Water Princess.png')
+forest_ranger_icon = resource_path('assets/hero profiles/Forest Ranger.png')
+yurei_icon = resource_path('assets/skill icons/onre/Yuriei.jpg')
+chthulu_icon = resource_path('assets/hero profiles/Chthulu.png')
+phantom_assassin_icon = resource_path('assets/hero profiles/phantom assassin prof.png')
 
 #buttons
-play_button_img = r'assets\UI\buttons\BTN PLAY.png'
-text_box_img = r'assets\UI\buttons\Button BG.png'
-loading_button_img = r'assets\UI\buttons\Loading icon.png'
-menu_button_img = r'assets\UI\more\BTN MENU.png' 
+play_button_img = resource_path('assets/UI/buttons/BTN PLAY.png')
+text_box_img = resource_path('assets/UI/buttons/Button BG.png')
+loading_button_img = resource_path('assets/UI/buttons/Loading icon.png')
+menu_button_img = resource_path('assets/UI/more/BTN MENU.png') 
 
 #background icons
-waterfall_icon = r'assets\backgrounds\map_icon\waterfall_icon.gif'
-lava_icon = r'assets\backgrounds\map_icon\magma_chamber_icon.gif'
-dark_forest_icon = r'assets\backgrounds\map_icon\dark_forest_icon.gif'
-trees_icon = r'assets\backgrounds\map_icon\trees.gif'
-mountains_icon = r'assets\backgrounds\map_icon\mountains_icon.gif'
-sunset_icon = r'assets\backgrounds\map_icon\sunset_icon.gif'
-city_icon = r'assets\backgrounds\map_icon\city icon.gif'
+waterfall_icon = resource_path('assets/backgrounds/map_icon/waterfall_icon.gif')
+lava_icon = resource_path('assets/backgrounds/map_icon/magma_chamber_icon.gif')
+dark_forest_icon = resource_path('assets/backgrounds/map_icon/dark_forest_icon.gif')
+trees_icon = resource_path('assets/backgrounds/map_icon/trees.gif')
+mountains_icon = resource_path('assets/backgrounds/map_icon/mountains_icon.gif')
+sunset_icon = resource_path('assets/backgrounds/map_icon/sunset_icon.gif')
+city_icon = resource_path('assets/backgrounds/map_icon/city icon.gif')
 
 # button modifers
 
@@ -276,8 +281,8 @@ center_pos = (width / 2, height / 2)
 font_size = int(height * 0.02)# = 14
 
 # Font cache to avoid repeated font creation (expensive)
-FONT_PATH = r'assets\\font\\slkscr.ttf'
-FONT_PATH_2 = r'assets\\font\\slkscr.ttf'
+FONT_PATH = resource_path('assets/font/slkscr.ttf')
+FONT_PATH_2 = resource_path('assets/font/slkscr.ttf')
 _FONT_CACHE = {}
 
 def get_font(size, font_path=FONT_PATH):

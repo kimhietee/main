@@ -1,4 +1,5 @@
 import pygame
+from path_helper import resource_path
 
 from global_vars import (
     width, height, icon, FPS, clock, screen, hero1, hero2, BASIC_SLASH_ANIMATION, BASIC_SLASH_SIZE, ICON_WIDTH, ICON_HEIGHT, BASIC_ATK_POSX, BASIC_ATK_POSY, BASIC_ATK_POSX_END, BASIC_SLASH_SIZE_BIG,
@@ -94,6 +95,7 @@ class Player(pygame.sprite.Sprite):
         self.enemy = enemy if type(enemy) is list else [enemy]
         self.player_type = player_type # 1 for player 1, 2 for player 2
         self.name = "Unknown"
+        self._net_keys = None   # None = use keyboard; dict = use network inputs
         self.items = [] # contains 3 or less than 3 item classes. ex. 
                             # self.items = [Item("War Helmet", r"assets\item icons\in use\Icons_40.png", ["str", "str flat", "hp regen"], [0.05, 1, 0.04])]
         self.damage_reduce = 0
@@ -177,33 +179,33 @@ class Player(pygame.sprite.Sprite):
         attr_size = (24,24)
         # Strength icon
         self.strength_attribute_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\Strength_attribute_symbol.webp').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/Strength_attribute_symbol.webp')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
         # Agility icon
         self.agility_attribute_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\Agility_attribute_symbol.webp').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/Agility_attribute_symbol.webp')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
         # Intelligence icon
         self.intelligence_attribute_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\Intelligence_attribute_symbol.webp').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/Intelligence_attribute_symbol.webp')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
 
         # Strength icon
         self.attack_speed_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\atk spd icon.png').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/atk spd icon.png')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
         # Agility icon
         self.attack_time_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\atk time icon.png').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/atk time icon.png')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
         # Intelligence icon
         self.attack_damage_icon = pygame.transform.scale(
-            pygame.image.load(r'assets\icons\atk dmg icon.png').convert_alpha(),
+            pygame.image.load(resource_path('assets/icons/atk dmg icon.png')).convert_alpha(),
             (attr_size[0], attr_size[1])
         )
 
@@ -407,7 +409,7 @@ class Player(pygame.sprite.Sprite):
 
         #Attack-------------------------------------------------------------
 
-        basic_slash = [r'assets\attacks\Basic Attack\1', BASIC_SLASH_ANIMATION, 1]
+        basic_slash = [resource_path('assets/attacks/Basic Attack/1'), BASIC_SLASH_ANIMATION, 1]
         self.basic_slash = self.load_img_frames_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE)
         self.basic_slash_flipped = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE)
 
@@ -415,22 +417,22 @@ class Player(pygame.sprite.Sprite):
         self.basic_slash_flipped_big = self.load_img_frames_flipped_tile_method(basic_slash[0], basic_slash[1], basic_slash[2], BASIC_SLASH_SIZE_BIG)
 
 
-        basic_slash2 = [r'assets\attacks\Basic Attack\2', BASIC_SLASH_ANIMATION, 1]
+        basic_slash2 = [resource_path('assets/attacks/Basic Attack/2'), BASIC_SLASH_ANIMATION, 1]
         self.basic_slash2 = self.load_img_frames_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
         self.basic_slash2_flipped = self.load_img_frames_flipped_tile_method(basic_slash2[0], basic_slash2[1], basic_slash2[2], BASIC_SLASH_SIZE_BIG)
 
-        basic_slash3 = [r'assets\attacks\Basic Attack\3 small', 2, 1]
+        basic_slash3 = [resource_path('assets/attacks/Basic Attack/3 small'), 2, 1]
         self.basic_slash3 = self.load_img_frames_tile_method(basic_slash3[0], basic_slash3[1], basic_slash3[2], BASIC_SLASH_SIZE_BIG)
         self.basic_slash3_flipped = self.load_img_frames_flipped_tile_method(basic_slash3[0], basic_slash3[1], basic_slash3[2], BASIC_SLASH_SIZE_BIG)
         
         # melee
-        self.basic_icon = pygame.transform.scale(pygame.image.load(r'assets\icons\Blade_Dance_icon.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))
+        self.basic_icon = pygame.transform.scale(pygame.image.load(resource_path('assets/icons/Blade_Dance_icon.webp')).convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))
 
         # ranged
-        self.basic_icon2 = pygame.transform.scale(pygame.image.load(r'assets\icons\aghanims-scepter-from-dota-2-made-in-blender-v0-ew9qzvl10s2d1.webp').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
-        self.basic_icon3 = pygame.transform.scale(pygame.image.load(r'assets\icons\arrow image ICON.jpg').convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
+        self.basic_icon2 = pygame.transform.scale(pygame.image.load(resource_path('assets/icons/aghanims-scepter-from-dota-2-made-in-blender-v0-ew9qzvl10s2d1.webp')).convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
+        self.basic_icon3 = pygame.transform.scale(pygame.image.load(resource_path('assets/icons/arrow image ICON.jpg')).convert_alpha(), (ICON_WIDTH / 1.5, ICON_HEIGHT / 1.5))  
         
-        self.basic_sound = pygame.mixer.Sound(r'assets\sound effects\jump.swing-whoosh-110410.mp3')
+        self.basic_sound = pygame.mixer.Sound(resource_path('assets/sound effects/jump.swing-whoosh-110410.mp3'))
         self.basic_sound.set_volume(0.5 * MAIN_VOLUME)
         
         # modify in hero
@@ -3030,6 +3032,24 @@ class Player(pygame.sprite.Sprite):
     def inputs(self,):
         """Base user input collection from saved hotkeys on controls.
         \nHandles input for all heroes"""
+        # ── NETWORK MULTIPLAYER OVERRIDE ──────────────────────────
+        # If net_keys is set by the game loop, use those instead of keyboard
+        if hasattr(self, '_net_keys') and self._net_keys is not None:
+            k = self._net_keys
+            self.input(
+                k.get('skill1', False),
+                k.get('skill2', False),
+                k.get('skill3', False),
+                k.get('skill4', False),
+                k.get('right', False),
+                k.get('left', False),
+                k.get('up', False),
+                k.get('basic', False),
+                k.get('special', False),
+            )
+            return   # skip keyboard reading entirely
+        # ── END NETWORK OVERRIDE ───────────────────────────────────
+
         # print("Entered Player.py")
         keybinds=key.read_settings()
         self.keys = pygame.key.get_pressed()

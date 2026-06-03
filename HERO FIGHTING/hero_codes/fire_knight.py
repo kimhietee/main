@@ -22,6 +22,8 @@ from sprite_loader import load_attack, load_attack_flipped
 from player import Player
 import global_vars
 import pygame
+from path_helper import resource_path
+
 # Animation Counts
 FIRE_KNIGHT_JUMP_COUNT = 20
 FIRE_KNIGHT_RUN_COUNT = 8 
@@ -89,7 +91,7 @@ class Fire_Knight(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 60,
         "hp_regen": 0.85,
-        "mana_regen": 4.85,
+        "mana_regen": 5.05,
         "move_speed": 1.76,
     }
     
@@ -108,7 +110,7 @@ class Fire_Knight(Player):
         self.agility = 33 # 32*2 = 64 agility(65 -> 64) # NOO REVERT BACK! 64 -> 65
 
         self.base_health_regen = 0.85 # 1.22 + 15%
-        self.base_mana_regen = 4.85 # 5.21
+        self.base_mana_regen = 5.05 # 5.41
         self.base_attack_damage = 3.4 # 6.7
 
         self.base_attack_speed = 60
@@ -222,16 +224,16 @@ class Fire_Knight(Player):
         death_ani = [r'assets\characters\fire knight\11_death\death_', FIRE_KNIGHT_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\ult.mp3')
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire_wizard/short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3'))
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/2nd.mp3'))
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/3rrd.mp3'))
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/ult.mp3'))
         self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
-        self.burn_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3')
+        self.burn_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire_wizard/fire-sound-310285-[AudioTrimmer.com].mp3'))
         self.burn_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source

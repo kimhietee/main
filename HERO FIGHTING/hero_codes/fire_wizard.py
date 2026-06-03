@@ -1,3 +1,4 @@
+from path_helper import resource_path
 import pygame
 import random
 from player import Player
@@ -23,7 +24,7 @@ class Fire_Wizard(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 100,
         "hp_regen": 0.8,
-        "mana_regen": 5.3,
+        "mana_regen": 5.45,
         "move_speed": 2.2,
     }
     
@@ -45,7 +46,7 @@ class Fire_Wizard(Player):
         self.agility = 26 # real agility = 27
         
         self.base_health_regen = 0.8
-        self.base_mana_regen = 5.3
+        self.base_mana_regen = 5.45
         self.base_attack_damage = 0.1
 
         self.base_attack_speed = 100
@@ -121,10 +122,10 @@ class Fire_Wizard(Player):
         }
 
         # Sound Effects
-        sound1 = [r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3', 0.5]
-        sound2 = [r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3', 0.1]
-        sound3 = [r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3', 0.5]
-        sound4 = [r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3', 0.5]
+        sound1 = [resource_path(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3'), 0.5]
+        sound2 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3'), 0.1]
+        sound3 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3'), 0.5]
+        sound4 = [resource_path(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3'), 0.5]
         
         self.atk1_sound = self.load_sound(sound1[0])
         self.atk2_sound = self.load_sound(sound2[0])
@@ -137,21 +138,21 @@ class Fire_Wizard(Player):
         self.sp_sound.set_volume(sound4[1] * global_vars.MAIN_VOLUME)
 
         # Character Frame Source
-        basic_ani = [r'assets\characters\Fire wizard\slash pngs\Attack_1_', 10, 1]
-        # basic_ani = [r'assets\characters\stickman\attack\Frame0', 6, 0]
+        basic_ani = [resource_path(r'assets\characters\Fire wizard\slash pngs\Attack_1_'), 10, 1]
+        # basic_ani = [resource_path(r'assets\characters\stickman\attack\Frame0'), 6, 0]
 
-        jump_ani = [r'assets\characters\Fire wizard\jump pngs\Jump_', 6, 1]
-        run_ani = [r'assets\characters\Fire wizard\run pngs\Run_', 8, 1]
-        idle_ani= [r'assets\characters\Fire wizard\idle pngs\image_0-', 7, 1]
-        atk1_ani= [r'assets\characters\Fire wizard\fireball pngs\image_0-', 8, 1]
-        sp_ani= [r'assets\characters\Fire wizard\flame jet pngs\image_0-', 14, 1]
-        death_ani= [r'assets\characters\Fire wizard\dead\tile00', 6, 1]
+        jump_ani = [resource_path(r'assets\characters\Fire wizard\jump pngs\Jump_'), 6, 1]
+        run_ani = [resource_path(r'assets\characters\Fire wizard\run pngs\Run_'), 8, 1]
+        idle_ani= [resource_path(r'assets\characters\Fire wizard\idle pngs\image_0-'), 7, 1]
+        atk1_ani= [resource_path(r'assets\characters\Fire wizard\fireball pngs\image_0-'), 8, 1]
+        sp_ani= [resource_path(r'assets\characters\Fire wizard\flame jet pngs\image_0-'), 14, 1]
+        death_ani= [resource_path(r'assets\characters\Fire wizard\dead\tile00'), 6, 1]
 
         # Attack Frame Source
-        atk1 = [r'assets\attacks\fire wizard\atk1', 10, 1, 3] # FIRE_WIZARD_ATK1 reduced from 12 to 10
-        atk2 = [r'assets\attacks\fire wizard\atk2', 53, 1, 0.3]
-        atk3 = [r'assets\attacks\fire wizard\atk3\png_', 34, 1, 0.3]
-        sp_atk = [r'assets\attacks\fire wizard\sp atk', 28, 1, 1.3]
+        atk1 = [resource_path(r'assets\attacks\fire wizard\atk1'), 10, 1, 3] # FIRE_WIZARD_ATK1 reduced from 12 to 10
+        atk2 = [resource_path(r'assets\attacks\fire wizard\atk2'), 53, 1, 0.3]
+        atk3 = [resource_path(r'assets\attacks\fire wizard\atk3\png_'), 34, 1, 0.3]
+        sp_atk = [resource_path(r'assets\attacks\fire wizard\sp atk'), 28, 1, 1.3]
 
         self.attack_frames = {
             'atk1frames': atk1[1],
@@ -235,15 +236,15 @@ class Fire_Wizard(Player):
         self.fire_spire_distance = self.calculate_attack_range(self.fire_spire_cast_range, self.fireball_hitbox_size, self.fire_spire_speed, self.attack_frames['atk3frames'], self.fire_spire_frame_duration)
 
         # Skill Icons Load
-        skill_1_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\FireballIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
-        skill_2_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\GlyphOfFireIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
-        skill_3_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\RodOfPower29Icon.webp', (ICON_WIDTH, ICON_HEIGHT))
-        skill_4_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\MeteorIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
-        special_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\kim special icon.png', (ICON_WIDTH, ICON_HEIGHT))
+        skill_1_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\FireballIcon.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        skill_2_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\GlyphOfFireIcon.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        skill_3_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\RodOfPower29Icon.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        skill_4_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\MeteorIcon.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        special_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\kim special icon.png'), (ICON_WIDTH, ICON_HEIGHT))
 
-        special_skill_1_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\FlameReaveIcon29.webp', (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_3_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\SmiteIcon.webp', (ICON_WIDTH, ICON_HEIGHT))
-        special_skill_4_icon = self.load_img_scaled(r'assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp', (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_1_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\FlameReaveIcon29.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_3_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\SmiteIcon.webp'), (ICON_WIDTH, ICON_HEIGHT))
+        special_skill_4_icon = self.load_img_scaled(resource_path(r'assets\skill icons\fire_wizard\VolcanicOrb29Icon.webp'), (ICON_WIDTH, ICON_HEIGHT))
 
         # Setup Skill Icon Rects natively like PA
         self.setup_skill_icon_rects(

@@ -22,6 +22,8 @@ from sprite_loader import load_attack, load_attack_flipped
 from player import Player
 import global_vars
 import pygame
+from path_helper import resource_path
+
 # Animation Counts
 WIND_HASHASHIN_BASIC_COUNT = 4
 WIND_HASHASHIN_JUMP_COUNT = 6
@@ -83,7 +85,7 @@ class Wind_Hashashin(Player):
         "atk_spd_mod": 0.6,
         "atk_spd": 105,
         "hp_regen": 0.82,
-        "mana_regen": 5.1,
+        "mana_regen": 5.5,
         "move_speed": 2.64,
     }
     
@@ -104,7 +106,7 @@ class Wind_Hashashin(Player):
 
 
         self.base_health_regen = 0.82 # 1.23
-        self.base_mana_regen = 5.1 # 5.1 + 0.4 = 5.5
+        self.base_mana_regen = 5.5 # 5.5 + 0.4 = 5.9
         self.base_attack_damage = 0.0 # 4.8
 
         self.base_attack_speed = 105
@@ -243,21 +245,21 @@ class Wind_Hashashin(Player):
         death_ani = [r'assets\characters\wind hasashin\PNG\death\death_', WIND_HASHASHIN_DEATH_COUNT, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\1st.mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\3rd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 1, slash.mp3')
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/1st.mp3'))
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/2nd.mp3'))
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/3rd.mp3'))
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/4th 1, slash.mp3'))
         self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
         self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
         
-        self.x_slash_sound = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\x slash 2nd,3rd, 4th.mp3')
-        self.sp_sound2 = pygame.mixer.Sound(r'assets\sound effects\wind hashashin\4th 2, flesh hit.mp3')
+        self.x_slash_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/x slash 2nd,3rd, 4th.mp3'))
+        self.sp_sound2 = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/4th 2, flesh hit.mp3'))
         self.x_slash_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
         self.sp_sound2.set_volume(0.4 * global_vars.MAIN_VOLUME)
 
-        self.atk3_sound_special = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
+        self.atk3_sound_special = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/3rrd.mp3'))
         self.atk3_sound_special.set_volume(0.5 * global_vars.MAIN_VOLUME)
         # (The rest of the code follows same structure and renaming logic...)
         # Player Skill Animations Source

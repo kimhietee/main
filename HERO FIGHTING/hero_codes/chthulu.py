@@ -22,6 +22,8 @@ from sprite_loader import load_attack, load_attack_flipped
 from player import Player
 import global_vars
 import pygame
+from path_helper import resource_path
+
 # Animation Counts
 # WATER_PRINCESS_BASIC_COUNT = 
 
@@ -60,7 +62,7 @@ class Chthulu(Player):
         "atk_spd_mod": 0.5,
         "atk_spd": 100,
         "hp_regen": 0.9,
-        "mana_regen": 4.9,
+        "mana_regen": 5.2,
         "move_speed": 1.1,
     }
     
@@ -84,7 +86,7 @@ class Chthulu(Player):
         self.agi_mult += 0.05 # 0.15
 
         self.base_health_regen = 0.9 # 1.3
-        self.base_mana_regen = 4.9 # 5.3
+        self.base_mana_regen = 5.2 # 5.6
         self.base_attack_damage = 2.5 # ? 
 
         self.base_attack_speed = 100
@@ -191,10 +193,10 @@ class Chthulu(Player):
         death_ani = [r'assets\characters\soul_destroyer\PNG\death\death_', 11, 0]
 
         # Player Skill Sounds Effects Source
-        self.atk1_sound = pygame.mixer.Sound(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3')
-        self.atk2_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\2nd.mp3')
-        self.atk3_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\3rrd.mp3')
-        self.sp_sound = pygame.mixer.Sound(r'assets\sound effects\fire knight\ult.mp3')
+        self.atk1_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire_wizard/short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3'))
+        self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/2nd.mp3'))
+        self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/3rrd.mp3'))
+        self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/ult.mp3'))
         self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
         self.atk2_sound.set_volume(0.1 * global_vars.MAIN_VOLUME)
         self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)

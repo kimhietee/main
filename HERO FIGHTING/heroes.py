@@ -235,6 +235,8 @@ import Animate_BG
 import global_vars
 
 import key
+from path_helper import resource_path
+import global_vars
 
 # from chance import Chance
 
@@ -256,8 +258,8 @@ FONT = global_vars.get_font(30)
 cstm_pos = 0.039 #width 50
 cstm_pos2 = 0.222 #160
 cstm_pos3 = 0.291 #210
-hp_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\health icon.png').convert_alpha(), 0, 0.05)
-mana_icon = pygame.transform.rotozoom(pygame.image.load(r'assets\icons\mana icon.png').convert_alpha(), 0, 0.065)
+hp_icon = pygame.transform.rotozoom(pygame.image.load(resource_path('assets/icons/health icon.png')).convert_alpha(), 0, 0.05)
+mana_icon = pygame.transform.rotozoom(pygame.image.load(resource_path('assets/icons/mana icon.png')).convert_alpha(), 0, 0.065)
 hp_icon_p1_rect = hp_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos2)+1-20))
 mana_icon_p1_rect = mana_icon.get_rect(center=(int(width*cstm_pos)+1, int(height*cstm_pos3)+1-20))
 hp_icon_p2_rect = hp_icon.get_rect(center=(width - int(width*cstm_pos)-1, int(height*cstm_pos2)+1-20))
@@ -335,7 +337,7 @@ class Attacks:
         
         self.special_y_offset = int(self.skill_rect.height * 0.35)
 
-        self.button_icon = pygame.image.load(r'assets\icons\button.png').convert_alpha()
+        self.button_icon = pygame.image.load(resource_path('assets/icons/button.png')).convert_alpha()
 
         self.hovered = False
 
@@ -2211,7 +2213,7 @@ class EquippedItem:
         if indexed < MAX_ITEM:
             self.item.append(item)
 
-    def populate_random_items(self, max_items=MAX_ITEM):
+    def populate_random_items(self, max_items=MAX_ITEM, ):
         """
         Randomly equip items from the available items list.
         This method randomly selects and equips items up to max_items count.
@@ -2221,9 +2223,13 @@ class EquippedItem:
         """
         if not self.items_list or len(self.items_list) == 0:
             return
+
+        for item in self.items_list:
+            item.selected = False
+        self.item.clear()
         
         # Randomly select how many items to equip (1 to max_items)
-        num_items_to_equip = max_items
+        num_items_to_equip = min(max_items, len(self.items_list))
         
         # Randomly select items from the available items list
         selected_items = random.sample(self.items_list, num_items_to_equip)
@@ -2642,7 +2648,7 @@ menu_button = ImageButton(
     pos=(60, 25),
     scale=0.9,
     text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=resource_path('assets/font/slkscr.ttf'),  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
@@ -2691,11 +2697,11 @@ def create_title(text, font=None, scale=1, y_offset=100, color=white, angle=0, m
 
 
 slot = ImageButton(
-    image_path=r'assets\UI\slot.png',
+    image_path=resource_path('assets/UI/slot.png'),
     pos=(400, height - 20),
     scale=1,
     text='',
-    font_path=r'assets\font\slkscr.ttf',  # or any other font path
+    font_path=resource_path('assets/font/slkscr.ttf'),  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
@@ -2768,9 +2774,58 @@ def paginating(move:bool, instant:bool = False, max_height = item_max_y):
                 break
 
 
+def lan_connect(host_ip):
+    """returns a reason why it got disconnected"""
+    from net_client import NetClient
+    global_vars.active_net_client = NetClient(host_ip)
+    try:
+        global_vars.active_net_client.connect()
+    except Exception as e:
+        print(f"[CLIENT] Failed to connect: {e}")
+        return
+
+    font = global_vars.get_font(60)
+    while global_vars.active_net_client.phase == 'connecting':
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                global_vars.active_net_client.disconnect()
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                global_vars.active_net_client.disconnect()
+                global_vars.active_net_client = None
+                return
+        screen.fill((0, 0, 0))
+        Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+        txt = font.render("Waiting for opponent...", global_vars.TEXT_ANTI_ALIASING, (255, 255, 255))
+        screen.blit(txt, (width//2 - txt.get_width()//2, height//2))
+        sub = global_vars.get_font(30).render("Press ESC to cancel", global_vars.TEXT_ANTI_ALIASING, (150, 150, 150))
+        screen.blit(sub, (width//2 - sub.get_width()//2, height//2 + 60))
+        pygame.display.update()
+        clock.tick(30)
+
+    if global_vars.active_net_client.phase == 'disconnected':
+        global_vars.active_net_client = None
+        return 'fail'
+
+    result = player_selection(net_client=global_vars.active_net_client)
+    # print('oh no someone left')
+    print("player_selection returned:", result)
+
+    if result == 'opponent_left':
+        global_vars.active_net_client.disconnect()
+        global_vars.active_net_client = None
+        return 'opponent_left'
+    elif result == 'rematch':
+        pass
+    else: 
+        global_vars.active_net_client.disconnect()
+        global_vars.active_net_client = None
+        print('its me :)')
+        return 'done'
 
 # from global_vars import quick_run_hero1, quick_run_hero2
-def player_selection():
+def player_selection(net_client=None):
     global map_selected
     # print('player selection opened')
     # print(global_vars.SMOOTH_BG)
@@ -2778,7 +2833,7 @@ def player_selection():
     global p1_select, p2_select, p1_items, p2_items
     # global_vars.SMOOTH_BG = not global_vars.SMOOTH_BG
     background = pygame.transform.scale(
-        pygame.image.load(r'assets\backgrounds\12.png').convert(), (width, height))
+        pygame.image.load(resource_path('assets/backgrounds/12.png')).convert(), (width, height))
 
     font = global_vars.get_font(50)
     default_size = (((width*0.2) * DEFAULT_HEIGHT) / ((height*0.2) * DEFAULT_WIDTH))
@@ -2802,7 +2857,7 @@ def player_selection():
     # last is only 75 position for xpos4
 
     #p2
-    temp_icon = r'assets\hero profiles\temp.jpg'
+    temp_icon = resource_path('assets/hero profiles/temp.jpg')
     
     # Heroes (large icons — default size)
 
@@ -2876,74 +2931,6 @@ def player_selection():
             small=True,
             static_pos = (width - (width * 1.1),position_alignnment_Y(item_spacing_w, x+1)[1]))
             )
-    #     # PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-    #     PlayerSelector(items[0].image, position_alignnment_Y(item_spacing_w, 1), items[0], small=True),
-    #     PlayerSelector(items[1].image, position_alignnment_Y(item_spacing_w, 2), items[1], small=True),
-    #     PlayerSelector(items[2].image, position_alignnment_Y(item_spacing_w, 3), items[2], small=True),
-    #     PlayerSelector(items[3].image, position_alignnment_Y(item_spacing_w, 4), items[3], small=True),
-    #     PlayerSelector(items[4].image, position_alignnment_Y(item_spacing_w, 5), items[4], small=True),
-    #     PlayerSelector(items[5].image, position_alignnment_Y(item_spacing_w, 6), items[5], small=True),
-
-    #     PlayerSelector(items[6].image, position_alignnment_Y(item_spacing_w, 7), items[6], small=True),
-    #     PlayerSelector(items[7].image, position_alignnment_Y(item_spacing_w, 8), items[7], small=True),
-    #     PlayerSelector(items[8].image, position_alignnment_Y(item_spacing_w, 9), items[8], small=True),
-    #     PlayerSelector(items[9].image, position_alignnment_Y(item_spacing_w, 10), items[9], small=True),
-    #     PlayerSelector(items[10].image, position_alignnment_Y(item_spacing_w, 11), items[10], small=True),
-    #     PlayerSelector(items[11].image, position_alignnment_Y(item_spacing_w, 12), items[11], small=True),
-
-    #     PlayerSelector(items[12].image, position_alignnment_Y(item_spacing_w, 13), items[12], small=True),
-    #     PlayerSelector(items[13].image, position_alignnment_Y(item_spacing_w, 14), items[13], small=True),
-    #     PlayerSelector(items[14].image, position_alignnment_Y(item_spacing_w, 15), items[14], small=True),
-    #     PlayerSelector(items[15].image, position_alignnment_Y(item_spacing_w, 16), items[15], small=True),
-    #     PlayerSelector(items[16].image, position_alignnment_Y(item_spacing_w, 17), items[16], small=True),
-    #     PlayerSelector(items[17].image, position_alignnment_Y(item_spacing_w, 18), items[17], small=True),
-
-    #     PlayerSelector(items[18].image, position_alignnment_Y(item_spacing_w, 19), items[18], small=True),
-    #     PlayerSelector(items[19].image, position_alignnment_Y(item_spacing_w, 20), items[19], small=True),
-    #     PlayerSelector(items[20].image, position_alignnment_Y(item_spacing_w, 21), items[20], small=True),
-    #     PlayerSelector(items[21].image, position_alignnment_Y(item_spacing_w, 22), items[21], small=True),
-    #     PlayerSelector(items[22].image, position_alignnment_Y(item_spacing_w, 23), items[22], small=True),
-    #     PlayerSelector(items[23].image, position_alignnment_Y(item_spacing_w, 24), items[23], small=True),
-
-    #     PlayerSelector(items[24].image, position_alignnment_Y(item_spacing_w, 25), items[24], small=True),
-    #     PlayerSelector(items[25].image, position_alignnment_Y(item_spacing_w, 26), items[25], small=True),
-    #     PlayerSelector(items[26].image, position_alignnment_Y(item_spacing_w, 27), items[26], small=True),
-    # ]
-
-    # p2_items = [
-    #     PlayerSelector(items[0].image, (75, height - upper), items[0], small=True),
-    #     PlayerSelector(items[1].image, (75 * 2, height - upper), items[1], small=True),
-    #     PlayerSelector(items[2].image, (75 * 3, height - upper), items[2], small=True),
-    #     PlayerSelector(items[3].image, (75 * 4, height - upper), items[3], small=True),
-    #     PlayerSelector(items[4].image, (75 * 5, height - upper), items[4], small=True),
-    #     PlayerSelector(items[5].image, (75 * 6, height - upper), items[5], small=True),
-
-    #     PlayerSelector(items[6].image, (75, height - lower), items[6], small=True),
-    #     PlayerSelector(items[7].image, (75 * 2, height - lower), items[7], small=True),
-    #     PlayerSelector(items[8].image, (75 * 3, height - lower), items[8], small=True),
-    #     PlayerSelector(items[9].image, (75 * 4, height - lower), items[9], small=True),
-    #     PlayerSelector(items[10].image, (75 * 5, height - lower), items[10], small=True),
-    #     PlayerSelector(items[11].image, (75 * 6, height - lower), items[11], small=True),
-
-    #     PlayerSelector(items[12].image, (75, height - lower2), items[12], small=True),
-    #     PlayerSelector(items[13].image, (75 * 2, height - lower2), items[13], small=True),
-    #     PlayerSelector(items[14].image, (75 * 3, height - lower2), items[14], small=True),
-    #     PlayerSelector(items[15].image, (75 * 4, height - lower2), items[15], small=True),
-    #     PlayerSelector(items[16].image, (75 * 5, height - lower2), items[16], small=True),
-    #     PlayerSelector(items[17].image, (75 * 6, height - lower2), items[17], small=True),
-
-    #     PlayerSelector(items[18].image, (75, height - lower3), items[18], small=True),
-    #     PlayerSelector(items[19].image, (75 * 2, height - lower3), items[19], small=True),
-    #     PlayerSelector(items[20].image, (75 * 3, height - lower3), items[20], small=True),
-    #     PlayerSelector(items[21].image, (75 * 4, height - lower3), items[21], small=True),
-    #     PlayerSelector(items[22].image, (75 * 5, height - lower3), items[22], small=True),
-    #     PlayerSelector(items[23].image, (75 * 6, height - lower3), items[23], small=True),
-
-    #     PlayerSelector(items[24].image, (75, height - lower4), items[24], small=True),
-    #     PlayerSelector(items[25].image, (75 * 2, height - lower4), items[25], small=True),
-    #     PlayerSelector(items[26].image, (75 * 3, height - lower4), items[26], small=True),
-
-    # ]
 
     # Maps (custom large size)
     map_select = [
@@ -2965,6 +2952,18 @@ def player_selection():
     map_choose = False
 
     map_selected = Animate_BG.dark_forest_bg # Default
+
+    # ── Phase 2: map name ↔ Animate_BG lookup for LAN sync ──
+    _map_name_to_bg = {
+        'waterfall': Animate_BG.waterfall_bg,
+        'lava': Animate_BG.lava_bg,
+        'dark_forest': Animate_BG.dark_forest_bg,
+        'trees': Animate_BG.trees_bg,
+        'mountains': Animate_BG.mountains_bg,
+        'sunset': Animate_BG.sunset_bg,
+        'city': Animate_BG.city_bg,
+    }
+    _bg_to_map_name = {v: k for k, v in _map_name_to_bg.items()}
 
     go = False
 
@@ -3006,7 +3005,24 @@ def player_selection():
             go = True
         
 
-
+        # LAN: auto-skip the turn that doesn't belong to this client
+        if global_vars.active_net_client is not None:
+            if global_vars.active_net_client.my_player_type == 1 and player_2_choose:
+                # P1 has picked, now waiting — skip P2 UI, go straight to map
+                player_2_choose = False
+                map_choose = True
+                go = False
+            elif global_vars.active_net_client.my_player_type == 2 and player_1_choose:
+                # P2 skips P1 UI, goes straight to picking their own hero
+                player_1_choose = False
+                player_2_choose = True
+                go = False
+        # check if opponent disconnected
+        if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+            # global_vars.active_net_client.opponent_left = False
+            # global_vars.active_net_client.disconnect()
+            print("Opponent left detected in player_selection")
+            return 'opponent_left'
         # print('running')
         # print(global_vars.MAIN_VOLUME)
         # return
@@ -3018,15 +3034,31 @@ def player_selection():
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if global_vars.active_net_client is not None:
+                    global_vars.active_net_client.disconnect()
+                    return
                 pygame.quit()
                 exit()   
             if keys[pygame.K_ESCAPE]:
-                menu()
-                return
+                if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+                    # global_vars.active_net_client.opponent_left = False
+                    print(f'I am leaving good luck everybody')
+                    print("Opponent left detected in player_selection")
+                    return 'opponent_left'
+                else:
+                    print('going back to menu?')
+                    return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
-                    return
+                    if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+                        # global_vars.active_net_client.opponent_left = False
+                        print(f'I am leaving good luck everybody')
+                        print("Opponent left detected in player_selection")
+                        return 'opponent_left'
+                    else:
+                        print('going back to menu?')
+                        return 'back_to_menu'
+
                 if all_items_button.is_clicked(event.pos):
                     if player_2_choose:
                         global_vars.all_items = all_items_button.toggle(global_vars.all_items)
@@ -3062,7 +3094,7 @@ def player_selection():
         menu_button.draw(screen, mouse_pos)
         slot.draw(screen, mouse_pos) if not map_choose else None
 
-        if player_1_choose:    
+        if player_1_choose and (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1): 
             if not go:                  
                 create_title('PLAYER 1', font, default_size, height * 0.1, modify_xpos=width*0.5) #height*0., default_size - 0.55
             else: #display selected hero name
@@ -3153,7 +3185,7 @@ def player_selection():
                     go = False
 
 
-        if player_2_choose:
+        if player_2_choose and (global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 2):
             if not go:
                 create_title('PLAYER 2', font, default_size, height * 0.1, modify_xpos=width*0.5)
             else:
@@ -3239,51 +3271,161 @@ def player_selection():
 
 
         if map_choose:
-            create_title('MAP SELECT', font, default_size, height * 0.1)
-            for selector in map_select:
-                selector.update(mouse_pos, mouse_press, map_select, max_selected=1)
+            # ── Phase 2: LAN P2 waits for host map selection ──
+            if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2:
+                waiting_font = global_vars.get_font(40)
+                _lan_map_waiting = True
+                while _lan_map_waiting:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit(); exit()
+                    if global_vars.active_net_client.opponent_left:   # ← add this
+                        # global_vars.active_net_client.opponent_left = False
+                        # global_vars.active_net_client.disconnect()
+                        return 'opponent_left'
+                    if global_vars.active_net_client.map_selected is not None:
+                        map_selected = _map_name_to_bg.get(global_vars.active_net_client.map_selected, Animate_BG.dark_forest_bg)
+                        _lan_map_waiting = False
+                    else:
+                        screen.blit(background, (0, 0))
+                        _wait_text = waiting_font.render('Waiting for host to select map...', True, white)
+                        screen.blit(_wait_text, (width // 2 - _wait_text.get_width() // 2, height // 2 - _wait_text.get_height() // 2))
+                        pygame.display.update()
+                        clock.tick(30)
+                # Skip map UI, go straight to fight
+                go = True
+            else:
+                # Normal map selection UI (local mode or LAN host)
+                create_title('MAP SELECT', font, default_size, height * 0.1)
+                for selector in map_select:
+                    selector.update(mouse_pos, mouse_press, map_select, max_selected=1)
 
-            for selector in map_select:
-                # if selector.hovered:
-                #     selector.the_info((-(width * 0.0001), height - 500))
-                if selector.is_selected():
-                    map_selected = selector.get_associated()
+                for selector in map_select:
+                    # if selector.hovered:
+                    #     selector.the_info((-(width * 0.0001), height - 500))
+                    if selector.is_selected():
+                        map_selected = selector.get_associated()
 
-                    # # Draw item selection
-                    # for item in p2_items:
-                    #     item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
-                    # for item in p2_items:
-                    #     item.draw()
+                        
 
-                    # for item in p2_items:
-                    #     if item.hovered:
-                    #         item.class_item.update((-(width * 0.0001), height - 500))
+                        # # Draw item selection
+                        # for item in p2_items:
+                        #     item.update(mouse_pos, mouse_press, p2_items, max_selected=MAX_ITEM)
+                        # for item in p2_items:
+                        #     item.draw()
+
+                        # for item in p2_items:
+                        #     if item.hovered:
+                        #         item.class_item.update((-(width * 0.0001), height - 500))
   
-                    # print(PLAYER_2_SELECTED_HERO)
-                    go = True
-                    break
-                elif not immediate_run:
-                    go = False
+                        # print(PLAYER_2_SELECTED_HERO)
+                        go = True
+                        break
+                    elif not immediate_run:
+                        go = False
                 
             if go:
                 fight.draw(screen, mouse_pos)
                 if pygame.mouse.get_pressed()[0] and fight.is_clicked(mouse_pos) or keys[pygame.K_SPACE] or immediate_run:
-                    # print(PLAYER_1_SELECTED_HERO)
-                    # print(PLAYER_2_SELECTED_HERO)
+                    
+                    # ── Phase 2: LAN host sends map choice ──
+                    # if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1:
+                    #     _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
+                    #     global_vars.active_net_client.send_map(_map_name)
+
                     screen.blit(background, (0, 0))
                     loading.draw(screen, pygame.mouse.get_pos())
                     pygame.display.update()
                     # pygame.time.delay(500)  # Wait for 2 seconds before showing the player selection screen
+
+                    # for random hero selection if toggled
                     heroes = (Fire_Wizard, Wanderer_Magician,
                               Fire_Knight, Wind_Hashashin,
                               Water_Princess, Forest_Ranger,
                               Yurei, Chthulu)
                     # Player type seems to be phased out but is still being used
-                    hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2)  if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2) #not live
-                    hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1)  if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
-                    # print(hero1.enemy)
-                    # print(hero2.enemy)
-                    # hero3 = Wind_Hashashin(PLAYER_1, hero2)
+                    # ── LAN: use server-confirmed hero classes ──
+                    _hero_map = {
+                        'Fire_Wizard': Fire_Wizard,
+                        'Wanderer_Magician': Wanderer_Magician,
+                        'Fire_Knight': Fire_Knight,
+                        'Wind_Hashashin': Wind_Hashashin,
+                        'Water_Princess': Water_Princess,
+                        'Forest_Ranger': Forest_Ranger,
+                        'Yurei': Yurei,
+                        'Chthulu': Chthulu,
+                        'Phantom_Assassin': Phantom_Assassin,
+                    }
+
+                    if global_vars.active_net_client is not None:
+                        # send map (P1 only)
+                        if global_vars.active_net_client.my_player_type == 1:
+                            _map_name = _bg_to_map_name.get(map_selected, 'dark_forest')
+                            global_vars.active_net_client.send_map(_map_name)
+
+                        # load my hero
+                        if global_vars.active_net_client.my_player_type == 1:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                        else:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+
+                        my_hero_name = (PLAYER_1_SELECTED_HERO.__name__ 
+                                        if global_vars.active_net_client.my_player_type == 1 
+                                        else PLAYER_2_SELECTED_HERO.__name__)
+                        
+                        # send hero_ready, wait for both_ready
+                        global_vars.active_net_client.send_hero_ready(my_hero_name)
+                        wait_font = global_vars.get_font(40)
+
+                        while not global_vars.active_net_client.both_ready:
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit()
+                                    exit()
+                            if global_vars.active_net_client.opponent_left:
+                                return 'opponent_left'
+                            
+                            screen.fill((0, 0, 0))
+                            wait_text = wait_font.render("Waiting for opponent...", True, white)
+                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
+                            pygame.display.update()
+                            clock.tick(30)
+                        
+                        # load opponent hero
+                        PLAYER_1_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p1_hero, PLAYER_1_SELECTED_HERO)
+                        PLAYER_2_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p2_hero, PLAYER_2_SELECTED_HERO)
+                        
+                        # load opponent hero
+                        if global_vars.active_net_client.my_player_type == 1:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                        elif global_vars.active_net_client.my_player_type == 2:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                            
+                        global_vars.active_net_client.send_load_opponent_hero(my_hero_name)
+
+                        while not global_vars.active_net_client.ready_to_battle:
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit()
+                                    exit()
+                            if global_vars.active_net_client.opponent_left:
+                                return 'opponent_left'
+                            
+                            screen.fill((0, 0, 0))
+                            wait_text = wait_font.render("Loading opponent hero...", True, white)
+                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
+                            pygame.display.update()
+                            clock.tick(30)
+
+                    else:
+                        # ── Local mode (unchanged) ──
+                        if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1:
+                            hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
+                        if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 2:
+                            hero2 = PLAYER_2_SELECTED_HERO(PLAYER_2, hero1) if not global_vars.random_pick_p2 else random.choice(heroes)(PLAYER_2, hero1)
+                        # print(hero1.enemy)
+                        # print(hero2.enemy)
+                        # hero3 = Wind_Hashashin(PLAYER_1, hero2)
                     
 
                     if global_vars.SINGLE_MODE_ACTIVE:
@@ -3308,33 +3450,6 @@ def player_selection():
                         if global_vars.HERO1_BOT:
                             hero1.player = hero2 # modify hero1 live reference for hero2 to real referenced object
 
-                    # For player and bot, update referenced enemy to hero2  (IMPORTANT)
-                    # had to manually set each other enemies first sop the attack won't error
-                    # In single player mode, player (hero1) targets both enemies, enemies target player
-                    # if global_vars.SINGLE_MODE_ACTIVE:
-                    #     if global_vars.toggle_hero3:
-                    #         hero1.enemy = [hero2, hero3]  # Player targets both enemies as a list
-                    #         hero3.enemy = [hero1]
-                    #     else:
-                    #         hero1.enemy = [hero2]
-                    #     hero2.enemy = [hero1]  # Enemy 1 targets the player
-                    #       # Enemy 2 targets the player
-                    # else:
-                    #     hero1.enemy = [hero2]
-                    # # hero1.enemy = []
-                    # hero2.enemy = [hero1]
-                    # hero3.enemy = [hero1]
-                    # When adding new heroes, make sure the enemy of existing heroes is updated..
-                    # hero1.enemy.append(hero3)
-                    # hero3.player = hero2
-
-                    # === AUTO-EQUIP RANDOM ITEMS IF TOGGLE IS ON ===
-                    if global_vars.random_item_pick_p1:
-                        equipped_items.populate_random_items(MAX_ITEM)
-                    
-                    if global_vars.random_item_pick_p2:
-                        equipped_items_p2.populate_random_items(MAX_ITEM)
-
                     for item in equipped_items.item:
                         # if item.is_selected():
                             hero1.items.append(item.get_associated())
@@ -3347,6 +3462,13 @@ def player_selection():
                                 if global_vars.toggle_hero3:
                                     hero3.items.append(item.get_associated())
 
+
+                    # === AUTO-EQUIP RANDOM ITEMS IF TOGGLE IS ON ===
+                    if global_vars.random_item_pick_p1:
+                        equipped_items.populate_random_items(MAX_ITEM)
+                    
+                    if global_vars.random_item_pick_p2:
+                        equipped_items_p2.populate_random_items(MAX_ITEM)
 
                     hero1_group = pygame.sprite.Group()
                     # hero1_group.add(hero3)
@@ -3364,60 +3486,31 @@ def player_selection():
                         *(create_bot(PLAYER_1_SELECTED_HERO if not global_vars.random_pick_p1 else random.choice(heroes), PLAYER_1, [])(None, []) for _ in range(0))
                     )
 
-                    
-
                     hero2_group.add(
                         *(create_bot(PLAYER_2_SELECTED_HERO if not global_vars.random_pick_p2 else random.choice(heroes), PLAYER_2, [])(None, []) for _ in range(0))
                     )
 
                     hero1_group.add(hero1)
-
                     hero2_group.add(hero2)
-
-                    
-                    # hero1_group.add(hero2)
-
-                    # # --- clear enemies ---
-                    # for h in hero1_group:
-                    #     h.enemy.clear()
-
-                    # for h in hero2_group:
-                    #     h.enemy.clear()
-
-
-
                     # --- Assign enemies ---
                     for h in hero1_group:
                         h.enemy = list(hero2_group)
-                        # if hasattr(h, 'player'):
-                        #     h.player = list(hero2_group)[0]
-                        #     print('p111')
-
                     for h in hero2_group:
                         h.enemy = list(hero1_group)
-
-                        # if hasattr(h, 'player'):
-                        #     h.player = list(hero1_group)[0]
-                        #     print('p222')
-
-
 
                     # --- Apply items to team 1 ---
                     for h in hero1_group:
                         # If all_items is on and this is a bot, don't clear/override items
-
                         # uncomment to allow player1 bots to have same settings as player2 bots
                         # if not (global_vars.all_items and hasattr(h, 'botkey_skill1')):
                         #     h.items = []
                         h.items = []
-
                     for item in p1_items:
                         if item.is_selected():
                             for h in hero1_group:
                                 # If all_items is on and this is a bot, skip (it already has all items)
                                 if not (global_vars.all_items and hasattr(h, 'botkey_skill1')):
                                     h.items.append(copy.copy(item.get_associated()))
-
                     for h in hero1_group:
                         h.apply_item_bonuses()
 
@@ -3437,40 +3530,19 @@ def player_selection():
                     for h in hero2_group:
                         h.apply_item_bonuses()
 
-
-                    
-                    # In single player mode, add hero3 to hero2_group as another enemy
-                   
-                    
-                    # hero3_group = pygame.sprite.Group()
-                    # hero3_group.add(hero3)
-                    
-
                     pygame.mixer.music.fadeout(1000)
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
 
-                    
-                    print('reprint')
-                    # for r in hero1.enemy:
-                    #     print(r.__class__.__name__)
-                    # for r in hero2.enemy:
-                    #     print(r.name, r.player_type)
-                    # print('---')
-                    # print(hero2.target.name, hero2.target.player_type, 'hero2')
-                    # print(hero1.name, hero1.player_type, 'hero1')
-                    # print(hero2.enemy)
-                    # print(hero3.enemy)
                     reset_all()
-                    fade(background, game) #lez go it worked
-                    # pygame.mixer.fadeout(1500)
                     
-                    
-                    return
+                    game_end_result = fade(background, lambda: game(net_client=global_vars.active_net_client if global_vars.active_net_client else None)) #lez go it worked
+
+                    return game_end_result
 
         pygame.display.update()
         clock.tick(FPS)
 
-
+    
 bot = object
 
 
@@ -3543,6 +3615,7 @@ bot = object
     
 
 # NEXT TO DO IS TO CONTINUE WORKING ON THE SKILLS
-from gameloop import main_menu
+from gameloop import main_menu, menu
 if __name__ == '__main__':
     main_menu()
+    menu()

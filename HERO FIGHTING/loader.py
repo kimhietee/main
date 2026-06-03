@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 import hashlib
+from path_helper import resource_path
 
 
 def loadFile(filePath):
@@ -26,11 +27,11 @@ def saveFile(filePath, data):
 
 
 # Initialize database directories
-os.makedirs("database", exist_ok=True)
+os.makedirs(resource_path("database"), exist_ok=True)
 
 # Delete old database files to ensure clean schema
-old_user_db = "database/user_data/user.db"
-old_info_db = "database/user_info/user_info_store.db"
+old_user_db = resource_path("database/user_data/user.db")
+old_info_db = resource_path("database/user_info/user_info_store.db")
 
 if os.path.exists(old_user_db):
     try:
@@ -45,7 +46,7 @@ if os.path.exists(old_info_db):
         pass
 
 # Create SINGLE consolidated database with both tables
-db_path = "database/game.db"
+db_path = resource_path("database/game.db")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 

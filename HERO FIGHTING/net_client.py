@@ -23,6 +23,8 @@ class NetClient:
         self.map_selected = None
         self.p1_hero = None
         self.p2_hero = None
+        self.p1_hero_ready = False
+        self.p2_hero_ready = False
         self.both_ready = False
         self.opponent_ready = False
         self.ready_to_battle = False
@@ -64,11 +66,14 @@ class NetClient:
     def send_hero_ready(self, hero_name):
         send_msg(self.sock, {'type': 'hero_ready', 'hero': hero_name})
 
-    def send_load_opponent_hero(self, hero_name):
+    def send_load_opponent_hero_ready(self, hero_name):
         send_msg(self.sock, {'type': 'load_opponent_hero', 'hero': hero_name})
 
     def send_cube_reset(self, index, fall, x):
         send_msg(self.sock, {'type': 'cube_reset', 'index': index, 'fall': fall, 'x': x})
+
+    def send_hero_not_ready(self):
+        send_msg(self.sock, {'type': 'hero_not_ready'})
 
     def pop_cube_updates(self):
         """Returns and clears pending cube updates."""
@@ -103,6 +108,7 @@ class NetClient:
             elif message_type == 'hero_confirmed': # not used????
                 if msg['player'] != self.my_player_type:
                     self.opponent_ready = True
+                    print('opponent ready :)')
 
             elif message_type == 'both_ready':
                 self.p1_hero = msg['p1_hero']
@@ -111,10 +117,12 @@ class NetClient:
                 print('both ready :)')
                 self.both_ready = True
 
+            elif message_type == 'not_ready':
+                self.both_ready = False
+                print('not ready :)')
+
             elif message_type == 'ready_to_battle':
                 print('ready to battle!!!')
-                self.both_ready = True
-                # if msg['player'] and msg['player']
                 self.ready_to_battle = True
 
             elif message_type == 'cube_update':

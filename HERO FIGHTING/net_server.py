@@ -26,8 +26,8 @@ lobby = {
     'p2_hero': None,      # hero name confirmed by p2
     'p1_ready': False,
     'p2_ready': False,
-    'p1_load_ready': False, # check if p1 loads the p2 successfully
-    'p2_load_ready': False
+    'p1_opponent_hero_ready': False, # check if p1 loads the p2 successfully
+    'p2_opponent_hero_ready': False
 }
 
 # ── Phase 2: cube position authority ──
@@ -83,13 +83,20 @@ def handle_client(conn, player_type):
                                'map': lobby['map']})
                     lobby['p1_ready'] = False
                     lobby['p2_ready'] = False
+            
+            elif message_type == 'hero_not_ready':
+                lobby[f'p{player_type}_ready'] = False
+                broadcast({'type': 'not_ready'})
 
             elif message_type == 'load_opponent_hero':
-                lobby[f'p{player_type}_load_ready'] = True
-                if lobby['p1_load_ready'] and lobby['p2_load_ready']:
+                lobby[f'p{player_type}_opponent_hero_ready'] = True
+                if lobby['p1_opponent_hero_ready'] and lobby['p2_opponent_hero_ready']:
                     broadcast({'type': 'ready_to_battle'})
-                    lobby['p1_load_ready'] = False
-                    lobby['p2_load_ready'] = False
+                    # broadcast({'type': 'ready_to_battle',
+                    #            'p1_opponent_hero_ready': lobby['p1_opponent_hero_ready'],
+                    #            'p2_opponent_hero_ready': lobby['p2_opponent_hero_ready']})
+                    lobby['p1_opponent_hero_ready'] = False
+                    lobby['p2_opponent_hero_ready'] = False
                 
             elif message_type == 'cube_reset':
                 idx = msg['index']

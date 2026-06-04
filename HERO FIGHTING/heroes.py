@@ -2824,6 +2824,25 @@ def lan_connect(host_ip):
         print('its me :)')
         return 'done'
 
+def wait_screen(condition_func, text="Waiting for something...", background=None):
+    wait_font = global_vars.get_font(40)
+    while not condition_func():
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        if global_vars.active_net_client.opponent_left:
+            return 'opponent_left'          
+        if background:
+            screen.blit(background, (0, 0))
+        else:
+            screen.fill((0, 0, 0))
+
+        wait_text = wait_font.render(text, True, white)
+        screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
+        pygame.display.update()
+        clock.tick(30)
+
 # from global_vars import quick_run_hero1, quick_run_hero2
 def player_selection(net_client=None):
     global map_selected
@@ -3274,24 +3293,19 @@ def player_selection(net_client=None):
             # ── Phase 2: LAN P2 waits for host map selection ──
             if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2:
                 waiting_font = global_vars.get_font(40)
-                _lan_map_waiting = True
-                while _lan_map_waiting:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            pygame.quit(); exit()
-                    if global_vars.active_net_client.opponent_left:   # ← add this
-                        # global_vars.active_net_client.opponent_left = False
-                        # global_vars.active_net_client.disconnect()
-                        return 'opponent_left'
-                    if global_vars.active_net_client.map_selected is not None:
-                        map_selected = _map_name_to_bg.get(global_vars.active_net_client.map_selected, Animate_BG.dark_forest_bg)
-                        _lan_map_waiting = False
-                    else:
-                        screen.blit(background, (0, 0))
-                        _wait_text = waiting_font.render('Waiting for host to select map...', True, white)
-                        screen.blit(_wait_text, (width // 2 - _wait_text.get_width() // 2, height // 2 - _wait_text.get_height() // 2))
-                        pygame.display.update()
-                        clock.tick(30)
+                result = wait_screen(
+                    condition_func=lambda: global_vars.active_net_client.map_selected is not None,
+                    text="Waiting for host to select map...",
+                    background=background
+                )
+
+                if result == 'opponent_left':
+                    return 'opponent_left'
+
+                map_selected = _map_name_to_bg.get(
+                    global_vars.active_net_client.map_selected,
+                    Animate_BG.dark_forest_bg
+                )
                 # Skip map UI, go straight to fight
                 go = True
             else:
@@ -3375,25 +3389,19 @@ def player_selection(net_client=None):
                         
                         # send hero_ready, wait for both_ready
                         global_vars.active_net_client.send_hero_ready(my_hero_name)
-                        wait_font = global_vars.get_font(40)
-
-                        while not global_vars.active_net_client.both_ready:
-                            for event in pygame.event.get():
-                                if event.type == pygame.QUIT:
-                                    pygame.quit()
-                                    exit()
-                            if global_vars.active_net_client.opponent_left:
-                                return 'opponent_left'
-                            
-                            screen.fill((0, 0, 0))
-                            wait_text = wait_font.render("Waiting for opponent...", True, white)
-                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
-                            pygame.display.update()
-                            clock.tick(30)
+                        result = wait_screen(lambda: global_vars.active_net_client.both_ready, text="Waiting for opponent...")
+                        if result == 'opponent_left':
+                            return 'opponent_left'
                         
-                        # load opponent hero
+                        # identify opponent hero
                         PLAYER_1_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p1_hero, PLAYER_1_SELECTED_HERO)
                         PLAYER_2_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p2_hero, PLAYER_2_SELECTED_HERO)
+                        
+                        # both heroes are not ready again since will load the opponent hero
+                        global_vars.active_net_client.send_hero_not_ready()
+                        result = wait_screen(lambda: global_vars.active_net_client.opponent_ready, text="Loading opponent hero...")
+                        if result == 'opponent_left':
+                            return 'opponent_left'
                         
                         # load opponent hero
                         if global_vars.active_net_client.my_player_type == 1:
@@ -3401,21 +3409,12 @@ def player_selection(net_client=None):
                         elif global_vars.active_net_client.my_player_type == 2:
                             hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
                             
-                        global_vars.active_net_client.send_load_opponent_hero(my_hero_name)
-
-                        while not global_vars.active_net_client.ready_to_battle:
-                            for event in pygame.event.get():
-                                if event.type == pygame.QUIT:
-                                    pygame.quit()
-                                    exit()
-                            if global_vars.active_net_client.opponent_left:
-                                return 'opponent_left'
-                            
-                            screen.fill((0, 0, 0))
-                            wait_text = wait_font.render("Loading opponent hero...", True, white)
-                            screen.blit(wait_text, (width // 2 - wait_text.get_width() // 2, height // 2))
-                            pygame.display.update()
-                            clock.tick(30)
+                        global_vars.active_net_client.send_hero_ready(my_hero_name) # opponent hero done loading
+                        global_vars.active_net_client.send_load_opponent_hero_ready(my_hero_name)
+                        result = wait_screen(lambda: global_vars.active_net_client.ready_to_battle, text="Waiting for opponent...")
+                        if result == 'opponent_left':
+                            return 'opponent_left'
+                        
 
                     else:
                         # ── Local mode (unchanged) ──

@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import random
 from network import send_msg, recv_msg
 
 HOST = '0.0.0.0'
@@ -84,17 +85,16 @@ def handle_client(conn, player_type):
                     lobby['p1_ready'] = False
                     lobby['p2_ready'] = False
             
-            elif message_type == 'hero_not_ready':
-                lobby[f'p{player_type}_ready'] = False
-                broadcast({'type': 'not_ready'})
+            # elif message_type == 'hero_not_ready':
+            #     lobby[f'p{player_type}_ready'] = False
+            #     broadcast({'type': 'not_ready'})
 
             elif message_type == 'load_opponent_hero':
                 lobby[f'p{player_type}_opponent_hero_ready'] = True
                 if lobby['p1_opponent_hero_ready'] and lobby['p2_opponent_hero_ready']:
-                    broadcast({'type': 'ready_to_battle'})
-                    # broadcast({'type': 'ready_to_battle',
-                    #            'p1_opponent_hero_ready': lobby['p1_opponent_hero_ready'],
-                    #            'p2_opponent_hero_ready': lobby['p2_opponent_hero_ready']})
+                    # Generate a shared seed so both clients produce identical initial cube X positions
+                    shared_seed = random.randint(0, 2**31 - 1)
+                    broadcast({'type': 'ready_to_battle', 'cube_seed': shared_seed})
                     lobby['p1_opponent_hero_ready'] = False
                     lobby['p2_opponent_hero_ready'] = False
                 
@@ -103,6 +103,21 @@ def handle_client(conn, player_type):
                 cube_states[idx]['fall'] = msg['fall']
                 cube_states[idx]['x'] = msg['x']
                 broadcast({'type': 'cube_update', 'index': idx, 'fall': msg['fall'], 'x': msg['x']})
+
+            elif message_type == 'report_hp':
+                # P1 is the authority — only accept HP reports from player 1
+                if player_type == 1:
+                    p1_hp = msg['p1_hp']
+                    p2_hp = msg['p2_hp']
+                    declared_winner = None
+                    if p1_hp <= 0 and p2_hp <= 0:
+                        declared_winner = 'hero1'  # draw goes to hero1 (matches existing logic)
+                    elif p1_hp <= 0:
+                        declared_winner = 'hero2'
+                    elif p2_hp <= 0:
+                        declared_winner = 'hero1'
+                    if declared_winner is not None:
+                        broadcast({'type': 'winner_declared', 'winner': declared_winner})
     except (ConnectionResetError, ConnectionAbortedError):
         print('[SERVER] Connection error!')
     finally:

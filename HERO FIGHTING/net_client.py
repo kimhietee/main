@@ -32,6 +32,8 @@ class NetClient:
         self.cube_updates = []   # list of pending cube updates: {'index':i,'fall':f,'x':x}
         self._cube_lock = threading.Lock()
         self.opponent_left = False
+        self.cube_seed = None   # shared seed for deterministic initial cube X positions
+        self.declared_winner = None  # set by server in LAN mode
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -72,8 +74,11 @@ class NetClient:
     def send_cube_reset(self, index, fall, x):
         send_msg(self.sock, {'type': 'cube_reset', 'index': index, 'fall': fall, 'x': x})
 
-    def send_hero_not_ready(self):
-        send_msg(self.sock, {'type': 'hero_not_ready'})
+    def send_report_hp(self, p1_hp, p2_hp):
+        send_msg(self.sock, {'type': 'report_hp', 'p1_hp': p1_hp, 'p2_hp': p2_hp})
+
+    # def send_hero_not_ready(self):
+    #     send_msg(self.sock, {'type': 'hero_not_ready'})
 
     def pop_cube_updates(self):
         """Returns and clears pending cube updates."""
@@ -117,12 +122,13 @@ class NetClient:
                 print('both ready :)')
                 self.both_ready = True
 
-            elif message_type == 'not_ready':
-                self.both_ready = False
-                print('not ready :)')
+            # elif message_type == 'not_ready':
+            #     self.both_ready = False
+            #     print('not ready :)')
 
             elif message_type == 'ready_to_battle':
                 print('ready to battle!!!')
+                self.cube_seed = msg.get('cube_seed')  # store shared seed for cube sync
                 self.ready_to_battle = True
 
             elif message_type == 'cube_update':
@@ -132,6 +138,9 @@ class NetClient:
                         'fall': msg['fall'],
                         'x': msg['x']
                     })
+
+            elif message_type == 'winner_declared':
+                self.declared_winner = msg['winner']
 
     def send_disconnect(self, hero_name):
         send_msg(self.sock, {'type': 'disconnected'})

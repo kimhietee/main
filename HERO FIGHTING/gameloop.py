@@ -806,6 +806,7 @@ def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
     if net_client is not None:
         net_client.phase = 'playing'
+        net_client.declared_winner = None  # reset from any previous game
 
     
     game_music_started = False
@@ -841,6 +842,16 @@ def game(bg=None, net_client=None):
         {'fall': -700, 'x': random.randint(20, int(main.width - 20)), 'color': 'Yellow', 'image': pygame.image.load(resource_path('assets/icons/special bonus.png')).convert_alpha(), 'bonus_type': 'special', 'bonus_amount': 15, 'sound': cube_sound},
     ]
     
+    # In LAN mode, use the shared seed from the server so both clients generate
+    # identical initial cube X positions — no broadcast needed, no race condition.
+    if net_client is not None and net_client.cube_seed is not None:
+        _cube_rng = random.Random(net_client.cube_seed)
+        _cube_x = [_cube_rng.randint(20, int(main.width - 20)) for _ in cubes]
+        print(f"[CUBE SYNC] Using shared seed {net_client.cube_seed}, X positions: {_cube_x}")
+        for i, cube in enumerate(cubes):
+            cube['x'] = _cube_x[i]
+    else:
+        print("[CUBE SYNC] No shared seed — using local random (local/offline mode)")
     
     if game_music_started and not second_track_played:
         if not pygame.mixer.music.get_busy():
@@ -1148,6 +1159,9 @@ def game(bg=None, net_client=None):
                         'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
                     }
                 net_client.send_input(my_keys)
+                # P1 is the HP authority — report hero HPs to server every frame
+                if net_client.my_player_type == 1:
+                    net_client.send_report_hp(main.hero1.health, main.hero2.health)
             else:
                 # Normal local mode — clear net_keys so keyboard works
                 if hasattr(main, 'hero1') and main.hero1 is not None: main.hero1._net_keys = None
@@ -1203,33 +1217,39 @@ def game(bg=None, net_client=None):
 
 
             if winner is None:
-                if main.hero1.is_dead() and main.hero2.is_dead():
-                    if global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
-                        if main.hero3.is_dead():
+                if net_client is not None:
+                    # LAN: server declares winner, not local logic
+                    if net_client.declared_winner is not None:
+                        winner = net_client.declared_winner
+                else:
+                    # Local mode: unchanged logic
+                    if main.hero1.is_dead() and main.hero2.is_dead():
+                        if global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+                            if main.hero3.is_dead():
+                                winner = 'hero1'
+                            else:
+                                winner = None
+                        else:
+                            winner = 'hero1'
+                    elif main.hero1.is_dead():
+                        winner = 'hero2'
+                    elif main.hero2.is_dead():
+                        # In single player mode, check if all enemies are dead
+                        if global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+                            if main.hero3.is_dead():
+                                winner = 'hero1'
+                            else:
+                                winner = None
+                        else:
+                            winner = 'hero1'
+                    elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
+                        # In single player mode with 2 enemies, player wins only if both enemies are dead
+                        if main.hero2.is_dead() and main.hero3.is_dead():
                             winner = 'hero1'
                         else:
                             winner = None
-                    else:
-                        winner = 'hero1'
-                elif main.hero1.is_dead():
-                    winner = 'hero2'
-                elif main.hero2.is_dead():
-                    # In single player mode, check if all enemies are dead
-                    if global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
-                        if main.hero3.is_dead():
-                            winner = 'hero1'
-                        else:
-                            winner = None
-                    else:
-                        winner = 'hero1'
-                elif global_vars.SINGLE_MODE_ACTIVE and hasattr(main, 'hero3') and main.hero3 is not None:
-                    # In single player mode with 2 enemies, player wins only if both enemies are dead
-                    if main.hero2.is_dead() and main.hero3.is_dead():
-                        winner = 'hero1'
                     else:
                         winner = None
-                else:
-                    winner = None
                 
 
             # For displaying mana and special bonus (already on player class)
@@ -1348,73 +1368,52 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
             pygame.draw.rect(main.screen, 'Red', cube_hitbox, 1)
 
 
-        # Collision detection
+        # Collision detection — only P1 (authority) or local games apply bonuses and reset
         if cube_hitbox.colliderect(hero1.hitbox_rect):
-            sound.play()
-            if bonus_type == 'health':
-                # Only add health and show text if it increases (not already at max)
-                # prev = hero1.health
-                # Don't display since it will display 2 times
-                hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
-                # actual = hero1.health - prev
-                # if actual > 0:
-                #     hero1.display_damage(actual, interval=30, color=(0, 255, 0))
-            elif bonus_type == 'mana':
-                prev = hero1.mana
-                hero1.mana = min(hero1.max_mana, hero1.mana + bonus_amount)
-                actual = hero1.mana - prev
-                if actual > 0:
-                    # blue text for mana pickups
-                    hero1.display_damage(actual, interval=30, color=cyan2, size=50)
+            if net_client is None or net_client.my_player_type == 1:
+                sound.play()
+                if bonus_type == 'health':
+                    hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
+                elif bonus_type == 'mana':
+                    prev = hero1.mana
+                    hero1.mana = min(hero1.max_mana, hero1.mana + bonus_amount)
+                    actual = hero1.mana - prev
+                    if actual > 0:
+                        hero1.display_damage(actual, interval=30, color=cyan2, size=50)
+                elif bonus_type == 'special':
+                    prev = hero1.special
+                    hero1.special = min(hero1.max_special, hero1.special + bonus_amount)
+                    actual = hero1.special - prev
+                    if actual > 0:
+                        hero1.display_damage(actual, interval=30, color=gold, size=50)
 
-            elif bonus_type == 'special':
-                prev = hero1.special
-                hero1.special = min(hero1.max_special, hero1.special + bonus_amount)
-                actual = hero1.special - prev
-                if actual > 0:
-                    # blue-ish text for special pickups
-                    hero1.display_damage(actual, interval=30, color=gold, size=50)
-                
-            if net_client is not None:
-                if net_client.my_player_type == 1:
-                    cube_x = random.randint(20, int(main.width - 20))
-                    cube_fall = random.randint(-2000, -500)
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
-            else:
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
+                if net_client is not None:
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
-            sound.play()
-            if bonus_type == 'health':
-                # prev = hero2.health
-                # Don't display since it will display 2 times
-                hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
-                # actual = hero2.health - prev
-                # if actual > 0:
-                #     hero2.display_damage(actual, interval=30, color=(0, 255, 0))
-                
-            elif bonus_type == 'mana':
-                prev = hero2.mana
-                hero2.mana = min(hero2.max_mana, hero2.mana + bonus_amount)
-                actual = hero2.mana - prev
-                if actual > 0:
-                    hero2.display_damage(actual, interval=30, color=cyan2, size=50)
+            if net_client is None or net_client.my_player_type == 1:
+                sound.play()
+                if bonus_type == 'health':
+                    hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
+                elif bonus_type == 'mana':
+                    prev = hero2.mana
+                    hero2.mana = min(hero2.max_mana, hero2.mana + bonus_amount)
+                    actual = hero2.mana - prev
+                    if actual > 0:
+                        hero2.display_damage(actual, interval=30, color=cyan2, size=50)
+                elif bonus_type == 'special':
+                    prev = hero2.special
+                    hero2.special = min(hero2.max_special, hero2.special + bonus_amount)
+                    actual = hero2.special - prev
+                    if actual > 0:
+                        hero2.display_damage(actual, interval=30, color=gold, size=50)
 
-            elif bonus_type == 'special':
-                prev = hero2.special
-                hero2.special = min(hero2.max_special, hero2.special + bonus_amount)
-                actual = hero2.special - prev
-                if actual > 0:
-                    hero2.display_damage(actual, interval=30, color=gold, size=50)
-
-            if net_client is not None:
-                if net_client.my_player_type == 1:
-                    cube_x = random.randint(20, int(main.width - 20))
-                    cube_fall = random.randint(-2000, -500)
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
-            else:
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
+                if net_client is not None:
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
     else:
         if net_client is not None:
             if net_client.my_player_type == 1:

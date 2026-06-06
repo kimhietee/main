@@ -2813,13 +2813,15 @@ def lan_connect(host_ip):
     print("player_selection returned:", result)
 
     if result == 'opponent_left':
-        global_vars.active_net_client.disconnect()
+        if global_vars.active_net_client is not None:
+            global_vars.active_net_client.disconnect()
         global_vars.active_net_client = None
         return 'opponent_left'
     elif result == 'rematch':
         pass
     else: 
-        global_vars.active_net_client.disconnect()
+        if global_vars.active_net_client is not None:
+            global_vars.active_net_client.disconnect()
         global_vars.active_net_client = None
         print('its me :)')
         return 'done'
@@ -3398,10 +3400,10 @@ def player_selection(net_client=None):
                         PLAYER_2_SELECTED_HERO = _hero_map.get(global_vars.active_net_client.p2_hero, PLAYER_2_SELECTED_HERO)
                         
                         # both heroes are not ready again since will load the opponent hero
-                        global_vars.active_net_client.send_hero_not_ready()
-                        result = wait_screen(lambda: global_vars.active_net_client.opponent_ready, text="Loading opponent hero...")
-                        if result == 'opponent_left':
-                            return 'opponent_left'
+                        # global_vars.active_net_client.send_hero_not_ready()
+                        # result = wait_screen(lambda: global_vars.active_net_client.opponent_ready, text="Loading opponent hero...")
+                        # if result == 'opponent_left':
+                        #     return 'opponent_left'
                         
                         # load opponent hero
                         if global_vars.active_net_client.my_player_type == 1:
@@ -3409,7 +3411,7 @@ def player_selection(net_client=None):
                         elif global_vars.active_net_client.my_player_type == 2:
                             hero1 = PLAYER_1_SELECTED_HERO(PLAYER_1, hero2) if not global_vars.random_pick_p1 else random.choice(heroes)(PLAYER_1, hero2)
                             
-                        global_vars.active_net_client.send_hero_ready(my_hero_name) # opponent hero done loading
+                        # global_vars.active_net_client.send_hero_ready(my_hero_name) # opponent hero done loading
                         global_vars.active_net_client.send_load_opponent_hero_ready(my_hero_name)
                         result = wait_screen(lambda: global_vars.active_net_client.ready_to_battle, text="Waiting for opponent...")
                         if result == 'opponent_left':

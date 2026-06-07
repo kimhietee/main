@@ -28,7 +28,9 @@ lobby = {
     'p1_ready': False,
     'p2_ready': False,
     'p1_opponent_hero_ready': False, # check if p1 loads the p2 successfully
-    'p2_opponent_hero_ready': False
+    'p2_opponent_hero_ready': False,
+    'p1_rematch': False,
+    'p2_rematch': False,
 }
 
 # ── Phase 2: cube position authority ──
@@ -102,7 +104,15 @@ def handle_client(conn, player_type):
                 idx = msg['index']
                 cube_states[idx]['fall'] = msg['fall']
                 cube_states[idx]['x'] = msg['x']
-                broadcast({'type': 'cube_update', 'index': idx, 'fall': msg['fall'], 'x': msg['x']})
+                broadcast({
+                    'type': 'cube_update', 
+                    'index': idx, 
+                    'fall': msg['fall'], 
+                    'x': msg['x'],
+                    'hero_hit': msg.get('hero_hit'), 
+                    'bonus_type': msg.get('bonus_type'), 
+                    'bonus_amount': msg.get('bonus_amount')
+                })
 
             elif message_type == 'report_hp':
                 # P1 is the authority — only accept HP reports from player 1
@@ -118,6 +128,19 @@ def handle_client(conn, player_type):
                         declared_winner = 'hero1'
                     if declared_winner is not None:
                         broadcast({'type': 'winner_declared', 'winner': declared_winner})
+
+            elif message_type == 'rematch_request':
+                lobby[f'p{player_type}_rematch'] = True
+                broadcast({'type': 'rematch_request_received', 'player': player_type})
+                if lobby['p1_rematch'] and lobby['p2_rematch']:
+                    lobby['p1_rematch'] = False
+                    lobby['p2_rematch'] = False
+                    lobby['p1_ready'] = False
+                    lobby['p2_ready'] = False
+                    lobby['p1_opponent_hero_ready'] = False
+                    lobby['p2_opponent_hero_ready'] = False
+                    broadcast({'type': 'rematch_confirmed'})
+
     except (ConnectionResetError, ConnectionAbortedError):
         print('[SERVER] Connection error!')
     finally:

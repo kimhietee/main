@@ -35,6 +35,10 @@ class NetClient:
         self.cube_seed = None   # shared seed for deterministic initial cube X positions
         self.declared_winner = None  # set by server in LAN mode
 
+        self.my_rematch_sent = False
+        self.opponent_rematch_sent = False
+        self.rematch_confirmed = False
+
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.host, self.port))
@@ -71,14 +75,23 @@ class NetClient:
     def send_load_opponent_hero_ready(self, hero_name):
         send_msg(self.sock, {'type': 'load_opponent_hero', 'hero': hero_name})
 
-    def send_cube_reset(self, index, fall, x):
-        send_msg(self.sock, {'type': 'cube_reset', 'index': index, 'fall': fall, 'x': x})
+    def send_cube_reset(self, index, fall, x, hero_hit=None, bonus_type=None, bonus_amount=None):
+        if self.sock and self._running:
+            try:
+                send_msg(self.sock, {
+                    'type': 'cube_reset', 'index': index, 'fall': fall, 'x': x,
+                    'hero_hit': hero_hit, 'bonus_type': bonus_type, 'bonus_amount': bonus_amount
+                })
+            except:
+                self._running = False
+                self.phase = 'disconnected'
 
     def send_report_hp(self, p1_hp, p2_hp):
         send_msg(self.sock, {'type': 'report_hp', 'p1_hp': p1_hp, 'p2_hp': p2_hp})
 
-    # def send_hero_not_ready(self):
-    #     send_msg(self.sock, {'type': 'hero_not_ready'})
+    def send_rematch_request(self):
+        self.my_rematch_sent = True
+        send_msg(self.sock, {'type': 'rematch_request'})
 
     def pop_cube_updates(self):
         """Returns and clears pending cube updates."""
@@ -141,6 +154,13 @@ class NetClient:
 
             elif message_type == 'winner_declared':
                 self.declared_winner = msg['winner']
+
+            elif message_type == 'rematch_request_received':
+                if msg['player'] != self.my_player_type:
+                    self.opponent_rematch_sent = True
+
+            elif message_type == 'rematch_confirmed':
+                self.rematch_confirmed = True
 
     def send_disconnect(self, hero_name):
         send_msg(self.sock, {'type': 'disconnected'})

@@ -927,11 +927,18 @@ def game(bg=None, net_client=None):
         #     main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
         
-        if net_client is not None and net_client.opponent_left:
-            # net_client.opponent_left = False
-            # net_client.disconnect()
-            print("Opponent left detected in player_selection")
-            return 'opponent_left'
+        if net_client is not None:
+            if net_client.opponent_left:
+                print("Opponent left detected in player_selection")
+                return 'opponent_left'
+                
+            if net_client.rematch_confirmed:
+                net_client.rematch_confirmed = False
+                net_client.my_rematch_sent = False
+                net_client.opponent_rematch_sent = False
+                net_client.declared_winner = None
+                reset_all()
+                return 'rematch'
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
@@ -1084,6 +1091,17 @@ def game(bg=None, net_client=None):
                     ci = update['index']
                     cubes[ci]['fall'] = update['fall']
                     cubes[ci]['x'] = update['x']
+                    
+                    if net_client.my_player_type == 2 and update.get('hero_hit') is not None:
+                        target = main.hero1 if update['hero_hit'] == 1 else main.hero2
+                        btype = update.get('bonus_type')
+                        bamount = update.get('bonus_amount')
+                        if btype == 'health':
+                            target.health = min(target.max_health, target.health + bamount)
+                        elif btype == 'mana':
+                            target.mana = min(target.max_mana, target.mana + bamount)
+                        elif btype == 'special':
+                            target.special = min(target.max_special, target.special + bamount)
 
             for i, cube in enumerate(cubes):
                 cube['fall'], cube['x'] = handle_cube(
@@ -1361,7 +1379,6 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
         cube = pygame.Rect(cube_x, cube_fall, 25, 25)
         cube_hitbox = pygame.rect.Rect(cube.x, cube.y, cube.width * (cube.width * .07), cube.height * (cube.height * .07))
 
-        # Scale the im        git pull origin masterage to match the cube's size
         scaled_image = pygame.transform.scale(cube_image, (cube.width * (cube.width * .07), cube.height * (cube.height * .07)))
         main.screen.blit(scaled_image, cube)
         if SHOW_HITBOX:
@@ -1390,7 +1407,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
                 if net_client is not None:
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
 
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
             if net_client is None or net_client.my_player_type == 1:
@@ -1413,13 +1430,13 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
                 if net_client is not None:
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
     else:
         if net_client is not None:
             if net_client.my_player_type == 1:
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = -150
-                net_client.send_cube_reset(cube_index, cube_fall, cube_x)
+                net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
         else:
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall = -150
@@ -1517,13 +1534,21 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
 
         if mouse_press[0] and rematch_game.is_clicked(mouse_pos):
             paused = False
-
             if global_vars.active_net_client is not None:
-                global_vars.active_net_client.disconnect()
-                global_vars.active_net_client = None
-
-            reset_all()
-            return "rematch"
+                if not global_vars.active_net_client.my_rematch_sent:
+                    global_vars.active_net_client.send_rematch_request()
+            else:
+                reset_all()
+                return "rematch"
+            
+        if global_vars.active_net_client is not None:
+            status_font = global_vars.get_font(30)
+            if global_vars.active_net_client.my_rematch_sent:
+                t = status_font.render("Rematch request sent!", True, (100, 255, 100))
+                screen.blit(t, (width // 2 - t.get_width() // 2, int(height * 0.55)))
+            if global_vars.active_net_client.opponent_rematch_sent:
+                t = status_font.render("Opponent requested a rematch!", True, (255, 200, 100))
+                screen.blit(t, (width // 2 - t.get_width() // 2, int(height * 0.60)))
 
 def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused

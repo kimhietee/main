@@ -3536,7 +3536,12 @@ def player_selection(net_client=None):
 
                     reset_all()
                     
-                    game_end_result = fade(background, lambda: game(net_client=global_vars.active_net_client if global_vars.active_net_client else None)) #lez go it worked
+                    while True:
+                        game_end_result = fade(background, lambda: game(net_client=global_vars.active_net_client if global_vars.active_net_client else None)) #lez go it worked
+                        if game_end_result == "rematch":
+                            continue
+                        else:
+                            break
 
                     return game_end_result
 

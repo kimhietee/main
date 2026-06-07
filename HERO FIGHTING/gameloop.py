@@ -857,6 +857,7 @@ def game(bg=None, net_client=None):
         if not pygame.mixer.music.get_busy():
             pygame.event.post(pygame.event.Event(pygame.USEREVENT))
             
+            
     FREEZE_SPECIAL = False
     freeze_toggled = True
 

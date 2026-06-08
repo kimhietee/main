@@ -162,6 +162,8 @@ def handle_client(conn, player_type):
 def accept_loop():
     while True:
         conn, addr = server.accept()
+        # Disable Nagle so per-frame packets are forwarded with minimal latency.
+        conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         pt = next_slot[0]
         if pt > 2:
             conn.close()

@@ -41,6 +41,9 @@ class NetClient:
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Disable Nagle so the 60Hz stream of tiny input/state packets is sent
+        # immediately instead of being batched (a major source of stutter).
+        self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.sock.connect((self.host, self.port))
         welcome = recv_msg(self.sock)
         if welcome is None:
@@ -149,7 +152,10 @@ class NetClient:
                     self.cube_updates.append({
                         'index': msg['index'],
                         'fall': msg['fall'],
-                        'x': msg['x']
+                        'x': msg['x'],
+                        'hero_hit': msg.get('hero_hit'),
+                        'bonus_type': msg.get('bonus_type'),
+                        'bonus_amount': msg.get('bonus_amount'),
                     })
 
             elif message_type == 'winner_declared':

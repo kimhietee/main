@@ -1431,13 +1431,13 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
                 if net_client is not None:
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
+                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=2, bonus_type=bonus_type, bonus_amount=bonus_amount)
     else:
         if net_client is not None:
             if net_client.my_player_type == 1:
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = -150
-                net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
+                net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=None, bonus_type=None, bonus_amount=None)
         else:
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall = -150
@@ -1565,7 +1565,7 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
             in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            if global_vars.active_net_client is None and global_vars.active_net_client.opponent_left:
+            if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
                 print(f'I am leaving good luck everybody')
                 print("Opponent left detected in player_selection")
                 return 'opponent_left'

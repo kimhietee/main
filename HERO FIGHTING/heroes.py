@@ -2833,7 +2833,8 @@ def wait_screen(condition_func, text="Waiting for something...", background=None
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-        if global_vars.active_net_client.opponent_left:
+        _nc = global_vars.active_net_client
+        if _nc is None or _nc.phase == 'disconnected' or _nc.opponent_left:
             return 'opponent_left'          
         if background:
             screen.blit(background, (0, 0))

@@ -803,7 +803,13 @@ def run_background(bg):
     bg.display(screen)
 import time
 
-# ── Phase D: host-authoritative state sync helpers ──
+# ── Phase D: host-authoritative state sync ──
+# Render runs at 60 FPS; this is only how often the host SENDS snapshots over the
+# socket. 30Hz halves bandwidth/CPU and is gentler on a slow (WiFi) client; bump
+# to 60 to A/B test tighter sync on a fast link.
+NET_STATE_TICK_HZ = 30
+NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
+
 def _serialize_hero(h):
     """Snapshot the crucial, host-authoritative state of one hero."""
     return {
@@ -1250,7 +1256,7 @@ def game(bg=None, net_client=None):
             # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
             if net_client is not None and net_client.my_player_type == 1 and net_client.phase == 'playing':
                 _now_ms = pygame.time.get_ticks()
-                if _now_ms - _last_state_send >= 33:
+                if _now_ms - _last_state_send >= NET_STATE_TICK_MS:
                     net_client.send_state({
                         'h1': _serialize_hero(main.hero1),
                         'h2': _serialize_hero(main.hero2),

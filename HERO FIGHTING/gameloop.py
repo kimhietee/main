@@ -819,14 +819,31 @@ def _serialize_hero(h):
         'frozen': h.frozen, 'rooted': h.rooted, 'slowed': h.slowed, 'silenced': h.silenced,
     }
 
-def _apply_hero_state(h, s):
-    """Overwrite a hero with an authoritative snapshot (used on the non-host client)."""
+def _apply_hero_state(h, s, x=None, y=None):
+    """Overwrite a hero with an authoritative snapshot (used on the non-host client).
+    x/y override the snapshot position with an interpolated value when provided."""
     if h is None or s is None:
         return
     h.health = s['health']; h.mana = s['mana']; h.special = s['special']; h.temp_hp = s['temp_hp']
-    h.x_pos = s['x']; h.y_pos = s['y']; h.y_velocity = s['yv']
+    h.x_pos = s['x'] if x is None else x
+    h.y_pos = s['y'] if y is None else y
+    h.y_velocity = s['yv']
     h.jumping = s['jump']; h.facing_right = s['face']
     h.frozen = s['frozen']; h.rooted = s['rooted']; h.slowed = s['slowed']; h.silenced = s['silenced']
+
+def _interp_xy(prev, latest, t0, t1, hero_key, render_time):
+    """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
+    Falls back to the latest position when there's no prior snapshot. Clamped so a
+    late snapshot just holds the latest position rather than overshooting."""
+    ls = latest.get(hero_key)
+    if ls is None:
+        return None, None
+    ps = prev.get(hero_key) if prev else None
+    if ps is not None and t1 > t0:
+        a = (render_time - t0) / (t1 - t0)
+        a = 0.0 if a < 0 else 1.0 if a > 1 else a
+        return ps['x'] + (ls['x'] - ps['x']) * a, ps['y'] + (ls['y'] - ps['y']) * a
+    return ls['x'], ls['y']
 
 def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
@@ -1223,14 +1240,18 @@ def game(bg=None, net_client=None):
                 # lobby('disconnected') 
                 return 'opponent_left'
 
-            # ── Phase D: non-host applies the latest authoritative state snapshot ──
-            # Between snapshots the heroes keep moving from replayed inputs
-            # (dead-reckoning); each new snapshot snaps them back to host truth.
+            # ── Phase D: non-host renders the authoritative state, interpolated ──
+            # Numbers (hp/mana/special) snap to the latest host snapshot; positions
+            # are lerped between the last two snapshots, rendered ~1 tick in the past
+            # for smooth motion. Fully host-authoritative — no local prediction.
             if net_client is not None and net_client.my_player_type == 2 and net_client.phase == 'playing':
-                _snap = net_client.pop_state()
-                if _snap is not None:
-                    _apply_hero_state(main.hero1, _snap.get('h1'))
-                    _apply_hero_state(main.hero2, _snap.get('h2'))
+                _prev, _latest, _t0, _t1 = net_client.get_states_for_render()
+                if _latest is not None:
+                    _render_time = time.monotonic() - (NET_STATE_TICK_MS / 1000.0)
+                    _x1, _y1 = _interp_xy(_prev, _latest, _t0, _t1, 'h1', _render_time)
+                    _x2, _y2 = _interp_xy(_prev, _latest, _t0, _t1, 'h2', _render_time)
+                    _apply_hero_state(main.hero1, _latest.get('h1'), _x1, _y1)
+                    _apply_hero_state(main.hero2, _latest.get('h2'), _x2, _y2)
 
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)

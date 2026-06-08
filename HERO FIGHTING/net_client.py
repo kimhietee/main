@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 from network import send_msg, recv_msg
 
 class NetClient:
@@ -39,10 +40,14 @@ class NetClient:
         self.opponent_rematch_sent = False
         self.rematch_confirmed = False
 
-        # ── Phase D: host-authoritative state sync ──
+        # ── Phase D: host-authoritative state sync (with interpolation) ──
+        # Keep the last two snapshots + their arrival times so the non-host can
+        # render the opponent slightly in the past and lerp between them.
         self._state_lock = threading.Lock()
-        self.latest_state = None    # most recent hero-state snapshot from the host
-        self._state_dirty = False   # True when a new snapshot arrived since last pop
+        self.prev_state = None
+        self.latest_state = None
+        self.prev_time = 0.0
+        self.latest_time = 0.0
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -107,14 +112,11 @@ class NetClient:
                 self._running = False
                 self.phase = 'disconnected'
 
-    def pop_state(self):
-        """P2 only: return the latest hero-state snapshot if a new one arrived
-        since the last call, otherwise None."""
+    def get_states_for_render(self):
+        """P2 only: returns (prev_state, latest_state, prev_time, latest_time)
+        for time-based interpolation. Times are time.monotonic() seconds."""
         with self._state_lock:
-            if self._state_dirty:
-                self._state_dirty = False
-                return self.latest_state
-            return None
+            return self.prev_state, self.latest_state, self.prev_time, self.latest_time
 
     def send_rematch_request(self):
         self.my_rematch_sent = True
@@ -183,9 +185,12 @@ class NetClient:
                     })
 
             elif message_type == 'state':
+                _now = time.monotonic()
                 with self._state_lock:
+                    self.prev_state = self.latest_state
+                    self.prev_time = self.latest_time
                     self.latest_state = msg.get('heroes')
-                    self._state_dirty = True
+                    self.latest_time = _now
 
             elif message_type == 'winner_declared':
                 self.declared_winner = msg['winner']

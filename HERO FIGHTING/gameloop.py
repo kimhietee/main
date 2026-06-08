@@ -802,11 +802,33 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
 def run_background(bg):
     bg.display(screen)
 import time
+
+# ── Phase D: host-authoritative state sync helpers ──
+def _serialize_hero(h):
+    """Snapshot the crucial, host-authoritative state of one hero."""
+    return {
+        'health': h.health, 'mana': h.mana, 'special': h.special, 'temp_hp': h.temp_hp,
+        'x': h.x_pos, 'y': h.y_pos, 'yv': h.y_velocity,
+        'jump': h.jumping, 'face': h.facing_right,
+        'frozen': h.frozen, 'rooted': h.rooted, 'slowed': h.slowed, 'silenced': h.silenced,
+    }
+
+def _apply_hero_state(h, s):
+    """Overwrite a hero with an authoritative snapshot (used on the non-host client)."""
+    if h is None or s is None:
+        return
+    h.health = s['health']; h.mana = s['mana']; h.special = s['special']; h.temp_hp = s['temp_hp']
+    h.x_pos = s['x']; h.y_pos = s['y']; h.y_velocity = s['yv']
+    h.jumping = s['jump']; h.facing_right = s['face']
+    h.frozen = s['frozen']; h.rooted = s['rooted']; h.slowed = s['slowed']; h.silenced = s['silenced']
+
 def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
     if net_client is not None:
         net_client.phase = 'playing'
         net_client.declared_winner = None  # reset from any previous game
+
+    _last_state_send = 0   # Phase D: throttle host -> client state snapshots (30Hz)
 
     
     game_music_started = False
@@ -1194,7 +1216,16 @@ def game(bg=None, net_client=None):
                 global_vars.active_net_client = None
                 # lobby('disconnected') 
                 return 'opponent_left'
-            
+
+            # ── Phase D: non-host applies the latest authoritative state snapshot ──
+            # Between snapshots the heroes keep moving from replayed inputs
+            # (dead-reckoning); each new snapshot snaps them back to host truth.
+            if net_client is not None and net_client.my_player_type == 2 and net_client.phase == 'playing':
+                _snap = net_client.pop_state()
+                if _snap is not None:
+                    _apply_hero_state(main.hero1, _snap.get('h1'))
+                    _apply_hero_state(main.hero2, _snap.get('h2'))
+
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
             main.hero2_group.update()
@@ -1215,6 +1246,16 @@ def game(bg=None, net_client=None):
             # Update anddddddddddddd draw attacks
             attack_display.update()
             attack_display.draw(main.screen)
+
+            # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
+            if net_client is not None and net_client.my_player_type == 1 and net_client.phase == 'playing':
+                _now_ms = pygame.time.get_ticks()
+                if _now_ms - _last_state_send >= 33:
+                    net_client.send_state({
+                        'h1': _serialize_hero(main.hero1),
+                        'h2': _serialize_hero(main.hero2),
+                    })
+                    _last_state_send = _now_ms
             
 
             # Update and draw Wanderer Magician

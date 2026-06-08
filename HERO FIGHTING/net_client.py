@@ -152,7 +152,10 @@ class NetClient:
                     self.cube_updates.append({
                         'index': msg['index'],
                         'fall': msg['fall'],
-                        'x': msg['x']
+                        'x': msg['x'],
+                        'hero_hit': msg.get('hero_hit'),
+                        'bonus_type': msg.get('bonus_type'),
+                        'bonus_amount': msg.get('bonus_amount'),
                     })
 
             elif message_type == 'winner_declared':

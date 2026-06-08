@@ -163,7 +163,10 @@ def handle_client(conn, player_type):
 
 def accept_loop():
     while True:
-        conn, addr = server.accept()
+        try:
+            conn, addr = server.accept()
+        except OSError:
+            break  # server socket closed (shutdown)
         with lock:
             # Assign the lowest free slot so a player who left can be replaced
             # without waiting for the other player to disconnect too.
@@ -180,14 +183,65 @@ def accept_loop():
             broadcast({'type': 'start'})
             print("[SERVER] Both players connected. Game starting.")
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.bind((HOST, PORT))
-server.listen()
-print(f"[SERVER] Listening on port {PORT}...")
+server = None  # set by serve(); module-level so accept_loop()/broadcast() can use it
 
-try:
+
+def _reset_state():
+    """Clear lobby/input/cube state so an in-process host can start a fresh match."""
+    for pt in (1, 2):
+        player_inputs[pt] = {'left': False, 'right': False, 'up': False,
+                             'skill1': False, 'skill2': False, 'skill3': False,
+                             'skill4': False, 'basic': False, 'special': False}
+    clients.clear()
+    lobby.update({'map': None, 'p1_hero': None, 'p2_hero': None,
+                  'p1_ready': False, 'p2_ready': False,
+                  'p1_opponent_hero_ready': False, 'p2_opponent_hero_ready': False,
+                  'p1_rematch': False, 'p2_rematch': False})
+
+
+def serve(host=HOST, port=PORT):
+    """Bind, listen and run the accept loop (blocking). Used both as a standalone
+    process and inside a background thread when the host runs the server in-process."""
+    global server
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind((host, port))
+    server.listen()
+    print(f"[SERVER] Listening on port {port}...")
     accept_loop()
-except KeyboardInterrupt:
-    print("[SERVER] Shutting down.")
-    server.close()
+
+
+_server_thread = None  # the in-process accept-loop thread, if hosting
+
+
+def start_background_server(host=HOST, port=PORT):
+    """Host-in-process: bind/listen here then run the accept loop on a daemon thread.
+    Idempotent within a process — if we're already hosting, the existing server is
+    reused (its state is reset for a fresh match) rather than binding a second time.
+    Returns the accept-loop thread, or None if the port is taken by another process."""
+    global server, _server_thread
+    _reset_state()
+    if _server_thread is not None and _server_thread.is_alive():
+        return _server_thread  # already hosting in this process; reuse it
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        s.bind((host, port))
+    except OSError:
+        s.close()
+        return None
+    s.listen()
+    server = s
+    print(f"[SERVER] Listening on port {port} (in-process host)...")
+    _server_thread = threading.Thread(target=accept_loop, daemon=True)
+    _server_thread.start()
+    return _server_thread
+
+
+if __name__ == '__main__':
+    try:
+        serve()
+    except KeyboardInterrupt:
+        print("[SERVER] Shutting down.")
+        if server is not None:
+            server.close()

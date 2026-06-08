@@ -41,6 +41,9 @@ class NetClient:
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Disable Nagle so the 60Hz stream of tiny input/state packets is sent
+        # immediately instead of being batched (a major source of stutter).
+        self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.sock.connect((self.host, self.port))
         welcome = recv_msg(self.sock)
         if welcome is None:

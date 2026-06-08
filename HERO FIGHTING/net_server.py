@@ -18,7 +18,6 @@ player_inputs = {
 }
 clients = {}   # player_type (1 or 2) -> socket
 lock = threading.Lock()
-next_slot = [1]
 
 # ── Phase 2: lobby state ──
 lobby = {
@@ -148,10 +147,6 @@ def handle_client(conn, player_type):
             clients.pop(player_type, None)
             print(f"[SERVER] Player {player_type} disconnected.")
             print(f"[SERVER] clients now: {list(clients.keys())}")
-            # Reset slot counter if both disconnected
-            if len(clients) == 0:
-                next_slot[0] = 1
-                print(f"[SERVER] All disconnected. Resetting slots.")
         conn.close()
         for pt, sock in clients.items():
             try:
@@ -162,20 +157,21 @@ def handle_client(conn, player_type):
 def accept_loop():
     while True:
         conn, addr = server.accept()
-        pt = next_slot[0]
-        if pt > 2:
-            conn.close()
-            continue
-        next_slot[0] += 1
         with lock:
+            # Assign the lowest free slot so a player who left can be replaced
+            # without waiting for the other player to disconnect too.
+            pt = next((s for s in (1, 2) if s not in clients), None)
+            if pt is None:
+                conn.close()
+                continue
             clients[pt] = conn
+            both_connected = len(clients) == 2
         send_msg(conn, {'type': 'welcome', 'your_player_type': pt})
         thread = threading.Thread(target=handle_client, args=(conn, pt), daemon=True)
         thread.start()
-        if len(clients) == 2:
+        if both_connected:
             broadcast({'type': 'start'})
             print("[SERVER] Both players connected. Game starting.")
-            # Don't reset next_slot here — wait for disconnects
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

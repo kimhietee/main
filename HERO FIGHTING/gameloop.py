@@ -1702,9 +1702,9 @@ def menu():
                 pass
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
-                if not _lan_connecting and (not hasattr(main, '_active_net_client') or global_vars.active_net_client is None):
+                if not _lan_connecting and global_vars.active_net_client is None:
                     _lan_connecting = True
-                    reason = lan_connect('127.0.0.1')
+                    reason = main.multiplayer_menu()   # Minecraft-style Host / Join
                     _lan_connecting = False
                     if reason == 'opponent_left':
                         lobby('disconnected')

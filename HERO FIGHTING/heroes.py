@@ -2836,6 +2836,151 @@ def lan_connect(host_ip):
         print('its me :)')
         return 'done'
 
+
+def _get_local_ip():
+    """Best-effort LAN IP of this machine (to show the host so the joiner can connect)."""
+    import socket as _socket
+    s = _socket.socket(_socket.AF_INET, _socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))  # no packets sent; just picks the outbound interface
+        return s.getsockname()[0]
+    except Exception:
+        return '127.0.0.1'
+    finally:
+        s.close()
+
+
+def _mp_draw_bg(title):
+    screen.fill((0, 0, 0))
+    Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+    t = global_vars.get_font(80).render(title, global_vars.TEXT_ANTI_ALIASING, white)
+    screen.blit(t, (width // 2 - t.get_width() // 2, int(height * 0.12)))
+
+
+def _mp_text(text, size, color, cy):
+    surf = global_vars.get_font(size).render(text, global_vars.TEXT_ANTI_ALIASING, color)
+    rect = surf.get_rect(center=(width // 2, cy))
+    screen.blit(surf, rect)
+    return rect
+
+
+def host_game():
+    """Start the relay server in-process and connect to it as Player 1 (host)."""
+    import net_server
+    thread = net_server.start_background_server()
+    if thread is None:
+        print("[HOST] Port already in use — connecting to the existing server.")
+    # Brief splash while the listen socket settles; also shows the host their IP.
+    local_ip = _get_local_ip()
+    t0 = pygame.time.get_ticks()
+    while pygame.time.get_ticks() - t0 < 500:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+        _mp_draw_bg("HOST GAME")
+        _mp_text("Starting server...", 45, white, int(height * 0.45))
+        _mp_text(f"Your IP:  {local_ip}", 35, (120, 220, 120), int(height * 0.55))
+        _mp_text("Share this address with the other player", 25, (160, 160, 160), int(height * 0.62))
+        pygame.display.update()
+        clock.tick(30)
+    return lan_connect('127.0.0.1')
+
+
+def join_game():
+    """Minecraft-style 'Direct Connect': type the host's IP, then connect as Player 2."""
+    ip = "127.0.0.1"
+    info_font_size = 30
+    blink = 0
+    while True:
+        blink = (blink + 1) % 60
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return None
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    if ip.strip():
+                        return lan_connect(ip.strip())
+                elif event.key == pygame.K_BACKSPACE:
+                    ip = ip[:-1]
+                else:
+                    ch = event.unicode
+                    # Accept IPv4 chars (digits + dots) and hostnames; cap length.
+                    if ch and ch in "0123456789." and len(ip) < 21:
+                        ip += ch
+
+        _mp_draw_bg("JOIN GAME")
+        _mp_text("Server Address", info_font_size, (200, 200, 200), int(height * 0.38))
+
+        # Input box
+        box_w, box_h = int(width * 0.5), 70
+        box = pygame.Rect(width // 2 - box_w // 2, int(height * 0.44), box_w, box_h)
+        pygame.draw.rect(screen, (25, 25, 25), box)
+        pygame.draw.rect(screen, (200, 200, 200), box, 3)
+        shown = ip + ("|" if blink < 30 else "")
+        txt = global_vars.get_font(40).render(shown, global_vars.TEXT_ANTI_ALIASING, white)
+        screen.blit(txt, txt.get_rect(midleft=(box.x + 18, box.centery)))
+
+        _mp_text("ENTER to connect      ESC to cancel", 25, (160, 160, 160), int(height * 0.6))
+        pygame.display.update()
+        clock.tick(60)
+
+
+def multiplayer_menu():
+    """Minecraft-style multiplayer landing: Host Game or Join Game. Returns the
+    disconnect reason from the match (or None if the user backed out)."""
+    options = ["Host Game", "Join Game", "Back"]
+    selected = 0
+    while True:
+        mouse_pos = pygame.mouse.get_pos()
+        # Precompute the clickable band for each option up front so the mouse-click
+        # handler below can hit-test against it (the bands must exist *before* events
+        # are processed, not after drawing).
+        option_bands = [(i, pygame.Rect(0, int(height * 0.42) + i * 90 - 35, width, 70))
+                        for i in range(len(options))]
+        for i, band in option_bands:
+            if band.collidepoint(mouse_pos):
+                selected = i
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return None
+                elif event.key in (pygame.K_DOWN, pygame.K_s):
+                    selected = (selected + 1) % len(options)
+                elif event.key in (pygame.K_UP, pygame.K_w):
+                    selected = (selected - 1) % len(options)
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+                    return _mp_choose(selected)
+                elif event.key == pygame.K_h:
+                    return _mp_choose(0)
+                elif event.key == pygame.K_j:
+                    return _mp_choose(1)
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for i, band in option_bands:
+                    if band.collidepoint(event.pos):
+                        return _mp_choose(i)
+
+        _mp_draw_bg("MULTIPLAYER")
+        for i, label in enumerate(options):
+            cy = int(height * 0.42) + i * 90
+            color = (255, 220, 120) if i == selected else white
+            _mp_text(label, 55, color, cy)
+        _mp_text("Host runs the server; the other player joins by IP", 25, (160, 160, 160), int(height * 0.8))
+        pygame.display.update()
+        clock.tick(60)
+
+
+def _mp_choose(index):
+    if index == 0:
+        return host_game()
+    elif index == 1:
+        return join_game()
+    return None
+
+
 def wait_screen(condition_func, text="Waiting for something...", background=None):
     wait_font = global_vars.get_font(40)
     while not condition_func():

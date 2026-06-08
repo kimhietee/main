@@ -883,6 +883,12 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
 
     def _apply_damage(self, enemy, damage_amount, is_final=False):
         """Helper method to apply damage with all effects (mana, special, lifesteal) to a specific enemy."""
+        # Host-authority: in LAN mode only Player 1 (host) computes and applies
+        # combat effects (including RNG crits). Player 2 receives the authoritative
+        # results via state snapshots, so it must not run damage logic itself.
+        _nc = global_vars.active_net_client
+        if _nc is not None and getattr(_nc, 'my_player_type', 1) == 2:
+            return
         if enemy is None:
             return
         
@@ -932,6 +938,10 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         
     def _apply_heal(self, heal_amount):
         """Helper method to apply healing with special gain."""
+        # Host-authority: only the host applies heals; P2 mirrors via snapshots.
+        _nc = global_vars.active_net_client
+        if _nc is not None and getattr(_nc, 'my_player_type', 1) == 2:
+            return
         self.who_attacks.take_heal(heal_amount)
         self.who_attacks.take_special(heal_amount * SPECIAL_MULTIPLIER)
     

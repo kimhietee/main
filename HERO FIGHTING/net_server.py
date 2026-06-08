@@ -69,6 +69,13 @@ def handle_client(conn, player_type):
                     }
                 broadcast(state)
 
+            elif message_type == 'state':
+                # Host (P1) broadcasts authoritative hero state — forward to the
+                # other player(s). Not echoed back to the sender.
+                for pt, sock in list(clients.items()):
+                    if pt != player_type:
+                        try: send_msg(sock, msg)
+                        except: pass
 
             # ── Phase 2: lobby messages ──
             elif message_type == 'set_map':

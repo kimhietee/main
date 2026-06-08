@@ -2934,7 +2934,14 @@ def multiplayer_menu():
     selected = 0
     while True:
         mouse_pos = pygame.mouse.get_pos()
-        option_rects = []
+        # Precompute the clickable band for each option up front so the mouse-click
+        # handler below can hit-test against it (the bands must exist *before* events
+        # are processed, not after drawing).
+        option_bands = [(i, pygame.Rect(0, int(height * 0.42) + i * 90 - 35, width, 70))
+                        for i in range(len(options))]
+        for i, band in option_bands:
+            if band.collidepoint(mouse_pos):
+                selected = i
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit(); exit()
@@ -2952,18 +2959,15 @@ def multiplayer_menu():
                 elif event.key == pygame.K_j:
                     return _mp_choose(1)
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for i, r in enumerate(option_rects):
-                    if r.collidepoint(event.pos):
+                for i, band in option_bands:
+                    if band.collidepoint(event.pos):
                         return _mp_choose(i)
 
         _mp_draw_bg("MULTIPLAYER")
         for i, label in enumerate(options):
             cy = int(height * 0.42) + i * 90
-            hovered = pygame.Rect(0, cy - 35, width, 70).collidepoint(mouse_pos)
-            color = (255, 220, 120) if (i == selected or hovered) else white
-            if hovered:
-                selected = i
-            option_rects.append(_mp_text(label, 55, color, cy))
+            color = (255, 220, 120) if i == selected else white
+            _mp_text(label, 55, color, cy)
         _mp_text("Host runs the server; the other player joins by IP", 25, (160, 160, 160), int(height * 0.8))
         pygame.display.update()
         clock.tick(60)

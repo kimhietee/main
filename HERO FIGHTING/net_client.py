@@ -39,6 +39,11 @@ class NetClient:
         self.opponent_rematch_sent = False
         self.rematch_confirmed = False
 
+        # ── Phase D: host-authoritative state sync ──
+        self._state_lock = threading.Lock()
+        self.latest_state = None    # most recent hero-state snapshot from the host
+        self._state_dirty = False   # True when a new snapshot arrived since last pop
+
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Disable Nagle so the 60Hz stream of tiny input/state packets is sent
@@ -91,6 +96,25 @@ class NetClient:
 
     def send_report_hp(self, p1_hp, p2_hp):
         send_msg(self.sock, {'type': 'report_hp', 'p1_hp': p1_hp, 'p2_hp': p2_hp})
+
+    def send_state(self, heroes_state):
+        """Host (P1) only: broadcast the authoritative hero state for this tick.
+        heroes_state is {'h1': {...}, 'h2': {...}}."""
+        if self.sock and self._running:
+            try:
+                send_msg(self.sock, {'type': 'state', 'heroes': heroes_state})
+            except:
+                self._running = False
+                self.phase = 'disconnected'
+
+    def pop_state(self):
+        """P2 only: return the latest hero-state snapshot if a new one arrived
+        since the last call, otherwise None."""
+        with self._state_lock:
+            if self._state_dirty:
+                self._state_dirty = False
+                return self.latest_state
+            return None
 
     def send_rematch_request(self):
         self.my_rematch_sent = True
@@ -157,6 +181,11 @@ class NetClient:
                         'bonus_type': msg.get('bonus_type'),
                         'bonus_amount': msg.get('bonus_amount'),
                     })
+
+            elif message_type == 'state':
+                with self._state_lock:
+                    self.latest_state = msg.get('heroes')
+                    self._state_dirty = True
 
             elif message_type == 'winner_declared':
                 self.declared_winner = msg['winner']

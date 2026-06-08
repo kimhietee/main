@@ -1565,7 +1565,7 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
             in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
-            if global_vars.active_net_client is None and global_vars.active_net_client.opponent_left:
+            if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
                 print(f'I am leaving good luck everybody')
                 print("Opponent left detected in player_selection")
                 return 'opponent_left'

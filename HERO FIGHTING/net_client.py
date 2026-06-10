@@ -77,6 +77,8 @@ class NetClient:
         """Returns (p1_keys, p2_keys) -- latest known inputs for both players."""
         with self._lock:
             return dict(self.p1_keys), dict(self.p2_keys)
+        
+        
 
     # ── Phase 2: lobby send methods ──
     def send_map(self, map_name):

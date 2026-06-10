@@ -2388,6 +2388,7 @@ class Player(pygame.sprite.Sprite):
     def stun(self, stunned, x_pos, y_pos, adjust_y_pos, jump_force=DEFAULT_JUMP_FORCE, gravity=DEFAULT_GRAVITY):
         # I give up stunned stops attacking from magician, i will just not make it not attack while jumping
         if stunned:
+            self.stunned = True
             self.jumping = True
             self.y_pos = y_pos - adjust_y_pos
             self.x_pos = x_pos
@@ -3342,6 +3343,8 @@ class Player(pygame.sprite.Sprite):
             self.y_pos = DEFAULT_Y_POS
             self.y_velocity = 0
             self.jumping = False 
+            if self.stunned:
+                self.stunned = False
         if self.y_pos > DEFAULT_Y_POS - JUMP_LOGIC_EXECUTE_ANIMATION:
             self.player_jump_index = 0
             self.player_jump_index_flipped = 0  
@@ -3370,7 +3373,7 @@ class Player(pygame.sprite.Sprite):
             # print(self.slowed, 'default:', self.default_speed)
             # print('current:', self.speed)
 
-            # if hasattr(self, 'atk_hasted'):
+            # if hasattr(self, 'hasted'):
             #     pass
             # print(self.enemy)
                 # print(self.get_current_atk_speed)

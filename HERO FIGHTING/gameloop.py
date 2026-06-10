@@ -810,17 +810,36 @@ import time
 NET_STATE_TICK_HZ = 30
 NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
 
-def _serialize_hero(h):
+def serialize_hero(h):
     """Snapshot the crucial, host-authoritative state of one hero."""
     return {
         'health': h.health, 'mana': h.mana, 'special': h.special, 'temp_hp': h.temp_hp,
-        'x': h.x_pos, 'y': h.y_pos, 'yv': h.y_velocity,
-        'jump': h.jumping, 'face': h.facing_right,
-        'frozen': h.frozen, 'rooted': h.rooted, 'slowed': h.slowed, 'silenced': h.silenced,
+        'x': h.x_pos,
+        'y': h.y_pos,
+        'yv': h.y_velocity,
+        'jump': h.jumping, 'facing_right': h.facing_right,
+        'frozen': h.frozen, 'rooted': h.rooted, 'slowed': h.slowed, 'silenced': h.silenced, 'stunned': h.stunned,
+        'hasted': getattr(h, 'hasted', None), 
+        'flying': getattr(h, 'flying', None),
+        'invisible': getattr(h, 'invisible', None),
+        'attacking1': h.attacking1,'attacking2': h.attacking2,'attacking3': h.attacking3,'attacking4': h.sp_attacking, 'basic_attacking': h.basic_attacking,
+
+        'skills': h.attacks, 'special_skills': h.attacks_special # wrong.
+
     }
 
-def _apply_hero_state(h, s, x=None, y=None):
-    """Overwrite a hero with an authoritative snapshot (used on the non-host client).
+def apply_hero_state(h, s, x=None, y=None):
+    """owner's note:
+    - sets the hero (h) its current state and position based on what its current state as
+    seen on the host client.
+    - These includes updated:
+        - x and y position
+        - health, mana, special, etc...
+        - statuses/effects (frozen, rooted, etc..)
+        - player states (jumping, facing, attacking, etc...)
+    
+    ai note >:(
+    - Overwrite a hero with an authoritative snapshot (used on the non-host client).
     x/y override the snapshot position with an interpolated value when provided."""
     if h is None or s is None:
         return
@@ -828,10 +847,17 @@ def _apply_hero_state(h, s, x=None, y=None):
     h.x_pos = s['x'] if x is None else x
     h.y_pos = s['y'] if y is None else y
     h.y_velocity = s['yv']
-    h.jumping = s['jump']; h.facing_right = s['face']
-    h.frozen = s['frozen']; h.rooted = s['rooted']; h.slowed = s['slowed']; h.silenced = s['silenced']
+    h.jumping = s['jump']; h.facing_right = s['facing_right']
+    h.frozen = s['frozen']; h.rooted = s['rooted']; h.slowed = s['slowed']; h.silenced = s['silenced']; h.stunned = s['stunned']
+    if hasattr(h, 'hasted'): h.hasted = s['hasted']
+    if hasattr(h, 'flying'): h.flying = s['flying']
+    if hasattr(h, 'invisible'): h.invisible = s['invisible']
+    h.attacking1 = s['attacking1']; h.attacking2 = s['attacking2']; h.attacking3 = s['attacking3']; h.sp_attacking = s['sp_attacking']; h.basic_attacking = s['basic_attacking']; 
 
-def _interp_xy(prev, latest, t0, t1, hero_key, render_time):
+    for skill in s['skills']:
+        skill.cooldown_time = skill.get_cooldown_time()
+
+def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
     Falls back to the latest position when there's no prior snapshot. Clamped so a
     late snapshot just holds the latest position rather than overshooting."""
@@ -929,7 +955,7 @@ def game(bg=None, net_client=None):
         p2.x_pos = width-300
 
 
-    disable_debug = True
+    disable_debug = False
     while True:
         # print(main.hero1.mana)
         
@@ -1212,24 +1238,58 @@ def game(bg=None, net_client=None):
                     }
                 else:
                     my_keys = {
-                        'left':    bool(raw_keys[keybinds['left_move_p2'][0]]),
-                        'right':   bool(raw_keys[keybinds['right_move_p2'][0]]),
-                        'up':      bool(raw_keys[keybinds['jump_p2'][0]]),
-                        'basic':   bool(raw_keys[keybinds['basic_atk_p2'][0]]),
-                        'skill1':  bool(raw_keys[keybinds['skill_1_p2'][0]]),
-                        'skill2':  bool(raw_keys[keybinds['skill_2_p2'][0]]),
-                        'skill3':  bool(raw_keys[keybinds['skill_3_p2'][0]]),
-                        'skill4':  bool(raw_keys[keybinds['skill_4_p2'][0]]),
-                        'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
+                        'left':    bool(raw_keys[keybinds['left_move_p1'][0]]),
+                        'right':   bool(raw_keys[keybinds['right_move_p1'][0]]),
+                        'up':      bool(raw_keys[keybinds['jump_p1'][0]]),
+                        'basic':   bool(raw_keys[keybinds['basic_atk_p1'][0]]),
+                        'skill1':  bool(raw_keys[keybinds['skill_1_p1'][0]]),
+                        'skill2':  bool(raw_keys[keybinds['skill_2_p1'][0]]),
+                        'skill3':  bool(raw_keys[keybinds['skill_3_p1'][0]]),
+                        'skill4':  bool(raw_keys[keybinds['skill_4_p1'][0]]),
+                        'special': bool(raw_keys[keybinds['sp_skill_p1'][0]]),
                     }
+                    # my_keys = {
+                    #     'left':    bool(raw_keys[keybinds['left_move_p2'][0]]),
+                    #     'right':   bool(raw_keys[keybinds['right_move_p2'][0]]),
+                    #     'up':      bool(raw_keys[keybinds['jump_p2'][0]]),
+                    #     'basic':   bool(raw_keys[keybinds['basic_atk_p2'][0]]),
+                    #     'skill1':  bool(raw_keys[keybinds['skill_1_p2'][0]]),
+                    #     'skill2':  bool(raw_keys[keybinds['skill_2_p2'][0]]),
+                    #     'skill3':  bool(raw_keys[keybinds['skill_3_p2'][0]]),
+                    #     'skill4':  bool(raw_keys[keybinds['skill_4_p2'][0]]),
+                    #     'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
+                    # }
                 net_client.send_input(my_keys)
                 # P1 is the HP authority — report hero HPs to server every frame
-                if net_client.my_player_type == 1:
+                if net_client.my_player_type == 1: # must use the hero_group, not individual (will work for now)
                     net_client.send_report_hp(main.hero1.health, main.hero2.health)
+                    
             else:
                 # Normal local mode — clear net_keys so keyboard works
                 if hasattr(main, 'hero1') and main.hero1 is not None: main.hero1._net_keys = None
                 if hasattr(main, 'hero2') and main.hero2 is not None: main.hero2._net_keys = None
+                # for skill in enumerate(main.hero1.attacks):
+                #     print(f'skill {skill[0]+1} [{round(skill[1].get_skill_cooldown(), 2)}]', end="")
+                #     print()
+                # if main.hero1.special_active:
+                #     for skill in enumerate(main.hero1.attacks_special):
+                #         print(f'special skill {skill[0]+1} [{round(skill[1].get_skill_cooldown(), 2)}]', end="")
+                #         print()
+                # print('-------')
+
+                # skill 1 [0]
+                # skill 2 [17048]
+                # skill 3 [0]
+                # skill 4 [0]
+                # skill 5 [0]
+                # skill 6 [0]
+                # special skill 1 [6614]
+                # special skill 2 [0]
+                # special skill 3 [0]
+                # special skill 4 [0]
+                # special skill 5 [662.19]
+
+                
             # ── END NETWORK INPUT INJECTION ──────────────────────────
 
             # detect if anyone left
@@ -1245,13 +1305,13 @@ def game(bg=None, net_client=None):
             # are lerped between the last two snapshots, rendered ~1 tick in the past
             # for smooth motion. Fully host-authoritative — no local prediction.
             if net_client is not None and net_client.my_player_type == 2 and net_client.phase == 'playing':
-                _prev, _latest, _t0, _t1 = net_client.get_states_for_render()
-                if _latest is not None:
+                prev_st, latest_st, prev_t, latest_t = net_client.get_hero_state()
+                if latest_st is not None:
                     _render_time = time.monotonic() - (NET_STATE_TICK_MS / 1000.0)
-                    _x1, _y1 = _interp_xy(_prev, _latest, _t0, _t1, 'h1', _render_time)
-                    _x2, _y2 = _interp_xy(_prev, _latest, _t0, _t1, 'h2', _render_time)
-                    _apply_hero_state(main.hero1, _latest.get('h1'), _x1, _y1)
-                    _apply_hero_state(main.hero2, _latest.get('h2'), _x2, _y2)
+                    _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
+                    _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
+                    apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)
+                    apply_hero_state(main.hero2, latest_st.get('h2'), _x2, _y2)
 
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
@@ -1279,8 +1339,8 @@ def game(bg=None, net_client=None):
                 _now_ms = pygame.time.get_ticks()
                 if _now_ms - _last_state_send >= NET_STATE_TICK_MS:
                     net_client.send_state({
-                        'h1': _serialize_hero(main.hero1),
-                        'h2': _serialize_hero(main.hero2),
+                        'h1': serialize_hero(main.hero1),
+                        'h2': serialize_hero(main.hero2),
                     })
                     _last_state_send = _now_ms
             
@@ -1355,7 +1415,9 @@ def game(bg=None, net_client=None):
             
 
         else: # completely pause if only offline
-            pause(mouse_pos, mouse_press)
+            pause_result = pause(mouse_pos, mouse_press)
+            if pause_result == 'back_to_menu' or battle_end_result == 'back_to_menu':
+                return 'back_to_menu'
 
         
         
@@ -1621,6 +1683,7 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
 
 def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
+    '''problem: skills can go negative numbers while paused, lan multiplayer and local multiplayer must both working, when pausing in multiplayer, skills and other cooldowns and times won't be paused if on lan multiplayer, in local, if paused, all related timings such as skill cooldowns must be paused, but the total pause duration adds more cooldown to skills, which is a bug that needs to be fixed.'''
     if font is None:
         font = global_vars.get_font(100)
     if paused:
@@ -1638,7 +1701,7 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
                 print("Opponent left detected in player_selection")
                 return 'opponent_left'
             else:
-                print('going back to menu?')
+                print('go to menu (offline mode)')
                 return 'back_to_menu'
             
 
@@ -1721,7 +1784,8 @@ def menu():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if multiplayer_button.is_clicked(event.pos):
                     global_vars.SINGLE_MODE_ACTIVE = False
-                    main.player_selection()
+                    reason = main.player_selection()
+                    print('player_selection result (offline mode):', reason)
                                  
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass

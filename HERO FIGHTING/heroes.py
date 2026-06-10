@@ -347,6 +347,7 @@ class Attacks:
         self.skill_desc:str = skill_desc
 
 
+
     def reduce_cd(self, val=False):
         if val:
             # Reset cooldown: set last_used_time such that the attack is ready now
@@ -378,6 +379,19 @@ class Attacks:
         return self.time_since_use() >= self.cooldown
 
 
+    def get_skill_cooldown(self):
+        '''get literal skill cd
+        
+        returns value like this example debug:
+        
+        skill 1 [6466]
+        skill 2 [0]
+        skill 3 [12541]
+        skill 4 [0]
+        skill 5 [584.19]
+        skill 6 [0]'''
+        return max(0, self.cooldown - self.time_since_use())
+    
     # Is being called to game loop
     def draw_skill_icon(self, screen, mana, special=0, player_type=0, max_special=MAX_SPECIAL, player=None):
         # print("Has entered Heroes")
@@ -445,9 +459,9 @@ class Attacks:
                 # Draw scaled cooldown text
                 font = global_vars.get_font(self.cooldown_font_size * (1 if not self.is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
-                remaining_ms = max(0, self.cooldown - self.time_since_use())
-                cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if self.is_basic_attack else  max(0, remaining_ms // 1000)
-                cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
+                remaining_ms = self.get_skill_cooldown()
+                self.cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if self.is_basic_attack else  max(0, remaining_ms // 1000)
+                cooldown_text = font.render(str(self.cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
                     self.skill_rect.centery - cooldown_text.get_height() // 2
@@ -886,8 +900,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
         # Host-authority: in LAN mode only Player 1 (host) computes and applies
         # combat effects (including RNG crits). Player 2 receives the authoritative
         # results via state snapshots, so it must not run damage logic itself.
-        _nc = global_vars.active_net_client
-        if _nc is not None and getattr(_nc, 'my_player_type', 1) == 2:
+        if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2:
             return
         if enemy is None:
             return
@@ -2827,8 +2840,8 @@ def lan_connect(host_ip):
             global_vars.active_net_client.disconnect()
         global_vars.active_net_client = None
         return 'opponent_left'
-    elif result == 'rematch':
-        pass
+    elif result == 'back_to_menu':
+        return 'back_to_menu'
     else: 
         if global_vars.active_net_client is not None:
             global_vars.active_net_client.disconnect()
@@ -3694,9 +3707,11 @@ def player_selection(net_client=None):
                     
                     while True:
                         game_end_result = fade(background, lambda: game(net_client=global_vars.active_net_client if global_vars.active_net_client else None)) #lez go it worked
+                        print('game end result from player_selection:', game_end_result)
                         if game_end_result == "rematch":
                             continue
                         else:
+                            print('break!', game_end_result)
                             break
 
                     return game_end_result

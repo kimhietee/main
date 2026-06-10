@@ -178,6 +178,14 @@ def pass_finder(password:str):
 
 # pass_finder("999")
 
+arh = {'x': 'something', 'y': 2}
+# print(arh)
+arh = {'x': 'something', 'y': 2}
+arh.update({'z': True})
+# print(arh)
+
+arh = {'x': 'something', 'y': 2}.update({'hahaha':'asd'})
+# print(arh)
 
 
 # skill_stats={

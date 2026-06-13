@@ -115,6 +115,12 @@ class Player(pygame.sprite.Sprite):
         self.slow_source = None
         self.slow_speed = 0
         self.silenced = False
+        # Hero-specific buff/visibility flags. Defined on the base class with safe
+        # defaults so they exist on EVERY hero (network sync reads these). Heroes
+        # that use them overwrite these defaults after super().__init__() runs.
+        self.hasted = False
+        self.flying = False
+        self.invisible = False
         self.mana_burn_per = [0, 0] # [0] = mana burned, [1] = mana to damage
         self.mana_burn_flat = [0, 0] # [0] = mana burned, [1] = mana to damage
         self.health_cost = 0

@@ -2826,12 +2826,11 @@ def cleanup_networking():
         pass
 
 
-def lan_connect(host_ip):
-    '''I want to pass it to net_client.py to have a server_name of int (ex. first host: game name of 0 (server_name = f"Room {ip}"))'''
-    print('host ip: ', host_ip)
-    """returns a reason why it got disconnected"""
+def lan_connect(host_ip, port=5555):
+    """Connect to host_ip:port as a client. Returns a reason why it got disconnected."""
+    print('host ip: ', host_ip, ' port: ', port)
     from net_client import NetClient
-    global_vars.active_net_client = NetClient(host_ip)
+    global_vars.active_net_client = NetClient(host_ip, port)
     try:
         global_vars.active_net_client.connect()
     except Exception as e:
@@ -2969,10 +2968,11 @@ def host_game():
     net_client.stop_lan_scanning()
     cleanup_networking()
     import net_server
-    thread = net_server.start_background_server()
+    thread, bound_port = net_server.start_background_server()
     if thread is None:
-        print("[HOST] Port already in use — connecting to the existing server.")
-    return lan_connect('127.0.0.1')
+        print("[HOST] No free port available to host.")
+        return 'fail'
+    return lan_connect('127.0.0.1', bound_port)
 
 
 def join_game():
@@ -3097,11 +3097,14 @@ def multiplayer_menu():
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
 
+    import net_server
     while True:
         mouse_pos = pygame.mouse.get_pos()
         my_ip = _get_local_ip()
-        # Never list our own broadcast: a host must not be able to join itself.
-        servers = {ip: name for ip, name in net_client.get_active_servers().items() if ip != my_ip}
+        # Hide only THIS host's own beacon (ip:port). Other hosts on the same
+        # machine use a different port and must stay visible/joinable.
+        my_key = f"{my_ip}:{net_server.get_server_port()}" if global_vars.active_net_client else None
+        servers = {k: v for k, v in net_client.get_active_servers().items() if k != my_key}
         # print(servers)
 
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
@@ -3133,11 +3136,11 @@ def multiplayer_menu():
                 
                 # Check server browser clicks
                 room_y = panel_rect.y + 60
-                for ip, name in list(servers.items())[:5]:
+                for key, (name, ip, port) in list(servers.items())[:5]:
                     btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                     if btn_rect.collidepoint(event.pos):
                         net_client.stop_lan_scanning()
-                        return lan_connect(ip)
+                        return lan_connect(ip, port)
                     room_y += 75
 
         _mp_draw_bg("MULTIPLAYER LOBBY")
@@ -3164,7 +3167,7 @@ def multiplayer_menu():
             txt_surf = global_vars.get_font(20).render(scan_text, global_vars.TEXT_ANTI_ALIASING, (140, 140, 140))
             screen.blit(txt_surf, (panel_rect.centerx - txt_surf.get_width() // 2, panel_rect.centery))
         else:
-            for ip, name in list(servers.items())[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
+            for key, (name, ip, port) in list(servers.items())[:5]:
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                 is_hovered = btn_rect.collidepoint(mouse_pos)
                 

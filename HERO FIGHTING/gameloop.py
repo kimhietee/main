@@ -811,23 +811,54 @@ NET_STATE_TICK_HZ = 30
 NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
 
 def serialize_hero(h):
-    """Snapshot the crucial, host-authoritative state of one hero."""
-    """task: list/provide every possible player state and statuses (configurations including attacks, items), by serializing them, as host (p1) as control, to detect everything so the network data is in sync correctly. Do a thorough scan, every possible value/data you can possibly find, if only is related to this context, if not, provide them so I would know. Explain which variable is important to network, such as the position, since it always changed. Every variable/status/state you provide, provide short info for each of them."""
+    """Snapshot the crucial, host-authoritative state of one hero.
+    
+    Synced variables (see serialize_hero_guide.md for full breakdown):
+    - Core resources: health, mana, special, temp_hp, max_health, max_mana
+    - Position/movement: x, y, y_velocity, jumping, facing_right, running, speed
+    - Status effects: frozen, rooted, slowed, slow_speed, silenced, stunned, hasted, flying, invisible
+    - Attacking states: attacking1-3, sp_attacking, basic_attacking, special_active
+    - Items/abilities: immortality_activated, immortality_duration
+    - Cooldowns: skills_cd, special_skills_cd
+    
+    NOT serialized (and why):
+    - enemy (list of Player objects — not JSON-serializable, already set on both clients)
+    - animation indices (computed locally from state)
+    - sprites/sounds/rects (pygame objects, loaded locally)
+    - damage_numbers, white bars (cosmetic, computed locally)
+    """
     return {
+        # ── Core Resources ──
         'health': h.health, 'mana': h.mana, 'special': h.special, 'temp_hp': h.temp_hp,
+        'max_health': h.max_health, 'max_mana': h.max_mana,
+
+        # ── Position & Movement ──
         'x': h.x_pos,
         'y': h.y_pos,
         'yv': h.y_velocity,
         'jump': h.jumping, 'facing_right': h.facing_right,
-        'frozen': h.frozen, 'rooted': h.rooted, 'slowed': h.slowed, 'silenced': h.silenced, 'stunned': h.stunned,
+        'running': h.running,
+        'speed': h.speed,
+
+        # ── Status Effects ──
+        'frozen': h.frozen, 'rooted': h.rooted,
+        'slowed': h.slowed, 'slow_speed': h.slow_speed,
+        'silenced': h.silenced, 'stunned': h.stunned,
         'hasted': getattr(h, 'hasted', None), 
         'flying': getattr(h, 'flying', None),
         'invisible': getattr(h, 'invisible', None),
-        'attacking1': h.attacking1,'attacking2': h.attacking2,'attacking3': h.attacking3,'attacking4': h.sp_attacking, 'basic_attacking': h.basic_attacking,
-        'enemy': h.enemy, 'immortality_activated': h.immortality_activated, 'immortality_duration': h.immortality_duration,
 
-        'skills_cd': {i:skill.get_skill_cooldown() for i, skill in enumerate(h.attacks)},
-        'special_skills_cd': {i:skill.get_skill_cooldown() for i, skill in enumerate(h.attacks_special)},
+        # ── Attacking States ──
+        'attacking1': h.attacking1, 'attacking2': h.attacking2, 'attacking3': h.attacking3,
+        'attacking4': h.sp_attacking, 'basic_attacking': h.basic_attacking,
+        'special_active': h.special_active,
+
+        # ── Items/Abilities ──
+        'immortality_activated': h.immortality_activated, 'immortality_duration': h.immortality_duration,
+
+        # ── Cooldowns ──
+        'skills_cd': {i: skill.get_skill_cooldown() for i, skill in enumerate(h.attacks)},
+        'special_skills_cd': {i: skill.get_skill_cooldown() for i, skill in enumerate(h.attacks_special)},
     }
 
 def apply_hero_state(h, s, x=None, y=None):
@@ -836,32 +867,49 @@ def apply_hero_state(h, s, x=None, y=None):
     seen on the host client.
     - These includes updated:
         - x and y position
-        - health, mana, special, etc...
-        - statuses/effects (frozen, rooted, etc..)
-        - player states (jumping, facing, attacking, etc...)
+        - health, mana, special, max_health, max_mana, etc...
+        - statuses/effects (frozen, rooted, slowed + slow_speed, etc..)
+        - player states (jumping, facing, attacking, running, special_active, speed, etc...)
     
     ai note >:(
     - Overwrite a hero with an authoritative snapshot (used on the non-host client).
     x/y override the snapshot position with an interpolated value when provided."""
     if h is None or s is None:
         return
+
+    # ── Core Resources ──
     h.health = s['health']; h.mana = s['mana']; h.special = s['special']; h.temp_hp = s['temp_hp']
+    h.max_health = s['max_health']; h.max_mana = s['max_mana']
+
+    # ── Position & Movement ──
     h.x_pos = s['x'] if x is None else x
     h.y_pos = s['y'] if y is None else y
     h.y_velocity = s['yv']
     h.jumping = s['jump']; h.facing_right = s['facing_right']
-    h.frozen = s['frozen']; h.rooted = s['rooted']; h.slowed = s['slowed']; h.silenced = s['silenced']; h.stunned = s['stunned']
+    h.running = s['running']
+    h.speed = s['speed']
+
+    # ── Status Effects ──
+    h.frozen = s['frozen']; h.rooted = s['rooted']
+    h.slowed = s['slowed']; h.slow_speed = s['slow_speed']
+    h.silenced = s['silenced']; h.stunned = s['stunned']
     if hasattr(h, 'hasted'): h.hasted = s['hasted']
     if hasattr(h, 'flying'): h.flying = s['flying']
     if hasattr(h, 'invisible'): h.invisible = s['invisible']
-    h.attacking1 = s['attacking1']; h.attacking2 = s['attacking2']; h.attacking3 = s['attacking3']; h.sp_attacking = s['attacking4']; h.basic_attacking = s['basic_attacking']; 
-    h.enemy = s['enemy']; h.immortality_activated = s['immortality_activated']; h.immortality_duration = s['immortality_duration']
 
-    # print(s['skills_cd'])
-    for skill, cd_time in s['skills_cd'].items():
-        h.attacks[int(skill)].remaining_ms = cd_time
-    for skill, cd_time in s['special_skills_cd'].items():
-        h.attacks_special[int(skill)].remaining_ms = cd_time
+    # ── Attacking States ──
+    h.attacking1 = s['attacking1']; h.attacking2 = s['attacking2']; h.attacking3 = s['attacking3']
+    h.sp_attacking = s['attacking4']; h.basic_attacking = s['basic_attacking']
+    h.special_active = s['special_active']
+
+    # ── Items/Abilities ──
+    h.immortality_activated = s['immortality_activated']; h.immortality_duration = s['immortality_duration']
+
+    # ── Cooldowns (display only on P2) ──
+    for skill_idx, cd_time in s['skills_cd'].items():
+        h.attacks[int(skill_idx)].remaining_ms = cd_time
+    for skill_idx, cd_time in s['special_skills_cd'].items():
+        h.attacks_special[int(skill_idx)].remaining_ms = cd_time
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.

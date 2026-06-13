@@ -209,3 +209,63 @@ class NetClient:
         self._running = False
         if self.sock:
             self.sock.close()
+
+
+_udp_listener_thread = None
+_udp_listener_running = False
+discovered_servers = {}
+discovered_servers_lock = threading.Lock()
+UDP_PORT = 5556
+
+def _udp_listen_loop():
+    global _udp_listener_running
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind(('', UDP_PORT))
+    except Exception as e:
+        print(f"[CLIENT UDP] Failed to bind to UDP port {UDP_PORT}: {e}")
+        sock.close()
+        return
+
+    sock.settimeout(1.0)
+    while _udp_listener_running:
+        try:
+            data, addr = sock.recvfrom(1024)
+            msg = data.decode('utf-8')
+            if msg.startswith("HERO_FIGHTING_LOBBY:"):
+                parts = msg.split(':')
+                if len(parts) >= 3:
+                    ip = parts[1]
+                    server_name = f"LAN Game ({ip})"
+                    with discovered_servers_lock:
+                        discovered_servers[ip] = (server_name, time.time())
+        except socket.timeout:
+            pass
+        except Exception:
+            break
+    sock.close()
+
+def start_lan_scanning():
+    global _udp_listener_thread, _udp_listener_running, discovered_servers
+    with discovered_servers_lock:
+        discovered_servers.clear()
+    if _udp_listener_running:
+        return
+    _udp_listener_running = True
+    _udp_listener_thread = threading.Thread(target=_udp_listen_loop, daemon=True)
+    _udp_listener_thread.start()
+
+def stop_lan_scanning():
+    global _udp_listener_running, _udp_listener_thread
+    _udp_listener_running = False
+    _udp_listener_thread = None
+
+def get_active_servers():
+    now = time.time()
+    with discovered_servers_lock:
+        for ip in list(discovered_servers.keys()):
+            name, last_seen = discovered_servers[ip]
+            if now - last_seen > 5.0:
+                discovered_servers.pop(ip)
+        return dict(discovered_servers)

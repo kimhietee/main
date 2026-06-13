@@ -208,10 +208,74 @@ def serve(host=HOST, port=PORT):
     server.bind((host, port))
     server.listen()
     print(f"[SERVER] Listening on port {port}...")
+    start_udp_broadcast()
     accept_loop()
 
 
 _server_thread = None  # the in-process accept-loop thread, if hosting
+_udp_broadcaster_thread = None
+_udp_broadcaster_running = False
+UDP_PORT = 5556
+
+def _get_local_ip():
+    """Get the local LAN IP of this host."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))
+        return s.getsockname()[0]
+    except Exception:
+        return '127.0.0.1'
+    finally:
+        s.close()
+
+def _udp_broadcast_loop():
+    global _udp_broadcaster_running
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    local_ip = _get_local_ip()
+    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:5555"
+    print(f"[SERVER UDP] Broadcasting presence: {msg}")
+    while _udp_broadcaster_running:
+        try:
+            sock.sendto(msg.encode('utf-8'), ('255.255.255.255', UDP_PORT))
+        except Exception:
+            pass
+        time.sleep(1.5)
+    sock.close()
+
+def start_udp_broadcast():
+    global _udp_broadcaster_thread, _udp_broadcaster_running
+    if _udp_broadcaster_running:
+        return
+    _udp_broadcaster_running = True
+    _udp_broadcaster_thread = threading.Thread(target=_udp_broadcast_loop, daemon=True)
+    _udp_broadcaster_thread.start()
+
+def stop_udp_broadcast():
+    global _udp_broadcaster_running, _udp_broadcaster_thread
+    _udp_broadcaster_running = False
+    _udp_broadcaster_thread = None
+
+def stop_server():
+    """Stop the in-process server, closing sockets and stopping UDP broadcasting."""
+    global server, _server_thread
+    print("[SERVER] Stopping server...")
+    stop_udp_broadcast()
+    if server is not None:
+        try:
+            server.close()
+        except Exception as e:
+            print(f"[SERVER] Error closing socket: {e}")
+        server = None
+    with lock:
+        for pt, sock in list(clients.items()):
+            try:
+                sock.close()
+            except:
+                pass
+        clients.clear()
+    _server_thread = None
+    print("[SERVER] Server stopped.")
 
 
 def start_background_server(host=HOST, port=PORT):
@@ -222,6 +286,7 @@ def start_background_server(host=HOST, port=PORT):
     global server, _server_thread
     _reset_state()
     if _server_thread is not None and _server_thread.is_alive():
+        start_udp_broadcast()  # Ensure broadcasting is active
         return _server_thread  # already hosting in this process; reuse it
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -233,6 +298,7 @@ def start_background_server(host=HOST, port=PORT):
     s.listen()
     server = s
     print(f"[SERVER] Listening on port {port} (in-process host)...")
+    start_udp_broadcast()
     _server_thread = threading.Thread(target=accept_loop, daemon=True)
     _server_thread.start()
     return _server_thread
@@ -243,5 +309,4 @@ if __name__ == '__main__':
         serve()
     except KeyboardInterrupt:
         print("[SERVER] Shutting down.")
-        if server is not None:
-            server.close()
+        stop_server()

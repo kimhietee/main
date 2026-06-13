@@ -2873,11 +2873,11 @@ def lan_connect(host_ip):
                 exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 cleanup_networking()
-                return
+                return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if cancel_btn.is_clicked(event.pos):
                     cleanup_networking()
-                    return
+                    return 'back_to_menu'
 
         screen.fill((0, 0, 0))
         Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
@@ -2920,13 +2920,15 @@ def lan_connect(host_ip):
     result = player_selection(net_client=global_vars.active_net_client)
     print("player_selection returned:", result)
 
+    # Always tear the client/server down on every exit path so the player who
+    # leaves (host or joiner) actually drops the socket. The server's finally
+    # block then notifies the remaining player with 'opponent_left'.
+    cleanup_networking()
     if result == 'opponent_left':
-        cleanup_networking()
         return 'opponent_left'
     elif result == 'back_to_menu':
-        cleanup_networking()
         return 'back_to_menu'
-    else: 
+    else:
         print('its me :)')
         return 'done'
 
@@ -2960,7 +2962,11 @@ def _mp_text(text, size, color, cy):
 
 
 def host_game():
-    """Start the relay server in-process and connect to it as Player 1 (host)."""
+    """Start the relay server in-process and connect to it as Player 1 (host).
+    Once we're the host we stop LAN scanning so we never also appear as / act as
+    a joiner of another room."""
+    import net_client
+    net_client.stop_lan_scanning()
     cleanup_networking()
     import net_server
     thread = net_server.start_background_server()
@@ -3156,7 +3162,9 @@ def multiplayer_menu():
             txt_surf = global_vars.get_font(20).render(scan_text, global_vars.TEXT_ANTI_ALIASING, (140, 140, 140))
             screen.blit(txt_surf, (panel_rect.centerx - txt_surf.get_width() // 2, panel_rect.centery))
         else:
-            for ip, name in list(servers.items())[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
+            my_ip = _get_local_ip()
+            visible_servers = [(ip, name) for ip, name in servers.items() if ip != my_ip]
+            for ip, name in visible_servers[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                 is_hovered = btn_rect.collidepoint(mouse_pos)
                 

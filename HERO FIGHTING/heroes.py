@@ -3208,6 +3208,16 @@ def multiplayer_menu(notice=None):
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
 
+        # Transient banner shown only when we were returned here after a session
+        # ended (opponent left / disconnected). Auto-clears after NOTICE_DURATION.
+        if notice_text and notice_start is not None:
+            if pygame.time.get_ticks() - notice_start < NOTICE_DURATION:
+                banner = global_vars.get_font(40).render(notice_text, global_vars.TEXT_ANTI_ALIASING, red)
+                screen.blit(banner, (width // 2 - banner.get_width() // 2, int(height * 0.04)))
+            else:
+                notice_text = None
+                notice_start = None
+
         pygame.display.update()
         clock.tick(60)
 

@@ -346,6 +346,7 @@ class Attacks:
         self.skill_stats:dict = skill_stats
         self.skill_desc:str = skill_desc
 
+        self.remaining_ms = 0 # used to check the current cooldown (LAN)
 
 
     def reduce_cd(self, val=False):
@@ -371,7 +372,13 @@ class Attacks:
 
     def time_since_use(self):
         """Return milliseconds elapsed since last use, excluding paused durations."""
-        effective_now = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
+        paused_total = global_vars.PAUSED_TOTAL_DURATION
+        # Include the ongoing pause duration so the clock is fully frozen while paused.
+        # Without this, PAUSED_TOTAL_DURATION doesn't update until unpause, causing
+        # the cooldown to keep ticking down during pause and then jump back on resume.
+        if global_vars.PAUSED and global_vars.PAUSED_START is not None:
+            paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
+        effective_now = pygame.time.get_ticks() - paused_total
         effective_last = self._last_used_time - self._last_used_paused_total
         return effective_now - effective_last
 
@@ -459,9 +466,9 @@ class Attacks:
                 # Draw scaled cooldown text
                 font = global_vars.get_font(self.cooldown_font_size * (1 if not self.is_basic_attack else 0.8))
                 # Use time_since_use() so display matches actual cooldown logic and accounts for pauses
-                remaining_ms = self.get_skill_cooldown()
-                self.cooldown_time = f'{max(0, remaining_ms / 1000):.1f}' if self.is_basic_attack else  max(0, remaining_ms // 1000)
-                cooldown_text = font.render(str(self.cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
+                self.remaining_ms = self.get_skill_cooldown()
+                cooldown_time = f'{max(0, self.remaining_ms / 1000):.1f}' if self.is_basic_attack else  max(0, self.remaining_ms // 1000)
+                cooldown_text = font.render(str(cooldown_time), global_vars.TEXT_ANTI_ALIASING, 'Red')
                 screen.blit(cooldown_text, (
                     self.skill_rect.centerx - cooldown_text.get_width() // 2,
                     self.skill_rect.centery - cooldown_text.get_height() // 2
@@ -952,8 +959,7 @@ class Attack_Display(pygame.sprite.Sprite): #The Attack_Display class should han
     def _apply_heal(self, heal_amount):
         """Helper method to apply healing with special gain."""
         # Host-authority: only the host applies heals; P2 mirrors via snapshots.
-        _nc = global_vars.active_net_client
-        if _nc is not None and getattr(_nc, 'my_player_type', 1) == 2:
+        if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2:
             return
         self.who_attacks.take_heal(heal_amount)
         self.who_attacks.take_special(heal_amount * SPECIAL_MULTIPLIER)
@@ -1765,7 +1771,10 @@ class Item:
     
     def time_since_use(self):
         """Return milliseconds elapsed since last use, excluding paused durations."""
-        effective_now = pygame.time.get_ticks() - global_vars.PAUSED_TOTAL_DURATION
+        paused_total = global_vars.PAUSED_TOTAL_DURATION
+        if global_vars.PAUSED and global_vars.PAUSED_START is not None:
+            paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
+        effective_now = pygame.time.get_ticks() - paused_total
         effective_last = self._last_used_time - self._last_used_paused_total
         return effective_now - effective_last
 
@@ -2941,6 +2950,7 @@ def join_game():
 
 
 def multiplayer_menu():
+    """Thoroughly scan these multiplayer related codes since there are multiple problems after testing, such as host can join host, server not shutting down even the client left the multiplayer, and many more problems. I don't prefer the texts being as buttons, and I want the network multiplayer'your only move is hustle' style of multiplayer, which if you go to multiplayer, shows a list of multiplayer server sessions if there were any, and if host, must wait for other player before starting. I prefer using image buttons with labels, with simple and readable UI design."""
     """Minecraft-style multiplayer landing: Host Game or Join Game. Returns the
     disconnect reason from the match (or None if the user backed out)."""
     options = ["Host Game", "Join Game", "Back"]

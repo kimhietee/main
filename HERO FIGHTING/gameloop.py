@@ -499,7 +499,7 @@ multiplayer_button = ImageButton(
 login_button = ImageButton(
     image_path=text_box_img,
     pos=(width - 100, height - 50),
-    scale=0.8,
+    scale=scale*0.8,
     text='LOGIN',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size,  # dynamic size ~29 at 720p
@@ -812,6 +812,7 @@ NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
 
 def serialize_hero(h):
     """Snapshot the crucial, host-authoritative state of one hero."""
+    """task: list/provide every possible player state and statuses (configurations including attacks, items), by serializing them, as host (p1) as control, to detect everything so the network data is in sync correctly. Do a thorough scan, every possible value/data you can possibly find, if only is related to this context, if not, provide them so I would know. Explain which variable is important to network, such as the position, since it always changed. Every variable/status/state you provide, provide short info for each of them."""
     return {
         'health': h.health, 'mana': h.mana, 'special': h.special, 'temp_hp': h.temp_hp,
         'x': h.x_pos,
@@ -823,9 +824,10 @@ def serialize_hero(h):
         'flying': getattr(h, 'flying', None),
         'invisible': getattr(h, 'invisible', None),
         'attacking1': h.attacking1,'attacking2': h.attacking2,'attacking3': h.attacking3,'attacking4': h.sp_attacking, 'basic_attacking': h.basic_attacking,
+        'enemy': h.enemy, 'immortality_activated': h.immortality_activated, 'immortality_duration': h.immortality_duration,
 
-        'skills': h.attacks, 'special_skills': h.attacks_special # wrong.
-
+        'skills_cd': {i:skill.get_skill_cooldown() for i, skill in enumerate(h.attacks)},
+        'special_skills_cd': {i:skill.get_skill_cooldown() for i, skill in enumerate(h.attacks_special)},
     }
 
 def apply_hero_state(h, s, x=None, y=None):
@@ -852,10 +854,14 @@ def apply_hero_state(h, s, x=None, y=None):
     if hasattr(h, 'hasted'): h.hasted = s['hasted']
     if hasattr(h, 'flying'): h.flying = s['flying']
     if hasattr(h, 'invisible'): h.invisible = s['invisible']
-    h.attacking1 = s['attacking1']; h.attacking2 = s['attacking2']; h.attacking3 = s['attacking3']; h.sp_attacking = s['sp_attacking']; h.basic_attacking = s['basic_attacking']; 
+    h.attacking1 = s['attacking1']; h.attacking2 = s['attacking2']; h.attacking3 = s['attacking3']; h.sp_attacking = s['attacking4']; h.basic_attacking = s['basic_attacking']; 
+    h.enemy = s['enemy']; h.immortality_activated = s['immortality_activated']; h.immortality_duration = s['immortality_duration']
 
-    for skill in s['skills']:
-        skill.cooldown_time = skill.get_cooldown_time()
+    # print(s['skills_cd'])
+    for skill, cd_time in s['skills_cd'].items():
+        h.attacks[int(skill)].remaining_ms = cd_time
+    for skill, cd_time in s['special_skills_cd'].items():
+        h.attacks_special[int(skill)].remaining_ms = cd_time
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
@@ -969,9 +975,9 @@ def game(bg=None, net_client=None):
         current_time = pygame.time.get_ticks()
 
         # Handle pause timing correctly by accumulating paused durations.
-        if not paused:
-            # If we have a paused_start_time it means we just resumed; accumulate the paused duration
-            if paused_start_time is not None:
+        if not paused or global_vars.active_net_client is not None:
+            # If we have a paused_start_time it means we just resumed; accumulate the paused duration (local only)
+            if not global_vars.active_net_client and paused_start_time is not None :
                 total_paused_duration += (current_time - paused_start_time)
                 paused_start_time = None
 
@@ -989,7 +995,7 @@ def game(bg=None, net_client=None):
                     final_elapsed_time = (current_time - start_time - total_paused_duration) // 1000
                 elapsed_time = final_elapsed_time
         else:
-            # When entering paused state, record when pause started (only once)
+            # When entering paused state, record when pause started (local mode only))
             if paused_start_time is None:
                 paused_start_time = current_time
                 global_vars.PAUSED = True
@@ -1304,8 +1310,8 @@ def game(bg=None, net_client=None):
             # Numbers (hp/mana/special) snap to the latest host snapshot; positions
             # are lerped between the last two snapshots, rendered ~1 tick in the past
             # for smooth motion. Fully host-authoritative — no local prediction.
-            if net_client is not None and net_client.my_player_type == 2 and net_client.phase == 'playing':
-                prev_st, latest_st, prev_t, latest_t = net_client.get_hero_state()
+            if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2 and global_vars.active_net_client.phase == 'playing':
+                prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
                 if latest_st is not None:
                     _render_time = time.monotonic() - (NET_STATE_TICK_MS / 1000.0)
                     _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
@@ -1740,7 +1746,7 @@ def menu():
         pygame.mixer.music.set_volume(global_vars.MAIN_VOLUME)
     if not pygame.mixer.music.get_busy():
         pygame.mixer.music.play(loops=-1, fade_ms=1500)  # Loop indefinitely
-    print('playing music')
+    # print('playing music')
 
     # background = main.pygame.transform.scale(
     #     pygame.image.load(r'assets\backgrounds\9.png').convert(), (main.width, main.height))
@@ -3358,68 +3364,6 @@ def reset_all():
             hero.attack_state = ''
         
     attack_display.empty()
-
-    # # reset cd
-    # for attack in main.hero1.attacks:
-    #     attack.reduce_cd(True)
-    # for attack in main.hero2.attacks:
-    #     attack.reduce_cd(True)
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     for attack in main.hero3.attacks:
-    #         attack.reduce_cd(True)
-
-    # for attack in main.hero1.attacks_special:
-    #     attack.reduce_cd(True)
-    # for attack in main.hero2.attacks_special :
-    #     attack.reduce_cd(True)
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     for attack in main.hero3.attacks_special:
-    #         attack.reduce_cd(True)
-
-    # #reset health
-    # main.hero1.health = main.hero1.max_health
-    # main.hero2.health = main.hero2.max_health
-    # main.hero1.mana = main.hero1.max_mana
-    # main.hero2.mana = main.hero2.max_mana
-    # main.hero1.special = 0
-    # main.hero2.special = 0
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     main.hero3.health = main.hero3.max_health
-    #     main.hero3.mana = main.hero3.max_mana
-    #     main.hero3.special = 0
-    #     main.hero3.white_health_p2 = main.hero3.max_health
-    #     main.hero3.white_mana_p2 = main.hero3.max_mana
-    #     main.hero3.damage_numbers.clear()
-
-    # main.hero1.white_health_p1 = main.hero1.max_health
-    # main.hero2.white_health_p2 = main.hero2.max_health
-    # main.hero1.white_mana_p1 = main.hero1.max_mana
-    # main.hero2.white_mana_p2 = main.hero2.max_mana
-
-    # main.hero1.damage_numbers.clear()
-    # main.hero2.damage_numbers.clear()
-
-    # # reset pos
-    # main.hero1.x_pos = global_vars.X_POS_SPACING if main.hero1.player_type == 1 else global_vars.DEFAULT_X_POS
-    # main.hero1.y_pos = global_vars.DEFAULT_Y_POS
-    # main.hero2.x_pos = global_vars.X_POS_SPACING if main.hero2.player_type == 1 else global_vars.DEFAULT_X_POS
-    # main.hero2.y_pos = global_vars.DEFAULT_Y_POS
-    # if hasattr(main, 'hero3') and main.hero3 is not None:
-    #     from global_vars import DEFAULT_X_POS, DEFAULT_Y_POS
-    #     main.hero3.x_pos = DEFAULT_X_POS - 50  # Offset hero3 slightly to the left of hero2
-    #     main.hero3.y_pos = DEFAULT_Y_POS
-
-    # # fade_overlay = pygame.Surface((width, height))
-    # # fade_overlay.fill((0, 0, 0))
-    # # fade_alpha = 0
-    # # fading = True
-    # # fade_start_time = pygame.time.get_ticks()
-
-    # attack_display.empty()
-    # # Reset paused tracking so timers/cooldowns start fresh
-    
-
-
 
 # NOTE: The mute button does not use this function
 from button import RectButton

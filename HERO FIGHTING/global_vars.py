@@ -4,8 +4,8 @@ from path_helper import resource_path
 # Screen and Display
 # width = 1280
 # height = 720
-width = 1280 // 1.5
-height = 720 // 1.5
+width = 1280 #// 1.5
+height = 720 #// 1.5
 # 1280 x 800 PERFECT FULL SCREEN (pls modify your display resolution :)
 # width = 1920
 # height = 1080
@@ -275,7 +275,7 @@ city_icon = resource_path('assets/backgrounds/map_icon/city icon.gif')
 
 # button modifers
 
-scale = 1
+scale = 1.2
 center_pos = (width / 2, height / 2)
 # font_size = 100
 font_size = int(height * 0.02)# = 14

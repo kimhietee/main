@@ -184,10 +184,21 @@ arh = {'x': 'something', 'y': 2}
 arh.update({'z': True})
 # print(arh)
 
-arh = {'x': 'something', 'y': 2}.update({'hahaha':'asd'})
+# arh = {'x': 'something', 'y': 2}.update({'hahaha':'asd'})
 # print(arh)
 
+hahh = {'a': 1, 'b': 2, 'c': 3}
 
+huhh = {'A': hahh, 'B': {a:{c:d for c,d in arh.items()} for a, b in hahh.items()}}
+
+class Attacks:
+    def __init__(self, num):
+        self.num = num
+
+attacks = [Attacks(1), Attacks(2), Attacks(3)]
+
+good = {i:skill for i, skill in enumerate(attacks)}
+# pprint(huhh)
 # skill_stats={
 #     'Damage': (5, 'red'),
 #     'Mana Cost': (40, 'cyan'),

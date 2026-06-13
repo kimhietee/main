@@ -1836,14 +1836,12 @@ def menu():
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 if not _lan_connecting and global_vars.active_net_client is None:
-                    while True:
-                        _lan_connecting = True
-                        reason = main.multiplayer_menu()   # Minecraft-style Host / Join
-                        _lan_connecting = False
-                        if reason == 'opponent_left':
-                            show_dc_text('disconnected')
-                        if reason == 'back_to_menu':
-                            break
+                    _lan_connecting = True
+                    # multiplayer_menu keeps the survivor in the lobby and shows
+                    # its own 'Opponent Left' banner; it only returns when the
+                    # player chooses to leave the lobby.
+                    main.multiplayer_menu()   # Minecraft-style Host / Join
+                    _lan_connecting = False
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):

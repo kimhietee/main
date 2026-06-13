@@ -3179,7 +3179,7 @@ def multiplayer_menu():
                 pygame.draw.rect(screen, border_color, btn_rect, 2)
                 
                 # Text inside
-                room_text = global_vars.get_font(22).render(f"Room - {name[0]}", global_vars.TEXT_ANTI_ALIASING, white)
+                room_text = global_vars.get_font(22).render(f"Room - {ip}:{port}", global_vars.TEXT_ANTI_ALIASING, white)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
 

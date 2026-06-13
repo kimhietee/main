@@ -279,6 +279,7 @@ def stop_server():
 
 
 def start_background_server(host=HOST, port=PORT):
+    print('start server', 'host: ', host, ' port: ', port)
     """Host-in-process: bind/listen here then run the accept loop on a daemon thread.
     Idempotent within a process — if we're already hosting, the existing server is
     reused (its state is reset for a fresh match) rather than binding a second time.

@@ -1,0 +1,1005 @@
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+Traceback (most recent call last):
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 3690, in <module>
+    menu()
+    ~~~~^^
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 1839, in menu
+    reason = main.multiplayer_menu()   # Minecraft-style Host / Join
+  File "D:\Game\HERO FIGHTING\heroes.py", line 3102, in multiplayer_menu
+    _mp_draw_bg("MULTIPLAYER LOBBY")
+    ^^^^^^^^^^^
+NameError: name '_mp_draw_bg' is not defined
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+PS D:\Game\HERO FIGHTING> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   serialize_hero_guide.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        ../my-game-kimhietee/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS D:\Game\HERO FIGHTING> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   heroes.py
+        modified:   serialize_hero_guide.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        ../my-game-kimhietee/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[CLIENT] Failed to connect: [WinError 10061] No connection could be made because the target machine actively refused it
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Failed to connect: [WinError 10061] No connection could be made because the target machine actively refused it
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+going back to menu?
+player_selection result (offline mode): back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+player_selection result (offline mode): back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Stopping server...
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Stopping server...
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Stopping server...
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[CLIENT] Connected as Player 1
+[SERVER] clients now: [1]
+[SERVER] Stopping server...
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+Traceback (most recent call last):
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 3677, in <module>
+    menu()
+    ~~~~^^
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 1840, in menu
+    reason = main.multiplayer_menu()   # Minecraft-style Host / Join
+  File "D:\Game\HERO FIGHTING\heroes.py", line 3101, in multiplayer_menu
+    if event.key == pygame.K_ESCAPE:
+    
+AttributeError: 'pygame.event.Event' object has no attribute 'pos'
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Player 2 connected.
+[SERVER] Both players connected. Game starting.
+[SERVER] clients now: [1, 2]
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[CLIENT] Connected as Player 1
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] Both players connected. Game starting.
+[SERVER] clients now: [1, 2]
+opponent ready :)
+both ready :)
+ready to battle!!!
+[CUBE SYNC] Using shared seed 2083033216, X positions: [585, 50, 48]
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+game end result from player_selection: opponent_left
+break! opponent_left
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Player 2 connected.
+[SERVER] clients now: [1, 2]
+[SERVER] Both players connected. Game starting.
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] Both players connected. Game starting.
+[SERVER] clients now: [1, 2]
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+host ip:  127.0.0.1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[CLIENT] Connected as Player 1
+[SERVER] Player 2 connected.
+[SERVER] clients now: [1, 2]
+[SERVER] Both players connected. Game starting.
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+host ip:  127.0.0.1
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] clients now: [1, 2]
+[SERVER] Both players connected. Game starting.
+
+
+
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[SERVER] Player 1 connected.
+[CLIENT] Connected as Player 1
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] clients now: [1, 2]
+[SERVER] Both players connected. Game starting.
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Failed to connect: [WinError 10061] No connection could be made because the target machine actively refused it
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] Both players connected. Game starting.
+[SERVER] clients now: [1, 2]
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] clients now: []
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+Traceback (most recent call last):
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 3677, in <module>
+    menu()
+    ~~~~^^
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 1843, in menu
+    show_dc_text()
+    ~~~~~~~~~~~~^^
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 3651, in show_dc_text
+    menu_button.draw(screen, mouse_pos)
+                             ^^^^^^^^^
+NameError: name 'mouse_pos' is not defined
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Failed to connect: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+Traceback (most recent call last):
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 3677, in <module>
+    menu()
+    ~~~~^^
+  File "D:\Game\HERO FIGHTING\gameloop.py", line 1840, in menu
+    reason = main.multiplayer_menu()   # Minecraft-style Host / Join
+  File "D:\Game\HERO FIGHTING\heroes.py", line 3101, in multiplayer_menu
+    if event.key == pygame.K_ESCAPE or back_btn.is_clicked(event.pos):
+                                                           ^^^^^^^^^
+AttributeError: 'pygame.event.Event' object has no attribute 'pos'
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Connected as Player 2
+opponent ready :)
+both ready :)
+ready to battle!!!
+[CUBE SYNC] Using shared seed 2083033216, X positions: [585, 50, 48]
+go to menu (offline mode)
+game end result from player_selection: back_to_menu
+break! back_to_menu
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 1
+[SERVER] Player 1 connected.
+[SERVER] clients now: [1]
+[SERVER] Player 2 connected.
+[SERVER] clients now: [1, 2]
+[SERVER] Both players connected. Game starting.
+[SERVER] Player 2 disconnected.
+[SERVER] clients now: [1]
+Opponent left detected in player_selection
+player_selection returned: opponent_left
+[SERVER] Player 1 disconnected.
+[SERVER] Stopping server...
+[SERVER] clients now: []
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[CLIENT] Connected as Player 2
+player_selection returned: None
+its me :)
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+PS D:\Game\HERO FIGHTING> python gameloop.py
+C:\Users\lance\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.3)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[DB] Consolidated database initialized (database/game.db)
+[DB] Users table created/verified
+[DB] User_info table created/verified with all columns
+8 frames
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+start server host:  0.0.0.0  port:  5555
+[SERVER] Listening on port 5555 (in-process host)...
+host ip:  127.0.0.1
+[SERVER UDP] Broadcasting presence: HERO_FIGHTING_LOBBY:26.68.33.194:5555
+[CLIENT] Connected as Player 2
+going back to menu?
+player_selection returned: back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+going back to menu?
+player_selection result (offline mode): back_to_menu
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+[SERVER] Stopping server...
+[SERVER] Server stopped.
+host ip:  127.0.0.3
+[CLIENT] Connected as Player 2
+
+
+problems:
+- p1 is a host, p2 is also a host, they can join each other, which would not be happening.
+- correct any player leaving with disconnect issues, such as players currently in game LAN, one player left (i forgot what player left (server host, client), the other has no error displayed, expected, must also disconnect)
+- i deleted lobby(), changed it to show_dc_text() but that didn't work, expected: must show the error text only if already joined but enemy left, will show the error text for few seconds.

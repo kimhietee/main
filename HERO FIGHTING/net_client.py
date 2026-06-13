@@ -239,7 +239,7 @@ def _udp_listen_loop():
                 parts = msg.split(':')
                 if len(parts) >= 3:
                     ip = parts[1]
-                    server_name = f"LAN Game ({ip})"
+                    server_name = f"Game {ip}"
                     with discovered_servers_lock:
                         discovered_servers[ip] = (server_name, time.time())
         except socket.timeout:

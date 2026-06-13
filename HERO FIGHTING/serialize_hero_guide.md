@@ -1,5 +1,5 @@
 # serialize_hero — Complete Player State Scan & Network Sync Guide
-
+457109
 > [!NOTE]
 > Based on a thorough scan of `player.py` (base `Player` class) and all 9 hero subclasses:
 > Fire_Wizard, Wanderer_Magician, Fire_Knight, Wind_Hashashin, Water_Princess, Forest_Ranger, Yurei, Chthulu, Phantom_Assassin

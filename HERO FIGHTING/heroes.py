@@ -2827,6 +2827,8 @@ def cleanup_networking():
 
 
 def lan_connect(host_ip):
+    '''I want to pass it to net_client.py to have a server_name of int (ex. first host: game name of 0 (server_name = f"Room {ip}"))'''
+    print('host ip: ', host_ip)
     """returns a reason why it got disconnected"""
     from net_client import NetClient
     global_vars.active_net_client = NetClient(host_ip)
@@ -2929,6 +2931,34 @@ def lan_connect(host_ip):
         return 'done'
 
 
+
+def _get_local_ip():
+    """Best-effort LAN IP of this machine (to show the host so the joiner can connect)."""
+    import socket as _socket
+    s = _socket.socket(_socket.AF_INET, _socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))  # no packets sent; just picks the outbound interface
+        return s.getsockname()[0]
+    except Exception:
+        return '127.0.0.1'
+    finally:
+        s.close()
+
+
+def _mp_draw_bg(title):
+    screen.fill((0, 0, 0))
+    Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
+    t = global_vars.get_font(80).render(title, global_vars.TEXT_ANTI_ALIASING, white)
+    screen.blit(t, (width // 2 - t.get_width() // 2, int(height * 0.12)))
+
+
+def _mp_text(text, size, color, cy):
+    surf = global_vars.get_font(size).render(text, global_vars.TEXT_ANTI_ALIASING, color)
+    rect = surf.get_rect(center=(width // 2, cy))
+    screen.blit(surf, rect)
+    return rect
+
+
 def host_game():
     """Start the relay server in-process and connect to it as Player 1 (host)."""
     cleanup_networking()
@@ -2945,11 +2975,12 @@ def join_game():
     ip = "127.0.0.1"
     info_font_size = 30
     blink = 0
+    scale_btn = 1.2
 
     connect_btn = ImageButton(
         image_path=text_box_img,
         pos=(width // 2 - 140, int(height * 0.65)),
-        scale=scale * 0.8,
+        scale=scale_btn,
         text='Connect',
         font_path=r'assets\font\slkscr.ttf',
         font_size=font_size * 0.8,
@@ -2959,7 +2990,7 @@ def join_game():
     cancel_btn = ImageButton(
         image_path=text_box_img,
         pos=(width // 2 + 140, int(height * 0.65)),
-        scale=scale * 0.8,
+        scale=scale_btn,
         text='Cancel',
         font_path=r'assets\font\slkscr.ttf',
         font_size=font_size * 0.8,
@@ -2968,6 +2999,7 @@ def join_game():
     )
 
     while True:
+        print(ip)
         mouse_pos = pygame.mouse.get_pos()
         blink = (blink + 1) % 60
         for event in pygame.event.get():
@@ -3017,14 +3049,14 @@ def multiplayer_menu():
     cleanup_networking()
     net_client.start_lan_scanning()
 
-    scale_btn = scale
+    scale_btn = 1.2 
     host_btn = ImageButton(
         image_path=text_box_img,
         pos=(int(width * 0.75), int(height * 0.35)),
         scale=scale_btn,
         text='Host LAN Game',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.85,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
@@ -3034,7 +3066,7 @@ def multiplayer_menu():
         scale=scale_btn,
         text='Direct Connect',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.85,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
@@ -3044,7 +3076,7 @@ def multiplayer_menu():
         scale=scale_btn,
         text='Local PvP',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.85,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
@@ -3054,7 +3086,7 @@ def multiplayer_menu():
         scale=scale_btn,
         text='Back to Menu',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.85,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
@@ -3062,6 +3094,7 @@ def multiplayer_menu():
     while True:
         mouse_pos = pygame.mouse.get_pos()
         servers = net_client.get_active_servers()
+        # print(servers)
 
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
 
@@ -3073,7 +3106,7 @@ def multiplayer_menu():
                 if event.key == pygame.K_ESCAPE:
                     net_client.stop_lan_scanning()
                     cleanup_networking()
-                    return None
+                    return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if host_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
@@ -3088,7 +3121,7 @@ def multiplayer_menu():
                 elif back_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
                     cleanup_networking()
-                    return None
+                    return 'back_to_menu'
                 
                 # Check server browser clicks
                 room_y = panel_rect.y + 60
@@ -3123,7 +3156,7 @@ def multiplayer_menu():
             txt_surf = global_vars.get_font(20).render(scan_text, global_vars.TEXT_ANTI_ALIASING, (140, 140, 140))
             screen.blit(txt_surf, (panel_rect.centerx - txt_surf.get_width() // 2, panel_rect.centery))
         else:
-            for ip, name in list(servers.items())[:5]:
+            for ip, name in list(servers.items())[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                 is_hovered = btn_rect.collidepoint(mouse_pos)
                 
@@ -3135,7 +3168,7 @@ def multiplayer_menu():
                 pygame.draw.rect(screen, border_color, btn_rect, 2)
                 
                 # Text inside
-                room_text = global_vars.get_font(22).render(f"Connect to {name}", global_vars.TEXT_ANTI_ALIASING, white)
+                room_text = global_vars.get_font(22).render(f"Room - {name[0]}", global_vars.TEXT_ANTI_ALIASING, white)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
 
@@ -3143,12 +3176,7 @@ def multiplayer_menu():
         clock.tick(60)
 
 
-def _mp_choose(index):
-    if index == 0:
-        return host_game()
-    elif index == 1:
-        return join_game()
-    return None
+
 
 
 def wait_screen(condition_func, text="Waiting for something...", background=None):
@@ -3383,7 +3411,6 @@ def player_selection(net_client=None):
             if event.type == pygame.QUIT:
                 if global_vars.active_net_client is not None:
                     global_vars.active_net_client.disconnect()
-                    return
                 pygame.quit()
                 exit()   
             if keys[pygame.K_ESCAPE]:

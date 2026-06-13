@@ -1841,7 +1841,7 @@ def menu():
                         reason = main.multiplayer_menu()   # Minecraft-style Host / Join
                         _lan_connecting = False
                         if reason == 'opponent_left':
-                            show_dc_text()
+                            show_dc_text('disconnected')
                         if reason == 'back_to_menu':
                             break
                 
@@ -3622,41 +3622,42 @@ def settings(in_game=False):
 
 
 
-status_start_time = None
-def show_dc_text(status=None):
-    '''strangely, it does not work, does not show the text if already playing (both players connected) then someone leaves.'''
-    create_title('lobby', global_vars.get_font(60))
-    if status is not None:
+def show_dc_text(status=None, duration=5000):
+    '''Self-contained "opponent left" notice. Shows for `duration` ms (or until
+    the player presses ESC / clicks the menu button), then returns to the menu.
+    Only meaningful when status == 'disconnected'.'''
+    global load_sword_login_bg
+
+    font = global_vars.get_font(60)
+    status_start_time = pygame.time.get_ticks()
+
+    while True:
+        mouse_pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == main.pygame.QUIT:
+                main.pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button.is_clicked(event.pos):
+                    return
+
+        if not load_sword_login_bg:
+            Animate_BG.sword_login.load_frames_type2()
+            load_sword_login_bg = True
+        Animate_BG.sword_login.display(screen, speed=10)
+
+        create_title('lobby', font)
         if status == 'disconnected':
-            if status_start_time is None:
-                status_start_time = pygame.time.get_ticks()
+            create_timed_title('opponent left', status_start_time, duration, font, y_offset=150, color=red, scale=0.5)
+            if pygame.time.get_ticks() - status_start_time >= duration:
+                return
 
-            status_start_time = create_timed_title('opponent left', status_start_time, 5000, global_vars.get_font(60), y_offset=150, color=red, scale=0.5)
+        menu_button.draw(screen, mouse_pos)
 
-
-# def show_dc_text(status=None):
-
-#     font = global_vars.get_font(60)
-
-#     while True:
-        
-
-
-#         create_title('lobby', font)
-#         if status is not None:
-#             if status == 'disconnected':
-#                 if status_start_time is None:
-#                     status_start_time = pygame.time.get_ticks()
-
-#                 create_timed_title('opponent left', status_start_time, 5000, font, y_offset=150, color=red, scale=0.5)
-
-#         menu_button.draw(screen, mouse_pos)
-
-
-
-
-#         main.pygame.display.update()
-#         main.clock.tick(main.FPS)
+        main.pygame.display.update()
+        main.clock.tick(main.FPS)
 
 
 # Image Paths

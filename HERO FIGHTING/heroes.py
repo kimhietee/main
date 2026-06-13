@@ -3048,12 +3048,22 @@ def join_game():
         clock.tick(60)
 
 
-def multiplayer_menu():
+def multiplayer_menu(notice=None):
     """YOMIH-style multiplayer lobby menu: displays a list of active LAN games,
-    and buttons to Host, Direct Connect, Play Local PvP, or Back."""
+    and buttons to Host, Direct Connect, Play Local PvP, or Back.
+
+    `notice` shows a transient banner at the top of the menu. It is set when the
+    player is returned here because a session ended (e.g. 'opponent_left' ->
+    'Opponent Left'). It is never set when the menu is opened normally."""
     import net_client
     cleanup_networking()
     net_client.start_lan_scanning()
+
+    # Map a session-end reason to the banner text shown at the top of the menu.
+    _NOTICE_TEXT = {'opponent_left': 'Opponent Left', 'disconnected': 'Disconnected'}
+    notice_text = _NOTICE_TEXT.get(notice)
+    notice_start = pygame.time.get_ticks() if notice_text else None
+    NOTICE_DURATION = 5000  # ms
 
     scale_btn = 1.2 
     host_btn = ImageButton(

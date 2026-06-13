@@ -3129,12 +3129,15 @@ def multiplayer_menu(notice=None):
                     cleanup_networking()
                     return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # Launch a LAN session. If it ends because the opponent left,
+                # stay in this menu and show a banner; otherwise leave the menu.
+                session = None
                 if host_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
-                    return host_game()
+                    session = host_game()
                 elif direct_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
-                    return join_game()
+                    session = join_game()
                 elif local_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
                     global_vars.SINGLE_MODE_ACTIVE = False
@@ -3143,15 +3146,27 @@ def multiplayer_menu(notice=None):
                     net_client.stop_lan_scanning()
                     cleanup_networking()
                     return 'back_to_menu'
-                
-                # Check server browser clicks
-                room_y = panel_rect.y + 60
-                for key, (name, ip, port) in list(servers.items())[:5]:
-                    btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
-                    if btn_rect.collidepoint(event.pos):
-                        net_client.stop_lan_scanning()
-                        return lan_connect(ip, port)
-                    room_y += 75
+                else:
+                    # Check server browser clicks
+                    room_y = panel_rect.y + 60
+                    for key, (name, ip, port) in list(servers.items())[:5]:
+                        btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
+                        if btn_rect.collidepoint(event.pos):
+                            net_client.stop_lan_scanning()
+                            session = lan_connect(ip, port)
+                            break
+                        room_y += 75
+
+                if session in ('opponent_left', 'disconnected'):
+                    # Survivor returns to the lobby with a transient notice.
+                    notice_text = _NOTICE_TEXT.get(session)
+                    notice_start = pygame.time.get_ticks()
+                    cleanup_networking()
+                    net_client.start_lan_scanning()
+                    break  # re-evaluate the loop fresh with the banner armed
+                elif session is not None:
+                    # back_to_menu / done / fail / None -> leave the lobby.
+                    return session
 
         _mp_draw_bg("MULTIPLAYER LOBBY")
 

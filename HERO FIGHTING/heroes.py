@@ -3099,7 +3099,9 @@ def multiplayer_menu():
 
     while True:
         mouse_pos = pygame.mouse.get_pos()
-        servers = net_client.get_active_servers()
+        my_ip = _get_local_ip()
+        # Never list our own broadcast: a host must not be able to join itself.
+        servers = {ip: name for ip, name in net_client.get_active_servers().items() if ip != my_ip}
         # print(servers)
 
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
@@ -3162,9 +3164,7 @@ def multiplayer_menu():
             txt_surf = global_vars.get_font(20).render(scan_text, global_vars.TEXT_ANTI_ALIASING, (140, 140, 140))
             screen.blit(txt_surf, (panel_rect.centerx - txt_surf.get_width() // 2, panel_rect.centery))
         else:
-            my_ip = _get_local_ip()
-            visible_servers = [(ip, name) for ip, name in servers.items() if ip != my_ip]
-            for ip, name in visible_servers[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
+            for ip, name in list(servers.items())[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                 is_hovered = btn_rect.collidepoint(mouse_pos)
                 

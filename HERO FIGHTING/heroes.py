@@ -2960,15 +2960,79 @@ def _mp_text(text, size, color, cy):
     return rect
 
 
+def _prompt_room_name(default_name="", max_chars=16):
+    """Ask the host for a room name using the reusable TextInputField. Returns the
+    typed name, or None if the player cancelled (ESC / Cancel button)."""
+    from text_input_field import TextInputField
+
+    field = TextInputField(
+        x=width // 2 - int(width * 0.25), y=int(height * 0.44),
+        width=int(width * 0.5), height=70,
+        font=global_vars.get_font(40),
+        max_chars=max_chars,
+        text=default_name,
+        placeholder="Enter room name",
+        active=True,
+    )
+
+    host_btn = ImageButton(
+        image_path=text_box_img,
+        pos=(width // 2 - 140, int(height * 0.65)),
+        scale=1.2, text='Host',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size * 0.8, text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    )
+    cancel_btn = ImageButton(
+        image_path=text_box_img,
+        pos=(width // 2 + 140, int(height * 0.65)),
+        scale=1.2, text='Cancel',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size * 0.8, text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    )
+
+    while True:
+        dt = clock.tick(60)
+        mouse_pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+            result = field.handle_event(event)
+            if result == 'submit':
+                return field.get_text().strip()
+            if result == 'cancel':
+                return None
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if host_btn.is_clicked(event.pos):
+                    return field.get_text().strip()
+                elif cancel_btn.is_clicked(event.pos):
+                    return None
+
+        field.update(dt)
+        _mp_draw_bg("HOST GAME")
+        _mp_text("Room Name", 30, (200, 200, 200), int(height * 0.38))
+        field.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        host_btn.draw(screen, mouse_pos)
+        cancel_btn.draw(screen, mouse_pos)
+        pygame.display.update()
+
+
 def host_game():
     """Start the relay server in-process and connect to it as Player 1 (host).
     Once we're the host we stop LAN scanning so we never also appear as / act as
     a joiner of another room."""
     import net_client
     net_client.stop_lan_scanning()
+
+    # Ask for a room name first; cancelling backs out to the lobby.
+    room_name = _prompt_room_name()
+    if room_name is None:
+        return None
+
     cleanup_networking()
     import net_server
-    thread, bound_port = net_server.start_background_server()
+    thread, bound_port = net_server.start_background_server(room_name=room_name)
     if thread is None:
         print("[HOST] No free port available to host.")
         return 'fail'

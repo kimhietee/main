@@ -229,6 +229,7 @@ def _get_local_ip():
         s.close()
 
 _bound_port = PORT  # the TCP port the in-process server actually bound to
+_room_name = ''     # optional human-readable room name shown to joiners
 
 
 def get_server_port():
@@ -236,12 +237,28 @@ def get_server_port():
     return _bound_port
 
 
+def set_room_name(name):
+    """Set the human-readable room name advertised in the UDP beacon."""
+    global _room_name
+    _room_name = (name or '').strip()
+
+
+def _encode_room_name(name):
+    """Make the room name safe to embed in the ':'-delimited beacon: percent-encode
+    so a name containing ':' (or spaces) can't break parsing on the client."""
+    from urllib.parse import quote
+    return quote(name or '', safe='')
+
+
 def _udp_broadcast_loop():
     global _udp_broadcaster_running
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     local_ip = _get_local_ip()
-    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}"
+    # Format: HERO_FIGHTING_LOBBY:<ip>:<port>:<url-encoded room name>
+    # The room-name field is appended last and percent-encoded so older parsers
+    # (which only read ip/port) still work, and ':' in a name can't break it.
+    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}:{_encode_room_name(_room_name)}"
     print(f"[SERVER UDP] Broadcasting presence: {msg}")
     while _udp_broadcaster_running:
         try:
@@ -286,7 +303,7 @@ def stop_server():
     print("[SERVER] Server stopped.")
 
 
-def start_background_server(host=HOST, port=PORT, max_port=PORT + 20):
+def start_background_server(host=HOST, port=PORT, max_port=PORT + 20, room_name=''):
     """Host-in-process: bind/listen here then run the accept loop on a daemon thread.
     Idempotent within a process — if we're already hosting, the existing server is
     reused (its state is reset for a fresh match) rather than binding a second time.
@@ -294,10 +311,13 @@ def start_background_server(host=HOST, port=PORT, max_port=PORT + 20):
     To let several hosts coexist on the same machine/LAN, if `port` is already
     taken we scan upward (port, port+1, ... up to max_port) for a free one.
 
+    `room_name` is an optional human-readable label advertised to joiners.
+
     Returns (thread, bound_port), or (None, None) if no free port was found."""
     global server, _server_thread, _bound_port
     print('start server', 'host: ', host, ' port: ', port)
     _reset_state()
+    set_room_name(room_name)
     if _server_thread is not None and _server_thread.is_alive():
         start_udp_broadcast()  # Ensure broadcasting is active
         return _server_thread, _bound_port  # already hosting in this process; reuse it

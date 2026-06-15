@@ -2960,15 +2960,79 @@ def _mp_text(text, size, color, cy):
     return rect
 
 
+def _prompt_room_name(default_name="", max_chars=16):
+    """Ask the host for a room name using the reusable TextInputField. Returns the
+    typed name, or None if the player cancelled (ESC / Cancel button)."""
+    from text_input_field import TextInputField
+
+    field = TextInputField(
+        x=width // 2 - int(width * 0.25), y=int(height * 0.44),
+        width=int(width * 0.5), height=70,
+        font=global_vars.get_font(40),
+        max_chars=max_chars,
+        text=default_name,
+        placeholder="Enter room name",
+        active=True,
+    )
+
+    host_btn = ImageButton(
+        image_path=text_box_img,
+        pos=(width // 2 - 140, int(height * 0.65)),
+        scale=1.2, text='Host',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size * 0.8, text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    )
+    cancel_btn = ImageButton(
+        image_path=text_box_img,
+        pos=(width // 2 + 140, int(height * 0.65)),
+        scale=1.2, text='Cancel',
+        font_path=r'assets\font\slkscr.ttf',
+        font_size=font_size * 0.8, text_color='white',
+        text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
+    )
+
+    while True:
+        dt = clock.tick(60)
+        mouse_pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+            result = field.handle_event(event)
+            if result == 'submit':
+                return field.get_text().strip()
+            if result == 'cancel':
+                return None
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if host_btn.is_clicked(event.pos):
+                    return field.get_text().strip()
+                elif cancel_btn.is_clicked(event.pos):
+                    return None
+
+        field.update(dt)
+        _mp_draw_bg("HOST GAME")
+        _mp_text("Room Name", 30, (200, 200, 200), int(height * 0.38))
+        field.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        host_btn.draw(screen, mouse_pos)
+        cancel_btn.draw(screen, mouse_pos)
+        pygame.display.update()
+
+
 def host_game():
     """Start the relay server in-process and connect to it as Player 1 (host).
     Once we're the host we stop LAN scanning so we never also appear as / act as
     a joiner of another room."""
     import net_client
     net_client.stop_lan_scanning()
+
+    # Ask for a room name first; cancelling backs out to the lobby.
+    room_name = _prompt_room_name()
+    if room_name is None:
+        return None
+
     cleanup_networking()
     import net_server
-    thread, bound_port = net_server.start_background_server()
+    thread, bound_port = net_server.start_background_server(room_name=room_name)
     if thread is None:
         print("[HOST] No free port available to host.")
         return 'fail'
@@ -3117,6 +3181,14 @@ def multiplayer_menu(notice=None):
         servers = {k: v for k, v in net_client.get_active_servers().items() if k != my_key}
         # print(servers)
 
+        # If we're currently hosting, we must NOT be able to join another host
+        # (host-to-host). The browser still SHOWS other rooms (so the host can
+        # see who else is up), but their entries are disabled/non-clickable.
+        am_hosting = (
+            global_vars.active_net_client is not None
+            and global_vars.active_net_client.my_player_type == 1
+        )
+
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
 
         for event in pygame.event.get():
@@ -3146,8 +3218,9 @@ def multiplayer_menu(notice=None):
                     net_client.stop_lan_scanning()
                     cleanup_networking()
                     return 'back_to_menu'
-                else:
-                    # Check server browser clicks
+                elif not am_hosting:
+                    # Check server browser clicks. Disabled entirely while hosting
+                    # so a host can never join another host.
                     room_y = panel_rect.y + 60
                     for key, (name, ip, port) in list(servers.items())[:5]:
                         btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
@@ -3194,17 +3267,26 @@ def multiplayer_menu(notice=None):
         else:
             for key, (name, ip, port) in list(servers.items())[:5]:
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
-                is_hovered = btn_rect.collidepoint(mouse_pos)
-                
+                # While hosting, rooms are shown but greyed out (not joinable).
+                is_hovered = btn_rect.collidepoint(mouse_pos) and not am_hosting
+
                 # Draw room button
-                bg_color = (45, 50, 65) if is_hovered else (25, 28, 35)
-                border_color = gold if is_hovered else (60, 65, 80)
-                
+                if am_hosting:
+                    bg_color = (20, 20, 24)
+                    border_color = (45, 45, 55)
+                    text_color = (110, 110, 120)
+                else:
+                    bg_color = (45, 50, 65) if is_hovered else (25, 28, 35)
+                    border_color = gold if is_hovered else (60, 65, 80)
+                    text_color = white
+
                 pygame.draw.rect(screen, bg_color, btn_rect)
                 pygame.draw.rect(screen, border_color, btn_rect, 2)
-                
-                # Text inside
-                room_text = global_vars.get_font(22).render(f"Room - {ip}:{port}", global_vars.TEXT_ANTI_ALIASING, white)
+
+                # Text inside: show the broadcast room name (falls back to
+                # "Game ip:port" when the host didn't set one), then the address.
+                label = f"{name} - {ip}:{port}"
+                room_text = global_vars.get_font(22).render(label, global_vars.TEXT_ANTI_ALIASING, text_color)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
 

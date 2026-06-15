@@ -243,10 +243,16 @@ def _udp_listen_loop():
                         port = int(parts[2])
                     except (ValueError, IndexError):
                         port = 5555
+                    # Optional 4th field: a percent-encoded human-readable room
+                    # name. Older hosts omit it, so fall back to a blank name.
+                    room_name = ''
+                    if len(parts) >= 4 and parts[3]:
+                        from urllib.parse import unquote
+                        room_name = unquote(parts[3])
                     # Key by ip:port so two hosts on the same machine (different
                     # ports) show up as two distinct rooms instead of colliding.
                     key = f"{ip}:{port}"
-                    server_name = f"Game {ip}:{port}"
+                    server_name = room_name if room_name else f"Game {ip}:{port}"
                     with discovered_servers_lock:
                         discovered_servers[key] = (server_name, ip, port, time.time())
         except socket.timeout:

@@ -25,7 +25,6 @@ Example
 Nothing here depends on the rest of the game, so it stays import-light and easy
 to reuse. It only needs pygame.
 """
-
 import pygame
 
 
@@ -42,7 +41,7 @@ class TextInputField:
         font_size=40,
         text="",
         max_chars=20,
-        allowed_chars=None,        # None = allow any printable char; else a string/set of allowed chars
+        allowed_chars=None,
         placeholder="",
         text_color=(255, 255, 255),
         placeholder_color=(130, 130, 130),
@@ -51,7 +50,7 @@ class TextInputField:
         active_border_color=(255, 215, 0),
         border_width=3,
         padding_x=18,
-        caret_color=None,          # defaults to text_color
+        caret_color=None,
         caret_blink_ms=500,
         active=True,
     ):
@@ -61,7 +60,7 @@ class TextInputField:
         self.allowed_chars = set(allowed_chars) if allowed_chars is not None else None
         self.placeholder = placeholder
 
-        # Styling (all live-editable after construction)
+        # Styling
         self.text_color = text_color
         self.placeholder_color = placeholder_color
         self.bg_color = bg_color
@@ -77,7 +76,7 @@ class TextInputField:
         self._caret_timer = 0
         self._caret_visible = True
 
-        # Font: explicit font object wins; else build from path/size.
+        # Font
         if font is not None:
             self.font = font
         else:
@@ -107,10 +106,10 @@ class TextInputField:
         return True
 
     def handle_event(self, event):
-        """Feed pygame events here. Returns 'submit' on Enter, 'cancel' on Escape,
-        otherwise None. Mouse clicks toggle focus when the field can lose focus."""
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.active = self.rect.collidepoint(event.pos)
+            self._caret_visible = True
+            self._caret_timer = 0
             return None
 
         if not self.active or event.type != pygame.KEYDOWN:
@@ -120,21 +119,26 @@ class TextInputField:
             return "submit"
         if event.key == pygame.K_ESCAPE:
             return "cancel"
+
         if event.key == pygame.K_BACKSPACE:
             self.text = self.text[:-1]
+            self._caret_visible = True
+            self._caret_timer = 0
             return None
 
         ch = event.unicode
         if self._char_allowed(ch) and len(self.text) < self.max_chars:
             self.text += ch
+            self._caret_visible = True
+            self._caret_timer = 0
+
         return None
 
     def update(self, dt_ms):
-        """Advance the blinking caret. Pass the frame delta in milliseconds
-        (e.g. clock.tick(...))."""
         if not self.active:
             self._caret_visible = False
             return
+
         self._caret_timer += dt_ms
         if self._caret_timer >= self.caret_blink_ms:
             self._caret_timer %= self.caret_blink_ms
@@ -151,12 +155,12 @@ class TextInputField:
         if self.text:
             shown = self.text + ("|" if (self.active and self._caret_visible) else "")
             color = self.text_color
+        elif self.active:
+            shown = "|" if self._caret_visible else ""
+            color = self.text_color
         else:
             shown = self.placeholder
             color = self.placeholder_color
-            if self.active and self._caret_visible:
-                shown = "|"
-                color = self.text_color
 
         txt = self.font.render(shown, anti_alias, color)
         surface.blit(

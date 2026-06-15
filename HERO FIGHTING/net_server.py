@@ -228,12 +228,20 @@ def _get_local_ip():
     finally:
         s.close()
 
+_bound_port = PORT  # the TCP port the in-process server actually bound to
+
+
+def get_server_port():
+    """Return the TCP port the in-process host is currently listening on."""
+    return _bound_port
+
+
 def _udp_broadcast_loop():
     global _udp_broadcaster_running
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     local_ip = _get_local_ip()
-    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:5555"
+    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}"
     print(f"[SERVER UDP] Broadcasting presence: {msg}")
     while _udp_broadcaster_running:
         try:
@@ -278,31 +286,46 @@ def stop_server():
     print("[SERVER] Server stopped.")
 
 
-def start_background_server(host=HOST, port=PORT):
-    print('start server', 'host: ', host, ' port: ', port)
+def start_background_server(host=HOST, port=PORT, max_port=PORT + 20):
     """Host-in-process: bind/listen here then run the accept loop on a daemon thread.
     Idempotent within a process — if we're already hosting, the existing server is
     reused (its state is reset for a fresh match) rather than binding a second time.
-    Returns the accept-loop thread, or None if the port is taken by another process."""
-    global server, _server_thread
+
+    To let several hosts coexist on the same machine/LAN, if `port` is already
+    taken we scan upward (port, port+1, ... up to max_port) for a free one.
+
+    Returns (thread, bound_port), or (None, None) if no free port was found."""
+    global server, _server_thread, _bound_port
+    print('start server', 'host: ', host, ' port: ', port)
     _reset_state()
     if _server_thread is not None and _server_thread.is_alive():
         start_udp_broadcast()  # Ensure broadcasting is active
-        return _server_thread  # already hosting in this process; reuse it
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    try:
-        s.bind((host, port))
-    except OSError:
-        s.close()
-        return None
+        return _server_thread, _bound_port  # already hosting in this process; reuse it
+
+    s = None
+    bound_port = None
+    for candidate in range(port, max_port + 1):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind((host, candidate))
+            bound_port = candidate
+            break
+        except OSError:
+            s.close()
+            s = None
+            continue
+    if s is None:
+        return None, None
+
     s.listen()
     server = s
-    print(f"[SERVER] Listening on port {port} (in-process host)...")
+    _bound_port = bound_port
+    print(f"[SERVER] Listening on port {bound_port} (in-process host)...")
     start_udp_broadcast()
     _server_thread = threading.Thread(target=accept_loop, daemon=True)
     _server_thread.start()
-    return _server_thread
+    return _server_thread, bound_port
 
 
 if __name__ == '__main__':

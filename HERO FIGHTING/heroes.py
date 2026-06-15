@@ -2826,12 +2826,11 @@ def cleanup_networking():
         pass
 
 
-def lan_connect(host_ip):
-    '''I want to pass it to net_client.py to have a server_name of int (ex. first host: game name of 0 (server_name = f"Room {ip}"))'''
-    print('host ip: ', host_ip)
-    """returns a reason why it got disconnected"""
+def lan_connect(host_ip, port=5555):
+    """Connect to host_ip:port as a client. Returns a reason why it got disconnected."""
+    print('host ip: ', host_ip, ' port: ', port)
     from net_client import NetClient
-    global_vars.active_net_client = NetClient(host_ip)
+    global_vars.active_net_client = NetClient(host_ip, port)
     try:
         global_vars.active_net_client.connect()
     except Exception as e:
@@ -2873,11 +2872,11 @@ def lan_connect(host_ip):
                 exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 cleanup_networking()
-                return
+                return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if cancel_btn.is_clicked(event.pos):
                     cleanup_networking()
-                    return
+                    return 'back_to_menu'
 
         screen.fill((0, 0, 0))
         Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
@@ -2920,13 +2919,15 @@ def lan_connect(host_ip):
     result = player_selection(net_client=global_vars.active_net_client)
     print("player_selection returned:", result)
 
+    # Always tear the client/server down on every exit path so the player who
+    # leaves (host or joiner) actually drops the socket. The server's finally
+    # block then notifies the remaining player with 'opponent_left'.
+    cleanup_networking()
     if result == 'opponent_left':
-        cleanup_networking()
         return 'opponent_left'
     elif result == 'back_to_menu':
-        cleanup_networking()
         return 'back_to_menu'
-    else: 
+    else:
         print('its me :)')
         return 'done'
 
@@ -2960,13 +2961,18 @@ def _mp_text(text, size, color, cy):
 
 
 def host_game():
-    """Start the relay server in-process and connect to it as Player 1 (host)."""
+    """Start the relay server in-process and connect to it as Player 1 (host).
+    Once we're the host we stop LAN scanning so we never also appear as / act as
+    a joiner of another room."""
+    import net_client
+    net_client.stop_lan_scanning()
     cleanup_networking()
     import net_server
-    thread = net_server.start_background_server()
+    thread, bound_port = net_server.start_background_server()
     if thread is None:
-        print("[HOST] Port already in use — connecting to the existing server.")
-    return lan_connect('127.0.0.1')
+        print("[HOST] No free port available to host.")
+        return 'fail'
+    return lan_connect('127.0.0.1', bound_port)
 
 
 def join_game():
@@ -3042,12 +3048,22 @@ def join_game():
         clock.tick(60)
 
 
-def multiplayer_menu():
+def multiplayer_menu(notice=None):
     """YOMIH-style multiplayer lobby menu: displays a list of active LAN games,
-    and buttons to Host, Direct Connect, Play Local PvP, or Back."""
+    and buttons to Host, Direct Connect, Play Local PvP, or Back.
+
+    `notice` shows a transient banner at the top of the menu. It is set when the
+    player is returned here because a session ended (e.g. 'opponent_left' ->
+    'Opponent Left'). It is never set when the menu is opened normally."""
     import net_client
     cleanup_networking()
     net_client.start_lan_scanning()
+
+    # Map a session-end reason to the banner text shown at the top of the menu.
+    _NOTICE_TEXT = {'opponent_left': 'Opponent Left', 'disconnected': 'Disconnected'}
+    notice_text = _NOTICE_TEXT.get(notice)
+    notice_start = pygame.time.get_ticks() if notice_text else None
+    NOTICE_DURATION = 5000  # ms
 
     scale_btn = 1.2 
     host_btn = ImageButton(
@@ -3091,9 +3107,14 @@ def multiplayer_menu():
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
 
+    import net_server
     while True:
         mouse_pos = pygame.mouse.get_pos()
-        servers = net_client.get_active_servers()
+        my_ip = _get_local_ip()
+        # Hide only THIS host's own beacon (ip:port). Other hosts on the same
+        # machine use a different port and must stay visible/joinable.
+        my_key = f"{my_ip}:{net_server.get_server_port()}" if global_vars.active_net_client else None
+        servers = {k: v for k, v in net_client.get_active_servers().items() if k != my_key}
         # print(servers)
 
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
@@ -3108,12 +3129,15 @@ def multiplayer_menu():
                     cleanup_networking()
                     return 'back_to_menu'
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # Launch a LAN session. If it ends because the opponent left,
+                # stay in this menu and show a banner; otherwise leave the menu.
+                session = None
                 if host_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
-                    return host_game()
+                    session = host_game()
                 elif direct_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
-                    return join_game()
+                    session = join_game()
                 elif local_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
                     global_vars.SINGLE_MODE_ACTIVE = False
@@ -3122,15 +3146,27 @@ def multiplayer_menu():
                     net_client.stop_lan_scanning()
                     cleanup_networking()
                     return 'back_to_menu'
-                
-                # Check server browser clicks
-                room_y = panel_rect.y + 60
-                for ip, name in list(servers.items())[:5]:
-                    btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
-                    if btn_rect.collidepoint(event.pos):
-                        net_client.stop_lan_scanning()
-                        return lan_connect(ip)
-                    room_y += 75
+                else:
+                    # Check server browser clicks
+                    room_y = panel_rect.y + 60
+                    for key, (name, ip, port) in list(servers.items())[:5]:
+                        btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
+                        if btn_rect.collidepoint(event.pos):
+                            net_client.stop_lan_scanning()
+                            session = lan_connect(ip, port)
+                            break
+                        room_y += 75
+
+                if session in ('opponent_left', 'disconnected'):
+                    # Survivor returns to the lobby with a transient notice.
+                    notice_text = _NOTICE_TEXT.get(session)
+                    notice_start = pygame.time.get_ticks()
+                    cleanup_networking()
+                    net_client.start_lan_scanning()
+                    break  # re-evaluate the loop fresh with the banner armed
+                elif session is not None:
+                    # back_to_menu / done / fail / None -> leave the lobby.
+                    return session
 
         _mp_draw_bg("MULTIPLAYER LOBBY")
 
@@ -3156,7 +3192,7 @@ def multiplayer_menu():
             txt_surf = global_vars.get_font(20).render(scan_text, global_vars.TEXT_ANTI_ALIASING, (140, 140, 140))
             screen.blit(txt_surf, (panel_rect.centerx - txt_surf.get_width() // 2, panel_rect.centery))
         else:
-            for ip, name in list(servers.items())[:5]: # -> {'26.68.33.194': ('26.68.33.194', 1781343212.8696864)}
+            for key, (name, ip, port) in list(servers.items())[:5]:
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
                 is_hovered = btn_rect.collidepoint(mouse_pos)
                 
@@ -3168,9 +3204,19 @@ def multiplayer_menu():
                 pygame.draw.rect(screen, border_color, btn_rect, 2)
                 
                 # Text inside
-                room_text = global_vars.get_font(22).render(f"Room - {name[0]}", global_vars.TEXT_ANTI_ALIASING, white)
+                room_text = global_vars.get_font(22).render(f"Room - {ip}:{port}", global_vars.TEXT_ANTI_ALIASING, white)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
+
+        # Transient banner shown only when we were returned here after a session
+        # ended (opponent left / disconnected). Auto-clears after NOTICE_DURATION.
+        if notice_text and notice_start is not None:
+            if pygame.time.get_ticks() - notice_start < NOTICE_DURATION:
+                banner = global_vars.get_font(40).render(notice_text, global_vars.TEXT_ANTI_ALIASING, red)
+                screen.blit(banner, (width // 2 - banner.get_width() // 2, int(height * 0.04)))
+            else:
+                notice_text = None
+                notice_start = None
 
         pygame.display.update()
         clock.tick(60)

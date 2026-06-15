@@ -239,9 +239,16 @@ def _udp_listen_loop():
                 parts = msg.split(':')
                 if len(parts) >= 3:
                     ip = parts[1]
-                    server_name = f"Game {ip}"
+                    try:
+                        port = int(parts[2])
+                    except (ValueError, IndexError):
+                        port = 5555
+                    # Key by ip:port so two hosts on the same machine (different
+                    # ports) show up as two distinct rooms instead of colliding.
+                    key = f"{ip}:{port}"
+                    server_name = f"Game {ip}:{port}"
                     with discovered_servers_lock:
-                        discovered_servers[ip] = (server_name, time.time())
+                        discovered_servers[key] = (server_name, ip, port, time.time())
         except socket.timeout:
             pass
         except Exception:
@@ -264,10 +271,12 @@ def stop_lan_scanning():
     _udp_listener_thread = None
 
 def get_active_servers():
+    """Return {key: (server_name, ip, port)} for hosts seen in the last 5s,
+    where key is 'ip:port'."""
     now = time.time()
     with discovered_servers_lock:
-        for ip in list(discovered_servers.keys()):
-            name, last_seen = discovered_servers[ip]
+        for key in list(discovered_servers.keys()):
+            name, ip, port, last_seen = discovered_servers[key]
             if now - last_seen > 5.0:
-                discovered_servers.pop(ip)
-        return dict(discovered_servers)
+                discovered_servers.pop(key)
+        return {key: (name, ip, port) for key, (name, ip, port, _ts) in discovered_servers.items()}

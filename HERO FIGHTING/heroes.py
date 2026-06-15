@@ -3117,6 +3117,14 @@ def multiplayer_menu(notice=None):
         servers = {k: v for k, v in net_client.get_active_servers().items() if k != my_key}
         # print(servers)
 
+        # If we're currently hosting, we must NOT be able to join another host
+        # (host-to-host). The browser still SHOWS other rooms (so the host can
+        # see who else is up), but their entries are disabled/non-clickable.
+        am_hosting = (
+            global_vars.active_net_client is not None
+            and global_vars.active_net_client.my_player_type == 1
+        )
+
         panel_rect = pygame.Rect(int(width * 0.08), int(height * 0.28), int(width * 0.44), int(height * 0.52))
 
         for event in pygame.event.get():
@@ -3146,8 +3154,9 @@ def multiplayer_menu(notice=None):
                     net_client.stop_lan_scanning()
                     cleanup_networking()
                     return 'back_to_menu'
-                else:
-                    # Check server browser clicks
+                elif not am_hosting:
+                    # Check server browser clicks. Disabled entirely while hosting
+                    # so a host can never join another host.
                     room_y = panel_rect.y + 60
                     for key, (name, ip, port) in list(servers.items())[:5]:
                         btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
@@ -3194,17 +3203,26 @@ def multiplayer_menu(notice=None):
         else:
             for key, (name, ip, port) in list(servers.items())[:5]:
                 btn_rect = pygame.Rect(panel_rect.x + 20, room_y, panel_rect.width - 40, 60)
-                is_hovered = btn_rect.collidepoint(mouse_pos)
-                
+                # While hosting, rooms are shown but greyed out (not joinable).
+                is_hovered = btn_rect.collidepoint(mouse_pos) and not am_hosting
+
                 # Draw room button
-                bg_color = (45, 50, 65) if is_hovered else (25, 28, 35)
-                border_color = gold if is_hovered else (60, 65, 80)
-                
+                if am_hosting:
+                    bg_color = (20, 20, 24)
+                    border_color = (45, 45, 55)
+                    text_color = (110, 110, 120)
+                else:
+                    bg_color = (45, 50, 65) if is_hovered else (25, 28, 35)
+                    border_color = gold if is_hovered else (60, 65, 80)
+                    text_color = white
+
                 pygame.draw.rect(screen, bg_color, btn_rect)
                 pygame.draw.rect(screen, border_color, btn_rect, 2)
-                
-                # Text inside
-                room_text = global_vars.get_font(22).render(f"Room - {ip}:{port}", global_vars.TEXT_ANTI_ALIASING, white)
+
+                # Text inside: show the broadcast room name (falls back to
+                # "Game ip:port" when the host didn't set one), then the address.
+                label = f"{name} - {ip}:{port}"
+                room_text = global_vars.get_font(22).render(label, global_vars.TEXT_ANTI_ALIASING, text_color)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
 

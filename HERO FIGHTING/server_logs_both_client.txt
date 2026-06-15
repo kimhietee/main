@@ -1003,3 +1003,9 @@ problems:
 - p1 is a host, p2 is also a host, they can join each other, which would not be happening.
 - correct any player leaving with disconnect issues, such as players currently in game LAN, one player left (i forgot what player left (server host, client), the other has no error displayed, expected, must also disconnect)
 - i deleted lobby(), changed it to show_dc_text() but that didn't work, expected: must show the error text only if already joined but enemy left, will show the error text for few seconds.
+
+
+recent problems:
+- host to host will still join to each other, must never join them since I was testing whether if I can see 2 hosts while I ran 3 terminals which the client #3 joins which host is turned on, expected that those hosts are different and must not join each other. Check the current code and apply fixes.
+
+- if that is more complicated and unnecessary as it should be, we'll leave it be and modify it that it works well with the current code. I want this feature: I would like the text field like the direct connect with text, input field, be made into a function, that is flexible that I can modify it such as sizes, color, etc... create separate file for it and import it whenever it is used, but if no direct changes to the direct connect loop option in multiplayer_menu, no changes is needed there. I want this: player wants to host, then he can put the room name, that the other players will see the name broadcasted, with name char limit, so if there were multiple hosts, players who joins/see multiple hosts, they can see the room - gamename then the important info such as ip.

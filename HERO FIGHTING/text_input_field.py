@@ -28,7 +28,80 @@ to reuse. It only needs pygame.
 import pygame
 
 
+
 class TextInputField:
+    """
+    A reusable text input widget for Pygame.
+
+    Features
+    --------
+    - Click to focus / unfocus
+    - Keyboard typing with optional character filtering
+    - Blinking caret (cursor)
+    - Placeholder text when empty
+    - Fully customizable styling
+
+    Parameters
+    ----------
+    x, y : int
+        Top-left position of the input field.
+
+    width, height : int
+        Size of the input field.
+
+    font : pygame.font.Font, optional
+        Preloaded font object. If provided, overrides `font_path`.
+
+    font_path : str, optional
+        Path to a font file.
+
+    font_size : int, default=40
+        Font size (used if `font` is not provided).
+
+    text : str, default=""
+        Initial text value.
+
+    max_chars : int, default=20
+        Maximum number of characters allowed.
+
+    allowed_chars : iterable, optional
+        Set or iterable of allowed characters.
+        If None, all printable characters are allowed.
+
+    placeholder : str, default=""
+        Text shown when input is empty and inactive.
+
+    text_color : tuple, default=(255, 255, 255)
+        Color of the input text.
+
+    placeholder_color : tuple, default=(130, 130, 130)
+        Color of the placeholder text.
+
+    bg_color : tuple, default=(25, 25, 25)
+        Background color of the input box.
+
+    border_color : tuple, default=(200, 200, 200)
+        Border color when inactive.
+
+    active_border_color : tuple, default=(255, 215, 0)
+        Border color when active (focused).
+
+    border_width : int, default=3
+        Thickness of the border.
+
+    padding_x : int, default=18
+        Horizontal padding for text inside the box.
+
+    caret_color : tuple, optional
+        Color of the caret. Defaults to `text_color`.
+
+    caret_blink_ms : int, default=500
+        Time interval (in milliseconds) for caret blinking.
+
+    active : bool, default=True
+        Whether the input starts focused.
+    """
+
     def __init__(
         self,
         x,
@@ -54,7 +127,10 @@ class TextInputField:
         caret_blink_ms=500,
         active=True,
     ):
+        # Geometry
         self.rect = pygame.Rect(int(x), int(y), int(width), int(height))
+
+        # Text behavior
         self.text = text
         self.max_chars = max_chars
         self.allowed_chars = set(allowed_chars) if allowed_chars is not None else None
@@ -82,41 +158,77 @@ class TextInputField:
         else:
             self.font = pygame.font.Font(font_path, int(font_size))
 
-    # ── Public API ─────────────────────────────────────────────
+    # ─────────────────────────────────────────────
+    # Public API
+    # ─────────────────────────────────────────────
+
     def get_text(self):
+        """Return the current text value."""
         return self.text
 
     def set_text(self, value):
+        """
+        Set the text value.
+
+        Text is automatically truncated to `max_chars`.
+        """
         self.text = value[: self.max_chars]
 
     def clear(self):
+        """Clear all text."""
         self.text = ""
 
     def set_position(self, x, y):
+        """Move the input field to a new position."""
         self.rect.topleft = (int(x), int(y))
 
     def set_size(self, width, height):
+        """Resize the input field."""
         self.rect.size = (int(width), int(height))
 
+    # ─────────────────────────────────────────────
+    # Internal helpers
+    # ─────────────────────────────────────────────
+
     def _char_allowed(self, ch):
+        """Check if a character is allowed."""
         if not ch or not ch.isprintable():
             return False
         if self.allowed_chars is not None:
             return ch in self.allowed_chars
         return True
 
+    # ─────────────────────────────────────────────
+    # Event handling
+    # ─────────────────────────────────────────────
+
     def handle_event(self, event):
+        """
+        Handle Pygame events.
+
+        Returns
+        -------
+        str or None
+            "submit" → Enter pressed
+            "cancel" → Escape pressed
+            None     → otherwise
+        """
+
+        # Mouse click → focus/unfocus
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.active = self.rect.collidepoint(event.pos)
             self._caret_visible = True
             self._caret_timer = 0
             return None
 
+        # Ignore if not active or not a key press
         if not self.active or event.type != pygame.KEYDOWN:
             return None
 
+        # Special keys
         if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
             return "submit"
+
         if event.key == pygame.K_ESCAPE:
             return "cancel"
 
@@ -126,6 +238,7 @@ class TextInputField:
             self._caret_timer = 0
             return None
 
+        # Character input
         ch = event.unicode
         if self._char_allowed(ch) and len(self.text) < self.max_chars:
             self.text += ch
@@ -134,7 +247,21 @@ class TextInputField:
 
         return None
 
+    # ─────────────────────────────────────────────
+    # Update & Render
+    # ─────────────────────────────────────────────
+
     def update(self, dt_ms):
+        """
+        Update internal state.
+
+        Handles caret blinking.
+
+        Parameters
+        ----------
+        dt_ms : int
+            Time elapsed since last frame (in milliseconds).
+        """
         if not self.active:
             self._caret_visible = False
             return
@@ -145,13 +272,27 @@ class TextInputField:
             self._caret_visible = not self._caret_visible
 
     def draw(self, surface, anti_alias=True):
-        # Box
+        """
+        Draw the input field.
+
+        Parameters
+        ----------
+        surface : pygame.Surface
+            Surface to draw on.
+
+        anti_alias : bool, default=True
+            Whether to render text with anti-aliasing.
+        """
+
+        # Background
         pygame.draw.rect(surface, self.bg_color, self.rect)
+
+        # Border
         border = self.active_border_color if self.active else self.border_color
         if self.border_width > 0:
             pygame.draw.rect(surface, border, self.rect, self.border_width)
 
-        # Text or placeholder
+        # Text / Placeholder / Caret
         if self.text:
             shown = self.text + ("|" if (self.active and self._caret_visible) else "")
             color = self.text_color
@@ -162,6 +303,7 @@ class TextInputField:
             shown = self.placeholder
             color = self.placeholder_color
 
+        # Render text
         txt = self.font.render(shown, anti_alias, color)
         surface.blit(
             txt,

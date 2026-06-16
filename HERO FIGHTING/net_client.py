@@ -157,13 +157,13 @@ class NetClient:
             elif message_type == 'hero_confirmed': # not used????
                 if msg['player'] != self.my_player_type:
                     self.opponent_ready = True
-                    print('opponent ready :)')
+                    # print('opponent ready :)')
 
             elif message_type == 'both_ready':
                 self.p1_hero = msg['p1_hero']
                 self.p2_hero = msg['p2_hero']
                 self.map_selected = msg['map']
-                print('both ready :)')
+                # print('both ready :)')
                 self.both_ready = True
 
             # elif message_type == 'not_ready':
@@ -171,7 +171,7 @@ class NetClient:
             #     print('not ready :)')
 
             elif message_type == 'ready_to_battle':
-                print('ready to battle!!!')
+                # print('ready to battle!!!')
                 self.cube_seed = msg.get('cube_seed')  # store shared seed for cube sync
                 self.ready_to_battle = True
 

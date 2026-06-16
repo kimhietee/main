@@ -512,7 +512,7 @@ control_button = ImageButton(
     scale=scale*0.8,
     text='Controls',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
@@ -523,29 +523,12 @@ settings_button = ImageButton(
     scale=scale*0.8,
     text='Settings',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size*0.8,  # dynamic size ~29 at 720p
+    font_size=font_size,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
 
 # ---------------
-
-
-
-
-
-# Login Button in login page
-
-# login_option = ImageButton(
-#     image_path=text_box_img,
-#     pos=(width//2 + 100, height - 100),
-#     scale=scale * 0.8,
-#     text='LOGIN',
-#     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-#     font_size=font_size,  # dynamic size ~29 at 720p
-#     text_color='white',
-#     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
-# )
 
 
 
@@ -555,7 +538,7 @@ leaderboard_button = ImageButton(
     scale=scale * 0.8,
     text='LEADERBOARD',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
-    font_size=font_size,  # dynamic size ~29 at 720p
+    font_size=font_size*0.95,  # dynamic size ~29 at 720p
     text_color='white',
     text_anti_alias=global_vars.TEXT_ANTI_ALIASING
 )
@@ -786,10 +769,8 @@ def draw_grid(screen, width=1280, height=720, grid_size=35, color=(100, 100, 100
 #             if event.type == pygame.MOUSEBUTTONDOWN:
 #                 if play_button.is_clicked(event.pos):
 #                     # fade(background, menu)
-#                     menu()
 #                     return
 #             if keys[pygame.K_RETURN]:
-#                 menu()
 #                 return
 
         # main.screen.blit(background, (0, 0))
@@ -942,9 +923,9 @@ def interp_xy(prev, latest, t0, t1, hero_key, render_time):
 
 def game(bg=None, net_client=None):
     global winner, paused, is_paused, battle_result_recorded
-    if net_client is not None:
-        net_client.phase = 'playing'
-        net_client.declared_winner = None  # reset from any previous game
+    if global_vars.active_net_client is not None:
+        global_vars.active_net_client.phase = 'playing'
+        global_vars.active_net_client.declared_winner = None  # reset from any previous game
 
     _last_state_send = 0   # Phase D: throttle host -> client state snapshots (30Hz)
 
@@ -984,10 +965,10 @@ def game(bg=None, net_client=None):
     
     # In LAN mode, use the shared seed from the server so both clients generate
     # identical initial cube X positions — no broadcast needed, no race condition.
-    if net_client is not None and net_client.cube_seed is not None:
-        _cube_rng = random.Random(net_client.cube_seed)
+    if global_vars.active_net_client is not None and global_vars.active_net_client.cube_seed is not None:
+        _cube_rng = random.Random(global_vars.active_net_client.cube_seed)
         _cube_x = [_cube_rng.randint(20, int(main.width - 20)) for _ in cubes]
-        print(f"[CUBE SYNC] Using shared seed {net_client.cube_seed}, X positions: {_cube_x}")
+        print(f"[CUBE SYNC] Using shared seed {global_vars.active_net_client.cube_seed}, X positions: {_cube_x}")
         for i, cube in enumerate(cubes):
             cube['x'] = _cube_x[i]
     else:
@@ -1068,16 +1049,16 @@ def game(bg=None, net_client=None):
         #     main.screen.fill((0, 0, 0))
         # print(global_vars.MAIN_VOLUME)
         
-        if net_client is not None:
-            if net_client.opponent_left:
+        if global_vars.active_net_client is not None:
+            if global_vars.active_net_client.opponent_left:
                 print("Opponent left detected in player_selection")
                 return 'opponent_left'
                 
-            if net_client.rematch_confirmed:
-                net_client.rematch_confirmed = False
-                net_client.my_rematch_sent = False
-                net_client.opponent_rematch_sent = False
-                net_client.declared_winner = None
+            if global_vars.active_net_client.rematch_confirmed:
+                global_vars.active_net_client.rematch_confirmed = False
+                global_vars.active_net_client.my_rematch_sent = False
+                global_vars.active_net_client.opponent_rematch_sent = False
+                global_vars.active_net_client.declared_winner = None
                 reset_all()
                 return 'rematch'
 
@@ -1100,14 +1081,12 @@ def game(bg=None, net_client=None):
                 second_track_played = True
 
             # if keys[pygame.K_ESCAPE]:
-            #     menu()
             #     return
 
             if keys[pygame.K_ESCAPE]:
                 paused = True
             # if event.type == pygame.MOUSEBUTTONDOWN:
             #     if menu_button.is_clicked(event.pos):
-            #         menu()
             #         return    
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if ingame_menu_button.is_clicked(event.pos):
@@ -1228,13 +1207,13 @@ def game(bg=None, net_client=None):
                 item.draw_icon((main.width-(150+(50*i)), 100), small='smallest')
         
             # ── Phase 2: apply pending cube updates from server ──
-            if net_client is not None:
-                for update in net_client.pop_cube_updates():
+            if global_vars.active_net_client is not None:
+                for update in global_vars.active_net_client.pop_cube_updates():
                     ci = update['index']
                     cubes[ci]['fall'] = update['fall']
                     cubes[ci]['x'] = update['x']
                     
-                    if net_client.my_player_type == 2 and update.get('hero_hit') is not None:
+                    if global_vars.active_net_client.my_player_type == 2 and update.get('hero_hit') is not None:
                         target = main.hero1 if update['hero_hit'] == 1 else main.hero2
                         btype = update.get('bonus_type')
                         bamount = update.get('bonus_amount')
@@ -1258,7 +1237,7 @@ def game(bg=None, net_client=None):
                     cube['bonus_amount'],
                     cube['sound'],
                     cube_index=i,
-                    net_client=net_client
+                    net_client=global_vars.active_net_client
                 )
 
 
@@ -1283,9 +1262,9 @@ def game(bg=None, net_client=None):
 
             
             # ── NETWORK INPUT INJECTION ──────────────────────────────
-            if net_client is not None and net_client.phase == 'playing':
-                p1_keys, p2_keys = net_client.get_inputs()
-                my_type = net_client.my_player_type
+            if global_vars.active_net_client is not None and global_vars.active_net_client.phase == 'playing':
+                p1_keys, p2_keys = global_vars.active_net_client.get_inputs()
+                my_type = global_vars.active_net_client.my_player_type
 
                 # Both hero1 and hero2 get their inputs from the server
                 main.hero1._net_keys = p1_keys
@@ -1329,10 +1308,10 @@ def game(bg=None, net_client=None):
                     #     'skill4':  bool(raw_keys[keybinds['skill_4_p2'][0]]),
                     #     'special': bool(raw_keys[keybinds['sp_skill_p2'][0]]),
                     # }
-                net_client.send_input(my_keys)
+                global_vars.active_net_client.send_input(my_keys)
                 # P1 is the HP authority — report hero HPs to server every frame
-                if net_client.my_player_type == 1: # must use the hero_group, not individual (will work for now)
-                    net_client.send_report_hp(main.hero1.health, main.hero2.health)
+                if global_vars.active_net_client.my_player_type == 1: # must use the hero_group, not individual (will work for now)
+                    global_vars.active_net_client.send_report_hp(main.hero1.health, main.hero2.health)
                     
             else:
                 # Normal local mode — clear net_keys so keyboard works
@@ -1363,9 +1342,9 @@ def game(bg=None, net_client=None):
             # ── END NETWORK INPUT INJECTION ──────────────────────────
 
             # detect if anyone left
-            if net_client is not None and net_client.opponent_left:
-                net_client.opponent_left = False
-                net_client.disconnect()
+            if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
+                global_vars.active_net_client.opponent_left = False
+                global_vars.active_net_client.disconnect()
                 global_vars.active_net_client = None
                 # lobby('disconnected') 
                 return 'opponent_left'
@@ -1405,10 +1384,10 @@ def game(bg=None, net_client=None):
             attack_display.draw(main.screen)
 
             # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
-            if net_client is not None and net_client.my_player_type == 1 and net_client.phase == 'playing':
+            if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1 and global_vars.active_net_client.phase == 'playing':
                 _now_ms = pygame.time.get_ticks()
                 if _now_ms - _last_state_send >= NET_STATE_TICK_MS:
-                    net_client.send_state({
+                    global_vars.active_net_client.send_state({
                         'h1': serialize_hero(main.hero1),
                         'h2': serialize_hero(main.hero2),
                     })
@@ -1434,10 +1413,10 @@ def game(bg=None, net_client=None):
 
 
             if winner is None:
-                if net_client is not None:
+                if global_vars.active_net_client is not None:
                     # LAN: server declares winner, not local logic
-                    if net_client.declared_winner is not None:
-                        winner = net_client.declared_winner
+                    if global_vars.active_net_client.declared_winner is not None:
+                        winner = global_vars.active_net_client.declared_winner
                 else:
                     # Local mode: unchanged logic
                     if main.hero1.is_dead() and main.hero2.is_dead():
@@ -1526,11 +1505,9 @@ def leaderboard():
                 exit()
 
             if keys[pygame.K_ESCAPE]:
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
                     return
 
 
@@ -1588,7 +1565,7 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
         # Collision detection — only P1 (authority) or local games apply bonuses and reset
         if cube_hitbox.colliderect(hero1.hitbox_rect):
-            if net_client is None or net_client.my_player_type == 1:
+            if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1:
                 sound.play()
                 if bonus_type == 'health':
                     hero1.health = min(hero1.max_health, hero1.health + bonus_amount)
@@ -1607,11 +1584,11 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
-                if net_client is not None:
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
+                if global_vars.active_net_client is not None:
+                    global_vars.active_net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=1, bonus_type=bonus_type, bonus_amount=bonus_amount)
 
         elif cube_hitbox.colliderect(hero2.hitbox_rect):
-            if net_client is None or net_client.my_player_type == 1:
+            if global_vars.active_net_client is None or global_vars.active_net_client.my_player_type == 1:
                 sound.play()
                 if bonus_type == 'health':
                     hero2.health = min(hero2.max_health, hero2.health + bonus_amount)
@@ -1630,14 +1607,14 @@ def handle_cube(cube, cube_fall, cube_x, cube_color, cube_image, hero1, hero2, b
 
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = random.randint(-2000, -500)
-                if net_client is not None:
-                    net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=2, bonus_type=bonus_type, bonus_amount=bonus_amount)
+                if global_vars.active_net_client is not None:
+                    global_vars.active_net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=2, bonus_type=bonus_type, bonus_amount=bonus_amount)
     else:
-        if net_client is not None:
-            if net_client.my_player_type == 1:
+        if global_vars.active_net_client is not None:
+            if global_vars.active_net_client.my_player_type == 1:
                 cube_x = random.randint(20, int(main.width - 20))
                 cube_fall = -150
-                net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=None, bonus_type=None, bonus_amount=None)
+                global_vars.active_net_client.send_cube_reset(cube_index, cube_fall, cube_x, hero_hit=None, bonus_type=None, bonus_amount=None)
         else:
             cube_x = random.randint(20, int(main.width - 20))
             cube_fall = -150
@@ -1842,6 +1819,10 @@ def menu():
                     # player chooses to leave the lobby.
                     main.multiplayer_menu()   # Minecraft-style Host / Join
                     _lan_connecting = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if single_button.is_clicked(event.pos):
@@ -1854,9 +1835,9 @@ def menu():
                 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if multiplayer_button.is_clicked(event.pos):
-                    global_vars.SINGLE_MODE_ACTIVE = False
-                    reason = main.player_selection()
-                    print('player_selection result (offline mode):', reason)
+                    _lan_connecting = True
+                    main.multiplayer_menu()
+                    _lan_connecting = False
                                  
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
@@ -2148,11 +2129,9 @@ def login():
                 pygame.quit()
                 exit()  
             if keys[pygame.K_ESCAPE]:
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu() 
                     return
                 
                 # Logout button handling for Player 1
@@ -3240,11 +3219,9 @@ def info():
                 pygame.quit()
                 exit()  
             if keys[pygame.K_ESCAPE]:
-                menu()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
-                    menu()  
                     return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if next.is_clicked(event.pos) and not switch:
@@ -3495,13 +3472,11 @@ def settings(in_game=False):
 
             if keys[pygame.K_ESCAPE]:
                 # if not in_game:
-                #     menu()
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menu_button.is_clicked(event.pos):
                     # if not in_game:
-                    #     menu()
                     return
                 
                 # Mute toggle

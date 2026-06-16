@@ -2826,7 +2826,7 @@ def cleanup_networking():
         pass
 
 
-def lan_connect(host_ip, port=5555):
+def lan_connect(host_ip, port=5555, room_name=''):
     """Connect to host_ip:port as a client. Returns a reason why it got disconnected."""
     print('host ip: ', host_ip, ' port: ', port)
     from net_client import NetClient
@@ -2851,11 +2851,11 @@ def lan_connect(host_ip, port=5555):
         cleanup_networking()
         return 'fail'
 
-    font = global_vars.get_font(60)
+    font = global_vars.get_font(30)
     cancel_btn = ImageButton(
         image_path=text_box_img,
         pos=(width // 2, int(height * 0.75)),
-        scale=scale,
+        scale=scale * 1.2,
         text='Cancel',
         font_path=r'assets\font\slkscr.ttf',
         font_size=font_size,
@@ -2876,7 +2876,7 @@ def lan_connect(host_ip, port=5555):
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if cancel_btn.is_clicked(event.pos):
                     cleanup_networking()
-                    return 'back_to_menu'
+                    return 'back'
 
         screen.fill((0, 0, 0))
         Animate_BG.smooth_waterfall_night_bg.display(screen, speed=50)
@@ -2890,8 +2890,8 @@ def lan_connect(host_ip, port=5555):
         pygame.draw.rect(screen, (80, 80, 100), box, 3)
 
         # Title
-        txt = font.render("Waiting for opponent...", global_vars.TEXT_ANTI_ALIASING, white)
-        screen.blit(txt, (width//2 - txt.get_width()//2, box.y + 40))
+        txt = font.render(f"Room name: {room_name}", global_vars.TEXT_ANTI_ALIASING, white)
+        screen.blit(txt, (width//2 - txt.get_width()//2, box.y + 60))
 
         # Show Host LAN IP
         if global_vars.active_net_client.my_player_type == 1:
@@ -2905,7 +2905,7 @@ def lan_connect(host_ip, port=5555):
             screen.blit(conn_txt, (width // 2 - conn_txt.get_width() // 2, box.y + 140))
 
         dots = "." * ((pygame.time.get_ticks() // 500) % 4)
-        status_txt = global_vars.get_font(26).render(f"Lobby is open{dots}", global_vars.TEXT_ANTI_ALIASING, (200, 200, 200))
+        status_txt = global_vars.get_font(26).render(f"Waiting for opponent{dots}", global_vars.TEXT_ANTI_ALIASING, (200, 200, 200))
         screen.blit(status_txt, (width // 2 - status_txt.get_width() // 2, box.y + 240))
 
         cancel_btn.draw(screen, mouse_pos)
@@ -2960,7 +2960,7 @@ def _mp_text(text, size, color, cy):
     return rect
 
 
-def _prompt_room_name(default_name="", max_chars=16):
+def prompt_room_name(default_name="", max_chars=16):
     """Ask the host for a room name using the reusable TextInputField. Returns the
     typed name, or None if the player cancelled (ESC / Cancel button)."""
     from text_input_field import TextInputField
@@ -2980,7 +2980,7 @@ def _prompt_room_name(default_name="", max_chars=16):
         pos=(width // 2 - 140, int(height * 0.65)),
         scale=1.2, text='Host',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.8, text_color='white',
+        font_size=font_size, text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
     )
     cancel_btn = ImageButton(
@@ -2988,7 +2988,7 @@ def _prompt_room_name(default_name="", max_chars=16):
         pos=(width // 2 + 140, int(height * 0.65)),
         scale=1.2, text='Cancel',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.8, text_color='white',
+        font_size=font_size, text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING,
     )
 
@@ -3026,7 +3026,7 @@ def host_game():
     net_client.stop_lan_scanning()
 
     # Ask for a room name first; cancelling backs out to the lobby.
-    room_name = _prompt_room_name()
+    room_name = prompt_room_name()
     if room_name is None:
         return None
 
@@ -3036,16 +3036,34 @@ def host_game():
     if thread is None:
         print("[HOST] No free port available to host.")
         return 'fail'
-    return lan_connect('127.0.0.1', bound_port)
+    return lan_connect('127.0.0.1', bound_port, room_name=room_name)
 
 
 def join_game():
     """Minecraft-style 'Direct Connect': type the host's IP, then connect as Player 2."""
     cleanup_networking()
-    ip = "127.0.0.1"
     info_font_size = 30
-    blink = 0
     scale_btn = 1.2
+
+    from text_input_field import TextInputField
+    ip_field = TextInputField(
+        x=width // 2 - int(width * 0.5) // 2,  # same as: width//2 - box_w//2
+        y=int(height * 0.44),                   # same y
+        width=int(width * 0.5),                 # same box_w
+        height=70,                              # same box_h
+        font=global_vars.get_font(40),          # same font
+        # text="127.0.0.1",                       # pre-filled default
+        max_chars=21,                           # matches len(ip) < 21 guard
+        allowed_chars="0123456789.",            # same char whitelist
+        text_color=white,                       # (255,255,255)
+        bg_color=(25, 25, 25),                  # same fill
+        border_color=(200, 200, 200),           # same inactive border
+        active_border_color=(255, 215, 0),      # gold highlight when focused
+        border_width=3,                         # same border thickness
+        padding_x=18,                           # matches midleft offset of 18
+        active=True,                            # always focused (same as original)
+        placeholder="127.0.0.1",                 
+    )
 
     connect_btn = ImageButton(
         image_path=text_box_img,
@@ -3053,7 +3071,7 @@ def join_game():
         scale=scale_btn,
         text='Connect',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.8,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
@@ -3063,53 +3081,43 @@ def join_game():
         scale=scale_btn,
         text='Cancel',
         font_path=r'assets\font\slkscr.ttf',
-        font_size=font_size * 0.8,
+        font_size=font_size,
         text_color='white',
         text_anti_alias=global_vars.TEXT_ANTI_ALIASING
     )
 
     while True:
-        print(ip)
+        # print(ip)
+        dt = clock.tick(60)
         mouse_pos = pygame.mouse.get_pos()
-        blink = (blink + 1) % 60
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit(); exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    return None
-                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                    if ip.strip():
-                        return lan_connect(ip.strip())
-                elif event.key == pygame.K_BACKSPACE:
-                    ip = ip[:-1]
-                else:
-                    ch = event.unicode
-                    if ch and ch in "0123456789." and len(ip) < 21:
-                        ip += ch
+
+            result = ip_field.handle_event(event)
+            if result == 'submit':
+                if ip_field.get_text().strip():
+                    return lan_connect(ip_field.get_text().strip())
+            if result == 'cancel':
+                return None
+            
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if connect_btn.is_clicked(event.pos):
-                    if ip.strip():
-                        return lan_connect(ip.strip())
+                    if connect_btn.is_clicked(event.pos):
+                        if ip_field.get_text().strip():
+                            return lan_connect(ip_field.get_text().strip())
                 elif cancel_btn.is_clicked(event.pos):
                     return None
 
         _mp_draw_bg("JOIN GAME")
-        _mp_text("Server Address", info_font_size, (200, 200, 200), int(height * 0.38))
+        _mp_text("Host Address", info_font_size, (200, 200, 200), int(height * 0.38))
 
-        # Input box
-        box_w, box_h = int(width * 0.5), 70
-        box = pygame.Rect(width // 2 - box_w // 2, int(height * 0.44), box_w, box_h)
-        pygame.draw.rect(screen, (25, 25, 25), box)
-        pygame.draw.rect(screen, (200, 200, 200), box, 3)
-        shown = ip + ("|" if blink < 30 else "")
-        txt = global_vars.get_font(40).render(shown, global_vars.TEXT_ANTI_ALIASING, white)
-        screen.blit(txt, txt.get_rect(midleft=(box.x + 18, box.centery)))
+        ip_field.draw(screen, global_vars.TEXT_ANTI_ALIASING)
+        ip_field.update(dt) 
 
         connect_btn.draw(screen, mouse_pos)
         cancel_btn.draw(screen, mouse_pos)
         pygame.display.update()
-        clock.tick(60)
 
 
 def multiplayer_menu(notice=None):
@@ -3230,7 +3238,7 @@ def multiplayer_menu(notice=None):
                             break
                         room_y += 75
 
-                if session in ('opponent_left', 'disconnected'):
+                if session in ('opponent_left', 'disconnected', 'back'):
                     # Survivor returns to the lobby with a transient notice.
                     notice_text = _NOTICE_TEXT.get(session)
                     notice_start = pygame.time.get_ticks()
@@ -3308,7 +3316,7 @@ def multiplayer_menu(notice=None):
 
 
 def wait_screen(condition_func, text="Waiting for something...", background=None):
-    wait_font = global_vars.get_font(40)
+    wait_font = global_vars.get_font(25)
     while not condition_func():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -3524,7 +3532,7 @@ def player_selection(net_client=None):
         if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
             # global_vars.active_net_client.opponent_left = False
             # global_vars.active_net_client.disconnect()
-            print("Opponent left detected in player_selection")
+            # print("Opponent left detected in player_selection")
             return 'opponent_left'
         # print('running')
         # print(global_vars.MAIN_VOLUME)
@@ -3544,8 +3552,8 @@ def player_selection(net_client=None):
             if keys[pygame.K_ESCAPE]:
                 if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
                     # global_vars.active_net_client.opponent_left = False
-                    print(f'I am leaving good luck everybody')
-                    print("Opponent left detected in player_selection")
+                    # print(f'I am leaving good luck everybody')
+                    # print("Opponent left detected in player_selection")
                     return 'opponent_left'
                 else:
                     print('going back to menu?')
@@ -3554,8 +3562,8 @@ def player_selection(net_client=None):
                 if menu_button.is_clicked(event.pos):
                     if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
                         # global_vars.active_net_client.opponent_left = False
-                        print(f'I am leaving good luck everybody')
-                        print("Opponent left detected in player_selection")
+                        # print(f'I am leaving good luck everybody')
+                        # print("Opponent left detected in player_selection")
                         return 'opponent_left'
                     else:
                         print('going back to menu?')
@@ -4019,11 +4027,11 @@ def player_selection(net_client=None):
                     
                     while True:
                         game_end_result = fade(background, lambda: game(net_client=global_vars.active_net_client if global_vars.active_net_client else None)) #lez go it worked
-                        print('game end result from player_selection:', game_end_result)
+                        # print('game end result from player_selection:', game_end_result)
                         if game_end_result == "rematch":
                             continue
                         else:
-                            print('break!', game_end_result)
+                            # print('break!', game_end_result)
                             break
 
                     return game_end_result

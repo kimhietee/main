@@ -47,7 +47,7 @@ def broadcast(msg):
 
 def handle_client(conn, player_type):
     print(f"[SERVER] Player {player_type} connected.")
-    print(f"[SERVER] clients now: {list(clients.keys())}")
+    # print(f"[SERVER] clients now: {list(clients.keys())}")
     try:
         while True:
             msg = recv_msg(conn)
@@ -153,7 +153,7 @@ def handle_client(conn, player_type):
         with lock:
             clients.pop(player_type, None)
             print(f"[SERVER] Player {player_type} disconnected.")
-            print(f"[SERVER] clients now: {list(clients.keys())}")
+            # print(f"[SERVER] clients now: {list(clients.keys())}")
         conn.close()
         for pt, sock in clients.items():
             try:
@@ -207,7 +207,7 @@ def serve(host=HOST, port=PORT):
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
     server.listen()
-    print(f"[SERVER] Listening on port {port}...")
+    # print(f"[SERVER] Listening on port {port}...")
     start_udp_broadcast()
     accept_loop()
 
@@ -379,7 +379,7 @@ def stop_udp_broadcast():
 def stop_server():
     """Stop the in-process server, closing sockets and stopping UDP broadcasting."""
     global server, _server_thread
-    print("[SERVER] Stopping server...")
+    # print("[SERVER] Stopping server...")
     stop_udp_broadcast()
     if server is not None:
         try:
@@ -395,7 +395,7 @@ def stop_server():
                 pass
         clients.clear()
     _server_thread = None
-    print("[SERVER] Server stopped.")
+    # print("[SERVER] Server stopped.")
 
 
 def start_background_server(host=HOST, port=PORT, max_port=PORT + 20, room_name=''):
@@ -436,7 +436,7 @@ def start_background_server(host=HOST, port=PORT, max_port=PORT + 20, room_name=
     s.listen()
     server = s
     _bound_port = bound_port
-    print(f"[SERVER] Listening on port {bound_port} (in-process host)...")
+    # print(f"[SERVER] Listening on port {bound_port} (in-process host)...")
     start_udp_broadcast()
     _server_thread = threading.Thread(target=accept_loop, daemon=True)
     _server_thread.start()

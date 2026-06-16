@@ -218,7 +218,8 @@ _udp_broadcaster_running = False
 UDP_PORT = 5556
 
 def _get_local_ip():
-    """Get the local LAN IP of this host."""
+    """Return the single LAN IP the OS would use to reach the internet.
+    Used as a fallback when full interface enumeration fails."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect(('8.8.8.8', 80))
@@ -227,6 +228,48 @@ def _get_local_ip():
         return '127.0.0.1'
     finally:
         s.close()
+
+
+def _get_all_broadcast_targets():
+    """Return a list of (local_ip, directed_broadcast) for every real IPv4
+    interface on this machine.
+
+    Why this matters: an *unbound* UDP socket lets the OS pick which NIC to
+    send on.  On machines with a VPN adapter (Radmin, Hamachi, ZeroTier …)
+    that choice can land on the wrong interface and the beacon never reaches
+    the real LAN.  Binding one socket *per interface* forces each send out the
+    correct NIC, and the directed broadcast (e.g. 192.168.0.255) is the
+    address that home routers actually propagate — unlike 255.255.255.255
+    which many routers quietly drop.
+
+    Assumes /24 subnet for the directed-broadcast calculation, which is correct
+    for virtually every home and small-office network."""
+    addrs = []
+
+    # Method 1: gethostbyname_ex — fast, stdlib, works on Windows and Linux
+    try:
+        _, _, gethostname_addrs = socket.gethostbyname_ex(socket.gethostname())
+        addrs.extend(gethostname_addrs)
+    except Exception:
+        pass
+
+    # Method 2: routing-table probe — catches the "primary" interface even if
+    # gethostbyname_ex misses it (e.g. when hostname resolves to 127.0.x.x)
+    fallback = _get_local_ip()
+    if fallback not in addrs:
+        addrs.append(fallback)
+
+    seen = set()
+    targets = []
+    for ip in addrs:
+        if ip.startswith('127.') or ip in seen:
+            continue
+        seen.add(ip)
+        # /24 directed broadcast: replace last octet with 255
+        prefix = ip.rsplit('.', 1)[0]
+        targets.append((ip, prefix + '.255'))
+
+    return targets
 
 _bound_port = PORT  # the TCP port the in-process server actually bound to
 _room_name = ''     # optional human-readable room name shown to joiners
@@ -251,22 +294,74 @@ def _encode_room_name(name):
 
 
 def _udp_broadcast_loop():
+    """Broadcast a discovery beacon on every real LAN interface.
+
+    One UDP socket is created *and bound* to each interface so the OS is
+    forced to transmit out that specific NIC instead of guessing.  From each
+    socket we send to both the /24 directed broadcast (e.g. 192.168.0.255)
+    and 255.255.255.255 — the first is what home routers propagate; the second
+    is a belt-and-suspenders fallback.  The beacon embeds the interface's own
+    IP so joiners know which address to TCP-connect to.
+
+    Message format (unchanged, backward-compatible with existing client):
+        HERO_FIGHTING_LOBBY:<ip>:<port>:<url-encoded room name>
+    """
     global _udp_broadcaster_running
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    local_ip = _get_local_ip()
-    # Format: HERO_FIGHTING_LOBBY:<ip>:<port>:<url-encoded room name>
-    # The room-name field is appended last and percent-encoded so older parsers
-    # (which only read ip/port) still work, and ':' in a name can't break it.
-    msg = f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}:{_encode_room_name(_room_name)}"
-    print(f"[SERVER UDP] Broadcasting presence: {msg}")
-    while _udp_broadcaster_running:
+    encoded_name = _encode_room_name(_room_name)
+
+    # --- Build one (socket, beacon_bytes, directed_bcast) per interface ---
+    targets = _get_all_broadcast_targets()
+    if not targets:
+        local_ip = _get_local_ip()
+        prefix = local_ip.rsplit('.', 1)[0]
+        targets = [(local_ip, prefix + '.255')]   # should never happen
+
+    iface_sockets = []   # list of (socket, beacon_bytes, directed_bcast_str)
+    summary_parts  = []
+
+    for local_ip, directed_bcast in targets:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         try:
-            sock.sendto(msg.encode('utf-8'), ('255.255.255.255', UDP_PORT))
+            s.bind((local_ip, 0))   # pin this socket to the specific NIC
+        except Exception as e:
+            print(f"[SERVER UDP] Cannot bind to {local_ip}: {e} — skipping")
+            s.close()
+            continue
+        beacon = (
+            f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}:{encoded_name}"
+        ).encode('utf-8')
+        iface_sockets.append((s, beacon, directed_bcast))
+        summary_parts.append(f"{local_ip} → [{directed_bcast}, 255.255.255.255]")
+
+    if not iface_sockets:
+        # absolute last resort — old unbound single-socket behaviour
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        local_ip = _get_local_ip()
+        beacon = (
+            f"HERO_FIGHTING_LOBBY:{local_ip}:{_bound_port}:{encoded_name}"
+        ).encode('utf-8')
+        iface_sockets.append((s, beacon, '255.255.255.255'))
+        summary_parts.append(f"{local_ip} → [255.255.255.255] (fallback)")
+
+    print(f"[SERVER UDP] Broadcasting on interfaces: {', '.join(summary_parts)}")
+
+    # --- Broadcast loop ---
+    while _udp_broadcaster_running:
+        for s, beacon, directed_bcast in iface_sockets:
+            for dest in (directed_bcast, '255.255.255.255'):
+                try:
+                    s.sendto(beacon, (dest, UDP_PORT))
+                except Exception:
+                    pass
+        time.sleep(1.5)
+
+    for s, _, _ in iface_sockets:
+        try:
+            s.close()
         except Exception:
             pass
-        time.sleep(1.5)
-    sock.close()
 
 def start_udp_broadcast():
     global _udp_broadcaster_thread, _udp_broadcaster_running

@@ -2963,7 +2963,7 @@ def _mp_text(text, size, color, cy):
     return rect
 
 
-def prompt_room_name(default_name="", max_chars=16):
+def prompt_room_name(default_name="", max_chars=14):
     """Ask the host for a room name using the reusable TextInputField. Returns the
     typed name, or None if the player cancelled (ESC / Cancel button)."""
     from text_input_field import TextInputField
@@ -3296,7 +3296,7 @@ def multiplayer_menu(notice=None):
 
                 # Text inside: show the broadcast room name (falls back to
                 # "Game ip:port" when the host didn't set one), then the address.
-                label = f"{name} - {ip}:{port}"
+                label = f"{name} - {ip}:"#{port}"
                 room_text = global_vars.get_font(22).render(label, global_vars.TEXT_ANTI_ALIASING, text_color)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75
@@ -3318,8 +3318,8 @@ def multiplayer_menu(notice=None):
 
 
 
-def wait_screen(condition_func, text="Waiting for something...", background=None):
-    wait_font = global_vars.get_font(25)
+def wait_screen(condition_func, text="Waiting for something...", background=None, font=25):
+    wait_font = global_vars.get_font(font)
     while not condition_func():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -3786,11 +3786,12 @@ def player_selection(net_client=None):
         if map_choose:
             # ── Phase 2: LAN P2 waits for host map selection ──
             if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2:
-                waiting_font = global_vars.get_font(40)
+                # waiting_font = global_vars.get_font(40)
                 result = wait_screen(
                     condition_func=lambda: global_vars.active_net_client.map_selected is not None,
                     text="Waiting for host to select map...",
-                    background=background
+                    background=background,
+                    font=40
                 )
 
                 if result == 'opponent_left':

@@ -376,10 +376,13 @@ class Attacks:
         # Include the ongoing pause duration so the clock is fully frozen while paused.
         # Without this, PAUSED_TOTAL_DURATION doesn't update until unpause, causing
         # the cooldown to keep ticking down during pause and then jump back on resume.
-        if global_vars.PAUSED and global_vars.PAUSED_START is not None:
-            paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
+        if global_vars.active_net_client is None: # Only apply pause logic for local player, not bots or remote clients
+            if global_vars.PAUSED and global_vars.PAUSED_START is not None:
+                paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
+
         effective_now = pygame.time.get_ticks() - paused_total
         effective_last = self._last_used_time - self._last_used_paused_total
+        # print(effective_now - effective_last)
         return effective_now - effective_last
 
     def is_ready(self):

@@ -792,6 +792,7 @@ NET_STATE_TICK_HZ = 30
 NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
 
 def serialize_hero(h):
+
     """Snapshot the crucial, host-authoritative state of one hero.
     
     Synced variables (see serialize_hero_guide.md for full breakdown):
@@ -809,42 +810,96 @@ def serialize_hero(h):
     - damage_numbers, white bars (cosmetic, computed locally)
     """
     return {
-        # ── Core Resources ──
-        'health': h.health, 'mana': h.mana, 'special': h.special, 'temp_hp': h.temp_hp,
-        'max_health': h.max_health, 'max_mana': h.max_mana,
+        # ─────────────────────────────
+        # Core Resources
+        # ─────────────────────────────
+        'health': h.health,
+        'mana': h.mana,
+        'special': h.special,
+        'temp_hp': h.temp_hp,
+
+        'max_health': h.max_health,
+        'max_mana': h.max_mana,
         'max_temp_hp': getattr(h, 'max_temp_hp', 0),
 
-        # ── Position & Movement ──
+        # smooth UI bars
+        'white_health_p1': getattr(h, 'white_health_p1', h.health),
+        'white_health_p2': getattr(h, 'white_health_p2', h.health),
+
+        'white_mana_p1': getattr(h, 'white_mana_p1', h.mana),
+        'white_mana_p2': getattr(h, 'white_mana_p2', h.mana),
+
+        # ─────────────────────────────
+        # Position & Movement
+        # ─────────────────────────────
         'x': h.x_pos,
         'y': h.y_pos,
         'yv': h.y_velocity,
-        'jump': h.jumping, 'facing_right': h.facing_right,
+
+        'jump': h.jumping,
         'running': h.running,
+        'facing_right': h.facing_right,
+
         'speed': h.speed,
         'speed_multiplier': getattr(h, 'speed_multiplier', 1.0),
 
-        # ── Status Effects ──
-        'frozen': h.frozen, 'rooted': h.rooted,
-        'slowed': h.slowed, 'slow_speed': h.slow_speed,
-        'silenced': h.silenced, 'stunned': h.stunned,
-        'hasted': getattr(h, 'hasted', None), 
-        'flying': getattr(h, 'flying', None),
-        'invisible': getattr(h, 'invisible', None),
+        # ─────────────────────────────
+        # Status Effects
+        # ─────────────────────────────
+        'frozen': h.frozen,
+        'rooted': h.rooted,
 
-        # ── Attacking States ──
-        'attacking1': h.attacking1, 'attacking2': h.attacking2, 'attacking3': h.attacking3,
-        'attacking4': h.sp_attacking, 'basic_attacking': h.basic_attacking,
+        'slowed': h.slowed,
+        'slow_speed': h.slow_speed,
+
+        'silenced': h.silenced,
+        'stunned': h.stunned,
+
+        'hasted': getattr(h, 'hasted', False),
+        'flying': getattr(h, 'flying', False),
+        'invisible': getattr(h, 'invisible', False),
+
+        # ─────────────────────────────
+        # Attack States
+        # ─────────────────────────────
+        'attacking1': h.attacking1,
+        'attacking2': h.attacking2,
+        'attacking3': h.attacking3,
+
+        'attacking4': h.sp_attacking,
+        'basic_attacking': h.basic_attacking,
+
         'special_active': h.special_active,
 
-        # ── Items/Abilities ──
-        'immortality_activated': h.immortality_activated, 'immortality_duration': h.immortality_duration,
+        # animation sync
+        'animation_done': getattr(h, 'animation_done', False),
 
-        # ── Cooldowns ──
-        'skills_cd': {i: skill.get_skill_cooldown() for i, skill in enumerate(h.attacks)},
-        'special_skills_cd': {i: skill.get_skill_cooldown() for i, skill in enumerate(h.attacks_special)},
+        # death sync
+        'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
+
+        # ─────────────────────────────
+        # Immortality
+        # ─────────────────────────────
+        'immortality_activated': h.immortality_activated,
+        'immortality_duration': h.immortality_duration,
+
+        # ─────────────────────────────
+        # Cooldowns
+        # ─────────────────────────────
+        'skills_cd': [
+            skill.get_skill_cooldown()
+            for skill in h.attacks
+        ],
+
+        'special_skills_cd': [
+            skill.get_skill_cooldown()
+            for skill in h.attacks_special
+        ],
     }
 
 def apply_hero_state(h, s, x=None, y=None):
+    """Apply a serialized hero state snapshot to a live hero object."""
+    
     """owner's note:
     - sets the hero (h) its current state and position based on what its current state as
     seen on the host client.
@@ -865,47 +920,97 @@ def apply_hero_state(h, s, x=None, y=None):
     # instead of raising KeyError and desyncing/crashing the non-host client.
 
     # ── Core Resources ──
-    h.health = s.get('health', h.health); h.mana = s.get('mana', h.mana)
-    h.special = s.get('special', h.special); h.temp_hp = s.get('temp_hp', h.temp_hp)
-    h.max_health = s.get('max_health', h.max_health); h.max_mana = s.get('max_mana', h.max_mana)
-    h.max_temp_hp = s.get('max_temp_hp', getattr(h, 'max_temp_hp', 0))
+    h.health = s['health']
+    h.mana = s['mana']
+    h.special = s['special']
+    h.temp_hp = s['temp_hp']
+    h.max_health = s['max_health']
+    h.max_mana = s['max_mana']
+    if hasattr(h, 'max_temp_hp'):
+        h.max_temp_hp = s.get('max_temp_hp', 0)
+    # smooth UI bars
+    if hasattr(h, 'white_health_p1'):
+        h.white_health_p1 = s.get('white_health_p1', h.white_health_p1)
+
+    if hasattr(h, 'white_health_p2'):
+        h.white_health_p2 = s.get('white_health_p2', h.white_health_p2)
+
+    if hasattr(h, 'white_mana_p1'):
+        h.white_mana_p1 = s.get('white_mana_p1', h.white_mana_p1)
+
+    if hasattr(h, 'white_mana_p2'):
+        h.white_mana_p2 = s.get('white_mana_p2', h.white_mana_p2)
 
     # ── Position & Movement ──
-    h.x_pos = s.get('x', h.x_pos) if x is None else x
-    h.y_pos = s.get('y', h.y_pos) if y is None else y
-    h.y_velocity = s.get('yv', h.y_velocity)
-    h.jumping = s.get('jump', h.jumping); h.facing_right = s.get('facing_right', h.facing_right)
-    h.running = s.get('running', h.running)
-    h.speed = s.get('speed', h.speed)
-    h.speed_multiplier = s.get('speed_multiplier', getattr(h, 'speed_multiplier', 1.0))
+    h.x_pos = x if x is not None else s['x']
+    h.y_pos = y if y is not None else s['y']
+    h.y_velocity = s['yv']
+    h.jumping = s['jump']
+    h.facing_right = s['facing_right']
+    h.running = s['running']
+    h.speed = s['speed']
+    if hasattr(h, 'speed_multiplier'):
+        h.speed_multiplier = s.get('speed_multiplier', 1.0)
 
     # ── Status Effects ──
-    h.frozen = s.get('frozen', h.frozen); h.rooted = s.get('rooted', h.rooted)
-    h.slowed = s.get('slowed', h.slowed); h.slow_speed = s.get('slow_speed', h.slow_speed)
-    h.silenced = s.get('silenced', h.silenced); h.stunned = s.get('stunned', h.stunned)
-    if hasattr(h, 'hasted') and 'hasted' in s: h.hasted = s['hasted']
-    if hasattr(h, 'flying') and 'flying' in s: h.flying = s['flying']
-    if hasattr(h, 'invisible') and 'invisible' in s: h.invisible = s['invisible']
+    h.frozen = s['frozen']
+    h.rooted = s['rooted']
+    h.slowed = s['slowed']
+    h.slow_speed = s['slow_speed']
+    h.silenced = s['silenced']
+    h.stunned = s['stunned']
+    if hasattr(h, 'hasted'):
+        h.hasted = s.get('hasted', None)
+    if hasattr(h, 'flying'):
+        h.flying = s.get('flying', None)
+    if hasattr(h, 'invisible'):
+        h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
-    h.attacking1 = s.get('attacking1', h.attacking1); h.attacking2 = s.get('attacking2', h.attacking2)
-    h.attacking3 = s.get('attacking3', h.attacking3)
-    h.sp_attacking = s.get('attacking4', h.sp_attacking); h.basic_attacking = s.get('basic_attacking', h.basic_attacking)
-    h.special_active = s.get('special_active', h.special_active)
+    h.attacking1 = s['attacking1']
+    h.attacking2 = s['attacking2']
+    h.attacking3 = s['attacking3']
+    h.sp_attacking = s['attacking4']
+    h.basic_attacking = s['basic_attacking']
+    h.special_active = s['special_active']
+    if hasattr(h, 'animation_done'):
+        h.animation_done = s.get('animation_done', h.animation_done)
+    if s.get('dead', False):
+        h.health = 0
+    h.player_atk1_index = s['atk1_idx']
+    h.player_atk2_index = s['atk2_idx']
+    h.player_atk3_index = s['atk3_idx']
+    h.player_sp_index = s['sp_idx']
+    h.player_basic_attack_index = s['basic_idx']
+    h.player_atk1_index_flipped = s['atk1_idx_flipped']
+    h.player_atk2_index_flipped = s['atk2_idx_flipped']
+    h.player_atk3_index_flipped = s['atk3_idx_flipped']
+    h.player_sp_index_flipped = s['sp_idx_flipped']
+    h.player_basic_attack_index_flipped = s['basic_idx_flipped']
+    h.player_jump_index = s['jump_idx']
+    h.player_jump_index_flipped = s['jump_idx_flipped']
+    h.player_run_index = s['run_idx']
+    h.player_run_index_flipped = s['run_idx_flipped']
+    h.player_death_index = s['death_idx']
+    h.player_death_index_flipped = s['death_idx_flipped']
+    h.player_fly_index = s['fly_idx']
+    h.player_fly_index_flipped = s['fly_idx_flipped']
+    h.player_surf_index = s['surf_idx']
+    h.player_surf_index_flipped = s['surf_idx_flipped']
+    h.player_atk1_2nd_index = s['atk1_idx_2nd']
+    h.player_atk1_2nd_index_flipped = s['atk1_idx_2nd_flipped']
+    h.last_atk_time = s['last_atk_time']
 
     # ── Items/Abilities ──
-    h.immortality_activated = s.get('immortality_activated', h.immortality_activated)
-    h.immortality_duration = s.get('immortality_duration', h.immortality_duration)
+    h.immortality_activated = s['immortality_activated']
+    h.immortality_duration = s['immortality_duration']
 
-    # ── Cooldowns (display only on P2) ──
-    for skill_idx, cd_time in s.get('skills_cd', {}).items():
-        idx = int(skill_idx)
-        if 0 <= idx < len(h.attacks):
-            h.attacks[idx].remaining_ms = cd_time
-    for skill_idx, cd_time in s.get('special_skills_cd', {}).items():
-        idx = int(skill_idx)
-        if 0 <= idx < len(h.attacks_special):
-            h.attacks_special[idx].remaining_ms = cd_time
+    # ── Cooldowns ──
+    for i, cd in enumerate(s.get('skills_cd', [])):
+        h.attacks[i].remaining_ms = cd
+
+    for i, cd in enumerate(s.get('special_skills_cd', [])):
+        h.attacks_special[i].remaining_ms = cd
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
@@ -1064,7 +1169,8 @@ def game(bg=None, net_client=None):
 
         for event in main.pygame.event.get():
             if event.type == main.pygame.QUIT:
-                global_vars.active_net_client.disconnect()
+                if global_vars.active_net_client is not None:
+                    global_vars.active_net_client.disconnect()
                 main.pygame.quit()
                 exit()
 
@@ -1667,7 +1773,7 @@ restart_game = ImageButton(
 in_game_settings_button = ImageButton(
     image_path=text_box_img,
     pos=(width/2-(width*0.075), height*0.575),
-    scale=scale*0.8,
+    scale=0.8,
     text='Settings',
     font_path=r'assets\font\slkscr.ttf',  # or any other font path
     font_size=font_size*0.8,  # dynamic size ~29 at 720p

@@ -342,6 +342,15 @@ class Player(pygame.sprite.Sprite):
         self.player_death_index = 0
         self.player_death_index_flipped = 0
 
+        self.player_fly_index = 0
+        self.player_fly_index_flipped = 0
+
+        self.player_surf_index = 0
+        self.player_surf_index_flipped = 0
+        
+        self.player_atk1_2nd_index = 0
+        self.player_atk1_2nd_index_flipped = 0
+
         # Player Attacking States
         self.attacking1 = False
         self.attacking2 = False

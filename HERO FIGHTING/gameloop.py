@@ -882,7 +882,7 @@ def serialize_hero(h):
         'atk2_idx': h.player_atk2_index,
         'atk3_idx': h.player_atk3_index,
         'sp_idx': h.player_sp_index,
-        'basic_idx': h.player_basic_attack_index,
+        'basic_idx': h.player_basic_index,
 
         'atk1_idx_flipped': h.player_atk1_index_flipped,
         'atk2_idx_flipped': h.player_atk2_index_flipped,
@@ -1017,7 +1017,7 @@ def apply_hero_state(h, s, x=None, y=None):
     h.player_atk2_index = s['atk2_idx']
     h.player_atk3_index = s['atk3_idx']
     h.player_sp_index = s['sp_idx']
-    h.player_basic_attack_index = s['basic_idx']
+    h.player_basic_index = s['basic_idx']
     h.player_atk1_index_flipped = s['atk1_idx_flipped']
     h.player_atk2_index_flipped = s['atk2_idx_flipped']
     h.player_atk3_index_flipped = s['atk3_idx_flipped']

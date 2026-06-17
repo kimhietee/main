@@ -252,7 +252,7 @@ def _udp_listen_loop():
                     # Key by ip:port so two hosts on the same machine (different
                     # ports) show up as two distinct rooms instead of colliding.
                     key = f"{ip}:{port}"
-                    server_name = room_name if room_name else f"Game {ip}:{port}"
+                    server_name = room_name if room_name else f"My Room"
                     with discovered_servers_lock:
                         discovered_servers[key] = (server_name, ip, port, time.time())
         except socket.timeout:

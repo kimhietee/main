@@ -871,47 +871,47 @@ def serialize_hero(h):
 
         'special_active': h.special_active,
 
-        # animation sync
-        'animation_done': getattr(h, 'animation_done', False),
+        # # animation sync
+        # 'animation_done': getattr(h, 'animation_done', False),
 
-        # ─────────────────────────────
-        # Animation Sync
-        # ─────────────────────────────
+        # # ─────────────────────────────
+        # # Animation Sync
+        # # ─────────────────────────────
 
-        'atk1_idx': h.player_atk1_index,
-        'atk2_idx': h.player_atk2_index,
-        'atk3_idx': h.player_atk3_index,
-        'sp_idx': h.player_sp_index,
-        'basic_idx': h.player_basic_index,
+        # 'atk1_idx': h.player_atk1_index,
+        # 'atk2_idx': h.player_atk2_index,
+        # 'atk3_idx': h.player_atk3_index,
+        # 'sp_idx': h.player_sp_index,
+        # 'basic_idx': h.player_basic_index,
 
-        'atk1_idx_flipped': h.player_atk1_index_flipped,
-        'atk2_idx_flipped': h.player_atk2_index_flipped,
-        'atk3_idx_flipped': h.player_atk3_index_flipped,
-        'sp_idx_flipped': h.player_sp_index_flipped,
-        'basic_idx_flipped': h.player_basic_index_flipped,
+        # 'atk1_idx_flipped': h.player_atk1_index_flipped,
+        # 'atk2_idx_flipped': h.player_atk2_index_flipped,
+        # 'atk3_idx_flipped': h.player_atk3_index_flipped,
+        # 'sp_idx_flipped': h.player_sp_index_flipped,
+        # 'basic_idx_flipped': h.player_basic_index_flipped,
 
-        'jump_idx': h.player_jump_index,
-        'jump_idx_flipped': h.player_jump_index_flipped,
+        # 'jump_idx': h.player_jump_index,
+        # 'jump_idx_flipped': h.player_jump_index_flipped,
 
-        'run_idx': h.player_run_index,
-        'run_idx_flipped': h.player_run_index_flipped,
+        # 'run_idx': h.player_run_index,
+        # 'run_idx_flipped': h.player_run_index_flipped,
 
-        'death_idx': h.player_death_index,
-        'death_idx_flipped': h.player_death_index_flipped,
+        # 'death_idx': h.player_death_index,
+        # 'death_idx_flipped': h.player_death_index_flipped,
 
-        'fly_idx': h.player_fly_index,
-        'fly_idx_flipped': h.player_fly_index_flipped,
+        # 'fly_idx': h.player_fly_index,
+        # 'fly_idx_flipped': h.player_fly_index_flipped,
 
-        'surf_idx': h.player_surf_index,
-        'surf_idx_flipped': h.player_surf_index_flipped,
+        # 'surf_idx': h.player_surf_index,
+        # 'surf_idx_flipped': h.player_surf_index_flipped,
 
-        'atk1_idx_2nd': h.player_atk1_2nd_index,
-        'atk1_idx_2nd_flipped': h.player_atk1_2nd_index_flipped,
+        # 'atk1_idx_2nd': h.player_atk1_2nd_index,
+        # 'atk1_idx_2nd_flipped': h.player_atk1_2nd_index_flipped,
 
-        'last_atk_time': getattr(h, 'last_atk_time', 0),
+        # 'last_atk_time': getattr(h, 'last_atk_time', 0),
 
-        # death sync
-        'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
+        # # death sync
+        # 'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
 
         # ─────────────────────────────
         # Immortality
@@ -1003,39 +1003,39 @@ def apply_hero_state(h, s, x=None, y=None):
         h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
-    h.attacking1 = s['attacking1']
-    h.attacking2 = s['attacking2']
-    h.attacking3 = s['attacking3']
-    h.sp_attacking = s['attacking4']
-    h.basic_attacking = s['basic_attacking']
-    h.special_active = s['special_active']
-    if hasattr(h, 'animation_done'):
-        h.animation_done = s.get('animation_done', h.animation_done)
-    if s.get('dead', False):
-        h.health = 0
-    h.player_atk1_index = s['atk1_idx']
-    h.player_atk2_index = s['atk2_idx']
-    h.player_atk3_index = s['atk3_idx']
-    h.player_sp_index = s['sp_idx']
-    h.player_basic_index = s['basic_idx']
-    h.player_atk1_index_flipped = s['atk1_idx_flipped']
-    h.player_atk2_index_flipped = s['atk2_idx_flipped']
-    h.player_atk3_index_flipped = s['atk3_idx_flipped']
-    h.player_sp_index_flipped = s['sp_idx_flipped']
-    h.player_basic_index_flipped = s['basic_idx_flipped']
-    h.player_jump_index = s['jump_idx']
-    h.player_jump_index_flipped = s['jump_idx_flipped']
-    h.player_run_index = s['run_idx']
-    h.player_run_index_flipped = s['run_idx_flipped']
-    h.player_death_index = s['death_idx']
-    h.player_death_index_flipped = s['death_idx_flipped']
-    h.player_fly_index = s['fly_idx']
-    h.player_fly_index_flipped = s['fly_idx_flipped']
-    h.player_surf_index = s['surf_idx']
-    h.player_surf_index_flipped = s['surf_idx_flipped']
-    h.player_atk1_2nd_index = s['atk1_idx_2nd']
-    h.player_atk1_2nd_index_flipped = s['atk1_idx_2nd_flipped']
-    h.last_atk_time = s['last_atk_time']
+    # h.attacking1 = s['attacking1']
+    # h.attacking2 = s['attacking2']
+    # h.attacking3 = s['attacking3']
+    # h.sp_attacking = s['attacking4']
+    # h.basic_attacking = s['basic_attacking']
+    # h.special_active = s['special_active']
+    # if hasattr(h, 'animation_done'):
+    #     h.animation_done = s.get('animation_done', h.animation_done)
+    # if s.get('dead', False):
+    #     h.health = 0
+    # h.player_atk1_index = s['atk1_idx']
+    # h.player_atk2_index = s['atk2_idx']
+    # h.player_atk3_index = s['atk3_idx']
+    # h.player_sp_index = s['sp_idx']
+    # h.player_basic_index = s['basic_idx']
+    # h.player_atk1_index_flipped = s['atk1_idx_flipped']
+    # h.player_atk2_index_flipped = s['atk2_idx_flipped']
+    # h.player_atk3_index_flipped = s['atk3_idx_flipped']
+    # h.player_sp_index_flipped = s['sp_idx_flipped']
+    # h.player_basic_index_flipped = s['basic_idx_flipped']
+    # h.player_jump_index = s['jump_idx']
+    # h.player_jump_index_flipped = s['jump_idx_flipped']
+    # h.player_run_index = s['run_idx']
+    # h.player_run_index_flipped = s['run_idx_flipped']
+    # h.player_death_index = s['death_idx']
+    # h.player_death_index_flipped = s['death_idx_flipped']
+    # h.player_fly_index = s['fly_idx']
+    # h.player_fly_index_flipped = s['fly_idx_flipped']
+    # h.player_surf_index = s['surf_idx']
+    # h.player_surf_index_flipped = s['surf_idx_flipped']
+    # h.player_atk1_2nd_index = s['atk1_idx_2nd']
+    # h.player_atk1_2nd_index_flipped = s['atk1_idx_2nd_flipped']
+    # h.last_atk_time = s['last_atk_time']
 
     # ── Items/Abilities ──
     h.immortality_activated = s['immortality_activated']

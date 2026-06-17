@@ -874,6 +874,42 @@ def serialize_hero(h):
         # animation sync
         'animation_done': getattr(h, 'animation_done', False),
 
+        # ─────────────────────────────
+        # Animation Sync
+        # ─────────────────────────────
+
+        'atk1_idx': h.player_atk1_index,
+        'atk2_idx': h.player_atk2_index,
+        'atk3_idx': h.player_atk3_index,
+        'sp_idx': h.player_sp_index,
+        'basic_idx': h.player_basic_attack_index,
+
+        'atk1_idx_flipped': h.player_atk1_index_flipped,
+        'atk2_idx_flipped': h.player_atk2_index_flipped,
+        'atk3_idx_flipped': h.player_atk3_index_flipped,
+        'sp_idx_flipped': h.player_sp_index_flipped,
+        'basic_idx_flipped': h.player_basic_attack_index_flipped,
+
+        'jump_idx': h.player_jump_index,
+        'jump_idx_flipped': h.player_jump_index_flipped,
+
+        'run_idx': h.player_run_index,
+        'run_idx_flipped': h.player_run_index_flipped,
+
+        'death_idx': h.player_death_index,
+        'death_idx_flipped': h.player_death_index_flipped,
+
+        'fly_idx': h.player_fly_index,
+        'fly_idx_flipped': h.player_fly_index_flipped,
+
+        'surf_idx': h.player_surf_index,
+        'surf_idx_flipped': h.player_surf_index_flipped,
+
+        'atk1_idx_2nd': h.player_atk1_2nd_index,
+        'atk1_idx_2nd_flipped': h.player_atk1_2nd_index_flipped,
+
+        'last_atk_time': getattr(h, 'last_atk_time', 0),
+
         # death sync
         'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
 
@@ -1006,11 +1042,25 @@ def apply_hero_state(h, s, x=None, y=None):
     h.immortality_duration = s['immortality_duration']
 
     # ── Cooldowns ──
+    now = pygame.time.get_ticks()
+
     for i, cd in enumerate(s.get('skills_cd', [])):
-        h.attacks[i].remaining_ms = cd
+        if i < len(h.attacks):
+            skill = h.attacks[i]
+
+            elapsed = max(0, skill.cooldown - int(cd))
+
+            skill.last_used_time = now - elapsed
+            skill.remaining_ms = cd
 
     for i, cd in enumerate(s.get('special_skills_cd', [])):
-        h.attacks_special[i].remaining_ms = cd
+        if i < len(h.attacks_special):
+            skill = h.attacks_special[i]
+
+            elapsed = max(0, skill.cooldown - int(cd))
+
+            skill.last_used_time = now - elapsed
+            skill.remaining_ms = cd
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.

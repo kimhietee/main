@@ -1971,6 +1971,9 @@ def menu():
 
             if keys[pygame.K_SPACE]:
                 main.player_selection()
+
+            if keys[pygame.K_KP_ENTER]:
+                main.multiplayer_menu()
                 
             if keys[pygame.K_r]:
                 main.player_selection()
@@ -3379,6 +3382,8 @@ def main_menu():
                 if play_button.is_clicked(event.pos):
                     return
             if keys[pygame.K_RETURN]:
+                return
+            if keys[pygame.K_KP_ENTER]:
                 return
 
         # main.screen.blit(background, (0, 0))

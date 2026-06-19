@@ -3296,7 +3296,7 @@ def multiplayer_menu(notice=None):
 
                 # Text inside: show the broadcast room name (falls back to
                 # "Game ip:port" when the host didn't set one), then the address.
-                label = f"{name} - {ip}:"#{port}"
+                label = f"{name} - {ip}"#:{port}"
                 room_text = global_vars.get_font(22).render(label, global_vars.TEXT_ANTI_ALIASING, text_color)
                 screen.blit(room_text, (btn_rect.x + 20, btn_rect.centery - room_text.get_height() // 2))
                 room_y += 75

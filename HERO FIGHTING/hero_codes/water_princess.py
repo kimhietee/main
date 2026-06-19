@@ -233,13 +233,13 @@ class Water_Princess(Player):
         self.sound_3 = pygame.mixer.Sound(resource_path('assets/sound effects/water princess/water-splash-02-352021.mp3')) # splash flowing deep
 
         self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.7 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
         self.sp_sound.set_volume(0.9 * global_vars.MAIN_VOLUME)
         
-        self.sound_1.set_volume(0.7 * global_vars.MAIN_VOLUME)
-        self.sound_2.set_volume(0.7 * global_vars.MAIN_VOLUME)
-        self.sound_2.set_volume(0.6 * global_vars.MAIN_VOLUME)
+        self.sound_1.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sound_2.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sound_2.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source
         # atk1 = [r'', WATER_PRINCESS_ATK1, 1]

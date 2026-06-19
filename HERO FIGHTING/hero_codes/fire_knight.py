@@ -228,13 +228,13 @@ class Fire_Knight(Player):
         self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/2nd.mp3'))
         self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/3rrd.mp3'))
         self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/ult.mp3'))
-        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
         self.burn_sound = pygame.mixer.Sound(resource_path('assets/sound effects/fire_wizard/fire-sound-310285-[AudioTrimmer.com].mp3'))
-        self.burn_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.burn_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]

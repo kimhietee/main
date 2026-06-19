@@ -122,10 +122,10 @@ class Fire_Wizard(Player):
         }
 
         # Sound Effects
-        sound1 = [resource_path(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3'), 0.5]
-        sound2 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3'), 0.1]
-        sound3 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3'), 0.5]
-        sound4 = [resource_path(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3'), 0.5]
+        sound1 = [resource_path(r'assets\sound effects\fire_wizard\short-fire-whoosh_1-317280-[AudioTrimmer.com].mp3'), 0.8]
+        sound2 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-efftect-21991.mp3'), 0.5]
+        sound3 = [resource_path(r'assets\sound effects\fire_wizard\fire-sound-310285-[AudioTrimmer.com].mp3'), 0.8]
+        sound4 = [resource_path(r'assets\sound effects\fire_wizard\052168_huge-explosion-85199.mp3'), 0.7]
         
         self.atk1_sound = self.load_sound(sound1[0])
         self.atk2_sound = self.load_sound(sound2[0])
@@ -599,6 +599,133 @@ class Fire_Wizard(Player):
             if self.special >= MAX_SPECIAL:
                 self.special_active = True
                 self.special_sound.play()
+
+    def _trigger_attack_display_for_p2(self):
+        """Spawns visual-only Attack_Display on the non-host client (P2) when
+        apply_hero_state() detects a skill-start (False→True) transition.
+
+        Rules:
+        - dmg=0, final_dmg=0, disable_collide=True  →  purely cosmetic.
+        - Mana / cooldowns are NOT touched here; the host snapshot owns those.
+        - _p2_atk_just_triggered values: 1=atk1, 2=atk2, 3=atk3, 4=sp(atk4), 5=basic
+        """
+        import random as _rand
+        sk = getattr(self, '_p2_atk_just_triggered', 0)
+        if sk == 0:
+            return
+
+        _vis = dict(dmg=0, final_dmg=0, disable_collide=True,
+                    who_attacks=self, who_attacked=self.enemy)
+
+        if sk == 1:
+            if not self.special_active:
+                attack_display.add(Attack_Display(
+                    x=self.attack_position(self.rect, 'x', -self.fireball_cast_range, True),
+                    y=self.attack_position(self.rect, 'y', 30, False),
+                    frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
+                    frame_duration=self.fireball_frame_duration, repeat_animation=1,
+                    speed=self.fireball_speed if self.facing_right else -self.fireball_speed,
+                    moving=True, delay=(True, 800),
+                    sound=(True, self.atk1_sound, None, None),
+                    hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                    hitbox_scale_y=self.fireball_hitbox_size_modifier,
+                    **_vis))
+            else:
+                for i, x_off in enumerate(self.special_fireball_offsets):
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', -x_off, True),
+                        y=self.rect.centery - _rand.randint(-50, 50),
+                        frames=self.attack_frame_count(self.atk1, self.atk1_flipped),
+                        frame_duration=self.fireball_frame_duration, repeat_animation=1,
+                        speed=self.special_fireball_speed if self.facing_right else -self.special_fireball_speed,
+                        moving=True,
+                        sound=(True, self.atk1_sound, None, None),
+                        delay=(True, 750 + i * self.special_fire_delay_interval),
+                        hitbox_scale_x=self.fireball_hitbox_size_modifier,
+                        hitbox_scale_y=self.fireball_hitbox_size_modifier,
+                        **_vis))
+
+        elif sk == 2:
+            if not self.special_active:
+                for i in self.fire_count:
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', i, True),
+                        y=self.attack_position(self.rect, 'y', 30, False),
+                        frames=self.attack_frame_count(self.atk2),
+                        frame_duration=self.fire_duration / len(self.atk2),
+                        repeat_animation=self.fire_repeat_default,
+                        speed=5 if self.facing_right else -5,
+                        delay=(True, 800),
+                        sound=(True, self.atk2_sound, None, None),
+                        **_vis))
+            else:
+                for i in self.special_fire_count:
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', i, True),
+                        y=self.attack_position(self.rect, 'y', 30, False),
+                        frames=self.attack_frame_count(self.atk2),
+                        frame_duration=self.special_fire_duration / len(self.atk2),
+                        repeat_animation=self.fire_repeat_default,
+                        delay=(True, 800),
+                        **_vis))
+                self.atk2_sound.play()
+
+        elif sk == 3:
+            if not self.special_active:
+                attack_display.add(Attack_Display(
+                    x=self.attack_position(self.rect, 'x', self.fire_spire_cast_range, True),
+                    y=self.attack_position(self.rect, 'y', 30, False),
+                    frames=self.attack_frame_count(self.atk3),
+                    frame_duration=self.fire_spire_frame_duration, repeat_animation=1,
+                    speed=0.5 if self.facing_right else -0.5,
+                    delay=(True, 800),
+                    sound=(True, self.atk3_sound, None, None),
+                    **_vis))
+            else:
+                attack_display.add(Attack_Display(
+                    x=self.attack_position(self.rect, 'x', self.fire_spire_cast_range, True),
+                    y=self.attack_position(self.rect, 'y', 30, False),
+                    frames=self.attack_frame_count(self.atk3),
+                    frame_duration=self.fire_spire_frame_duration,
+                    repeat_animation=self.fire_spire_repeat,
+                    speed=self.fire_spire_speed if self.facing_right else -self.fire_spire_speed,
+                    moving=True,
+                    sound=(True, self.atk3_sound, None, None),
+                    delay=(True, 800),
+                    **_vis))
+
+        elif sk == 4:
+            if not self.special_active:
+                attack_display.add(Attack_Display(
+                    x=self.attack_position(self.rect, 'x', self.fireblast_cast_range, True),
+                    y=self.attack_position(self.rect, 'y', -100, False),
+                    frames=self.attack_frame_count(self.sp),
+                    frame_duration=80, repeat_animation=1,
+                    speed=5 if self.facing_right else -5,
+                    sound=(True, self.sp_sound, None, None),
+                    **_vis))
+            else:
+                for i in self.fire_blast_count:
+                    attack_display.add(Attack_Display(
+                        x=self.attack_position(self.rect, 'x', i, True),
+                        y=self.attack_position(self.rect, 'y', -100, False),
+                        frames=self.attack_frame_count(self.sp),
+                        frame_duration=80, repeat_animation=1,
+                        speed=5 if self.facing_right else -5,
+                        sound=(True, self.sp_sound, None, None),
+                        **_vis))
+
+        elif sk == 5:
+            for i in [200, 900]:
+                attack_display.add(Attack_Display(
+                    x=self.attack_position(self.rect, 'x', 40, True),
+                    y=self.attack_position(self.rect, 'y', 40, False),
+                    frames=self.attack_frame_count(self.basic_slash, self.basic_slash_flipped),
+                    frame_duration=BASIC_FRAME_DURATION, repeat_animation=1,
+                    speed=0, moving=True,
+                    delay=(True, self.calculate_attack_delay(i)),
+                    sound=(True, self.basic_sound, None, None),
+                    **_vis))
 
     def update(self):
         if not self.is_dead():

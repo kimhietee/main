@@ -249,18 +249,18 @@ class Wind_Hashashin(Player):
         self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/2nd.mp3'))
         self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/3rd.mp3'))
         self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/4th 1, slash.mp3'))
-        self.atk1_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.6 * global_vars.MAIN_VOLUME)
         
         self.x_slash_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/x slash 2nd,3rd, 4th.mp3'))
         self.sp_sound2 = pygame.mixer.Sound(resource_path('assets/sound effects/wind hashashin/4th 2, flesh hit.mp3'))
-        self.x_slash_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
-        self.sp_sound2.set_volume(0.4 * global_vars.MAIN_VOLUME)
+        self.x_slash_sound.set_volume(0.6 * global_vars.MAIN_VOLUME)
+        self.sp_sound2.set_volume(0.8 * global_vars.MAIN_VOLUME)
 
         self.atk3_sound_special = pygame.mixer.Sound(resource_path('assets/sound effects/fire knight/3rrd.mp3'))
-        self.atk3_sound_special.set_volume(0.5 * global_vars.MAIN_VOLUME)
+        self.atk3_sound_special.set_volume(0.8 * global_vars.MAIN_VOLUME)
         # (The rest of the code follows same structure and renaming logic...)
         # Player Skill Animations Source
         # atk1 = [r'', FIRE_KNIGHT_ATK1, 1]

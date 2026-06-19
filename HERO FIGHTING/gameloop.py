@@ -788,7 +788,7 @@ import time
 # Render runs at 60 FPS; this is only how often the host SENDS snapshots over the
 # socket. 30Hz halves bandwidth/CPU and is gentler on a slow (WiFi) client; bump
 # to 60 to A/B test tighter sync on a fast link.
-NET_STATE_TICK_HZ = 30
+NET_STATE_TICK_HZ = global_vars.FPS
 NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
 
 def serialize_hero(h):
@@ -823,11 +823,8 @@ def serialize_hero(h):
         'max_temp_hp': getattr(h, 'max_temp_hp', 0),
 
         # smooth UI bars
-        'white_health_p1': getattr(h, 'white_health_p1', h.health),
-        'white_health_p2': getattr(h, 'white_health_p2', h.health),
-
-        'white_mana_p1': getattr(h, 'white_mana_p1', h.mana),
-        'white_mana_p2': getattr(h, 'white_mana_p2', h.mana),
+        # white_health/mana chase-bar values are cosmetic and re-derived locally
+        # on each client from health/mana each frame. No need to sync over network.
 
         # ─────────────────────────────
         # Position & Movement
@@ -872,46 +869,14 @@ def serialize_hero(h):
         'special_active': h.special_active,
 
         # # animation sync
-        # 'animation_done': getattr(h, 'animation_done', False),
+        # Animation indices are intentionally NOT serialized.
+        # P2 drives all animation frames locally from the attacking-state flags
+        # (attacking1-4, basic_attacking, running, jumping) that are already synced.
+        # Serializing raw index values caused "stuck frame" bugs because last_atk_time
+        # is an absolute host clock value that mismatches P2's independent clock.
 
-        # # ─────────────────────────────
-        # # Animation Sync
-        # # ─────────────────────────────
-
-        # 'atk1_idx': h.player_atk1_index,
-        # 'atk2_idx': h.player_atk2_index,
-        # 'atk3_idx': h.player_atk3_index,
-        # 'sp_idx': h.player_sp_index,
-        # 'basic_idx': h.player_basic_index,
-
-        # 'atk1_idx_flipped': h.player_atk1_index_flipped,
-        # 'atk2_idx_flipped': h.player_atk2_index_flipped,
-        # 'atk3_idx_flipped': h.player_atk3_index_flipped,
-        # 'sp_idx_flipped': h.player_sp_index_flipped,
-        # 'basic_idx_flipped': h.player_basic_index_flipped,
-
-        # 'jump_idx': h.player_jump_index,
-        # 'jump_idx_flipped': h.player_jump_index_flipped,
-
-        # 'run_idx': h.player_run_index,
-        # 'run_idx_flipped': h.player_run_index_flipped,
-
-        # 'death_idx': h.player_death_index,
-        # 'death_idx_flipped': h.player_death_index_flipped,
-
-        # 'fly_idx': h.player_fly_index,
-        # 'fly_idx_flipped': h.player_fly_index_flipped,
-
-        # 'surf_idx': h.player_surf_index,
-        # 'surf_idx_flipped': h.player_surf_index_flipped,
-
-        # 'atk1_idx_2nd': h.player_atk1_2nd_index,
-        # 'atk1_idx_2nd_flipped': h.player_atk1_2nd_index_flipped,
-
-        # 'last_atk_time': getattr(h, 'last_atk_time', 0),
-
-        # # death sync
-        # 'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
+        # death sync
+        'dead': h.is_dead() if hasattr(h, 'is_dead') else False,
 
         # ─────────────────────────────
         # Immortality
@@ -964,18 +929,7 @@ def apply_hero_state(h, s, x=None, y=None):
     h.max_mana = s['max_mana']
     if hasattr(h, 'max_temp_hp'):
         h.max_temp_hp = s.get('max_temp_hp', 0)
-    # smooth UI bars
-    if hasattr(h, 'white_health_p1'):
-        h.white_health_p1 = s.get('white_health_p1', h.white_health_p1)
-
-    if hasattr(h, 'white_health_p2'):
-        h.white_health_p2 = s.get('white_health_p2', h.white_health_p2)
-
-    if hasattr(h, 'white_mana_p1'):
-        h.white_mana_p1 = s.get('white_mana_p1', h.white_mana_p1)
-
-    if hasattr(h, 'white_mana_p2'):
-        h.white_mana_p2 = s.get('white_mana_p2', h.white_mana_p2)
+    # smooth UI bars: re-derived locally each frame from health/mana, not synced.
 
     # ── Position & Movement ──
     h.x_pos = x if x is not None else s['x']
@@ -1003,39 +957,45 @@ def apply_hero_state(h, s, x=None, y=None):
         h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
-    # h.attacking1 = s['attacking1']
-    # h.attacking2 = s['attacking2']
-    # h.attacking3 = s['attacking3']
-    # h.sp_attacking = s['attacking4']
-    # h.basic_attacking = s['basic_attacking']
-    # h.special_active = s['special_active']
-    # if hasattr(h, 'animation_done'):
-    #     h.animation_done = s.get('animation_done', h.animation_done)
-    # if s.get('dead', False):
-    #     h.health = 0
-    # h.player_atk1_index = s['atk1_idx']
-    # h.player_atk2_index = s['atk2_idx']
-    # h.player_atk3_index = s['atk3_idx']
-    # h.player_sp_index = s['sp_idx']
-    # h.player_basic_index = s['basic_idx']
-    # h.player_atk1_index_flipped = s['atk1_idx_flipped']
-    # h.player_atk2_index_flipped = s['atk2_idx_flipped']
-    # h.player_atk3_index_flipped = s['atk3_idx_flipped']
-    # h.player_sp_index_flipped = s['sp_idx_flipped']
-    # h.player_basic_index_flipped = s['basic_idx_flipped']
-    # h.player_jump_index = s['jump_idx']
-    # h.player_jump_index_flipped = s['jump_idx_flipped']
-    # h.player_run_index = s['run_idx']
-    # h.player_run_index_flipped = s['run_idx_flipped']
-    # h.player_death_index = s['death_idx']
-    # h.player_death_index_flipped = s['death_idx_flipped']
-    # h.player_fly_index = s['fly_idx']
-    # h.player_fly_index_flipped = s['fly_idx_flipped']
-    # h.player_surf_index = s['surf_idx']
-    # h.player_surf_index_flipped = s['surf_idx_flipped']
-    # h.player_atk1_2nd_index = s['atk1_idx_2nd']
-    # h.player_atk1_2nd_index_flipped = s['atk1_idx_2nd_flipped']
-    # h.last_atk_time = s['last_atk_time']
+    # Save previous states BEFORE overwriting so we can detect skill-start
+    # (False→True) transitions. These trigger Attack_Display spawning on P2.
+    _prev_atk1  = h.attacking1
+    _prev_atk2  = h.attacking2
+    _prev_atk3  = h.attacking3
+    _prev_sp    = h.sp_attacking
+    _prev_basic = h.basic_attacking
+
+    h.attacking1      = s['attacking1']
+    h.attacking2      = s['attacking2']
+    h.attacking3      = s['attacking3']
+    h.sp_attacking    = s['attacking4']
+    h.basic_attacking = s['basic_attacking']
+    h.special_active  = s['special_active']
+
+    # Rising-edge detection: set _p2_atk_just_triggered so hero subclasses
+    # can spawn their Attack_Display visuals on P2 independently of the local
+    # input path (which may arrive one round-trip late over WiFi).
+    h._p2_atk_just_triggered = 0  # reset each frame
+    if   not _prev_atk1  and h.attacking1:      h._p2_atk_just_triggered = 1
+    elif not _prev_atk2  and h.attacking2:      h._p2_atk_just_triggered = 2
+    elif not _prev_atk3  and h.attacking3:      h._p2_atk_just_triggered = 3
+    elif not _prev_sp    and h.sp_attacking:    h._p2_atk_just_triggered = 4
+    elif not _prev_basic and h.basic_attacking: h._p2_atk_just_triggered = 5
+
+    # Spawn Attack_Display visuals on P2 when a skill-start edge is detected.
+    # damage is still guarded inside Attack_Display._apply_damage() for P2.
+    if (h._p2_atk_just_triggered != 0
+            and global_vars.active_net_client is not None
+            and global_vars.active_net_client.my_player_type == 2
+            and hasattr(h, '_trigger_attack_display_for_p2')):
+        h._trigger_attack_display_for_p2()
+
+    if hasattr(h, 'animation_done'):
+        h.animation_done = s.get('animation_done', h.animation_done)
+    if s.get('dead', False):
+        h.health = 0
+    # Animation indices are NOT applied here — P2 animates locally from the
+    # state flags above. See serialize_hero() for the full rationale.
 
     # ── Items/Abilities ──
     h.immortality_activated = s['immortality_activated']
@@ -1512,7 +1472,7 @@ def game(bg=None, net_client=None):
             if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2 and global_vars.active_net_client.phase == 'playing':
                 prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
                 if latest_st is not None:
-                    _render_time = time.monotonic() - (NET_STATE_TICK_MS / 1000.0)
+                    _render_time = time.monotonic() - 0.050  # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
                     _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
                     _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
                     apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)

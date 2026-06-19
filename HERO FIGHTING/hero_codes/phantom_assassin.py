@@ -131,10 +131,10 @@ class Phantom_Assassin(Player):
         # Sound Effects
         #   - str [0] file path
         #   - int [1] max volume
-        sound1 = [resource_path(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3'), 0.07]
-        sound2 = [resource_path(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3'), 0.07]
-        sound3 = [resource_path(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3'), 0.07]
-        sound4 = [resource_path(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3'), 0.07]
+        sound1 = [resource_path(r'assets\sound effects\wanderer_magician\shine-8-268901 1.mp3'), 0.8]
+        sound2 = [resource_path(r'assets\sound effects\wanderer_magician\wind-chimes-2-199848 2.mp3'), 0.8]
+        sound3 = [resource_path(r'assets\sound effects\wanderer_magician\elemental-magic-spell-impact-outgoing-228342 3.mp3'), 0.8]
+        sound4 = [resource_path(r'assets\sound effects\wanderer_magician\Rasengan Sound Effect 4.mp3'), 0.8]
         self.sound1 = self.load_sound(sound1[0])
         self.sound2 = self.load_sound(sound2[0])
         self.sound3 = self.load_sound(sound3[0])

@@ -268,10 +268,10 @@ class Forest_Ranger(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING SINC
         self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/wind-chimes-2-199848 2.mp3'))
         self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/elemental-magic-spell-impact-outgoing-228342 3.mp3'))
         self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/Rasengan Sound Effect 4.mp3'))
-        self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.7 * global_vars.MAIN_VOLUME)
         
         # # Player Skill Animations Source
         # basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]

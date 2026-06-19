@@ -214,10 +214,10 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
         self.atk2_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/wind-chimes-2-199848 2.mp3'))
         self.atk3_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/elemental-magic-spell-impact-outgoing-228342 3.mp3'))
         self.sp_sound = pygame.mixer.Sound(resource_path('assets/sound effects/wanderer_magician/Rasengan Sound Effect 4.mp3'))
-        self.atk1_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.atk2_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
-        self.atk3_sound.set_volume(0.4 * global_vars.MAIN_VOLUME)
-        self.sp_sound.set_volume(0.3 * global_vars.MAIN_VOLUME)
+        self.atk1_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk2_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.atk3_sound.set_volume(0.8 * global_vars.MAIN_VOLUME)
+        self.sp_sound.set_volume(0.5 * global_vars.MAIN_VOLUME)
 
         # # Player Skill Animations Source
         basic = [r'assets\attacks\Basic Attack\wanderer magician\Charge_1_', WANDERER_MAGICIAN_BASIC, 1]
@@ -1112,6 +1112,138 @@ class Wanderer_Magician(Player): #NEXT WORK ON THE SPRITES THEN COPY EVERYTHING 
 
      
         
+    def _trigger_attack_display_for_p2(self):
+        """Spawns visual-only Attack_Display on the non-host client (P2) when
+        apply_hero_state() detects a skill-start (False→True) transition.
+
+        Rules:
+        - dmg=0, final_dmg=0, disable_collide=True  →  purely cosmetic.
+        - Mana / cooldowns are NOT touched here; the host snapshot owns those.
+        - _p2_atk_just_triggered values: 1=atk1, 2=atk2, 3=atk3, 4=sp_atk, 5=basic
+
+        NOTE: Wanderer_Magician basic attack also sets attacking1=True.
+        We disambiguate using self.basic_attacking.
+        Skills 3/sp4 target enemy position — we call single_target() for safety.
+        """
+        sk = getattr(self, '_p2_atk_just_triggered', 0)
+        if sk == 0:
+            return
+
+        _vis = dict(dmg=0, final_dmg=0, disable_collide=True,
+                    who_attacks=self, who_attacked=self.enemy)
+
+        if sk == 1:
+            # Could be basic attack (also sets attacking1) or skill 1 (starlight)
+            if self.basic_attacking:
+                # Basic attack — basic mode or special mode
+                if not self.special_active:
+                    attack_display.add(Attack_Display(
+                        x=self.rect.centerx,
+                        y=self.rect.centery + random.randint(0, 40),
+                        frames=self.basic if self.facing_right else self.basic_flipped,
+                        frame_duration=self.basic_attack_frame_duration,
+                        repeat_animation=self.basic_attack_repeat,
+                        speed=self.basic_attack_speed if self.facing_right else -self.basic_attack_speed,
+                        moving=True,
+                        sound=(True, self.atk1_sound, None, None),
+                        kill_collide=True,
+                        delay=(True, self.basic_attack_animation_speed * (500 / self.base_animation_speed)),
+                        **_vis))
+                else:
+                    for i in [(500, random.randint(0, 30)), (700, random.randint(0, 30)), (900, random.randint(0, 30))]:
+                        attack_display.add(Attack_Display(
+                            x=self.rect.centerx,
+                            y=self.rect.centery + i[1],
+                            frames=self.special_basic if self.facing_right else self.special_basic_flipped,
+                            frame_duration=self.basic_attack_frame_duration,
+                            repeat_animation=self.basic_attack_repeat,
+                            speed=self.special_basic_attack_speed if self.facing_right else -self.special_basic_attack_speed,
+                            moving=True,
+                            sound=(True, self.basic_sound, self.atk1_sound, None),
+                            kill_collide=True,
+                            delay=(True, self.basic_attack_animation_speed * (i[0] / self.base_animation_speed)),
+                            hitbox_scale_x=0.2, hitbox_scale_y=0.2,
+                            **_vis))
+            else:
+                # Skill 1 — Starlight (basic) or special Starlight
+                if not self.special_active:
+                    attack_display.add(Attack_Display(
+                        x=self.rect.centerx,
+                        y=self.rect.centery + 30,
+                        frames=self.atk1 if self.facing_right else self.atk1_flipped,
+                        frame_duration=self.starlight_frame_duration,
+                        repeat_animation=self.starlight_repeat,
+                        speed=self.starlight_speed if self.facing_right else -self.starlight_speed,
+                        moving=True, kill_collide=True,
+                        sound=(True, self.atk1_sound, None, None),
+                        delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)),
+                        **_vis))
+                else:
+                    for i in self.special_starlight_count:
+                        attack_display.add(Attack_Display(
+                            x=self.rect.centerx - i[0] if self.facing_right else self.rect.centerx + i[0],
+                            y=self.rect.centery + i[1],
+                            frames=self.atk1 if self.facing_right else self.atk1_flipped,
+                            frame_duration=100, repeat_animation=5,
+                            speed=7 if self.facing_right else -7,
+                            moving=True, kill_collide=True,
+                            sound=(True, self.atk1_sound, None, None),
+                            delay=(True, self.basic_attack_animation_speed * (500 / DEFAULT_ANIMATION_SPEED)),
+                            **_vis))
+
+        elif sk == 2:
+            # Skill 2 — Healing aura (visual only; heal is guarded on P2 by Attack_Display)
+            attack_display.add(Attack_Display(
+                x=self.rect.centerx,
+                y=self.rect.centery + 20,
+                frames=self.atk2,
+                frame_duration=100 if not self.special_active else 40,
+                repeat_animation=1,
+                sound=(True, self.atk2_sound, None, None),
+                **_vis))
+
+        elif sk == 3:
+            # Skill 3 — Energy Blast / Curse of Affliction (both use attacking3)
+            self.single_target()
+            if self.target is None:
+                return
+            if not self.special_active:
+                attack_display.add(Attack_Display(
+                    x=self.target.x_pos,
+                    y=self.target.y_pos - 30,
+                    frames=self.atk3,
+                    frame_duration=100, repeat_animation=1,
+                    sound=(True, self.atk3_sound, None, None),
+                    delay=(True, self.energy_blast_delay),
+                    **_vis))
+            else:
+                attack_display.add(Attack_Display(
+                    x=self.target.x_pos,
+                    y=self.target.y_pos + 40,
+                    frames=self.sp_special,
+                    frame_duration=(self.curse_of_affliction_duration / len(self.sp_special)) / self.curse_of_affliction_repeat,
+                    repeat_animation=self.curse_of_affliction_repeat,
+                    speed=5 if self.facing_right else -5,
+                    moving=False,
+                    follow=(False, True), follow_offset=(0, 50),
+                    sound=(True, self.sp_sound, self.atk3_sound, None),
+                    delay=(True, 800),
+                    **_vis))
+
+        elif sk == 4:
+            # Skill 4 — Arcane Orb (basic mode only; special mode sk4 → sets attacking3)
+            attack_display.add(Attack_Display(
+                x=self.rect.centerx,
+                y=self.rect.centery,
+                frames=self.sp if self.facing_right else self.sp_flipped,
+                frame_duration=self.arcane_orb_frame_duration,
+                repeat_animation=self.arcane_orb_repeat,
+                speed=self.arcane_orb_speed if self.facing_right else -self.arcane_orb_speed,
+                moving=True,
+                sound=(True, self.sp_sound, None, None),
+                delay=(True, self.arcane_orb_delay),
+                **_vis))
+
     def update(self):
         # if self.jump_attack_pending and pygame.time.get_ticks() >= self.jump_attack_time:
         #     self.jump_attack_pending = False

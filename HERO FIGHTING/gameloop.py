@@ -957,14 +957,6 @@ def apply_hero_state(h, s, x=None, y=None):
         h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
-    # Save previous states BEFORE overwriting so we can detect skill-start
-    # (False→True) transitions. These trigger Attack_Display spawning on P2.
-    _prev_atk1  = h.attacking1
-    _prev_atk2  = h.attacking2
-    _prev_atk3  = h.attacking3
-    _prev_sp    = h.sp_attacking
-    _prev_basic = h.basic_attacking
-
     h.attacking1      = s['attacking1']
     h.attacking2      = s['attacking2']
     h.attacking3      = s['attacking3']
@@ -983,32 +975,6 @@ def apply_hero_state(h, s, x=None, y=None):
     h._host_attacking3      = s['attacking3']
     h._host_sp_attacking    = s['attacking4']
     h._host_basic_attacking = s['basic_attacking']
-
-    # Rising-edge detection: set _p2_atk_just_triggered so hero subclasses
-    # can spawn their Attack_Display visuals on P2 independently of the local
-    # input path (which may arrive one round-trip late over WiFi).
-    h._p2_atk_just_triggered = 0  # reset each frame
-    if   not _prev_atk1  and h.attacking1:      h._p2_atk_just_triggered = 1
-    elif not _prev_atk2  and h.attacking2:      h._p2_atk_just_triggered = 2
-    elif not _prev_atk3  and h.attacking3:      h._p2_atk_just_triggered = 3
-    elif not _prev_sp    and h.sp_attacking:    h._p2_atk_just_triggered = 4
-    elif not _prev_basic and h.basic_attacking: h._p2_atk_just_triggered = 5
-
-    # Spawn Attack_Display visuals on P2 when a skill-start edge is detected.
-    # damage is still guarded inside Attack_Display._apply_damage() for P2.
-    # This snapshot-based path is a FALLBACK: the primary trigger is the
-    # explicit skill_event consumed in consume_skill_events_for_p2(). Skip it
-    # if the same skill already fired via an event in the last ~250ms so a
-    # single cast never spawns the visual twice.
-    if (h._p2_atk_just_triggered != 0
-            and global_vars.active_net_client is not None
-            and global_vars.active_net_client.my_player_type == 2
-            and hasattr(h, '_trigger_attack_display_for_p2')):
-        _now_dedup = pygame.time.get_ticks()
-        _recent = (getattr(h, '_p2_last_event_skill', None) == h._p2_atk_just_triggered
-                   and _now_dedup - getattr(h, '_p2_last_event_time', -10000) < 250)
-        if not _recent:
-            h._trigger_attack_display_for_p2()
 
     if hasattr(h, 'animation_done'):
         h.animation_done = s.get('animation_done', h.animation_done)
@@ -1077,6 +1043,7 @@ def consume_skill_events_for_p2(net_client, hero1, hero2):
             continue
         h._p2_atk_just_triggered = skill
         h._trigger_attack_display_for_p2()
+        h._p2_atk_just_triggered = 0
         # Mark so the snapshot-based rising-edge path in apply_hero_state()
         # won't double-spawn the same cast within a short window.
         h._p2_last_event_skill = skill

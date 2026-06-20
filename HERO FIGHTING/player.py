@@ -1628,11 +1628,28 @@ class Player(pygame.sprite.Sprite):
 
         self.last_atk_time -= animation_speed
         
+    def _reconcile_p2_attack_flag(self, local_flag, host_attr):
+        """Problem 1 helper. On the non-host client (P2) the host owns the attack
+        flags. If the local non-looping animation just finished (local_flag is
+        False) but the host's last snapshot still reports this attack active,
+        keep the flag True so the animation loops smoothly instead of freezing
+        and then restarting when a delayed snapshot re-flips it on.
+
+        Returns the flag value to actually store. On P1 / local play this is a
+        no-op and just returns local_flag unchanged."""
+        nc = global_vars.active_net_client
+        if nc is None or nc.my_player_type != 2:
+            return local_flag
+        if (not local_flag) and getattr(self, host_attr, False):
+            return True
+        return local_flag
+
     def atk1_animation(self, animation_speed=0):
         if self.facing_right:
             self.player_atk1_index, self.attacking1 = self.animate(self.player_atk1, self.player_atk1_index, loop=False)
         else:
             self.player_atk1_index_flipped, self.attacking1 = self.animate(self.player_atk1_flipped, self.player_atk1_index_flipped, loop=False)
+        self.attacking1 = self._reconcile_p2_attack_flag(self.attacking1, '_host_attacking1')
 
         self.last_atk_time -= animation_speed
         
@@ -1641,6 +1658,7 @@ class Player(pygame.sprite.Sprite):
             self.player_atk2_index, self.attacking2 = self.animate(self.player_atk2, self.player_atk2_index, loop=False)
         else:
             self.player_atk2_index_flipped, self.attacking2 = self.animate(self.player_atk2_flipped, self.player_atk2_index_flipped, loop=False)
+        self.attacking2 = self._reconcile_p2_attack_flag(self.attacking2, '_host_attacking2')
 
         self.last_atk_time -= animation_speed
         
@@ -1649,6 +1667,7 @@ class Player(pygame.sprite.Sprite):
             self.player_atk3_index, self.attacking3 = self.animate(self.player_atk3, self.player_atk3_index, loop=False)
         else:
             self.player_atk3_index_flipped, self.attacking3 = self.animate(self.player_atk3_flipped, self.player_atk3_index_flipped, loop=False)
+        self.attacking3 = self._reconcile_p2_attack_flag(self.attacking3, '_host_attacking3')
 
         self.last_atk_time -= animation_speed
         
@@ -1657,6 +1676,7 @@ class Player(pygame.sprite.Sprite):
             self.player_sp_index, self.sp_attacking = self.animate(self.player_sp, self.player_sp_index, loop=False)
         else:
             self.player_sp_index_flipped, self.sp_attacking = self.animate(self.player_sp_flipped, self.player_sp_index_flipped, loop=False)
+        self.sp_attacking = self._reconcile_p2_attack_flag(self.sp_attacking, '_host_sp_attacking')
 
         self.last_atk_time -= animation_speed
 
@@ -1665,6 +1685,7 @@ class Player(pygame.sprite.Sprite):
             self.player_basic_index, self.basic_attacking = self.animate(self.player_basic, self.player_basic_index, loop=False, basic_atk=True)
         else:
             self.player_basic_index_flipped, self.basic_attacking = self.animate(self.player_basic_flipped, self.player_basic_index_flipped, loop=False, basic_atk=True)
+        self.basic_attacking = self._reconcile_p2_attack_flag(self.basic_attacking, '_host_basic_attacking')
 
         self.last_atk_time -= animation_speed
 

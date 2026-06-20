@@ -972,6 +972,18 @@ def apply_hero_state(h, s, x=None, y=None):
     h.basic_attacking = s['basic_attacking']
     h.special_active  = s['special_active']
 
+    # Problem 1 (animation flag flip under lag): on P2 the local animate()
+    # finishes a non-looping attack and flips its flag False; if the next host
+    # snapshot is delayed, the host may still report the attack as True, and a
+    # late snapshot then re-flips it on, restarting/stuttering the animation.
+    # The host owns the attack flags, so we record the host's True flags here.
+    # Animations themselves are still driven locally from these flags.
+    h._host_attacking1      = s['attacking1']
+    h._host_attacking2      = s['attacking2']
+    h._host_attacking3      = s['attacking3']
+    h._host_sp_attacking    = s['attacking4']
+    h._host_basic_attacking = s['basic_attacking']
+
     # Rising-edge detection: set _p2_atk_just_triggered so hero subclasses
     # can spawn their Attack_Display visuals on P2 independently of the local
     # input path (which may arrive one round-trip late over WiFi).
@@ -984,11 +996,19 @@ def apply_hero_state(h, s, x=None, y=None):
 
     # Spawn Attack_Display visuals on P2 when a skill-start edge is detected.
     # damage is still guarded inside Attack_Display._apply_damage() for P2.
+    # This snapshot-based path is a FALLBACK: the primary trigger is the
+    # explicit skill_event consumed in consume_skill_events_for_p2(). Skip it
+    # if the same skill already fired via an event in the last ~250ms so a
+    # single cast never spawns the visual twice.
     if (h._p2_atk_just_triggered != 0
             and global_vars.active_net_client is not None
             and global_vars.active_net_client.my_player_type == 2
             and hasattr(h, '_trigger_attack_display_for_p2')):
-        h._trigger_attack_display_for_p2()
+        _now_dedup = pygame.time.get_ticks()
+        _recent = (getattr(h, '_p2_last_event_skill', None) == h._p2_atk_just_triggered
+                   and _now_dedup - getattr(h, '_p2_last_event_time', -10000) < 250)
+        if not _recent:
+            h._trigger_attack_display_for_p2()
 
     if hasattr(h, 'animation_done'):
         h.animation_done = s.get('animation_done', h.animation_done)
@@ -1021,6 +1041,47 @@ def apply_hero_state(h, s, x=None, y=None):
 
             skill.last_used_time = now - elapsed
             skill.remaining_ms = cd
+
+def emit_skill_events_for_host(net_client, heroes):
+    """Host (P1) only: detect each hero's attacking-flag rising edge this frame
+    and emit a fire-once skill_event. Runs every frame (not throttled like the
+    state snapshot) so no cast is ever missed to network jitter.
+
+    heroes is an iterable of (hero_id, hero) where hero_id is 1 or 2.
+    skill ids: 1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic.
+    """
+    for hero_id, h in heroes:
+        if h is None:
+            continue
+        prev = getattr(h, '_host_prev_atk_flags', None)
+        cur = (h.attacking1, h.attacking2, h.attacking3,
+               h.sp_attacking, h.basic_attacking)
+        if prev is not None:
+            for i, skill in enumerate((1, 2, 3, 4, 5)):
+                if (not prev[i]) and cur[i]:
+                    net_client.send_skill_event(hero_id, skill)
+        h._host_prev_atk_flags = cur
+
+
+def consume_skill_events_for_p2(net_client, hero1, hero2):
+    """P2 only: drain queued skill_events and spawn the matching Attack_Display
+    visual via the hero's _trigger_attack_display_for_p2(). Lossless: every
+    event fires exactly once regardless of state-snapshot timing."""
+    now = pygame.time.get_ticks()
+    for ev in net_client.pop_skill_events():
+        h = hero1 if ev.get('hero') == 1 else hero2
+        skill = ev.get('skill')
+        if h is None or skill is None:
+            continue
+        if not hasattr(h, '_trigger_attack_display_for_p2'):
+            continue
+        h._p2_atk_just_triggered = skill
+        h._trigger_attack_display_for_p2()
+        # Mark so the snapshot-based rising-edge path in apply_hero_state()
+        # won't double-spawn the same cast within a short window.
+        h._p2_last_event_skill = skill
+        h._p2_last_event_time = now
+
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
@@ -1477,6 +1538,11 @@ def game(bg=None, net_client=None):
                     _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
                     apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)
                     apply_hero_state(main.hero2, latest_st.get('h2'), _x2, _y2)
+                    # Lossless visual trigger: spawn Attack_Display for any skill
+                    # the host explicitly announced this frame (immune to the
+                    # 30Hz snapshot missing a brief attacking-flag edge).
+                    consume_skill_events_for_p2(
+                        global_vars.active_net_client, main.hero1, main.hero2)
 
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
@@ -1508,6 +1574,12 @@ def game(bg=None, net_client=None):
                         'h2': serialize_hero(main.hero2),
                     })
                     _last_state_send = _now_ms
+                # Skill-fired events run EVERY frame (not throttled) so a brief
+                # attacking-flag edge is never lost between 30Hz snapshots.
+                emit_skill_events_for_host(
+                    global_vars.active_net_client,
+                    ((1, main.hero1), (2, main.hero2)),
+                )
             
 
             # Update and draw Wanderer Magician

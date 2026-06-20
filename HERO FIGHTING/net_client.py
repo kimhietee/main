@@ -49,6 +49,15 @@ class NetClient:
         self.prev_time = 0.0
         self.latest_time = 0.0
 
+        # ── Skill-fired events (lossless visual trigger for P2) ──
+        # The host emits one event the instant a hero actually casts a skill.
+        # Unlike the sampled state snapshot (which can miss a brief
+        # False->True->False attacking-flag edge under jitter), every event is
+        # queued and consumed exactly once by P2, so the Attack_Display visual
+        # always spawns regardless of snapshot timing.
+        self._skill_event_lock = threading.Lock()
+        self.skill_events = []   # list of {'hero': 1|2, 'skill': 1..5}
+
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Disable Nagle so the 60Hz stream of tiny input/state packets is sent
@@ -113,6 +122,23 @@ class NetClient:
             except:
                 self._running = False
                 self.phase = 'disconnected'
+
+    def send_skill_event(self, hero, skill):
+        """Host (P1) only: announce that hero (1 or 2) just fired skill id
+        (1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic). Fire-once visual trigger."""
+        if self.sock and self._running:
+            try:
+                send_msg(self.sock, {'type': 'skill_event', 'hero': hero, 'skill': skill})
+            except:
+                self._running = False
+                self.phase = 'disconnected'
+
+    def pop_skill_events(self):
+        """P2 only: return and clear all pending skill-fired events."""
+        with self._skill_event_lock:
+            events = list(self.skill_events)
+            self.skill_events.clear()
+            return events
 
     def get_states_for_render(self):
         """P2 only: returns (prev_state, latest_state, prev_time, latest_time)
@@ -193,6 +219,13 @@ class NetClient:
                     self.prev_time = self.latest_time
                     self.latest_state = msg.get('heroes')
                     self.latest_time = _now
+
+            elif message_type == 'skill_event':
+                with self._skill_event_lock:
+                    self.skill_events.append({
+                        'hero': msg.get('hero'),
+                        'skill': msg.get('skill'),
+                    })
 
             elif message_type == 'winner_declared':
                 self.declared_winner = msg['winner']

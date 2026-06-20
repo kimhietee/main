@@ -77,6 +77,15 @@ def handle_client(conn, player_type):
                         try: send_msg(sock, msg)
                         except: pass
 
+            elif message_type == 'skill_event':
+                # Host (P1) announces a skill cast — forward to the other
+                # player(s) so P2 can spawn the matching Attack_Display visual.
+                # Same relay pattern as 'state'; not echoed back to the sender.
+                for pt, sock in list(clients.items()):
+                    if pt != player_type:
+                        try: send_msg(sock, msg)
+                        except: pass
+
             # ── Phase 2: lobby messages ──
             elif message_type == 'set_map':
                 lobby['map'] = msg['map']

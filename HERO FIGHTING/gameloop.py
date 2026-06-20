@@ -1022,6 +1022,47 @@ def apply_hero_state(h, s, x=None, y=None):
             skill.last_used_time = now - elapsed
             skill.remaining_ms = cd
 
+def emit_skill_events_for_host(net_client, heroes):
+    """Host (P1) only: detect each hero's attacking-flag rising edge this frame
+    and emit a fire-once skill_event. Runs every frame (not throttled like the
+    state snapshot) so no cast is ever missed to network jitter.
+
+    heroes is an iterable of (hero_id, hero) where hero_id is 1 or 2.
+    skill ids: 1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic.
+    """
+    for hero_id, h in heroes:
+        if h is None:
+            continue
+        prev = getattr(h, '_host_prev_atk_flags', None)
+        cur = (h.attacking1, h.attacking2, h.attacking3,
+               h.sp_attacking, h.basic_attacking)
+        if prev is not None:
+            for i, skill in enumerate((1, 2, 3, 4, 5)):
+                if (not prev[i]) and cur[i]:
+                    net_client.send_skill_event(hero_id, skill)
+        h._host_prev_atk_flags = cur
+
+
+def consume_skill_events_for_p2(net_client, hero1, hero2):
+    """P2 only: drain queued skill_events and spawn the matching Attack_Display
+    visual via the hero's _trigger_attack_display_for_p2(). Lossless: every
+    event fires exactly once regardless of state-snapshot timing."""
+    now = pygame.time.get_ticks()
+    for ev in net_client.pop_skill_events():
+        h = hero1 if ev.get('hero') == 1 else hero2
+        skill = ev.get('skill')
+        if h is None or skill is None:
+            continue
+        if not hasattr(h, '_trigger_attack_display_for_p2'):
+            continue
+        h._p2_atk_just_triggered = skill
+        h._trigger_attack_display_for_p2()
+        # Mark so the snapshot-based rising-edge path in apply_hero_state()
+        # won't double-spawn the same cast within a short window.
+        h._p2_last_event_skill = skill
+        h._p2_last_event_time = now
+
+
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
     """Lerp a hero's (x, y) between the prev and latest snapshots at render_time.
     Falls back to the latest position when there's no prior snapshot. Clamped so a
@@ -1508,6 +1549,12 @@ def game(bg=None, net_client=None):
                         'h2': serialize_hero(main.hero2),
                     })
                     _last_state_send = _now_ms
+                # Skill-fired events run EVERY frame (not throttled) so a brief
+                # attacking-flag edge is never lost between 30Hz snapshots.
+                emit_skill_events_for_host(
+                    global_vars.active_net_client,
+                    ((1, main.hero1), (2, main.hero2)),
+                )
             
 
             # Update and draw Wanderer Magician

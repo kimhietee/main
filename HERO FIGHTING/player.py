@@ -3072,6 +3072,15 @@ class Player(pygame.sprite.Sprite):
         # ── NETWORK MULTIPLAYER OVERRIDE ──────────────────────────
         # If net_keys is set by the game loop, use those instead of keyboard
         if hasattr(self, '_net_keys') and self._net_keys is not None:
+            # On the non-host client (P2) the host is authoritative for ALL heroes.
+            # Running input() here would spawn local Attack_Displays and mutate mana/
+            # cooldown state that conflicts with the host snapshot. Skip entirely —
+            # hero state comes from apply_hero_state() and visuals come from
+            # consume_skill_events_for_p2().
+            # On P1's machine this must still run: P1 simulates both heroes authoritatively.
+            nc = global_vars.active_net_client
+            if nc is not None and nc.my_player_type == 2:
+                return  # P2 client: do not execute local input logic
             k = self._net_keys
             self.input(
                 k.get('skill1', False),

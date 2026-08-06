@@ -654,131 +654,135 @@ class Wind_Hashashin(Player):
 
         
     
-    def _trigger_attack_display_for_p2(self):
-        """Spawn visual-only Attack_Display on the non-host client (P2).
+    # def _trigger_attack_display_for_p2(self):
+    #     """Spawn visual-only Attack_Display on the non-host client (P2).
 
-        Mirrors the spawns in input() but with dmg=0, final_dmg=0 and
-        disable_collide=True, so nothing combat-affecting happens (damage is
-        also guarded inside Attack_Display._apply_damage() for P2). Mana and
-        cooldowns are NOT touched here — the host snapshot owns those.
+    #     Mirrors the spawns in input() but with dmg=0, final_dmg=0 and
+    #     disable_collide=True, so nothing combat-affecting happens (damage is
+    #     also guarded inside Attack_Display._apply_damage() for P2). Mana and
+    #     cooldowns are NOT touched here — the host snapshot owns those.
 
-        _p2_atk_just_triggered: 1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic.
-        """
-        sk = getattr(self, '_p2_atk_just_triggered', 0)
-        if sk == 0:
-            return
+    #     _p2_atk_just_triggered: 1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic.
+    #     """
+    #     sk = getattr(self, '_p2_atk_just_triggered', 0)
+    #     if sk == 0:
+    #         return
 
-        _vis = dict(dmg=0, final_dmg=0, disable_collide=True,
-                    who_attacks=self, who_attacked=self.enemy)
+    #     # Use the host-embedded value, not self.special_active which may be
+    #     # up to 50 ms stale due to the interpolated snapshot delay.
+    #     _special = getattr(self, '_p2_atk_special_active', self.special_active)
 
-        if sk == 1:  # Wind Dash (basic + special look the same: gust frames)
-            attack_display.add(Attack_Display(
-                x=self.rect.centerx,
-                y=self.rect.centery + 60,
-                frames=self.atk1,
-                frame_duration=20,
-                repeat_animation=1,
-                speed=-1.5 if self.facing_right else 1.5,
-                moving=True,
-                sound=(True, self.atk1_sound, None, None),
-                **_vis))
+    #     _vis = dict(dmg=0, final_dmg=0, disable_collide=True,
+    #                 who_attacks=self, who_attacked=self.enemy)
 
-        elif sk == 2:  # Tornado Slash
-            if not self.special_active:
-                for i in [
-                    (self.atk2, True, self.tornado_cast_range, self.tornado_frame_duration),
-                    (self.sp, False, 70, 40),
-                ]:
-                    attack_display.add(Attack_Display(
-                        x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
-                        y=self.rect.centery + 50,
-                        frames=i[0],
-                        frame_duration=i[3],
-                        repeat_animation=1,
-                        speed=self.tornado_speed if self.facing_right else -self.tornado_speed,
-                        moving=i[1],
-                        sound=(True, self.atk2_sound, self.x_slash_sound, None),
-                        **_vis))
-            else:
-                for i in [
-                    (self.atk3_special, True, self.special_tornado_cast_range, self.special_tornado_frame_duration, -20),
-                    (self.sp, False, 70, 40, 50),
-                ]:
-                    attack_display.add(Attack_Display(
-                        x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
-                        y=self.rect.centery + i[4],
-                        frames=i[0],
-                        frame_duration=i[3],
-                        repeat_animation=1,
-                        speed=self.special_tornado_speed if self.facing_right else -self.special_tornado_speed,
-                        moving=i[1],
-                        sound=(True, self.atk3_sound_special, self.x_slash_sound, None),
-                        **_vis))
+    #     if sk == 1:  # Wind Dash (basic + special look the same: gust frames)
+    #         attack_display.add(Attack_Display(
+    #             x=self.rect.centerx,
+    #             y=self.rect.centery + 60,
+    #             frames=self.atk1,
+    #             frame_duration=20,
+    #             repeat_animation=1,
+    #             speed=-1.5 if self.facing_right else 1.5,
+    #             moving=True,
+    #             sound=(True, self.atk1_sound, None, None),
+    #             **_vis))
 
-        elif sk == 3:  # Enslice
-            for i in [
-                (self.atk3, True, 100, self.enslice_stun_duration / len(self.atk3)),
-                (self.sp, False, 100, 50),
-            ]:
-                attack_display.add(Attack_Display(
-                    x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
-                    y=self.rect.centery + 50,
-                    frames=i[0],
-                    frame_duration=i[3],
-                    repeat_animation=1,
-                    speed=0,
-                    sound=(True, self.atk3_sound, self.x_slash_sound, None),
-                    **_vis))
+    #     elif sk == 2:  # Tornado Slash
+    #         if not _special:
+    #             for i in [
+    #                 (self.atk2, True, self.tornado_cast_range, self.tornado_frame_duration),
+    #                 (self.sp, False, 70, 40),
+    #             ]:
+    #                 attack_display.add(Attack_Display(
+    #                     x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
+    #                     y=self.rect.centery + 50,
+    #                     frames=i[0],
+    #                     frame_duration=i[3],
+    #                     repeat_animation=1,
+    #                     speed=self.tornado_speed if self.facing_right else -self.tornado_speed,
+    #                     moving=i[1],
+    #                     sound=(True, self.atk2_sound, self.x_slash_sound, None),
+    #                     **_vis))
+    #         else:
+    #             for i in [
+    #                 (self.atk3_special, True, self.special_tornado_cast_range, self.special_tornado_frame_duration, -20),
+    #                 (self.sp, False, 70, 40, 50),
+    #             ]:
+    #                 attack_display.add(Attack_Display(
+    #                     x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
+    #                     y=self.rect.centery + i[4],
+    #                     frames=i[0],
+    #                     frame_duration=i[3],
+    #                     repeat_animation=1,
+    #                     speed=self.special_tornado_speed if self.facing_right else -self.special_tornado_speed,
+    #                     moving=i[1],
+    #                     sound=(True, self.atk3_sound_special, self.x_slash_sound, None),
+    #                     **_vis))
 
-        elif sk == 4:  # Omnislash / Mark of Death
-            target = self.target if getattr(self, 'target', None) is not None else self.enemy
-            attack_display.add(Attack_Display(
-                x=self.rect.centerx,
-                y=self.rect.centery + 60,
-                frames=self.atk1,
-                frame_duration=5,
-                repeat_animation=self.omnislash_count,
-                speed=0,
-                who_attacks=self,
-                who_attacked=target,
-                dmg=0, final_dmg=0, disable_collide=True,
-                sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
-                repeat_sound=True))
-            if self.special_active and getattr(self, 'target', None) is not None:
-                for i in self.mark_of_death_count:
-                    attack_display.add(Attack_Display(
-                        x=self.target.x_pos,
-                        y=self.target.y_pos - 150,
-                        frames=self.real_sp,
-                        frame_duration=120,
-                        repeat_animation=1,
-                        speed=0,
-                        who_attacks=self,
-                        who_attacked=self.target,
-                        dmg=0, final_dmg=0, disable_collide=False,
-                        sound=(True, self.sp_sound, self.sp_sound2, self.x_slash_sound),
-                        repeat_sound=True,
-                        delay=(True, i),
-                        follow=(False, True)))
+    #     elif sk == 3:  # Enslice
+    #         for i in [
+    #             (self.atk3, True, 100, self.enslice_stun_duration / len(self.atk3)),
+    #             (self.sp, False, 100, 50),
+    #         ]:
+    #             attack_display.add(Attack_Display(
+    #                 x=self.rect.centerx + i[2] if self.facing_right else self.rect.centerx - i[2],
+    #                 y=self.rect.centery + 50,
+    #                 frames=i[0],
+    #                 frame_duration=i[3],
+    #                 repeat_animation=1,
+    #                 speed=0,
+    #                 sound=(True, self.atk3_sound, self.x_slash_sound, None),
+    #                 **_vis))
 
-        elif sk == 5:  # Basic Attack
-            _delays = [0, 300]
-            for i in _delays:
-                attack_display.add(Attack_Display(
-                    x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
-                    y=self.rect.centery + (15 if self.special_active else 50),
-                    frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
-                    frame_duration=BASIC_FRAME_DURATION / 2,
-                    repeat_animation=2 if self.special_active else 1,
-                    speed=(6 if self.facing_right else -6) if self.special_active else (4 if self.facing_right else -4),
-                    moving=True,
-                    sound=(True, self.basic_sound, None, None),
-                    delay=(True, self.basic_attack_animation_speed * (i / self.base_animation_speed)),
-                    hitbox_scale_x=0.4 if self.special_active else 0.3,
-                    hitbox_scale_y=0.4 if self.special_active else 0.3,
-                    is_basic_attack=True,
-                    **dict(dmg=0, final_dmg=0, disable_collide=True,
-                           who_attacks=self, who_attacked=self.enemy)))
+    #     elif sk == 4:  # Omnislash / Mark of Death
+    #         target = self.target if getattr(self, 'target', None) is not None else self.enemy
+    #         attack_display.add(Attack_Display(
+    #             x=self.rect.centerx,
+    #             y=self.rect.centery + 60,
+    #             frames=self.atk1,
+    #             frame_duration=5,
+    #             repeat_animation=self.omnislash_count,
+    #             speed=0,
+    #             who_attacks=self,
+    #             who_attacked=target,
+    #             dmg=0, final_dmg=0, disable_collide=True,
+    #             sound=(True, self.sp_sound, self.x_slash_sound, self.sp_sound2),
+    #             repeat_sound=True))
+    #         if _special and getattr(self, 'target', None) is not None:
+    #             for i in self.mark_of_death_count:
+    #                 attack_display.add(Attack_Display(
+    #                     x=self.target.x_pos,
+    #                     y=self.target.y_pos - 150,
+    #                     frames=self.real_sp,
+    #                     frame_duration=120,
+    #                     repeat_animation=1,
+    #                     speed=0,
+    #                     who_attacks=self,
+    #                     who_attacked=self.target,
+    #                     dmg=0, final_dmg=0, disable_collide=False,
+    #                     sound=(True, self.sp_sound, self.sp_sound2, self.x_slash_sound),
+    #                     repeat_sound=True,
+    #                     delay=(True, i),
+    #                     follow=(False, True)))
+
+    #     elif sk == 5:  # Basic Attack
+    #         _delays = [0, 300]
+    #         for i in _delays:
+    #             attack_display.add(Attack_Display(
+    #                 x=self.rect.centerx + 60 if self.facing_right else self.rect.centerx - 60,
+    #                 y=self.rect.centery + (15 if _special else 50),
+    #                 frames=self.basic_slash2 if self.facing_right else self.basic_slash2_flipped,
+    #                 frame_duration=BASIC_FRAME_DURATION / 2,
+    #                 repeat_animation=2 if _special else 1,
+    #                 speed=(6 if self.facing_right else -6) if _special else (4 if self.facing_right else -4),
+    #                 moving=True,
+    #                 sound=(True, self.basic_sound, None, None),
+    #                 delay=(True, self.basic_attack_animation_speed * (i / self.base_animation_speed)),
+    #                 hitbox_scale_x=0.4 if _special else 0.3,
+    #                 hitbox_scale_y=0.4 if _special else 0.3,
+    #                 is_basic_attack=True,
+    #                 **dict(dmg=0, final_dmg=0, disable_collide=True,
+    #                        who_attacks=self, who_attacked=self.enemy)))
 
     def input(self, hotkey1, hotkey2, hotkey3, hotkey4, right_hotkey, left_hotkey, jump_hotkey, basic_hotkey, special_hotkey):
         """The most crucial part of collecting user input.

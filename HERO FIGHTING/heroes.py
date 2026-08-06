@@ -320,7 +320,7 @@ class Attacks:
         self.mana_refund = mana_refund # include display dynamic mana refund if the hero has this.
         self.hero = hero  # Store hero reference for dynamic values
         # Internally store raw last-used timestamp and a snapshot of paused-total at that moment
-        self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
+        self.last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
         self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
         
         self.atk_mana_cost = 0
@@ -381,7 +381,7 @@ class Attacks:
                 paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
 
         effective_now = pygame.time.get_ticks() - paused_total
-        effective_last = self._last_used_time - self._last_used_paused_total
+        effective_last = self.last_used_time - self._last_used_paused_total
         # print(effective_now - effective_last)
         return effective_now - effective_last
 
@@ -1713,7 +1713,7 @@ class Item:
         self.last_used = -self.cooldown if self.cooldown > 0 else 0  # timestamp in seconds
 
         # for items with ability
-        self._last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
+        self.last_used_time = -cooldown  # raw pygame.time.get_ticks() value when used
         self._last_used_paused_total = 0   # global_vars.PAUSED_TOTAL_DURATION snapshot at use
 
 
@@ -1778,7 +1778,7 @@ class Item:
         if global_vars.PAUSED and global_vars.PAUSED_START is not None:
             paused_total += pygame.time.get_ticks() - global_vars.PAUSED_START
         effective_now = pygame.time.get_ticks() - paused_total
-        effective_last = self._last_used_time - self._last_used_paused_total
+        effective_last = self.last_used_time - self._last_used_paused_total
         return effective_now - effective_last
 
     def generate_display_info(self):
@@ -3214,6 +3214,7 @@ def multiplayer_menu(notice=None):
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 # Launch a LAN session. If it ends because the opponent left,
                 # stay in this menu and show a banner; otherwise leave the menu.
+                global_vars.SINGLE_MODE_ACTIVE = False # fix bug where selecting single player, then leaving, sets the SINGLE_MODE_ACTIVE to true, even in multiplayer LAN.
                 session = None
                 if host_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
@@ -3223,7 +3224,7 @@ def multiplayer_menu(notice=None):
                     session = join_game()
                 elif local_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()
-                    global_vars.SINGLE_MODE_ACTIVE = False
+                    
                     return player_selection(net_client=None)
                 elif back_btn.is_clicked(event.pos):
                     net_client.stop_lan_scanning()

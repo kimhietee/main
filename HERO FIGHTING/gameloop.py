@@ -789,7 +789,7 @@ import time
 # socket. 30Hz halves bandwidth/CPU and is gentler on a slow (WiFi) client; bump
 # to 60 to A/B test tighter sync on a fast link.
 NET_STATE_TICK_HZ = global_vars.FPS
-NET_STATE_TICK_MS = 1000 / NET_STATE_TICK_HZ
+NET_STATE_TICK_MS = NET_STATE_TICK_HZ#1000 / NET_STATE_TICK_HZ
 
 def serialize_hero(h):
 
@@ -957,6 +957,9 @@ def apply_hero_state(h, s, x=None, y=None):
         h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
+    # Save previous states BEFORE overwriting so we can detect skill-start
+    # (False→True) transitions. These trigger Attack_Display spawning on P2.
+
     h.attacking1      = s['attacking1']
     h.attacking2      = s['attacking2']
     h.attacking3      = s['attacking3']
@@ -964,22 +967,6 @@ def apply_hero_state(h, s, x=None, y=None):
     h.basic_attacking = s['basic_attacking']
     h.special_active  = s['special_active']
 
-    # Problem 1 (animation flag flip under lag): on P2 the local animate()
-    # finishes a non-looping attack and flips its flag False; if the next host
-    # snapshot is delayed, the host may still report the attack as True, and a
-    # late snapshot then re-flips it on, restarting/stuttering the animation.
-    # The host owns the attack flags, so we record the host's True flags here.
-    # Animations themselves are still driven locally from these flags.
-    h._host_attacking1      = s['attacking1']
-    h._host_attacking2      = s['attacking2']
-    h._host_attacking3      = s['attacking3']
-    h._host_sp_attacking    = s['attacking4']
-    h._host_basic_attacking = s['basic_attacking']
-
-    if hasattr(h, 'animation_done'):
-        h.animation_done = s.get('animation_done', h.animation_done)
-    if s.get('dead', False):
-        h.health = 0
     # Animation indices are NOT applied here — P2 animates locally from the
     # state flags above. See serialize_hero() for the full rationale.
 
@@ -989,6 +976,10 @@ def apply_hero_state(h, s, x=None, y=None):
 
     # ── Cooldowns ──
     now = pygame.time.get_ticks()
+
+    for i, cooldown in enumerate(s['skills_cd']):
+        if i < len(h.attacks):
+            h.attacks[i]
 
     for i, cd in enumerate(s.get('skills_cd', [])):
         if i < len(h.attacks):
@@ -1029,25 +1020,25 @@ def emit_skill_events_for_host(net_client, heroes):
         h._host_prev_atk_flags = cur
 
 
-def consume_skill_events_for_p2(net_client, hero1, hero2):
-    """P2 only: drain queued skill_events and spawn the matching Attack_Display
-    visual via the hero's _trigger_attack_display_for_p2(). Lossless: every
-    event fires exactly once regardless of state-snapshot timing."""
-    now = pygame.time.get_ticks()
-    for ev in net_client.pop_skill_events():
-        h = hero1 if ev.get('hero') == 1 else hero2
-        skill = ev.get('skill')
-        if h is None or skill is None:
-            continue
-        if not hasattr(h, '_trigger_attack_display_for_p2'):
-            continue
-        h._p2_atk_just_triggered = skill
-        h._trigger_attack_display_for_p2()
-        h._p2_atk_just_triggered = 0
-        # Mark so the snapshot-based rising-edge path in apply_hero_state()
-        # won't double-spawn the same cast within a short window.
-        h._p2_last_event_skill = skill
-        h._p2_last_event_time = now
+# def consume_skill_events_for_p2(net_client, hero1, hero2):
+#     """P2 only: drain queued skill_events and spawn the matching Attack_Display
+#     visual via the hero's _trigger_attack_display_for_p2(). Lossless: every
+#     event fires exactly once regardless of state-snapshot timing."""
+#     now = pygame.time.get_ticks()
+#     for ev in net_client.pop_skill_events():
+#         h = hero1 if ev.get('hero') == 1 else hero2
+#         skill = ev.get('skill')
+#         if h is None or skill is None:
+#             continue
+#         if not hasattr(h, '_trigger_attack_display_for_p2'):
+#             continue
+#         h._p2_atk_just_triggered = skill
+#         h._trigger_attack_display_for_p2()
+#         h._p2_atk_just_triggered = 0
+#         # Mark so the snapshot-based rising-edge path in apply_hero_state()
+#         # won't double-spawn the same cast within a short window.
+#         h._p2_last_event_skill = skill
+#         h._p2_last_event_time = now
 
 
 def interp_xy(prev, latest, t0, t1, hero_key, render_time):
@@ -1070,7 +1061,8 @@ def game(bg=None, net_client=None):
         global_vars.active_net_client.phase = 'playing'
         global_vars.active_net_client.declared_winner = None  # reset from any previous game
 
-    _last_state_send = 0   # Phase D: throttle host -> client state snapshots (30Hz)
+    _last_state_send_1 = 0   # Phase D: throttle host -> client state snapshots (30Hz)
+    _last_state_send_2 = 0
 
     
     game_music_started = False
@@ -1296,7 +1288,7 @@ def game(bg=None, net_client=None):
                 if keys[main.pygame.K_5] and keys[main.pygame.K_LALT]: # hp regen (alt)
                     main.DISABLE_HEAL_REGEN = False
                     
-                '''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
+                #'''add another flag which also disables random unstuck direction, but in this case, it is the core flag, which is specific for the hero, not just on a skill, eg fire wizard escapes random direction, while also other hero escapes depends on where the player is. (this is for the skill, if the hero has escape, and that skill has specific flag(assuming that skill forcefully move the bot, or an escape skill, then it also behaves the same)'''
 
             # if FREEZE_SPECIAL: 
             #     main.hero1.special_active = True
@@ -1492,24 +1484,59 @@ def game(bg=None, net_client=None):
                 global_vars.active_net_client = None
                 # lobby('disconnected') 
                 return 'opponent_left'
+            
+            if global_vars.active_net_client is not None and global_vars.active_net_client.phase == 'playing':
+                # read current hero state
+                if global_vars.active_net_client.my_player_type == 1:
+                    prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
+                    if latest_st is not None:
+                        render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
+                        x1, y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', render_time)
+                        apply_hero_state(main.hero1, latest_st.get('h1'), x1, y1)
+
+                if global_vars.active_net_client.my_player_type == 2:
+                    prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
+                    if latest_st is not None:
+                        render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
+                        x2, y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', render_time)
+                        apply_hero_state(main.hero2, latest_st.get('h2'), x2, y2)
+
+                # send current hero state to server
+                _now_ms = pygame.time.get_ticks()
+                if global_vars.active_net_client.my_player_type == 1:
+                    if _now_ms - _last_state_send_1 >= NET_STATE_TICK_MS:
+                        global_vars.active_net_client.send_state({'h1': serialize_hero(main.hero1),})
+                        _last_state_send_1 = _now_ms
+
+                if global_vars.active_net_client.my_player_type == 2:
+                    if _now_ms - _last_state_send_2 >= NET_STATE_TICK_MS:
+                        global_vars.active_net_client.send_state({'h2': serialize_hero(main.hero2),})
+                        _last_state_send_2 = _now_ms
+
 
             # ── Phase D: non-host renders the authoritative state, interpolated ──
             # Numbers (hp/mana/special) snap to the latest host snapshot; positions
             # are lerped between the last two snapshots, rendered ~1 tick in the past
             # for smooth motion. Fully host-authoritative — no local prediction.
-            if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2 and global_vars.active_net_client.phase == 'playing':
-                prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
-                if latest_st is not None:
-                    _render_time = time.monotonic() - 0.050  # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
-                    _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
-                    _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
-                    apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)
-                    apply_hero_state(main.hero2, latest_st.get('h2'), _x2, _y2)
-                    # Lossless visual trigger: spawn Attack_Display for any skill
-                    # the host explicitly announced this frame (immune to the
-                    # 30Hz snapshot missing a brief attacking-flag edge).
-                    consume_skill_events_for_p2(
-                        global_vars.active_net_client, main.hero1, main.hero2)
+            # if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2 and global_vars.active_net_client.phase == 'playing':
+            #     prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
+            #     if latest_st is not None:
+            #         _render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
+            #         _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
+            #         _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
+            #         apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)
+            #         apply_hero_state(main.hero2, latest_st.get('h2'), _x2, _y2)
+
+
+            # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
+            # if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1 and global_vars.active_net_client.phase == 'playing':
+            #     _now_ms = pygame.time.get_ticks()
+            #     if _now_ms - _last_state_send >= NET_STATE_TICK_MS:
+            #         global_vars.active_net_client.send_state({
+            #             'h1': serialize_hero(main.hero1),
+            #             'h2': serialize_hero(main.hero2),
+            #         })
+            #         _last_state_send = _now_ms
 
             # Update and draw Fire Wizard
             main.hero2_group.draw(main.screen)
@@ -1525,28 +1552,14 @@ def game(bg=None, net_client=None):
 
 
             #draw summon
-            global_vars.summon_display.draw(main.screen)
-            global_vars.summon_display.update()
+            # global_vars.summon_display.draw(main.screen)
+            # global_vars.summon_display.update()
 
             # Update anddddddddddddd draw attacks
             attack_display.update()
             attack_display.draw(main.screen)
 
-            # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
-            if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 1 and global_vars.active_net_client.phase == 'playing':
-                _now_ms = pygame.time.get_ticks()
-                if _now_ms - _last_state_send >= NET_STATE_TICK_MS:
-                    global_vars.active_net_client.send_state({
-                        'h1': serialize_hero(main.hero1),
-                        'h2': serialize_hero(main.hero2),
-                    })
-                    _last_state_send = _now_ms
-                # Skill-fired events run EVERY frame (not throttled) so a brief
-                # attacking-flag edge is never lost between 30Hz snapshots.
-                emit_skill_events_for_host(
-                    global_vars.active_net_client,
-                    ((1, main.hero1), (2, main.hero2)),
-                )
+            
             
 
             # Update and draw Wanderer Magician
@@ -1885,7 +1898,7 @@ def battle_end(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAU
 
 def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HEIGHT) / (height * DEFAULT_WIDTH)),):
     global paused
-    '''problem: skills can go negative numbers while paused, lan multiplayer and local multiplayer must both working, when pausing in multiplayer, skills and other cooldowns and times won't be paused if on lan multiplayer, in local, if paused, all related timings such as skill cooldowns must be paused, but the total pause duration adds more cooldown to skills, which is a bug that needs to be fixed.'''
+    #'''problem: skills can go negative numbers while paused, lan multiplayer and local multiplayer must both working, when pausing in multiplayer, skills and other cooldowns and times won't be paused if on lan multiplayer, in local, if paused, all related timings such as skill cooldowns must be paused, but the total pause duration adds more cooldown to skills, which is a bug that needs to be fixed.'''
     if font is None:
         font = global_vars.get_font(100)
     if paused:
@@ -1898,10 +1911,13 @@ def pause(mouse_pos, mouse_press, font=None, default_size = ((width * DEFAULT_HE
             in_game_settings_button.draw(screen, mouse_pos)
         if mouse_press[0] and menu_game.is_clicked(mouse_pos):
             paused = False
+            if global_vars.active_net_client is not None:
+                global_vars.active_net_client.disconnect()
             if global_vars.active_net_client is not None and global_vars.active_net_client.opponent_left:
                 print(f'I am leaving good luck everybody')
                 print("Opponent left detected in player_selection")
                 return 'opponent_left'
+           
             else:
                 print('go to menu (offline mode)')
                 return 'back_to_menu'

@@ -78,6 +78,7 @@ class NetClient:
         if self.sock and self._running:
             try:
                 send_msg(self.sock, {'type': 'input', 'keys': keys})
+                print(keys)
             except:
                 self._running = False
                 self.phase = 'disconnected'
@@ -123,12 +124,19 @@ class NetClient:
                 self._running = False
                 self.phase = 'disconnected'
 
-    def send_skill_event(self, hero, skill):
+    def send_skill_event(self, hero, skill, special_active=False):
         """Host (P1) only: announce that hero (1 or 2) just fired skill id
-        (1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic). Fire-once visual trigger."""
+        (1=atk1, 2=atk2, 3=atk3, 4=sp, 5=basic). Fire-once visual trigger.
+        special_active is embedded at the moment of cast so P2 can spawn the
+        correct visual tier without relying on the delayed state snapshot."""
         if self.sock and self._running:
             try:
-                send_msg(self.sock, {'type': 'skill_event', 'hero': hero, 'skill': skill})
+                send_msg(self.sock, {
+                    'type': 'skill_event',
+                    'hero': hero,
+                    'skill': skill,
+                    'special_active': special_active,
+                })
             except:
                 self._running = False
                 self.phase = 'disconnected'
@@ -225,6 +233,7 @@ class NetClient:
                     self.skill_events.append({
                         'hero': msg.get('hero'),
                         'skill': msg.get('skill'),
+                        'special_active': msg.get('special_active', False),
                     })
 
             elif message_type == 'winner_declared':
@@ -241,6 +250,7 @@ class NetClient:
         send_msg(self.sock, {'type': 'disconnected'})
 
     def disconnect(self):
+        
         self._running = False
         if self.sock:
             self.sock.close()

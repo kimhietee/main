@@ -1486,30 +1486,61 @@ def game(bg=None, net_client=None):
                 return 'opponent_left'
             
             if global_vars.active_net_client is not None and global_vars.active_net_client.phase == 'playing':
-                # read current hero state
-                if global_vars.active_net_client.my_player_type == 1:
-                    prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
-                    if latest_st is not None:
-                        render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
-                        x1, y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', render_time)
-                        apply_hero_state(main.hero1, latest_st.get('h1'), x1, y1)
+                # ── Receive and apply opponent / authoritative state ──────────────
+                #
+                # P1 (host) is the DAMAGE AUTHORITY:
+                #   • It runs input() for both heroes (h1 via keyboard, h2 via p2_keys).
+                #   • _apply_damage() only mutates HP on P1.
+                #   • It sends BOTH h1 and h2 states so P2 sees authoritative HP.
+                #
+                # P2 (client) receives P1's full snapshot (h1 + h2) and applies both.
+                #   • Its own input() runs locally for instant visual feedback.
+                #   • apply_hero_state() corrects any drift each frame.
+                #
+                prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
 
-                if global_vars.active_net_client.my_player_type == 2:
-                    prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
-                    if latest_st is not None:
-                        render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
+                if latest_st is not None:
+                    render_time = time.monotonic() - 0.050  # 50 ms buffer for jitter
+
+                    if global_vars.active_net_client.my_player_type == 1:
+                        # P1 receives P2's packet which contains 'h2'.
+                        # Apply to local hero2 (position sync from P2's self-report).
+                        # P1 is damage-authoritative so we only sync movement/facing from P2's data.
+                        h2_recv = latest_st.get('h2')
+                        if h2_recv and main.hero2 is not None:
+                            x2, y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', render_time)
+                            # Sync position/movement from P2's self-reported state.
+                            # HP/cooldowns are NOT overwritten here — P1 is authoritative for those.
+                            if x2 is not None: main.hero2.x_pos = x2
+                            if y2 is not None: main.hero2.y_pos = y2
+                            main.hero2.y_velocity   = h2_recv.get('yv',          main.hero2.y_velocity)
+                            main.hero2.facing_right  = h2_recv.get('facing_right', main.hero2.facing_right)
+                            main.hero2.running       = h2_recv.get('running',      main.hero2.running)
+
+                    if global_vars.active_net_client.my_player_type == 2:
+                        # P2 receives P1's packet which contains BOTH 'h1' and 'h2'.
+                        # Apply P1's authoritative state for hero1 (opponent) AND hero2 (own hero).
+                        # Applying h2 here corrects HP that was changed by hero1's attacks on P1's side.
+                        x1, y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', render_time)
                         x2, y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', render_time)
+                        apply_hero_state(main.hero1, latest_st.get('h1'), x1, y1)
                         apply_hero_state(main.hero2, latest_st.get('h2'), x2, y2)
 
-                # send current hero state to server
+                # ── Send own-hero state to server ─────────────────────────────────
                 _now_ms = pygame.time.get_ticks()
                 if global_vars.active_net_client.my_player_type == 1:
                     if _now_ms - _last_state_send_1 >= NET_STATE_TICK_MS:
-                        global_vars.active_net_client.send_state({'h1': serialize_hero(main.hero1),})
+                        # Send BOTH heroes: h1 is P1's own hero; h2 is P1's authoritative
+                        # view of hero2 (including all HP changes from damage applied on P1).
+                        global_vars.active_net_client.send_state({
+                            'h1': serialize_hero(main.hero1),
+                            'h2': serialize_hero(main.hero2),
+                        })
                         _last_state_send_1 = _now_ms
 
                 if global_vars.active_net_client.my_player_type == 2:
                     if _now_ms - _last_state_send_2 >= NET_STATE_TICK_MS:
+                        # P2 sends its own hero2 state so P1 can sync position on P1's display.
                         global_vars.active_net_client.send_state({'h2': serialize_hero(main.hero2),})
                         _last_state_send_2 = _now_ms
 

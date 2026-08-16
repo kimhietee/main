@@ -3070,17 +3070,16 @@ class Player(pygame.sprite.Sprite):
         """Base user input collection from saved hotkeys on controls.
         \nHandles input for all heroes"""
         # ── NETWORK MULTIPLAYER OVERRIDE ──────────────────────────
-        # If net_keys is set by the game loop, use those instead of keyboard
+        # If _net_keys is set by the game loop, drive this hero from those keys.
+        #
+        # BOTH P1 and P2 now run input() for both heroes:
+        #   • Spawning Attack_Display visuals on both clients (correct animations/effects).
+        #   • _apply_damage() / _apply_heal() are already guarded so only P1 (host)
+        #     actually mutates HP/mana.  On P2 the spawned objects are purely cosmetic.
+        #   • apply_hero_state() runs every tick and overwrites HP/mana/cooldowns/position
+        #     with the host-authoritative snapshot, so any local simulation drift is
+        #     corrected each frame before rendering.
         if hasattr(self, '_net_keys') and self._net_keys is not None:
-            # On the non-host client (P2) the host is authoritative for ALL heroes.
-            # Running input() here would spawn local Attack_Displays and mutate mana/
-            # cooldown state that conflicts with the host snapshot. Skip entirely —
-            # hero state comes from apply_hero_state() and visuals come from
-            # consume_skill_events_for_p2().
-            # On P1's machine this must still run: P1 simulates both heroes authoritatively.
-            nc = global_vars.active_net_client
-            if nc is not None and nc.my_player_type == 2:
-                return  # P2 client: do not execute local input logic
             k = self._net_keys
             self.input(
                 k.get('skill1', False),

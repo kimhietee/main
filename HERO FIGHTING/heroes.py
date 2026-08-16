@@ -3790,7 +3790,7 @@ def player_selection(net_client=None):
                 # waiting_font = global_vars.get_font(40)
                 result = wait_screen(
                     condition_func=lambda: global_vars.active_net_client.map_selected is not None,
-                    text="Waiting for host to select map...",
+                    text="Waiting for host to start...",
                     background=background,
                     font=40
                 )

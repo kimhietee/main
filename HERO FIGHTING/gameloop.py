@@ -999,6 +999,54 @@ def apply_hero_state(h, s, x=None, y=None):
             skill.last_used_time = now - elapsed
             skill.remaining_ms = cd
 
+def apply_hero_game_state(h, s):
+    """Apply ONLY the authoritative game-state fields (HP / mana / status / cooldowns)
+    to a live hero — intentionally skipping position, movement, and attacking flags.
+
+    Used for P2's OWN hero in multiplayer so that:
+    - HP damage dealt by P1 (the damage authority) is visible on P2.
+    - Positions and animation state remain under P2's local control, preventing the
+      position-rollback and attacking-flag deadlock that blocked player_movement().
+    """
+    if h is None or s is None:
+        return
+    # ── Core resources (authoritative from host) ──
+    h.health     = s['health']
+    h.mana       = s['mana']
+    h.special    = s['special']
+    h.temp_hp    = s['temp_hp']
+    h.max_health = s['max_health']
+    h.max_mana   = s['max_mana']
+    if hasattr(h, 'max_temp_hp'):
+        h.max_temp_hp = s.get('max_temp_hp', 0)
+    # ── Status effects ──
+    h.frozen    = s['frozen']
+    h.rooted    = s['rooted']
+    h.slowed    = s['slowed']
+    h.slow_speed = s['slow_speed']
+    h.silenced  = s['silenced']
+    h.stunned   = s['stunned']
+    if hasattr(h, 'hasted'):    h.hasted    = s.get('hasted',    None)
+    if hasattr(h, 'flying'):    h.flying    = s.get('flying',    None)
+    if hasattr(h, 'invisible'): h.invisible = s.get('invisible', None)
+    # ── Items / abilities ──
+    h.immortality_activated = s['immortality_activated']
+    h.immortality_duration  = s['immortality_duration']
+    # ── Cooldowns ──
+    now = pygame.time.get_ticks()
+    for i, cd in enumerate(s.get('skills_cd', [])):
+        if i < len(h.attacks):
+            skill = h.attacks[i]
+            elapsed = max(0, skill.cooldown - int(cd))
+            skill.last_used_time = now - elapsed
+            skill.remaining_ms   = cd
+    for i, cd in enumerate(s.get('special_skills_cd', [])):
+        if i < len(h.attacks_special):
+            skill = h.attacks_special[i]
+            elapsed = max(0, skill.cooldown - int(cd))
+            skill.last_used_time = now - elapsed
+            skill.remaining_ms   = cd
+
 def emit_skill_events_for_host(net_client, heroes):
     """Host (P1) only: detect each hero's attacking-flag rising edge this frame
     and emit a fire-once skill_event. Runs every frame (not throttled like the
@@ -1519,12 +1567,16 @@ def game(bg=None, net_client=None):
 
                     if global_vars.active_net_client.my_player_type == 2:
                         # P2 receives P1's packet which contains BOTH 'h1' and 'h2'.
-                        # Apply P1's authoritative state for hero1 (opponent) AND hero2 (own hero).
-                        # Applying h2 here corrects HP that was changed by hero1's attacks on P1's side.
+                        #
+                        # hero1 (opponent): apply fully — position, HP, animation, everything.
                         x1, y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', render_time)
-                        x2, y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', render_time)
                         apply_hero_state(main.hero1, latest_st.get('h1'), x1, y1)
-                        apply_hero_state(main.hero2, latest_st.get('h2'), x2, y2)
+                        #
+                        # hero2 (own hero): apply GAME-STATE ONLY (HP / mana / status / cooldowns).
+                        # Position and attacking flags are managed locally via keyboard input.
+                        # This prevents P1's attacking flags from blocking player_movement() on P2
+                        # and stops the position-rollback that made hero2 appear stuck.
+                        apply_hero_game_state(main.hero2, latest_st.get('h2'))
 
                 # ── Send own-hero state to server ─────────────────────────────────
                 _now_ms = pygame.time.get_ticks()
@@ -1543,20 +1595,6 @@ def game(bg=None, net_client=None):
                         # P2 sends its own hero2 state so P1 can sync position on P1's display.
                         global_vars.active_net_client.send_state({'h2': serialize_hero(main.hero2),})
                         _last_state_send_2 = _now_ms
-
-
-            # ── Phase D: non-host renders the authoritative state, interpolated ──
-            # Numbers (hp/mana/special) snap to the latest host snapshot; positions
-            # are lerped between the last two snapshots, rendered ~1 tick in the past
-            # for smooth motion. Fully host-authoritative — no local prediction.
-            # if global_vars.active_net_client is not None and global_vars.active_net_client.my_player_type == 2 and global_vars.active_net_client.phase == 'playing':
-            #     prev_st, latest_st, prev_t, latest_t = global_vars.active_net_client.get_states_for_render()
-            #     if latest_st is not None:
-            #         _render_time = time.monotonic() - 0.050 # 50 ms buffer absorbs WiFi jitter (was 1 tick ~16 ms)
-            #         _x1, _y1 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h1', _render_time)
-            #         _x2, _y2 = interp_xy(prev_st, latest_st, prev_t, latest_t, 'h2', _render_time)
-            #         apply_hero_state(main.hero1, latest_st.get('h1'), _x1, _y1)
-            #         apply_hero_state(main.hero2, latest_st.get('h2'), _x2, _y2)
 
 
             # ── Phase D: host broadcasts authoritative hero state (~30Hz) ──
@@ -1603,9 +1641,12 @@ def game(bg=None, net_client=None):
             # {("Burner"), ("damage") ("$damage", "red")}
 
             
-            if global_vars.SINGLE_MODE_ACTIVE:
+            # Bot logic: only in single-player mode AND not in a LAN session.
+            # The active_net_client guard prevents bot AI from overriding hero2
+            # on the non-host client where hero2 is a real remote player.
+            if global_vars.SINGLE_MODE_ACTIVE and global_vars.active_net_client is None:
                 if global_vars.HERO1_BOT:
-                    main.hero1.bot_logic()  # Add bot logic for 
+                    main.hero1.bot_logic()  # Add bot logic for hero1
                 main.hero2.bot_logic()
                 if hasattr(main, 'hero3') and main.hero3 is not None:
                     main.hero3.bot_logic()

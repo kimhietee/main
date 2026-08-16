@@ -3070,30 +3070,66 @@ class Player(pygame.sprite.Sprite):
         """Base user input collection from saved hotkeys on controls.
         \nHandles input for all heroes"""
         # ── NETWORK MULTIPLAYER OVERRIDE ──────────────────────────
-        # If _net_keys is set by the game loop, drive this hero from those keys.
-        #
-        # BOTH P1 and P2 now run input() for both heroes:
-        #   • Spawning Attack_Display visuals on both clients (correct animations/effects).
-        #   • _apply_damage() / _apply_heal() are already guarded so only P1 (host)
-        #     actually mutates HP/mana.  On P2 the spawned objects are purely cosmetic.
-        #   • apply_hero_state() runs every tick and overwrites HP/mana/cooldowns/position
-        #     with the host-authoritative snapshot, so any local simulation drift is
-        #     corrected each frame before rendering.
+        nc = global_vars.active_net_client
+        if nc is not None and nc.phase == 'playing':
+            # ── Own hero: local keyboard with P1 keybinds ─────────────────────
+            # We bypass the server-echo round-trip entirely.  This gives instant
+            # response and — critically — means we NEVER pass the server's
+            # attacking-flag snapshot back through is_not_attacking(), which was
+            # blocking player_movement() on P2 every frame a skill was active
+            # on P1's simulation of hero2.
+            #
+            # P1 keybinds are used regardless of player_type: when P2 connects
+            # from their own machine they use their locally configured P1 controls
+            # (P2 keybinds are only for local split-screen PvP on one machine).
+            if self.player_type == nc.my_player_type:
+                keybinds = key.read_settings()
+                raw_keys = pygame.key.get_pressed()
+                self.input(
+                    raw_keys[keybinds['skill_1_p1'][0]],
+                    raw_keys[keybinds['skill_2_p1'][0]],
+                    raw_keys[keybinds['skill_3_p1'][0]],
+                    raw_keys[keybinds['skill_4_p1'][0]],
+                    raw_keys[keybinds['right_move_p1'][0]],
+                    raw_keys[keybinds['left_move_p1'][0]],
+                    raw_keys[keybinds['jump_p1'][0]],
+                    raw_keys[keybinds['basic_atk_p1'][0]],   # level-triggered: hold to spam
+                    raw_keys[keybinds['sp_skill_p1'][0]],
+                )
+                return
+            # ── Opponent hero: server-broadcast keys + rising-edge ─────────────
+            # Rising-edge prevents duplicate Attack_Display spawns caused by
+            # apply_hero_state() resetting attacking flags before the authoritative
+            # snapshot arrives (1–3 frames of latency).
+            # _apply_damage() / _apply_heal() are guarded → cosmetic only.
+            k = self._net_keys if (hasattr(self, '_net_keys') and self._net_keys) else {}
+            prev_k = getattr(self, '_prev_net_keys', {})
+            def _re(key):
+                return bool(k.get(key, False)) and not bool(prev_k.get(key, False))
+            if k:
+                self.input(
+                    _re('skill1'), _re('skill2'), _re('skill3'), _re('skill4'),
+                    k.get('right', False), k.get('left', False), k.get('up', False),
+                    _re('basic'), _re('special'),
+                )
+            self._prev_net_keys = dict(k)
+            return
+        # ── END NETWORK OVERRIDE ───────────────────────────────────
+
+        # ── Non-multiplayer _net_keys path (bot AI / offline testing) ─────────
         if hasattr(self, '_net_keys') and self._net_keys is not None:
             k = self._net_keys
+            prev_k = getattr(self, '_prev_net_keys', {})
+            def _re(key):
+                return bool(k.get(key, False)) and not bool(prev_k.get(key, False))
             self.input(
-                k.get('skill1', False),
-                k.get('skill2', False),
-                k.get('skill3', False),
-                k.get('skill4', False),
-                k.get('right', False),
-                k.get('left', False),
-                k.get('up', False),
-                k.get('basic', False),
-                k.get('special', False),
+                _re('skill1'), _re('skill2'), _re('skill3'), _re('skill4'),
+                k.get('right', False), k.get('left', False), k.get('up', False),
+                _re('basic'), _re('special'),
             )
-            return   # skip keyboard reading entirely
-        # ── END NETWORK OVERRIDE ───────────────────────────────────
+            self._prev_net_keys = dict(k)
+            return
+        # ── END NON-MULTIPLAYER _net_keys ──────────────────────────
 
         # print("Entered Player.py")
         keybinds=key.read_settings()

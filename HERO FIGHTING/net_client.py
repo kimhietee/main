@@ -78,7 +78,7 @@ class NetClient:
         if self.sock and self._running:
             try:
                 send_msg(self.sock, {'type': 'input', 'keys': keys})
-                print(keys)
+                # print(keys)
             except:
                 self._running = False
                 self.phase = 'disconnected'

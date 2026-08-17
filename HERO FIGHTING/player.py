@@ -3110,7 +3110,7 @@ class Player(pygame.sprite.Sprite):
                 self.input(
                     _re('skill1'), _re('skill2'), _re('skill3'), _re('skill4'),
                     k.get('right', False), k.get('left', False), k.get('up', False),
-                    _re('basic'), _re('special'),
+                    k.get('basic', False), _re('special'),  # basic attack: level-triggered (hold to spam); skills stay rising-edge
                 )
             self._prev_net_keys = dict(k)
             return
@@ -3125,7 +3125,7 @@ class Player(pygame.sprite.Sprite):
             self.input(
                 _re('skill1'), _re('skill2'), _re('skill3'), _re('skill4'),
                 k.get('right', False), k.get('left', False), k.get('up', False),
-                _re('basic'), _re('special'),
+                k.get('basic', False), _re('special'),  # basic attack: level-triggered (hold to spam); skills stay rising-edge
             )
             self._prev_net_keys = dict(k)
             return

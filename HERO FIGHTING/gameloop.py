@@ -957,8 +957,32 @@ def apply_hero_state(h, s, x=None, y=None):
         h.invisible = s.get('invisible', None)
 
     # ── Attacking States ──
-    # Save previous states BEFORE overwriting so we can detect skill-start
-    # (False→True) transitions. These trigger Attack_Display spawning on P2.
+    # Store host-authoritative attack flags so _reconcile_p2_attack_flag()
+    # can keep animations alive while the host still reports the attack active.
+    h._host_attacking1      = s['attacking1']
+    h._host_attacking2      = s['attacking2']
+    h._host_attacking3      = s['attacking3']
+    h._host_sp_attacking    = s['attacking4']
+    h._host_basic_attacking = s['basic_attacking']
+
+    # Reset animation indices when a new attack cycle starts on the host but
+    # the local animation already finished (flag is False, index stuck at last
+    # frame).  Without this, the animation visually freezes on repeat attacks.
+    if s['attacking1'] and not h.attacking1:
+        h.player_atk1_index = 0
+        h.player_atk1_index_flipped = 0
+    if s['attacking2'] and not h.attacking2:
+        h.player_atk2_index = 0
+        h.player_atk2_index_flipped = 0
+    if s['attacking3'] and not h.attacking3:
+        h.player_atk3_index = 0
+        h.player_atk3_index_flipped = 0
+    if s['attacking4'] and not h.sp_attacking:
+        h.player_sp_index = 0
+        h.player_sp_index_flipped = 0
+    if s['basic_attacking'] and not h.basic_attacking:
+        h.player_basic_index = 0
+        h.player_basic_index_flipped = 0
 
     h.attacking1      = s['attacking1']
     h.attacking2      = s['attacking2']
